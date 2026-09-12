@@ -1,5 +1,11 @@
 # Phase 04 — Visibility and public profiles
 
+> Status reconciliation — 2026-09-12: Publishing/preview, explicit public projection, profile routes and scope versions exist. Reuse these and add DevSecOps scope. REBID starts private research; it does not automatically publish account data. Cleaning fields below are historical, not the new category schema.
+>
+> Follow [the current P0/P1/P2 roadmap](README.md) and [current product plan](../plan/plan1.md). The earlier specification below is retained for reusable implementation detail. Its old priorities, demo category, and unchecked boxes are not a current completion report.
+
+## Earlier component specification
+
 **Goal:** an owner flips one expense public, confirms its scope, sees exactly what the world will see, publishes it to their profile, and can take it back instantly.
 
 **Depends on:** [03](03-expense-dashboard.md). **Size:** L. **Critical path:** yes.

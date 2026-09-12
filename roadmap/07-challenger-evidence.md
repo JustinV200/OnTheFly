@@ -1,5 +1,11 @@
 # Phase 07 — Challenger evidence
 
+> Status reconciliation — 2026-09-12: Only local evidence logic and registry stubs exist. USAspending supplier discovery/evidence is P0; Tavily enrichment is P1. The earlier optional-evidence priority below does not apply to the new demo's required public supplier evidence.
+>
+> Follow [the current P0/P1/P2 roadmap](README.md) and [current product plan](../plan/plan1.md). The earlier specification below is retained for reusable implementation detail. Its old priorities, demo category, and unchecked boxes are not a current completion report.
+
+## Earlier component specification
+
 **Goal:** show verifiable facts and honest gaps about whoever just offered to undercut the incumbent, with every claim traceable to a source and a timestamp.
 
 **Depends on:** [05](05-marketplace-and-challenges.md). **Size:** L. **Critical path:** no — but it's what separates this from a price-comparison page.

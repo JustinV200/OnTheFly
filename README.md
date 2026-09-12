@@ -1,86 +1,87 @@
 # On the Fly
 
-**List what you pay. Let anyone offer to beat it.**
+**Click REBID on what your business already pays for.**
 
-A B2B marketplace built on voluntary price transparency. Connect your business account, see every expense in a private dashboard, and flip the ones you want public. Public expenses land on your profile, where any other business on the platform can see them — and counter.
+On the Fly is being built into a spend-to-supplier marketplace: connect a business account, identify replaceable spend, research comparable suppliers, compare public pricing models, and receive a challenger offer.
 
-> A business publishes: *"we pay $2,400/month for commercial cleaning, 8,000 sq ft, 3× weekly."*
-> A cleaning company browsing the marketplace replies: *"we'll do it for $1,875."*
+The current code is a working marketplace foundation with a Stripe sandbox import integration. The new GovCon REBID workflow is the next build milestone, not a completed feature.
 
-Working name is undecided. Full design: [plan/plan1.md](plan/plan1.md). Build order: [roadmap/](roadmap/).
+## Current build status
 
-## The loop
+Status reviewed 2026-09-12 against the repository and the supplied `on_the_fly_hackathon_build_plan.md`.
 
+| Area | Current state | Remaining work |
+|---|---|---|
+| Stripe Financial Connections | Consent/session API, company binding, transaction imports, refresh polling, and UI implemented | Verify actual sandbox consent with configured keys |
+| Financial data | Normalized transactions, fixture source, recurring-spend grouping and annualization implemented | Add GovCon ledger and verify its totals |
+| Marketplace | Private dashboard, publish preview, profiles, listings, challenges, and comparison implemented for the cleaning demo | Adapt scope and comparison to DevSecOps; verify two-device bid flow |
+| Evidence | Local checks and registry stub | USAspending supplier discovery, public rate inputs, Tavily enrichment |
+| REBID | Planned | Orchestrated workflow, persisted progress, supplier results |
+| AI | Anthropic dependency/configuration present; no completed reasoning workflow | New plan calls for OpenAI scope/evidence processing |
+| Fly Scout | Planned P1 | Actual exploration output wired to qualified suppliers |
+| UI | Basic existing screens and Stripe controls | Modern REBID-focused Spend → Progress → Market → Fly → Bid experience |
+| Database | SQLite locally, SQLAlchemy and Alembic migrations | Supabase/Postgres remains optional deployment work |
+| Demo readiness | Not yet ready for the new story | Finish P0/P1 and rehearse with labeled data |
+
+Last verification from the Stripe implementation: **39 backend tests passed**, frontend production build passed, and connection migration applied locally. Stripe responses were mocked in tests; this does not certify a real sandbox connection or the new REBID flow.
+
+## New demo and data strategy
+
+Target buyer: **GovCon Industries**, a fictional company. Seed 3–6 months across DevSecOps, cybersecurity, program management, facilities, and logistics. Only **DevSecOps Engineering Support** needs the complete REBID path.
+
+Stripe demonstrates consent and ingestion using Stripe's simulated bank data. The custom GovCon ledger is a separate fixture imported through the same normalized pipeline. It is not manufactured inside Stripe.
+
+Required labels:
+
+- **Stripe sandbox** — transactions returned by Stripe.
+- **Hackathon demo ledger — synthetic buyer spend based on public procurement categories** — planned GovCon fixtures.
+- **Modeled bid from public pricing — not a vendor quote** — future public-rate calculations.
+- **Demo offer** or **genuine supplier quote**, according to the actual provenance of a submitted challenge.
+
+The current seed still creates Apex Facilities Group and commercial-cleaning data. GovCon data is not implemented yet.
+
+## Next build order
+
+1. Verify Stripe sandbox consent; add GovCon fixtures and confirm annualized totals.
+2. Add REBID and owner-confirmed DevSecOps scope.
+3. Discover real suppliers through USAspending and preserve source evidence.
+4. Build one defensible deterministic public-rate comparison.
+5. Add Tavily enrichment and actual Fly Scout exploration.
+6. Reuse challenges for a two-device submitted bid, then polish the UI and rehearse.
+
+Notifications, automated outreach, payment movement, and real authentication are excluded from this hackathon slice. A genuine external quote is a bonus, not a dependency.
+
+## Run locally
+
+Use two PowerShell terminals from the repository root:
+
+```powershell
+cd backend
+python -m pip install -e ".[dev]"
+if (!(Test-Path .env)) { Copy-Item .env.example .env }
+python -m alembic upgrade head
+python -m uvicorn app.main:app --reload --host 127.0.0.1 --port 8000
 ```
-Connect business account
-  → every expense appears in a private dashboard
-  → toggle individual expenses public
-  → public expenses appear on your profile
-  → anyone on the platform browses and finds them
-  → they click "Challenge" and submit a counteroffer
-  → sealed by default, or open bidding if you flip it on
-  → you compare offers, scope, and evidence against what you pay now
-  → shortlist someone
+
+```powershell
+cd frontend
+npm install
+if (!(Test-Path .env)) { Copy-Item .env.example .env }
+npm run dev -- --host 127.0.0.1
 ```
 
-Everything imports **private**. Nothing is ever published without you choosing it, previewing exactly what goes public, and clicking.
+For Stripe, set `STRIPE_SECRET_KEY=sk_test_...` in `backend/.env` and `VITE_STRIPE_PUBLISHABLE_KEY=pk_test_...` in `frontend/.env`, from the same sandbox. Restart after changing environment files. `TRANSACTION_SOURCE=fixture` can remain the default; dedicated Stripe routes select their adapter explicitly.
 
-## Why inbound
+Open the UI at http://127.0.0.1:5173 and API docs at http://127.0.0.1:8000/docs. A fresh database gets seeded company accounts on startup, but no expense history until an import or deliberate demo seed.
 
-The obvious version of this product is outbound: pick an expense, and the platform finds vendors and emails them a request for quotes. That needs discovery, qualification, and outreach infrastructure standing between a user and their first result — plus a lot of unsolicited email.
+The existing `python -m app.cli.seed_demo` command is a **destructive reset** for the old cleaning scenario; stop the backend and back up data before using it. It also removes stored Stripe connections. It does not create the new GovCon demo.
 
-Publishing inverts it. One cheap action from the buyer, and competitors come to them. It produces a browsable marketplace instead of a series of private auctions, and every listing is a standing invitation rather than a one-time request.
+## Documentation and structure
 
-The tradeoff is a cold-start problem, which is why outbound discovery survives as a way to seed the supply side rather than as the main path.
+- [Current product plan](plan/plan1.md)
+- [Current roadmap and completion gates](roadmap/README.md)
+- [Backend setup](backend/README.md) and [frontend setup](frontend/README.md)
+- [Stripe setup and limitations](backend/app/services/transactions/stripe/NOTES.md)
+- [Project guide](CLAUDE.md) and [coding rules](.claude/codingrules.md)
 
-## What it does
-
-- **Reads simulated transaction history** through Stripe Financial Connections in sandbox mode, with clearly labeled fixtures for spend the sandbox doesn't contain. Production financial data is post-MVP.
-- **Shows every expense** grouped by vendor, with detected cadence, recurrence confidence, annualized cost, and the individual payments behind each figure.
-- **Suggests what's worth listing** on an explainable heuristic — but the owner decides, and can publish something the heuristic ranked low.
-- **Confirms scope before publishing**, because a price with no scope isn't something anyone can meaningfully counter. AI drafts it from transaction evidence; unknown fields stay explicit questions rather than being invented from a merchant name.
-- **Publishes to a public profile** with a preview of the exact payload, and unpublishes instantly.
-- **Takes counteroffers from any platform user**, revisable until the deadline, with full revision history.
-- **Opens the bidding, if you want it.** Offers are sealed by default — you see them, nobody else does. Flip open bidding on and challengers see each other's prices and scope and can underbid, while their identities stay yours alone. Flipping it on never exposes an offer someone already made in confidence.
-- **Checks who's offering** — entity registration, reputation, exclusion lists, regulatory history — reporting each check's source, timestamp, and limits.
-- **Compares on normalized cost and scope**, not price alone.
-
-## The two rules everything else follows from
-
-**Private is the default and the fallback.** Every expense imports private. An expense whose visibility state is ambiguous, unset, or errored is private. The public projection is built explicitly field by field, never by filtering the private record — a serializer that starts rich and removes fields leaks the next field someone adds.
-
-**Not checked is not the same as clean.** An unavailable source means *not checked*. A search that returns nothing means *no match found in this source* — never "proven safe." Adverse records never attach to a business on a name match alone. There is no blanket "verified" badge.
-
-Savings are **potential** until a switch actually happens, and the UI says so.
-
-## Stack
-
-| Layer | Choice |
-|---|---|
-| Frontend | React + TypeScript, Vite |
-| Backend | Python + FastAPI, Pydantic |
-| Database | Postgres via Supabase |
-| Identity | One account type; seeded demo accounts with an in-app switcher |
-| Jobs | Background worker for imports and evidence |
-| Financial data | `TransactionSource` adapter — Stripe Financial Connections sandbox, with labeled fixtures as fallback |
-| Discovery | Tavily, behind a provider interface (secondary path) |
-| Reasoning | Claude for scope drafting, offer extraction, evidence summaries |
-
-Monetary math, deduplication, deadlines, visibility state, and offer versioning are deterministic code. The model drafts and extracts; it doesn't calculate, and it doesn't decide what's public.
-
-## Status
-
-Planning → early build. [plan/plan1.md](plan/plan1.md) has the full design and the record of scope decisions; [roadmap/](roadmap/) breaks it into ordered phases with done-when criteria.
-
-Two earlier concepts are out of scope: an equipment-shopping and camera-audit product with fruit-fly neural models, and an outbound RFQ product with token-scoped vendor invitations. The images in [assets/](assets/) are left over from the first of those.
-
-## Repo layout
-
-```
-frontend/   React + TS app (not yet created)
-backend/    FastAPI app (not yet created)
-plan/       Design docs — plan1.md is the plan of record
-roadmap/    Phase-by-phase build order
-assets/     Brand assets (stale, from a prior concept)
-.claude/    Claude Code config and coding rules
-```
+Keep the existing `backend/app/services/`, `backend/app/api/`, `backend/app/models/`, and `frontend/src/features/` structure. The numbered roadmap files retain reusable technical detail from the earlier marketplace build; their status notices explain how they map to the current plan.

@@ -1,40 +1,49 @@
 # On the Fly — Project Guide
 
-A B2B marketplace built on voluntary price transparency. A business connects its financial account, sees every expense in a private dashboard, and toggles individual expenses public. Public expenses appear on the business's profile, where any other business on the platform can see them and post a counteroffer.
+**Click REBID on what your business already pays for.**
 
-Core interaction: a business publishes *"we pay $2,400/month for cleaning, 8,000 sq ft, 3× weekly."* A cleaning company browsing the platform replies *"we'll do it for $1,875."*
+The current hackathon target is fictional GovCon Industries: Stripe sandbox connection plus a separately labeled synthetic buyer ledger, one DevSecOps REBID workflow, real public supplier evidence, modeled pricing, actual Fly Scout exploration, and a submitted challenge.
 
-Working name is undecided — don't invent one in code, docs, or UI copy.
+Read [the current plan](plan/plan1.md) and [current roadmap](roadmap/README.md) for scope and status. Follow [.claude/codingrules.md](.claude/codingrules.md) for structure and implementation conventions. The supplied build plan informed these documents; its example numbers and aspirational claims are not evidence of implemented features.
 
-Full product spec and scope decisions: [plan/plan1.md](plan/plan1.md). Step-by-step build order: [roadmap/](roadmap/). Coding rules: [.claude/codingrules.md](.claude/codingrules.md). Follow the coding rules for every file you create or edit.
+## Current implementation
 
-## Status
+React/Vite, FastAPI, SQLAlchemy, SQLite, and Alembic are implemented. Keep the existing feature/service/API/model layout.
 
-Planning → early build. No application code exists yet; `frontend/` and `backend/` get created as work starts.
+Stripe transaction-only sandbox consent, company binding, paginated imports, updates, polling and UI exist. The previous verification reported 39 backend tests passing and a successful frontend build; Stripe HTTP calls were mocked. Real sandbox consent is still unverified.
 
-Two earlier concepts are **removed from scope**: an equipment-shopping and camera-audit product (with fruit-fly neural models — Compound Eye, Mushroom Body, FlyHash), and an outbound RFQ product where the platform emailed token-scoped invitations to vendors it discovered. Don't reintroduce either; treat surviving references as stale. Outbound discovery and invitation persist only as a **secondary path for seeding marketplace supply**, subordinate to the public loop.
+Fixtures, recurring-expense grouping, publishing/preview, profiles, challenges and comparison exist for a commercial-cleaning scenario. Reuse them and adapt the scope fields to DevSecOps. GovCon fixtures, REBID orchestration, USAspending discovery, public-rate pricing, Tavily enrichment, OpenAI reasoning and Fly Scout are not implemented.
 
-## Tech stack
+## Scope and stack decisions
 
-- **Frontend:** React + TypeScript, Vite. Responsive — challengers browse on phones.
-- **Backend:** Python + FastAPI. Async REST, Pydantic request/response models.
-- **Database:** Postgres via Supabase.
-- **Identity:** one account type — every account is a business that can both publish expenses and challenge others'. Seeded demo accounts with an in-app switcher. **No signup, no passwords, no auth flows.** Real auth is post-MVP.
-- **Jobs:** small background worker for imports, evidence lookups, and invitations.
-- **Financial adapters:** `TransactionSource` interface — Stripe Financial Connections sandbox for the MVP, with labeled fixtures as the deterministic fallback. Rho and Mercury are post-MVP.
-- **Discovery:** Tavily behind a provider interface (secondary path only).
-- **AI:** Claude for categorization suggestions, scope drafting, offer extraction, evidence summaries. Structured outputs everywhere JSON is consumed; never parse prose. Confirm the current model ID during implementation rather than hardcoding one from memory.
-- **Updates:** polling. No websockets.
-- **Hosting:** HTTPS app and API with publicly reachable profile and listing pages.
+- **P0:** verify Stripe, add GovCon fixtures, build REBID and confirmed scope, discover actual USAspending suppliers, show defensible public-rate modeled savings.
+- **P1:** Tavily enrichment, actual Fly Scout output, two-device challenge flow and modern UI/demo rehearsal.
+- **P2:** autonomous tool selection, fly learning, more categories, production auth and hosting expansion.
+- **Database:** SQLite currently. Supabase/Postgres is a later deployment option, not an active integration.
+- **AI:** OpenAI is planned for scope/evidence processing. Anthropic dependency/configuration remain in code; neither implies a completed reasoning flow.
+- **Financial data:** Stripe sandbox plus fixtures through the existing normalized pipeline. Rho is out of the hackathon.
+- **Notifications:** excluded. Use manual refresh/polling for the buyer challenge view.
+- **Outreach:** automated invitations deferred. Manual listing sharing is sufficient.
+- **Fly Scout:** now in scope for P1; only chooses exploration among already-qualified suppliers. Do not claim a biological connectome or neuron count until runtime/model evidence supports it.
+- **Genuine quote:** optional bonus, not a blocking requirement.
+- **UI:** modern Robinhood/Supabase-inspired hierarchy; Spend → Progress → Market → Fly → Bid with REBID as the primary action.
+
+## Data and workflow boundaries
+
+Stripe sandbox data is labeled `sandbox`; the GovCon ledger stays `fixture` and displays **Hackathon demo ledger — synthetic buyer spend based on public procurement categories**. Never claim those custom transactions came from Stripe.
+
+Public-rate results display **Modeled bid from public pricing — not a vendor quote** and are separate from submitted challenges. A teammate's live demo submission is a demo offer, not automatically a genuine commercial quote.
+
+REBID starts private research. It does not bypass confirmation of contract scope, the exact public preview, or owner approval to publish. Scope, staffing/hours, rate assumptions and provenance must support comparable pricing.
 
 ## Repo layout
 
-- `frontend/` — React + TS app (Vite).
-- `backend/` — FastAPI app.
-- `plan/` — design docs. `plan1.md` is the plan of record.
-- `roadmap/` — phase-by-phase build order, one file per phase.
-- `assets/` — brand assets. Current contents are from the removed fly concept and are stale.
-- `.claude/` — Claude Code project configuration and coding rules.
+- `frontend/src/features/`: dashboard, connections, publishing, marketplace, profile, challenge and inbox UI.
+- `backend/app/`: API, services, models, database and core conventions.
+- `backend/alembic/`: schema migrations.
+- `plan/plan1.md`: current product plan; `previous-marketplace-plan.md` is historical.
+- `roadmap/README.md`: current P0/P1/P2 order; numbered files retain earlier component specifications.
+- `.claude/codingrules.md`: coding structure rules.
 
 ## Working conventions
 
@@ -98,7 +107,7 @@ Publishing a business's spend is irreversible in practice: once seen, it's seen.
 
 ### Scope discipline
 
-- **One category (commercial cleaning), one service area, one financial integration.**
+- **One complete DevSecOps REBID path, one fictional GovCon buyer, Stripe sandbox plus synthetic fixtures.** Other seeded categories are spend-view context only.
 - **No authentication work.** Seeded accounts and a switcher. Every hour spent on signup is an hour not spent on the loop.
 - The demo ends at a shortlisted challenger. Contracts, payment routing, and service delivery are out of scope.
 - Listing states: `private → scope confirmed → public → closed → shortlisted`. Unpublishing returns to private and retains received challenges.
@@ -119,4 +128,4 @@ Publishing a business's spend is irreversible in practice: once seen, it's seen.
 
 ## Open questions
 
-Tracked at the end of [plan/plan1.md](plan/plan1.md) and in [roadmap/README.md](roadmap/README.md). The two that block the most: which real business supplies the genuine counteroffer, and whether the Stripe sandbox flow exposes enough simulated recurring service spend for the demo.
+Current questions are tracked in [roadmap/README.md](roadmap/README.md): exact GovCon seed arithmetic, useful public supplier/rate data, actual Fly Scout runtime, and two-device demo hosting. A genuine supplier quote is optional.

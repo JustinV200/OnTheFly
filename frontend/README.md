@@ -1,29 +1,47 @@
 # Frontend
 
-Local React + Vite frontend for the spend-transparency marketplace demo.
+React + TypeScript + Vite for On the Fly. The current UI includes the private dashboard, Stripe sandbox controls, publish/preview, profiles, marketplace, challenge form and comparison inbox.
 
-## Setup
+The REBID progress, public supplier market, Fly Scout screens, and GovCon visual redesign are planned in [the roadmap](../roadmap/README.md). Existing screens still use the earlier cleaning demo.
 
-```bash
+## Setup (PowerShell)
+
+From the repository root:
+
+```powershell
 cd frontend
 npm install
-cp .env.example .env
+if (!(Test-Path .env)) { Copy-Item .env.example .env }
+npm run dev -- --host 127.0.0.1
 ```
+
+Open http://127.0.0.1:5173 with the backend running on port 8000.
 
 ## Environment
 
-- `VITE_API_URL` — backend base URL, defaults to `http://localhost:8000`
+- `VITE_API_URL`: defaults to `http://127.0.0.1:8000`.
+- `VITE_STRIPE_PUBLISHABLE_KEY`: `pk_test_...` from the same sandbox as the backend secret key.
 
-## Start dev server
+Restart Vite after changes. Only publishable keys belong here; never add the Stripe secret key to a `VITE_` variable.
 
-```bash
-cd frontend
-npm run dev
-```
+Select a demo company, click **Connect Stripe sandbox**, and select one simulated checking account. Refresh polls for up to two minutes. Imported transactions display sandbox provenance, dates, amounts, direction and status. Company switching reloads the app to clear private state.
 
-## Build
+## Routes
 
-```bash
-cd frontend
+| Route | Current purpose |
+|---|---|
+| `/` | Private spend dashboard and Stripe connection |
+| `/publish` | Scope/disclosure/public preview |
+| `/marketplace` | Published listings |
+| `/listings/:id` | Listing detail |
+| `/listings/:id/challenge` | Submit an offer |
+| `/listings/:id/inbox` | Owner comparison/inbox |
+| `/p/:handle` | Public profile |
+
+## Verification
+
+```powershell
 npm run build
 ```
+
+The frontend build passed in the previous Stripe implementation check. This verifies compilation, not real consent, two-device bidding, or the planned REBID UI.

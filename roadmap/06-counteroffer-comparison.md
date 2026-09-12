@@ -1,5 +1,11 @@
 # Phase 06 — Counteroffer comparison
 
+> Status reconciliation — 2026-09-12: Deterministic offer normalization, comparison and scope-gap logic exist for the earlier demo. Add a separate public-rate modeled-price path and DevSecOps labor/hours assumptions. A modeled bid must never be stored or labeled as a supplier-submitted quote.
+>
+> Follow [the current P0/P1/P2 roadmap](README.md) and [current product plan](../plan/plan1.md). The earlier specification below is retained for reusable implementation detail. Its old priorities, demo category, and unchecked boxes are not a current completion report.
+
+## Earlier component specification
+
 **Goal:** the owner opens their challenge inbox and can tell, quickly and honestly, whether any of these offers is actually better than what they pay now.
 
 **Depends on:** [05](05-marketplace-and-challenges.md). **Size:** M. **Critical path:** yes.

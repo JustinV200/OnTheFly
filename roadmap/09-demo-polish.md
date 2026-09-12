@@ -1,5 +1,11 @@
 # Phase 09 — UI modernization and demo polish
 
+> Status reconciliation — 2026-09-12: Modern UI redesign and the new demo rehearsal remain outstanding. Target Spend → REBID progress → Market → actual Fly Scout output → Bid. Preserve privacy/provenance checks; genuine external quotes and production hosting complexity are not hard prerequisites.
+>
+> Follow [the current P0/P1/P2 roadmap](README.md) and [current product plan](../plan/plan1.md). The earlier specification below is retained for reusable implementation detail. Its old priorities, demo category, and unchecked boxes are not a current completion report.
+
+## Earlier component specification
+
 **Goal:** the product looks and behaves like a credible modern financial marketplace, and the full loop runs end to end in front of people without a rescue — with every number traceable to its source.
 
 **Depends on:** everything. **Size:** L. **Critical path:** yes.

@@ -1,5 +1,11 @@
 # Phase 08 — Outbound invitations (secondary path)
 
+> Status reconciliation — 2026-09-12: Invitation API/service stubs exist; delivery does not. Automated outreach is deferred. Manual sharing of the existing listing is sufficient. The earlier email-provider work below is a future reference, not hackathon critical-path work.
+>
+> Follow [the current P0/P1/P2 roadmap](README.md) and [current product plan](../plan/plan1.md). The earlier specification below is retained for reusable implementation detail. Its old priorities, demo category, and unchecked boxes are not a current completion report.
+
+## Earlier component specification
+
 **Goal:** seed the supply side. Find real providers in the category and service area, and — with the owner's explicit approval — invite them to come challenge a listing.
 
 **Depends on:** [05](05-marketplace-and-challenges.md). **Size:** M. **Critical path:** no.

@@ -1,5 +1,11 @@
 # Phase 03 — Expense dashboard
 
+> Status reconciliation — 2026-09-12: Expense grouping, recurrence, annualization, corrections and the dashboard exist. Next: add GovCon Industries/fixture_govcon_main, verify exact totals and add REBID. Existing cleaning fixtures remain regression data; the new GovCon dataset is not implemented.
+>
+> Follow [the current P0/P1/P2 roadmap](README.md) and [current product plan](../plan/plan1.md). The earlier specification below is retained for reusable implementation detail. Its old priorities, demo category, and unchecked boxes are not a current completion report.
+
+## Earlier component specification
+
 **Goal:** the owner's private view of **every** expense they have — grouped, enriched with cadence and annualized cost, correctable, and traceable back to individual payments.
 
 **Depends on:** [02](02-financial-ingestion.md). **Size:** M. **Critical path:** yes.
