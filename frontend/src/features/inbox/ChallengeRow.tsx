@@ -26,6 +26,12 @@ export function ChallengeRow({ challenge }: ChallengeRowProps): JSX.Element {
         <MoneyDisplay amountMinor={challenge.savings.first_year_net_savings_minor} currency={challenge.price_currency} />
       </td>
       <td>
+        {/* The rollup always names what it covers; a bare label would read as a verification badge. */}
+        <div>
+          <strong>{challenge.evidence_rollup.label}</strong>
+          {' '}(checked: {challenge.evidence_rollup.sources_checked.join(', ') || 'none'}
+          ; not run: {challenge.evidence_rollup.sources_not_run.join(', ') || 'none'})
+        </div>
         <div>Platform: {challenge.platform_check_status}</div>
         <div>Identity: {challenge.identity_check_status}</div>
         <div>Registry: {challenge.registry_check_status}</div>

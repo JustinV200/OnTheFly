@@ -7,6 +7,12 @@ export interface SavingsResponse {
   label: string;
 }
 
+export interface EvidenceRollup {
+  label: 'needs review' | 'information missing' | 'checks complete for selected sources';
+  sources_checked: string[];
+  sources_not_run: string[];
+}
+
 export interface InboxChallenge {
   challenge_id: string;
   challenger_name: string;
@@ -17,7 +23,7 @@ export interface InboxChallenge {
   added_items: string[];
   unstated_items: string[];
   savings: SavingsResponse;
-  evidence_status: string;
+  evidence_rollup: EvidenceRollup;
   platform_check_status: string;
   identity_check_status: string;
   registry_check_status: string;

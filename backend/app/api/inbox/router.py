@@ -22,6 +22,7 @@ from app.models.service_expense import ServiceExpense
 from app.services.comparison.rank import rank_challenges
 from app.services.evidence.check import CheckResult
 from app.services.evidence.refresh import get_or_refresh_challenger_evidence
+from app.services.evidence.status import rollup_evidence
 
 router = APIRouter(tags=["inbox"])
 
@@ -64,9 +65,7 @@ def get_inbox(
                 added_items=row.added_items,
                 unstated_items=row.unstated_items,
                 savings=_serialize_savings(row.savings),
-                evidence_status=_rollup_evidence_status(
-                    platform_check.status, identity_check.status, registry_check.status
-                ),
+                evidence_rollup=rollup_evidence([platform_check, identity_check, registry_check]),
                 platform_check_status=platform_check.status,
                 identity_check_status=identity_check.status,
                 registry_check_status=registry_check.status,
@@ -144,22 +143,3 @@ def _serialize_savings(savings) -> SavingsResponse:
         assumptions=savings.assumptions,
         label=savings.label,
     )
-
-
-def _rollup_evidence_status(*statuses: str) -> str:
-    """Compute a simple rollup across individual check statuses.
-
-    Returns the most informative single label for the inbox row:
-    - "matched" if any check confirmed a match
-    - "uncertain" if any check is uncertain
-    - "not_checked" if all checks are not_checked or unavailable
-    - "no_match_found" if all available checks returned no match
-    """
-    status_set = set(statuses)
-    if "matched" in status_set:
-        return "matched"
-    if "uncertain" in status_set:
-        return "uncertain"
-    if status_set <= {"not_checked", "unavailable"}:
-        return "not_checked"
-    return "no_match_found"

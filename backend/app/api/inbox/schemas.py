@@ -2,6 +2,8 @@
 
 from pydantic import BaseModel
 
+from app.services.evidence.status import EvidenceRollup
+
 
 class SavingsResponse(BaseModel):
     """Represents serialized savings data for API responses."""
@@ -25,7 +27,7 @@ class InboxChallengeResponse(BaseModel):
     added_items: list[str]
     unstated_items: list[str]
     savings: SavingsResponse
-    evidence_status: str
+    evidence_rollup: EvidenceRollup
     platform_check_status: str
     identity_check_status: str
     registry_check_status: str

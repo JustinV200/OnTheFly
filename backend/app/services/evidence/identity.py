@@ -1,65 +1,129 @@
-"""Performs deterministic challenger identity matching against platform account data.
-It never uses model output and only reveals adverse detail on confirmed matches.
+"""Deterministically matches a challenger to an external business record using identifiers.
+It never uses model output, and an adverse record's contents are returned only on a confirmed match.
 """
 
 from datetime import datetime, timezone
+import re
+from typing import Literal
 
-from sqlalchemy import or_, select
-from sqlalchemy.orm import Session
+from pydantic import BaseModel
 
-from app.models.account import Account
 from app.services.evidence.check import CheckResult
 
+SOURCE_NAME = "identity match"
+
+# Entity suffixes carry no identity, so they're dropped before names are compared. This is
+# also why name agreement alone never reaches confirmed: "ABC Cleaning LLC" and
+# "ABC Cleaning Inc" can be unrelated companies two towns apart (roadmap 07, step 2).
+ENTITY_SUFFIXES = frozenset({"co", "company", "corp", "corporation", "inc", "incorporated", "llc", "ltd"})
 
 
-def match_identity(challenger_account: Account, db: Session) -> CheckResult:
-    """Return a deterministic identity-match result for one challenger account."""
+class ChallengerIdentifiers(BaseModel):
+    """What the platform holds about a challenger that can be matched against a record."""
 
-    exact = db.get(Account, challenger_account.id)
-    if exact is not None:
-        result = {
-            "matched_account_id": exact.id,
-            "business_name": exact.business_name,
-            "service_area": exact.service_area,
-        }
-        adverse_record = getattr(challenger_account, "confirmed_adverse_record", None)
-        if adverse_record is not None:
-            result["adverse_record"] = adverse_record
+    legal_name: str
+    location: str | None
+    registration_number: str | None
+
+
+class ExternalBusinessRecord(BaseModel):
+    """One record from an external source that might describe the challenger."""
+
+    source: str
+    legal_name: str
+    location: str | None
+    registration_number: str | None
+    # Each adverse-record source has its own shape; the matcher passes it through unread.
+    adverse_record: dict[str, object] | None = None
+
+
+def match_identity(
+    challenger: ChallengerIdentifiers,
+    record: ExternalBusinessRecord | None,
+) -> CheckResult:
+    """Tier the match as confirmed, probable, uncertain, or no match; not_checked without a record."""
+
+    checked_at = datetime.now(timezone.utc)
+    if record is None:
         return CheckResult(
-            source="platform identity",
-            checked_at=datetime.now(timezone.utc),
+            source=SOURCE_NAME,
+            checked_at=checked_at,
+            status="not_checked",
+            match_confidence=None,
+            result=None,
+            limitations="No external business record was available to match this challenger against.",
+        )
+
+    challenger_number = _normalize_identifier(challenger.registration_number)
+    record_number = _normalize_identifier(record.registration_number)
+    if challenger_number and record_number:
+        if challenger_number != record_number:
+            # Different registration numbers are different entities, however alike the names.
+            return _no_match(checked_at, record.source)
+        result: dict[str, object] = {
+            "source": record.source,
+            "legal_name": record.legal_name,
+            "registration_number": record.registration_number,
+        }
+        if record.adverse_record is not None:
+            result["adverse_record"] = record.adverse_record
+        return CheckResult(
+            source=SOURCE_NAME,
+            checked_at=checked_at,
             status="matched",
             match_confidence="confirmed",
             result=result,
-            limitations="Matched only against platform-held identifiers and profile fields.",
+            limitations=f"Matched on registration number against {record.source} only.",
         )
 
-    probable = db.scalar(
-        select(Account).where(
-            or_(
-                Account.handle == challenger_account.handle,
-                Account.business_name == challenger_account.business_name,
-            )
-        )
-    )
-    if probable is not None:
-        return CheckResult(
-            source="platform identity",
-            checked_at=datetime.now(timezone.utc),
-            status="uncertain",
-            match_confidence="uncertain",
-            result={
-                "possible_account_id": probable.id,
-                "business_name": probable.business_name,
-            },
-            limitations="Possible match requires identifier-level confirmation before adverse data can be shown.",
-        )
+    challenger_tokens = _name_tokens(challenger.legal_name)
+    record_tokens = _name_tokens(record.legal_name)
+    if challenger_tokens and challenger_tokens == record_tokens:
+        challenger_location = _normalize_text(challenger.location)
+        same_location = bool(challenger_location) and challenger_location == _normalize_text(record.location)
+        return _needs_review(checked_at, record.source, "probable" if same_location else "uncertain")
+    if challenger_tokens and record_tokens and (
+        challenger_tokens <= record_tokens or record_tokens <= challenger_tokens
+    ):
+        return _needs_review(checked_at, record.source, "uncertain")
+    return _no_match(checked_at, record.source)
 
+
+def _needs_review(
+    checked_at: datetime,
+    record_source: str,
+    confidence: Literal["probable", "uncertain"],
+) -> CheckResult:
+    # Below confirmed, report only that a possible match exists: never the record's contents,
+    # which would attach someone else's record to this challenger.
     return CheckResult(
-        source="platform identity",
-        checked_at=datetime.now(timezone.utc),
+        source=SOURCE_NAME,
+        checked_at=checked_at,
+        status="uncertain",
+        match_confidence=confidence,
+        result={"summary": "A possible match exists and needs review.", "source": record_source},
+        limitations="No identifier-level match; record contents are withheld until one is confirmed.",
+    )
+
+
+def _no_match(checked_at: datetime, record_source: str) -> CheckResult:
+    return CheckResult(
+        source=SOURCE_NAME,
+        checked_at=checked_at,
         status="no_match_found",
         match_confidence="no_match",
         result=None,
-        limitations="No platform account matched the provided identifiers.",
+        limitations=f"Compared against one record from {record_source}; other sources were not searched.",
     )
+
+
+def _normalize_identifier(value: str | None) -> str:
+    return re.sub(r"[^0-9a-z]", "", (value or "").casefold())
+
+
+def _normalize_text(value: str | None) -> str:
+    return " ".join(re.findall(r"[0-9a-z]+", (value or "").casefold()))
+
+
+def _name_tokens(name: str) -> frozenset[str]:
+    return frozenset(token for token in _normalize_text(name).split() if token not in ENTITY_SUFFIXES)

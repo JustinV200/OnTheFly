@@ -10,7 +10,7 @@ from sqlalchemy.orm import Session
 from app.models.account import Account
 from app.models.challenge import Challenge
 from app.models.challenger_evidence import ChallengerEvidence
-from app.services.evidence.identity import match_identity
+from app.services.evidence.identity import ChallengerIdentifiers, match_identity
 from app.services.evidence.platform import get_platform_evidence
 from app.services.evidence.registry.stub import StubRegistryCheck
 
@@ -24,7 +24,17 @@ def get_or_refresh_challenger_evidence(challenge: Challenge, db: Session) -> Cha
         raise ValueError("Challenge challenger account was not found")
 
     platform_check = get_platform_evidence(challenge.challenger_account_id, db)
-    identity_check = match_identity(challenger, db)
+    # No source returns external business records yet (the registry check is a stub) and
+    # accounts carry no registration number, so the matcher honestly reports not_checked.
+    # Once a registry source lands, pass its record here instead of None.
+    identity_check = match_identity(
+        ChallengerIdentifiers(
+            legal_name=challenger.business_name,
+            location=challenger.service_area,
+            registration_number=None,
+        ),
+        record=None,
+    )
     registry_check = StubRegistryCheck().run(challenger)
     stored = db.scalar(
         select(ChallengerEvidence).where(ChallengerEvidence.challenge_id == challenge.id)
