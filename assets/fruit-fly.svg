@@ -1,0 +1,164 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 240 300" width="240" height="300" role="img" aria-labelledby="ttl dsc">
+  <title id="ttl">Fruit fly in a suit with a clipboard</title>
+  <desc id="dsc">A fruit fly with red compound eyes and translucent wings, wearing a charcoal business suit, holding a clipboard and writing on it.</desc>
+
+  <defs>
+    <radialGradient id="eye" fx="0.34" fy="0.28">
+      <stop offset="0%" stop-color="#F07A63"/>
+      <stop offset="45%" stop-color="#D4402F"/>
+      <stop offset="100%" stop-color="#8E1F17"/>
+    </radialGradient>
+    <radialGradient id="head" fx="0.35" fy="0.25">
+      <stop offset="0%" stop-color="#E3AC60"/>
+      <stop offset="100%" stop-color="#BB7F33"/>
+    </radialGradient>
+    <linearGradient id="cloth" x1="0" y1="0" x2="1" y2="0">
+      <stop offset="0%" stop-color="#36425A"/>
+      <stop offset="55%" stop-color="#2A3445"/>
+      <stop offset="100%" stop-color="#212A39"/>
+    </linearGradient>
+    <clipPath id="abd">
+      <path d="M 92,212 C 88,236 100,256 120,258 C 140,256 152,236 148,212 Z"/>
+    </clipPath>
+  </defs>
+
+  <!-- wings, behind the jacket -->
+  <g transform="translate(100,118) rotate(25)">
+    <ellipse cx="-44" cy="0" rx="48" ry="19" fill="#CFE6F2" fill-opacity="0.62" stroke="#7FA9BD" stroke-width="2"/>
+    <g fill="none" stroke="#7FA9BD" stroke-width="1.3" stroke-opacity="0.85">
+      <path d="M -86,-3 Q -50,-9 -8,-7"/>
+      <path d="M -86,6 Q -50,4 -8,8"/>
+      <path d="M -80,13 Q -52,16 -14,15"/>
+    </g>
+  </g>
+  <g transform="translate(140,118) rotate(-25)">
+    <ellipse cx="44" cy="0" rx="48" ry="19" fill="#CFE6F2" fill-opacity="0.62" stroke="#7FA9BD" stroke-width="2"/>
+    <g fill="none" stroke="#7FA9BD" stroke-width="1.3" stroke-opacity="0.85">
+      <path d="M 86,-3 Q 50,-9 8,-7"/>
+      <path d="M 86,6 Q 50,4 8,8"/>
+      <path d="M 80,13 Q 52,16 14,15"/>
+    </g>
+  </g>
+
+  <!-- standing legs -->
+  <g fill="none" stroke="#3A2512" stroke-width="7" stroke-linecap="round">
+    <path d="M 108,250 Q 103,270 101,284"/>
+    <path d="M 132,250 Q 137,270 139,284"/>
+  </g>
+  <g fill="none" stroke="#3A2512" stroke-width="6" stroke-linecap="round">
+    <path d="M 101,285 L 86,289"/>
+    <path d="M 139,285 L 154,289"/>
+  </g>
+
+  <!-- abdomen below the jacket hem -->
+  <path d="M 92,212 C 88,236 100,256 120,258 C 140,256 152,236 148,212 Z" fill="#D9A055" stroke="#5C3C18" stroke-width="3"/>
+  <g clip-path="url(#abd)" fill="#3A2512">
+    <path d="M 76,220 Q 120,230 164,220 L 164,230 Q 120,240 76,230 Z"/>
+    <path d="M 76,238 Q 120,248 164,238 L 164,247 Q 120,257 76,247 Z"/>
+    <path d="M 76,252 Q 120,262 164,252 L 164,266 L 76,266 Z"/>
+  </g>
+  <path d="M 92,212 C 88,236 100,256 120,258 C 140,256 152,236 148,212 Z" fill="none" stroke="#5C3C18" stroke-width="3"/>
+
+  <!-- jacket -->
+  <path d="M 120,100 C 108,99 96,102 89,110 C 82,138 80,176 85,214 L 155,214 C 160,176 158,138 151,110 C 144,102 132,99 120,100 Z" fill="url(#cloth)" stroke="#6A7A96" stroke-width="2.5"/>
+
+  <!-- shirt -->
+  <path d="M 100,105 L 140,105 L 120,164 Z" fill="#F5F7FA"/>
+
+  <!-- lapels -->
+  <path d="M 100,105 L 88,113 L 96,152 L 112,121 Z" fill="#36425A" stroke="#6A7A96" stroke-width="2"/>
+  <path d="M 140,105 L 152,113 L 144,152 L 128,121 Z" fill="#36425A" stroke="#6A7A96" stroke-width="2"/>
+
+  <!-- shirt collar -->
+  <path d="M 103,103 L 119,110 L 112,121 L 101,111 Z" fill="#F5F7FA" stroke="#C9D2DC" stroke-width="1.5"/>
+  <path d="M 137,103 L 121,110 L 128,121 L 139,111 Z" fill="#F5F7FA" stroke="#C9D2DC" stroke-width="1.5"/>
+
+  <!-- tie -->
+  <path d="M 115,110 L 125,110 L 127,123 L 113,123 Z" fill="#C23B2F" stroke="#8E1F17" stroke-width="1.5"/>
+  <path d="M 114,123 L 126,123 L 123,154 L 120,161 L 117,154 Z" fill="#B5342C" stroke="#8E1F17" stroke-width="1.5"/>
+
+  <!-- buttons and center seam -->
+  <path d="M 120,164 L 120,212" fill="none" stroke="#1A2230" stroke-width="2" stroke-opacity="0.8"/>
+  <circle cx="120" cy="174" r="3.6" fill="#151C27" stroke="#7C8AA3" stroke-width="1.2"/>
+  <circle cx="120" cy="196" r="3.6" fill="#151C27" stroke="#7C8AA3" stroke-width="1.2"/>
+
+  <!-- pocket square -->
+  <path d="M 133,160 L 137,149 L 141,156 L 145,147 L 147,161 Z" fill="#F5F7FA" stroke="#C9D2DC" stroke-width="1.2"/>
+
+  <!-- left arm, passing behind the clipboard -->
+  <path d="M 93,124 Q 66,148 52,188" fill="none" stroke="#6A7A96" stroke-width="26" stroke-linecap="round"/>
+  <path d="M 93,124 Q 66,148 52,188" fill="none" stroke="#2E384B" stroke-width="22" stroke-linecap="round"/>
+
+  <!-- clipboard -->
+  <g transform="rotate(-12 81 195)">
+    <rect x="46" y="152" width="70" height="86" rx="5" fill="#8C6239" stroke="#523A1E" stroke-width="2.5"/>
+    <rect x="51" y="162" width="60" height="70" rx="2" fill="#F8F6F0" stroke="#CFC6B4" stroke-width="1.5"/>
+    <rect x="70" y="146" width="22" height="13" rx="3" fill="#9AA6B5" stroke="#5F6A79" stroke-width="2"/>
+    <rect x="77" y="142" width="8" height="6" rx="2" fill="#B6C1CE" stroke="#5F6A79" stroke-width="1.5"/>
+
+    <!-- pre-printed form -->
+    <rect x="57" y="170" width="26" height="5" rx="2" fill="#8C93A1"/>
+    <g fill="none" stroke="#D9D2C4" stroke-width="1.6">
+      <path d="M 57,186 L 105,186"/>
+      <path d="M 57,199 L 105,199"/>
+      <path d="M 57,212 L 105,212"/>
+      <path d="M 57,225 L 105,225"/>
+    </g>
+
+    <!-- handwriting, drawn in on a loop -->
+    <g fill="none" stroke="#2F3A4B" stroke-width="2.6" stroke-linecap="round" stroke-dasharray="44">
+      <path d="M 66,186 q 6,-5 11,0 t 10,1 t 5,-2">
+        <animate attributeName="stroke-dashoffset" dur="4s" repeatCount="indefinite"
+                 values="44;44;0;0;44" keyTimes="0;0.10;0.35;0.94;1"/>
+      </path>
+      <path d="M 66,199 q 6,-5 11,1 t 10,0 t 5,-1">
+        <animate attributeName="stroke-dashoffset" dur="4s" repeatCount="indefinite"
+                 values="44;44;0;0;44" keyTimes="0;0.38;0.60;0.94;1"/>
+      </path>
+      <path d="M 66,212 q 6,-5 11,0 t 10,1 t 5,-1">
+        <animate attributeName="stroke-dashoffset" dur="4s" repeatCount="indefinite"
+                 values="44;44;0;0;44" keyTimes="0;0.63;0.85;0.94;1"/>
+      </path>
+    </g>
+  </g>
+
+  <!-- left hand, gripping the board's edge -->
+  <ellipse cx="50" cy="195" rx="10.5" ry="4.5" fill="#F5F7FA" stroke="#C9D2DC" stroke-width="1.2" transform="rotate(-72 50 195)"/>
+  <ellipse cx="48" cy="205" rx="9.5" ry="8.5" fill="#3A2512"/>
+
+  <!-- right arm, writing: shoulder swings per stroke, elbow steps down a line at a time -->
+  <g>
+    <animateTransform attributeName="transform" type="rotate" dur="4s" repeatCount="indefinite"
+                      values="8 147 122; 8 147 122; 0 147 122; 8 147 122; 0 147 122; 8 147 122; 0 147 122; 0 147 122; 8 147 122"
+                      keyTimes="0; 0.10; 0.35; 0.38; 0.60; 0.63; 0.85; 0.94; 1"/>
+    <path d="M 147,124 Q 156,150 152,178" fill="none" stroke="#6A7A96" stroke-width="26" stroke-linecap="round"/>
+    <path d="M 147,124 Q 156,150 152,178" fill="none" stroke="#2E384B" stroke-width="22" stroke-linecap="round"/>
+    <g>
+      <animateTransform attributeName="transform" type="rotate" dur="4s" repeatCount="indefinite"
+                        values="0 152 178; 0 152 178; 0 152 178; -11 152 178; -11 152 178; -22 152 178; -22 152 178; -22 152 178; 0 152 178"
+                        keyTimes="0; 0.10; 0.35; 0.38; 0.60; 0.63; 0.85; 0.94; 1"/>
+      <path d="M 150,178 L 118,203" fill="none" stroke="#6A7A96" stroke-width="25" stroke-linecap="round"/>
+      <path d="M 150,178 L 118,203" fill="none" stroke="#2E384B" stroke-width="21" stroke-linecap="round"/>
+      <ellipse cx="116" cy="206" rx="10.5" ry="4.5" fill="#F5F7FA" stroke="#C9D2DC" stroke-width="1.2" transform="rotate(-38 116 206)"/>
+      <path d="M 113,205 L 97.5,190.5" fill="none" stroke="#1F2733" stroke-width="6.5" stroke-linecap="round"/>
+      <ellipse cx="106" cy="199" rx="9.5" ry="8.5" fill="#3A2512"/>
+      <path d="M 96.5,190 L 90,184" fill="none" stroke="#C9A227" stroke-width="3.5" stroke-linecap="round"/>
+    </g>
+  </g>
+
+  <!-- antennae -->
+  <g fill="none" stroke="#5C3C18" stroke-width="4" stroke-linecap="round">
+    <path d="M 108,40 Q 100,22 97,10"/>
+    <path d="M 132,40 Q 140,22 143,10"/>
+  </g>
+  <ellipse cx="96" cy="8" rx="6" ry="4.5" fill="#8A5A24" transform="rotate(-20 96 8)"/>
+  <ellipse cx="144" cy="8" rx="6" ry="4.5" fill="#8A5A24" transform="rotate(20 144 8)"/>
+
+  <!-- head -->
+  <ellipse cx="120" cy="62" rx="40" ry="34" fill="url(#head)" stroke="#5C3C18" stroke-width="3"/>
+  <ellipse cx="98" cy="58" rx="22" ry="24" fill="url(#eye)" stroke="#6E1711" stroke-width="2.5"/>
+  <ellipse cx="142" cy="58" rx="22" ry="24" fill="url(#eye)" stroke="#6E1711" stroke-width="2.5"/>
+  <ellipse cx="91" cy="48" rx="6" ry="4.2" fill="#FFFFFF" fill-opacity="0.55" transform="rotate(-25 91 48)"/>
+  <ellipse cx="135" cy="48" rx="6" ry="4.2" fill="#FFFFFF" fill-opacity="0.55" transform="rotate(-25 135 48)"/>
+  <path d="M 113,84 Q 120,92 127,84" fill="none" stroke="#5C3C18" stroke-width="3" stroke-linecap="round"/>
+</svg>
