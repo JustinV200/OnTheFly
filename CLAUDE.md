@@ -4,13 +4,13 @@ A B2B marketplace built on voluntary price transparency. A business connects its
 
 Core interaction: a business publishes *"we pay $2,400/month for cleaning, 8,000 sq ft, 3× weekly."* A cleaning company browsing the platform replies *"we'll do it for $1,875."*
 
-Working name is undecided — don't invent one in code, docs, or UI copy.
+The product is called **On the Fly**. Use that name in docs and UI copy, and don't invent alternatives.
 
 Full product spec and scope decisions: [plan/plan1.md](plan/plan1.md). Step-by-step build order: [roadmap/](roadmap/). Coding rules: [.claude/codingrules.md](.claude/codingrules.md). Follow the coding rules for every file you create or edit.
 
 ## Status
 
-Planning → early build. No application code exists yet; `frontend/` and `backend/` get created as work starts.
+MVP built and in demo polish. `frontend/` and `backend/` run the full publish → challenge → compare loop on labeled fixture data, with a Stripe Financial Connections sandbox connection alongside. `run.ps1` at the repo root starts everything locally. Shortlisting, AI drafting, registry evidence checks, and outbound sending are not built yet.
 
 Two earlier concepts are **removed from scope**: an equipment-shopping and camera-audit product, and an outbound RFQ product where the platform emailed token-scoped invitations to vendors it discovered. Don't reintroduce either; treat surviving references as stale. The fruit-fly neural models (Compound Eye, Mushroom Body, FlyHash) are **in scope** as deterministic analysis circuits inside the marketplace — see [Fly-brain circuits](#fly-brain-circuits). The camera features they were first designed for stay removed. Outbound discovery and invitation persist only as a **secondary path for seeding marketplace supply**, subordinate to the public loop.
 
@@ -34,7 +34,6 @@ Two earlier concepts are **removed from scope**: an equipment-shopping and camer
 - `backend/` — FastAPI app.
 - `plan/` — design docs. `plan1.md` is the plan of record.
 - `roadmap/` — phase-by-phase build order, one file per phase.
-- `assets/` — brand assets. Current contents are from the earlier fly concept's branding.
 - `.claude/` — Claude Code project configuration and coding rules.
 
 ## Working conventions

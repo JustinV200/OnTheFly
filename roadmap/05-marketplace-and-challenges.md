@@ -116,7 +116,7 @@ A challenger who spent ten minutes writing an offer and finds it silently delete
 - [ ] With bidding open, the leaderboard shows amounts and scope completeness, and no identities.
 - [ ] **Turning open bidding on does not publish an offer submitted while it was sealed.**
 - [ ] A challenger's identity is invisible to other challengers in both modes.
-- [ ] Being outbid notifies the challenger.
+- [ ] With bidding open, a new underbid appears on the leaderboard within one poll interval.
 - [ ] A revision replaces the active offer and both versions are retained.
 - [ ] Past-deadline, closed-listing, and unpublished-listing submissions all fail gracefully.
 - [ ] An owner cannot bid on their own listing, including by direct API call.

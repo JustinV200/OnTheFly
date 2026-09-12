@@ -85,7 +85,7 @@ If phase 01 delivered: show the actual amount, actual terms, actual timestamp, a
 
 ### 10. Walk the plan's demo script on deployed infrastructure
 
-The ten-step script in [../plan/plan1.md](../plan/plan1.md). Rehearse it **deployed**, not on localhost. Then rehearse again on hotel wifi or tethered — conference networks are hostile, and a demo that needs a fast connection often doesn't get one.
+The eleven-step script in [../plan/plan1.md](../plan/plan1.md). Rehearse it **deployed**, not on localhost. Then rehearse again on hotel wifi or tethered — conference networks are hostile, and a demo that needs a fast connection often doesn't get one.
 
 ### 11. Trace one number all the way down
 

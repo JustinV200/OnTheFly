@@ -63,7 +63,7 @@ The model writes the sentence. The arithmetic in the sentence comes from step 2.
 
 *Request clarification* sends a message to the challenger and is the honest answer to most scope gaps — the point isn't for the platform to resolve every ambiguity automatically, it's to make the ambiguity visible so a human can ask.
 
-Shortlisting moves the listing to `shortlisted` and is the end of the demo path.
+Shortlisting moves the listing to `shortlisted` and is the end of the demo path. **Not built yet:** it was deferred to [10](10-stretch.md), so the demo currently ends at the comparison.
 
 ## Done when
 

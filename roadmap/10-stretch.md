@@ -8,6 +8,10 @@ The purpose of writing these down is to get them out of your head during the bui
 
 ## Ordered by value to the demo
 
+### Shortlisting (the demo's end state)
+
+Deferred from [09](09-demo-polish.md) under "Don't start new features here". The owner shortlists a challenger from the inbox: the listing moves to `shortlisted`, and the expense, listing, scope version, and offer are linked together, as [06](06-counteroffer-comparison.md) step 6 describes. Until it's built, the demo ends at the comparison and the presenter says the owner would shortlist there.
+
 ### Real authentication
 
 Supabase Auth, real signup, real sessions. Seeded accounts plus a switcher demo *better* — the switch is the marketplace made visible — so this is worth less than it looks. Do it when the product outlives the hackathon.

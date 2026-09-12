@@ -10,7 +10,7 @@ The product sits at the intersection of fintech, procurement, and marketplaces. 
 
 **Core interaction:** a business publishes *"we pay $2,400/month for commercial cleaning, 8,000 sq ft, 3× weekly."* A cleaning company browsing the platform sees it and replies *"we'll do it for $1,875."*
 
-Working name is undecided.
+The product is called **On the Fly**.
 
 This plan supersedes two earlier concepts: an equipment-shopping and camera-audit product, and an outbound RFQ product in which the platform found vendors and emailed them invitations. The camera features are outside this build. The fruit-fly neural models are back in scope, retargeted from camera frames to spend data — see [Fly-Brain Circuits](#fly-brain-circuits). Outbound discovery and invitation survive only as a **secondary path** for seeding the marketplace's supply side (§8).
 
@@ -204,7 +204,7 @@ Open bidding is **a per-listing toggle, default off**, set by the owner at publi
 
 Like expense visibility, the safe state is the default and the fallback: a listing whose mode is unset, ambiguous, or errored is sealed.
 
-**Open bidding is what turns this into an auction.** Challengers see where they stand, can revise downward before the deadline, and get told when they're outbid. It's the mode that makes a listing competitive rather than a set of independent guesses, and it's why an owner would choose it.
+**Open bidding is what turns this into an auction.** Challengers see where they stand, can revise downward before the deadline, and see the refreshed leaderboard when they've been underbid. It's the mode that makes a listing competitive rather than a set of independent guesses, and it's why an owner would choose it.
 
 **Identity stays anonymous to other challengers in both modes.** Prices go public in open bidding; who offered them does not. A cleaning company that can watch competitors' rates accumulate across every listing learns its rivals' entire pricing structure, which is a real commercial harm and the fastest way to make providers stop participating. The owner always sees identities — evaluation is unaffected.
 
