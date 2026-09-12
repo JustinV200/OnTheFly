@@ -1,5 +1,6 @@
 /* Renders the side-by-side comparison rows including the incumbent baseline. */
 import { MoneyDisplay } from '../../shared/components/MoneyDisplay';
+import { SavingsCell } from './SavingsCell';
 import type { ComparisonRow } from './types';
 
 interface ComparisonViewProps {
@@ -26,7 +27,7 @@ export function ComparisonView({ rows }: ComparisonViewProps): JSX.Element {
               <td>{row.challenger_name}{row.is_incumbent ? ' (baseline)' : ''}</td>
               <td><MoneyDisplay amountMinor={row.normalized_price_minor} currency={row.price_currency} /></td>
               <td>{Math.round(row.scope_completeness * 100)}%</td>
-              <td>{row.savings ? <MoneyDisplay amountMinor={row.savings.first_year_net_savings_minor} currency={row.price_currency} /> : '—'}</td>
+              <td>{row.savings ? <SavingsCell savings={row.savings} currency={row.price_currency} /> : '—'}</td>
             </tr>
           ))}
         </tbody>

@@ -142,6 +142,34 @@ def test_savings_are_provisional_when_setup_fee_unknown() -> None:
     assert savings.assumptions
 
 
+def test_savings_name_scope_gaps_so_doing_less_is_not_shown_as_cheaper() -> None:
+    savings = compute_savings(
+        current_monthly=Money(amount=240000, currency="USD"),
+        offer_monthly=Money(amount=180000, currency="USD"),
+        setup_fee_minor=0,
+        switching_cost_minor=0,
+        cancellation_fee_minor=0,
+        missing_scope_items=["task:vacuum", "task:trash"],
+    )
+
+    assert savings.is_provisional is True
+    assert savings.label == "Potential savings (scope gaps)"
+    assert savings.assumptions[0] == "offer does not cover requested scope: task:vacuum, task:trash"
+
+
+def test_savings_with_full_scope_and_known_costs_are_not_provisional() -> None:
+    savings = compute_savings(
+        current_monthly=Money(amount=240000, currency="USD"),
+        offer_monthly=Money(amount=187500, currency="USD"),
+        setup_fee_minor=0,
+        switching_cost_minor=0,
+        cancellation_fee_minor=0,
+    )
+
+    assert savings.is_provisional is False
+    assert savings.label == "Potential savings"
+
+
 def test_rank_challenges_includes_incumbent_baseline() -> None:
     scope = _build_scope()
     expense = ServiceExpense(
@@ -224,6 +252,33 @@ def test_baseline_is_normalized_from_a_non_monthly_expense() -> None:
 
     ranked = rank_challenges([challenge], scope, expense)
 
+    assert ranked[1].savings.label == "Potential savings"
     assert ranked[0].normalized_price.amount == 200000
     assert ranked[1].savings is not None
     assert ranked[1].savings.annual_recurring_savings.amount == 600000
+
+
+def test_ranked_offer_missing_required_tasks_carries_the_gap_into_savings() -> None:
+    scope = _build_scope()
+    expense = ServiceExpense(id="expense-1", cadence="monthly", amount_minor_per_period=240000, currency="USD")
+    challenge = Challenge(
+        id="challenge-1",
+        challenger_account_id="acc_challenger_1",
+        bidding_mode_at_submission="open",
+        price_minor=180000,
+        price_currency="USD",
+        billing_frequency="monthly",
+        scope_included="[]",
+        scope_excluded="[]",
+        scope_extras="[]",
+        setup_fee_minor=0,
+        taxes_included=True,
+        supplies_included=True,
+        provenance="challenger_submitted",
+    )
+
+    ranked = rank_challenges([challenge], scope, expense)
+
+    assert ranked[1].savings is not None
+    assert ranked[1].savings.label == "Potential savings (scope gaps)"
+    assert "task:vacuum" in ranked[1].savings.assumptions[0]

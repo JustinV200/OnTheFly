@@ -2,6 +2,7 @@
    Scope deltas are shown before price to avoid misleading comparisons. */
 import { MoneyDisplay } from '../../shared/components/MoneyDisplay';
 import { ProvenanceBadge } from '../../shared/components/ProvenanceBadge';
+import { SavingsCell } from './SavingsCell';
 import { ScopeDeltaBadge } from './ScopeDeltaBadge';
 import type { InboxChallenge } from './types';
 
@@ -21,10 +22,7 @@ export function ChallengeRow({ challenge }: ChallengeRowProps): JSX.Element {
       </td>
       <td><MoneyDisplay amountMinor={challenge.normalized_price_minor} currency={challenge.price_currency} /></td>
       <td>{Math.round(challenge.scope_completeness * 100)}%</td>
-      <td>
-        {challenge.savings.label}:{' '}
-        <MoneyDisplay amountMinor={challenge.savings.first_year_net_savings_minor} currency={challenge.price_currency} />
-      </td>
+      <td><SavingsCell savings={challenge.savings} currency={challenge.price_currency} /></td>
       <td>
         {/* The rollup always names what it covers; a bare label would read as a verification badge. */}
         <div>

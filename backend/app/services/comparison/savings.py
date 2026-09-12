@@ -26,13 +26,22 @@ def compute_savings(
     setup_fee_minor: int | None,
     switching_cost_minor: int | None = None,
     cancellation_fee_minor: int | None = None,
+    missing_scope_items: list[str] | None = None,
+    unstated_scope_items: list[str] | None = None,
 ) -> SavingsResult:
-    """Compute potential savings while flagging unknown switching costs as provisional."""
+    """Compute potential savings, provisional when costs are unknown or the offer's scope differs.
+
+    Scope gaps come first in the assumptions: an offer that drops requested work is not a
+    like-for-like price, so its "savings" partly measure doing less (CLAUDE.md, money and math).
+    """
 
     annual_recurring = current_monthly.subtract(offer_monthly).multiply_by(12)
     assumptions: list[str] = []
-    provisional = False
 
+    if missing_scope_items:
+        assumptions.append(f"offer does not cover requested scope: {', '.join(missing_scope_items)}")
+    if unstated_scope_items:
+        assumptions.append(f"offer does not state: {', '.join(unstated_scope_items)}")
     setup_fee = _known_or_zero(setup_fee_minor, "setup fee not provided", assumptions)
     switching_cost = _known_or_zero(switching_cost_minor, "switching cost not provided", assumptions)
     cancellation_fee = _known_or_zero(cancellation_fee_minor, "cancellation fee not provided", assumptions)
@@ -48,7 +57,9 @@ def compute_savings(
         first_year_net_savings=first_year_net,
         is_provisional=provisional,
         assumptions=assumptions,
-        label="Potential savings",
+        # Every figure is provisional while switching costs are unknown, so the flag alone
+        # can't tell a scope gap apart; the label has to.
+        label="Potential savings (scope gaps)" if missing_scope_items else "Potential savings",
     )
 
 

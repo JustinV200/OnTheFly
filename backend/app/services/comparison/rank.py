@@ -69,6 +69,8 @@ def rank_challenges(
             current_monthly=current_monthly,
             offer_monthly=normalized.monthly_price,
             setup_fee_minor=challenge.setup_fee_minor if challenge.setup_fee_minor != 0 else None,
+            missing_scope_items=completeness.missing_items,
+            unstated_scope_items=completeness.unstated_items,
         )
         challenge_rows.append(
             RankedChallenge(
