@@ -99,14 +99,24 @@ def get_leaderboard(listing_id: str, db: Session = Depends(get_db)) -> Leaderboa
     )
     if listing is None:
         raise HTTPException(status_code=status.HTTP_404_NOT_FOUND, detail="Listing not found")
-    if resolve_bidding_mode(listing.bidding_mode) != BiddingMode.open:
-        return LeaderboardResponse(bidding_mode=listing.bidding_mode, entries=[])
 
     challenges = db.scalars(
         select(Challenge)
         .where(Challenge.listing_id == listing_id)
         .where(Challenge.is_active.is_(True))
     ).all()
+    # Publicity is read from the mode stored on each offer, never the listing's current mode.
+    sealed_offer_count = sum(
+        1 for challenge in challenges if challenge.bidding_mode_at_submission != BiddingMode.open.value
+    )
+    if resolve_bidding_mode(listing.bidding_mode) != BiddingMode.open:
+        return LeaderboardResponse(
+            bidding_mode=listing.bidding_mode,
+            entries=[],
+            total_offer_count=len(challenges),
+            sealed_offer_count=sealed_offer_count,
+        )
+
     scope = db.get(ScopeVersion, listing.scope_version_id)
     if scope is None:
         raise HTTPException(status_code=status.HTTP_404_NOT_FOUND, detail="Scope version not found")
@@ -123,10 +133,16 @@ def get_leaderboard(listing_id: str, db: Session = Depends(get_db)) -> Leaderboa
                 price_currency=normalized.monthly_price.currency,
                 scope_completeness=is_scope_complete(challenge, scope).score,
                 submitted_at=challenge.submitted_at,
+                provenance=challenge.provenance,
             )
         )
     entries.sort(key=lambda entry: (-entry.scope_completeness, entry.normalized_price_minor, entry.submitted_at))
-    return LeaderboardResponse(bidding_mode=listing.bidding_mode, entries=entries)
+    return LeaderboardResponse(
+        bidding_mode=listing.bidding_mode,
+        entries=entries,
+        total_offer_count=len(challenges),
+        sealed_offer_count=sealed_offer_count,
+    )
 
 
 

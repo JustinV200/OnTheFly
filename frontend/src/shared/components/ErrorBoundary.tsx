@@ -1,5 +1,5 @@
-/* Provides a minimal error boundary for route-level rendering failures.
-   It surfaces errors plainly instead of hiding them behind blank UI. */
+/* Catches route-level rendering failures and shows them instead of a blank white screen.
+   The shell keys this boundary by acting account, so switching business also clears a caught error. */
 import { Component, ReactNode } from 'react';
 
 interface ErrorBoundaryProps {
@@ -18,9 +18,24 @@ export class ErrorBoundary extends Component<ErrorBoundaryProps, ErrorBoundarySt
     return { errorMessage: error.message };
   }
 
+  public componentDidCatch(error: Error): void {
+    console.error('A page failed to render', error);
+  }
+
   public render(): ReactNode {
     if (this.state.errorMessage) {
-      return <div role="alert">Something went wrong: {this.state.errorMessage}</div>;
+      return (
+        <section
+          role="alert"
+          style={{ backgroundColor: '#fef2f2', border: '1px solid #fecaca', borderRadius: '12px', padding: '1rem 1.25rem' }}
+        >
+          <h3 style={{ margin: '0 0 0.5rem' }}>This page failed to render</h3>
+          <p style={{ margin: 0 }}>{this.state.errorMessage}</p>
+          <button onClick={() => this.setState({ errorMessage: null })} style={{ marginTop: '0.75rem' }} type="button">
+            Try again
+          </button>
+        </section>
+      );
     }
 
     return this.props.children;

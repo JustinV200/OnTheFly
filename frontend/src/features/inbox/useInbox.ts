@@ -1,26 +1,26 @@
-/* Loads owner-side inbox and comparison data for one listing.
+/* Loads owner-side inbox and comparison data for one listing, polling so new offers arrive on their own.
    Fetch orchestration stays here so row components stay presentation-focused. */
-import { useEffect, useState } from 'react';
-
-import { get } from '../../shared/api/client';
+import { ApiQueryState, useApiQuery } from '../../shared/api/useApiQuery';
 import type { ComparisonResponse, InboxResponse } from './types';
 
+// Short enough that switching back to the owner mid-demo shows the new offer almost at once.
+const POLL_INTERVAL_MS = 5000;
+
 interface UseInboxResult {
-  inbox: InboxResponse | null;
-  comparison: ComparisonResponse | null;
+  inbox: ApiQueryState<InboxResponse>;
+  comparison: ApiQueryState<ComparisonResponse>;
+  reload: () => void;
 }
 
 /** Fetch owner-side inbox and comparison data for one listing id. */
 export function useInbox(listingId: string): UseInboxResult {
-  const [inbox, setInbox] = useState<InboxResponse | null>(null);
-  const [comparison, setComparison] = useState<ComparisonResponse | null>(null);
+  const inbox = useApiQuery<InboxResponse>(`/api/listings/${listingId}/inbox`, { pollIntervalMs: POLL_INTERVAL_MS });
+  const comparison = useApiQuery<ComparisonResponse>(`/api/listings/${listingId}/comparison`, { pollIntervalMs: POLL_INTERVAL_MS });
 
-  useEffect(() => {
-    void (async () => {
-      setInbox(await get<InboxResponse>(`/api/listings/${listingId}/inbox`));
-      setComparison(await get<ComparisonResponse>(`/api/listings/${listingId}/comparison`));
-    })();
-  }, [listingId]);
+  const reload = (): void => {
+    inbox.reload();
+    comparison.reload();
+  };
 
-  return { inbox, comparison };
+  return { inbox, comparison, reload };
 }

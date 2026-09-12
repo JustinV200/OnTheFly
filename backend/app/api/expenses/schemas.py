@@ -33,10 +33,18 @@ class ExpenseResponse(BaseModel):
     currency: str
     annualized_amount_minor: int
     period_count: int
+    first_seen: datetime
+    last_seen: datetime
     visibility: str
     is_eligible: bool
     eligibility_reason: str
     is_publishable: bool
+    # The owner's listing for this expense, if one was ever drafted. It survives unpublishing
+    # so the owner can still reach challenges received while it was public.
+    listing_id: str | None
+    # Distinct source_type values of the transactions behind this row (production | sandbox |
+    # imported | fixture). A list, because one vendor's history can span sources.
+    provenance: list[str]
 
 
 class ExpenseDetailResponse(ExpenseResponse):
@@ -50,21 +58,6 @@ class ExpenseListResponse(BaseModel):
 
     expenses: list[ExpenseResponse]
     message: str | None = None
-
-
-class ImportRequest(BaseModel):
-    """Captures the provider account ID to use for a manual import trigger."""
-
-    provider_account_id: str
-
-
-class ImportResultResponse(BaseModel):
-    """Summarizes one import run's new, duplicate, excluded, and failed counts."""
-
-    new: int
-    duplicate: int
-    excluded: int
-    failed: int
 
 
 class ExpenseUpdateRequest(BaseModel):

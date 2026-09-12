@@ -3,7 +3,7 @@
 import { post } from '../../shared/api/client';
 import type { ChallengePayload, ChallengeResponse } from './types';
 
-/** Submit a challenge payload for one listing id and return the current offer. */
+/** Return a function that submits (or revises) the acting business's offer on one listing. */
 export function useChallenge(): (listingId: string, payload: ChallengePayload) => Promise<ChallengeResponse> {
   return async (listingId: string, payload: ChallengePayload): Promise<ChallengeResponse> => {
     return post<ChallengeResponse>(`/api/listings/${listingId}/challenges`, payload);

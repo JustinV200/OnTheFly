@@ -1,6 +1,7 @@
 """Exercises challenge submission rules, revisions, and public anonymity."""
 
 from datetime import datetime, timedelta, timezone
+import json
 
 from sqlalchemy import func, select
 
@@ -61,7 +62,7 @@ def test_owner_cannot_bid_on_own_listing(client, db_session) -> None:
     response = client.post(
         f"/api/listings/{listing.id}/challenges",
         headers={"X-Account-ID": "acc_owner_1"},
-        json={"price_minor": 187500, "billing_frequency": "monthly"},
+        json={"price_minor": 187500, "billing_frequency": "monthly", "acknowledged_bidding_mode": "sealed"},
     )
 
     assert response.status_code == 400
@@ -114,10 +115,59 @@ def test_after_deadline_submissions_are_rejected(client, db_session) -> None:
     response = client.post(
         f"/api/listings/{listing.id}/challenges",
         headers={"X-Account-ID": "acc_challenger_1"},
-        json={"price_minor": 187500, "billing_frequency": "monthly"},
+        json={"price_minor": 187500, "billing_frequency": "monthly", "acknowledged_bidding_mode": "open"},
     )
 
     assert response.status_code == 400
+
+
+def test_offer_is_rejected_when_bidding_opened_while_challenger_was_writing(client, db_session) -> None:
+    """A price typed under sealed terms must never land on a listing that has since gone open."""
+    listing = _create_public_listing(db_session, bidding_mode="sealed")
+    set_bidding_mode(listing.id, BiddingMode.open.value, "acc_owner_1", db_session)
+
+    response = client.post(
+        f"/api/listings/{listing.id}/challenges",
+        headers={"X-Account-ID": "acc_challenger_1"},
+        json={"price_minor": 187500, "billing_frequency": "monthly", "acknowledged_bidding_mode": "sealed"},
+    )
+
+    assert response.status_code == 409
+    assert db_session.scalar(select(func.count()).select_from(Challenge)) == 0
+
+
+def test_api_offer_provenance_is_decided_by_the_server(client, db_session) -> None:
+    """A seeded demo business is fictional, so a client can't label its offer genuine."""
+    listing = _create_public_listing(db_session, bidding_mode="sealed")
+
+    response = client.post(
+        f"/api/listings/{listing.id}/challenges",
+        headers={"X-Account-ID": "acc_challenger_1"},
+        json={
+            "price_minor": 187500,
+            "billing_frequency": "monthly",
+            "acknowledged_bidding_mode": "sealed",
+            "provenance": "captured_off_platform",
+        },
+    )
+
+    assert response.status_code == 200
+    assert response.json()["provenance"] == "demo_data"
+
+
+def test_leaderboard_labels_provenance_and_counts_sealed_offers(client, db_session) -> None:
+    listing = _create_public_listing(db_session, bidding_mode="sealed")
+    submit_challenge(listing.id, "acc_challenger_1", {"price_minor": 187500, "billing_frequency": "monthly"}, db_session)
+    set_bidding_mode(listing.id, BiddingMode.open.value, "acc_owner_1", db_session)
+    submit_challenge(listing.id, "acc_challenger_2", {"price_minor": 195000, "billing_frequency": "monthly"}, db_session)
+
+    board = client.get(f"/api/listings/{listing.id}/leaderboard").json()
+
+    assert board["total_offer_count"] == 2
+    assert board["sealed_offer_count"] == 1
+    assert [entry["normalized_price_minor"] for entry in board["entries"]] == [195000]
+    assert board["entries"][0]["provenance"] == "demo_data"
+    assert "187500" not in json.dumps(board)
 
 
 def test_leaderboard_never_reveals_challenger_identity(client, db_session) -> None:

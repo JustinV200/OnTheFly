@@ -4,8 +4,10 @@
     <meta charset="UTF-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
     <title>Marketplace Demo</title>
+    <!-- An empty icon: without one the browser requests /favicon.ico and logs a 404 on every cold load. -->
+    <link rel="icon" href="data:," />
   </head>
-  <body>
+  <body style="margin: 0">
     <div id="root"></div>
     <script type="module" src="/src/main.tsx"></script>
   </body>

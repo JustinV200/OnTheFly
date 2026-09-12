@@ -1,73 +1,91 @@
-/* Loads and renders the owner challenge inbox for one listing.
-   It shows scope deltas before potential savings to keep comparisons honest. */
-import { useState } from 'react';
-import { useParams } from 'react-router-dom';
+/* The owner's offers inbox for one listing: controls, any genuine offer first, every offer, then the comparison.
+   It polls, so an offer made by another business shows up after switching back without a refresh. */
+import { Link, useParams } from 'react-router-dom';
 
-import { post } from '../../shared/api/client';
+import { useActingAccount } from '../../shared/account/ActingAccountContext';
+import { useApiQuery } from '../../shared/api/useApiQuery';
+import { EmptyState } from '../../shared/components/EmptyState';
+import { ErrorState } from '../../shared/components/ErrorState';
 import { LoadingSpinner } from '../../shared/components/LoadingSpinner';
+import { MoneyDisplay } from '../../shared/components/MoneyDisplay';
+import { categoryLabel } from '../../shared/format/categoryLabel';
 import { ChallengeRow } from './ChallengeRow';
 import { ComparisonView } from './ComparisonView';
+import { ListingControls } from './controls/ListingControls';
+import { GenuineOfferCallout } from './offers/GenuineOfferCallout';
+import type { OwnerChallengeListResponse } from './types';
 import { useInbox } from './useInbox';
 
-/** Render the owner inbox page for one published listing. */
+/** Render the owner inbox page for one listing. */
 export function InboxPage(): JSX.Element {
   const { id = '' } = useParams();
-  const { inbox, comparison } = useInbox(id);
-  const [biddingMode, setBiddingMode] = useState<string | null>(null);
-  const [modeMessage, setModeMessage] = useState<string | null>(null);
+  const { account } = useActingAccount();
+  const { inbox, comparison, reload } = useInbox(id);
+  const ownerOffers = useApiQuery<OwnerChallengeListResponse>(`/api/listings/${id}/challenges`, { pollIntervalMs: 5000 });
 
-  // Show the current mode from inbox when it loads.
-  const currentMode = biddingMode ?? inbox?.bidding_mode ?? 'sealed';
-
-  const toggleBiddingMode = async (): Promise<void> => {
-    const nextMode = currentMode === 'open' ? 'sealed' : 'open';
-    try {
-      await post(`/api/listings/${id}/bidding-mode`, { mode: nextMode });
-      setBiddingMode(nextMode);
-      // A mode change is never retroactive — already-submitted sealed offers stay sealed.
-      setModeMessage(
-        nextMode === 'open'
-          ? 'Bidding is now open. Only offers submitted from this point forward will be public to other challengers. Sealed offers already received remain sealed.'
-          : 'Bidding is now sealed. All future offers will be private.',
-      );
-    } catch {
-      setModeMessage('Failed to update bidding mode.');
-    }
-  };
-
-  if (!inbox || !comparison) {
-    return <LoadingSpinner />;
+  if (inbox.error?.status === 404 || inbox.error?.status === 401) {
+    // Same message whether the listing is missing or belongs to someone else, so ids can't be probed.
+    return (
+      <EmptyState action={<Link to="/marketplace">Back to the marketplace</Link>} title="Only this listing’s owner can see its offers">
+        {account ? `You're acting as ${account.businessName}, which doesn't own this listing.` : 'Pick the owning business in the bar above.'}{' '}
+        Other challengers never see who made an offer.
+      </EmptyState>
+    );
+  }
+  if (!inbox.data) {
+    return inbox.error
+      ? <ErrorState error={inbox.error} onRetry={reload} title="Couldn’t load offers" />
+      : <LoadingSpinner label="Loading offers…" />;
   }
 
+  const { listing, challenges } = inbox.data;
   return (
     <section>
-      <h2>Challenge inbox</h2>
-      <div style={{ display: 'flex', gap: '1rem', alignItems: 'center', marginBottom: '1rem' }}>
-        <span>
-          Bidding mode: <strong>{currentMode}</strong>
-        </span>
-        <button onClick={() => void toggleBiddingMode()} type="button">
-          Switch to {currentMode === 'open' ? 'sealed' : 'open'}
-        </button>
-      </div>
-      {modeMessage ? <p style={{ padding: '0.5rem', background: '#f0f0f0' }}>{modeMessage}</p> : null}
-      <table style={{ borderCollapse: 'collapse', width: '100%' }}>
-        <thead>
-          <tr>
-            <th align="left">Challenger</th>
-            <th align="left">Scope deltas</th>
-            <th align="left">Normalized monthly</th>
-            <th align="left">Scope completeness</th>
-            <th align="left">Potential savings</th>
-            <th align="left">Evidence</th>
-            <th align="left">Provenance</th>
-          </tr>
-        </thead>
-        <tbody>
-          {inbox.challenges.map((challenge) => <ChallengeRow key={challenge.challenge_id} challenge={challenge} />)}
-        </tbody>
-      </table>
-      <ComparisonView rows={comparison.rows} />
+      <h2 style={{ marginBottom: '0.25rem' }}>Offers on your {categoryLabel(listing.category).toLowerCase()} listing</h2>
+      <p style={{ margin: 0 }}>
+        You pay <MoneyDisplay amountMinor={listing.price_minor} currency={listing.price_currency} /> / {listing.billing_cadence} ·{' '}
+        {listing.scope_summary}
+      </p>
+      {listing.visibility !== 'public' ? (
+        <p role="status" style={{ backgroundColor: '#f1f5f9', borderRadius: '8px', padding: '0.5rem 0.8rem' }}>
+          🔒 This listing is private now. Nobody else can see it. The offers below arrived while it was public and are kept for you.
+        </p>
+      ) : null}
+
+      <ListingControls listing={listing} onChanged={reload} />
+      <GenuineOfferCallout offers={ownerOffers} />
+      {inbox.error ? <ErrorState error={inbox.error} onRetry={reload} title="Showing the last loaded offers; a refresh failed" /> : null}
+
+      {challenges.length === 0 ? (
+        <EmptyState action={<Link to={`/listings/${listing.id}`}>See the listing as challengers do</Link>} title="No offers yet">
+          {listing.visibility === 'public'
+            ? 'Your listing is live, and the public sees "no offers yet". New offers appear here automatically. Most listings start this way.'
+            : 'No offers arrived while this listing was public.'}
+        </EmptyState>
+      ) : (
+        <div style={{ overflowX: 'auto' }}>
+          <table style={{ borderCollapse: 'collapse', minWidth: '900px', width: '100%' }}>
+            <thead>
+              <tr style={{ textAlign: 'left' }}>
+                <th>Challenger (visible only to you)</th>
+                <th>Scope differences</th>
+                <th>Price</th>
+                <th>Potential savings</th>
+                <th>Evidence</th>
+              </tr>
+            </thead>
+            <tbody>
+              {challenges.map((challenge) => <ChallengeRow challenge={challenge} key={challenge.challenge_id} />)}
+            </tbody>
+          </table>
+        </div>
+      )}
+
+      {challenges.length > 0 && comparison.data ? <ComparisonView rows={comparison.data.rows} /> : null}
+      {challenges.length > 0 && !comparison.data && comparison.error ? (
+        <ErrorState error={comparison.error} onRetry={reload} title="Couldn’t load the comparison" />
+      ) : null}
+      <p style={{ color: '#475569', marginTop: '1rem' }}>Savings are potential until you actually switch providers.</p>
     </section>
   );
 }
