@@ -1,5 +1,5 @@
 """Implements private dashboard endpoints for grouped service expenses.
-Handlers stay thin and delegate grouping logic to expense services.
+Handlers stay thin and delegate grouping logic to expense services. Imports live in api/connection.
 """
 
 from fastapi import APIRouter, Depends, HTTPException, Request, status
@@ -11,44 +11,18 @@ from app.api.expenses.schemas import (
     ExpenseListResponse,
     ExpenseResponse,
     ExpenseUpdateRequest,
-    ImportRequest,
-    ImportResultResponse,
     TransactionResponse,
 )
 from app.core.identity import require_acting_account_id
 from app.db.session import get_db
+from app.models.listing import PublicListingRecord
 from app.models.service_expense import ServiceExpense
 from app.models.transaction import Transaction
 from app.services.expenses.eligibility import classify_eligibility
 from app.services.expenses.sync import sync_service_expenses
 from app.services.expenses.vendor_normalize import VendorCorrectionStore
-from app.services.transactions.import_run import run_import
 
 router = APIRouter(prefix="/api/expenses", tags=["expenses"])
-
-
-@router.post("/import", response_model=ImportResultResponse, status_code=202)
-def trigger_import(
-    payload: ImportRequest,
-    request: Request,
-    db: Session = Depends(get_db),
-) -> ImportResultResponse:
-    """Run the import pipeline for the acting account and return counts.
-
-    The provider_account_id must match the acting account's connected financial
-    account. For the fixture source this is the seeded demo account ID.
-    This endpoint is synchronous for simplicity at MVP scale.
-    """
-
-    account_id = require_acting_account_id(request)
-    result = run_import(account_id, payload.provider_account_id, db)
-    return ImportResultResponse(
-        new=result.new,
-        duplicate=result.duplicate,
-        excluded=result.excluded,
-        failed=result.failed,
-    )
-
 
 
 @router.get("", response_model=ExpenseListResponse)
@@ -68,7 +42,14 @@ def list_expenses(request: Request, db: Session = Depends(get_db)) -> ExpenseLis
         .where(ServiceExpense.owner_account_id == account_id)
         .order_by(ServiceExpense.annualized_amount_minor.desc())
     ).all()
-    return ExpenseListResponse(expenses=[_serialize_expense(expense) for expense in expenses])
+    listing_ids = _listing_ids_by_expense(account_id, db)
+    provenance = _provenance_by_vendor(account_id, db)
+    return ExpenseListResponse(
+        expenses=[
+            _serialize_expense(expense, listing_ids.get(expense.id), provenance.get(expense.normalized_vendor, []))
+            for expense in expenses
+        ]
+    )
 
 
 @router.get("/{expense_id}", response_model=ExpenseDetailResponse)
@@ -87,22 +68,28 @@ def get_expense_detail(
         .where(Transaction.normalized_vendor == expense.normalized_vendor)
         .order_by(Transaction.posted_at.desc())
     ).all()
-    payload = _serialize_expense(expense).model_dump()
-    payload["supporting_transactions"] = [
-        TransactionResponse(
-            id=transaction.id,
-            raw_description=transaction.raw_description,
-            normalized_vendor=transaction.normalized_vendor,
-            amount_minor=transaction.amount_minor,
-            currency=transaction.currency,
-            posted_at=transaction.posted_at,
-            source_type=transaction.source_type,
-            is_excluded=transaction.is_excluded,
-            excluded_reason=transaction.excluded_reason,
-        )
-        for transaction in transactions
-    ]
-    return ExpenseDetailResponse(**payload)
+    row = _serialize_expense(
+        expense,
+        _listing_ids_by_expense(account_id, db).get(expense.id),
+        sorted({transaction.source_type for transaction in transactions}),
+    )
+    return ExpenseDetailResponse(
+        **row.model_dump(),
+        supporting_transactions=[
+            TransactionResponse(
+                id=transaction.id,
+                raw_description=transaction.raw_description,
+                normalized_vendor=transaction.normalized_vendor,
+                amount_minor=transaction.amount_minor,
+                currency=transaction.currency,
+                posted_at=transaction.posted_at,
+                source_type=transaction.source_type,
+                is_excluded=transaction.is_excluded,
+                excluded_reason=transaction.excluded_reason,
+            )
+            for transaction in transactions
+        ],
+    )
 
 
 @router.patch("/{expense_id}", response_model=ExpenseResponse)
@@ -150,7 +137,8 @@ def update_expense(
 
     db.commit()
     db.refresh(expense)
-    return _serialize_expense(expense)
+    provenance = _provenance_by_vendor(account_id, db).get(expense.normalized_vendor, [])
+    return _serialize_expense(expense, _listing_ids_by_expense(account_id, db).get(expense.id), provenance)
 
 
 def _get_owner_expense(expense_id: str, account_id: str, db: Session) -> ServiceExpense:
@@ -165,7 +153,30 @@ def _get_owner_expense(expense_id: str, account_id: str, db: Session) -> Service
     return expense
 
 
-def _serialize_expense(expense: ServiceExpense) -> ExpenseResponse:
+def _listing_ids_by_expense(account_id: str, db: Session) -> dict[str, str]:
+    # One query for the whole dashboard; listings are owner-scoped so no other business's leak in.
+    rows = db.execute(
+        select(PublicListingRecord.expense_id, PublicListingRecord.id).where(
+            PublicListingRecord.owner_account_id == account_id
+        )
+    ).all()
+    return {row.expense_id: row.id for row in rows}
+
+
+def _provenance_by_vendor(account_id: str, db: Session) -> dict[str, list[str]]:
+    # Grouping is by normalized vendor (the same key expense detail uses to find its transactions).
+    rows = db.execute(
+        select(Transaction.normalized_vendor, Transaction.source_type)
+        .where(Transaction.owner_account_id == account_id)
+        .distinct()
+    ).all()
+    by_vendor: dict[str, set[str]] = {}
+    for row in rows:
+        by_vendor.setdefault(row.normalized_vendor or "", set()).add(row.source_type)
+    return {vendor: sorted(sources) for vendor, sources in by_vendor.items()}
+
+
+def _serialize_expense(expense: ServiceExpense, listing_id: str | None, provenance: list[str]) -> ExpenseResponse:
     return ExpenseResponse(
         id=expense.id,
         vendor=expense.owner_corrected_vendor or expense.normalized_vendor,
@@ -176,8 +187,12 @@ def _serialize_expense(expense: ServiceExpense) -> ExpenseResponse:
         currency=expense.currency,
         annualized_amount_minor=expense.annualized_amount_minor,
         period_count=expense.period_count,
+        first_seen=expense.first_seen,
+        last_seen=expense.last_seen,
         visibility=expense.visibility,
         is_eligible=expense.is_eligible,
         eligibility_reason=expense.eligibility_reason,
         is_publishable=expense.is_publishable,
+        listing_id=listing_id,
+        provenance=provenance,
     )

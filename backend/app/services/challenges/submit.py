@@ -1,5 +1,5 @@
 """Submits and revises marketplace challenges against public listings.
-It enforces owner exclusion, deadlines, and non-retroactive bidding visibility.
+It enforces owner exclusion, deadlines, acknowledged bidding terms, and non-retroactive bidding visibility.
 """
 
 from datetime import datetime, timezone
@@ -12,6 +12,7 @@ from sqlalchemy.orm import Session
 from app.core.visibility import ListingVisibility
 from app.models.challenge import Challenge, ChallengeRevision
 from app.models.listing import PublicListingRecord
+from app.services.challenges.provenance import resolve_offer_provenance
 from app.services.listings.bidding_mode import resolve_bidding_mode
 
 
@@ -22,10 +23,16 @@ def submit_challenge(
     form_data: dict,
     db: Session,
 ) -> Challenge:
-    """Create a new challenge or revise the challenger's existing active one."""
+    """Create a new challenge or revise the challenger's existing active one.
+
+    form_data["acknowledged_bidding_mode"], when present, must equal the listing's current
+    mode. form_data["provenance"] is honored only from operator code; the API schema has no
+    such field, so web submissions get a server-resolved provenance.
+    """
 
     listing = _get_public_listing(listing_id, db)
     _ensure_can_submit(listing, challenger_account_id)
+    _ensure_mode_acknowledged(listing, form_data.get("acknowledged_bidding_mode"))
     existing = db.scalar(
         select(Challenge).where(
             Challenge.listing_id == listing_id,
@@ -56,7 +63,7 @@ def submit_challenge(
         availability=form_data.get("availability"),
         offer_expiry=form_data.get("offer_expiry"),
         site_visit_required=form_data.get("site_visit_required", False),
-        provenance=form_data.get("provenance", "challenger_submitted"),
+        provenance=form_data.get("provenance") or resolve_offer_provenance(challenger_account_id),
     )
     db.add(challenge)
     db.commit()
@@ -85,6 +92,7 @@ def revise_challenge(
 
     listing = _get_public_listing(challenge.listing_id, db)
     _ensure_deadline_open(listing)
+    _ensure_mode_acknowledged(listing, form_data.get("acknowledged_bidding_mode"))
     revision_number = int(
         db.scalar(
             select(func.coalesce(func.max(ChallengeRevision.revision_number), 0)).where(
@@ -134,7 +142,8 @@ def revise_challenge(
     challenge.availability = form_data.get("availability")
     challenge.offer_expiry = form_data.get("offer_expiry")
     challenge.site_visit_required = form_data.get("site_visit_required", False)
-    challenge.provenance = form_data.get("provenance", challenge.provenance)
+    # A revision keeps the offer's origin; only operator code passes an explicit provenance.
+    challenge.provenance = form_data.get("provenance") or challenge.provenance
     challenge.revised_at = revised_at
     db.commit()
     db.refresh(challenge)
@@ -156,6 +165,23 @@ def _ensure_can_submit(listing: PublicListingRecord, challenger_account_id: str)
         raise HTTPException(status_code=status.HTTP_400_BAD_REQUEST, detail="Owners cannot bid on their own listings")
     _ensure_deadline_open(listing)
 
+
+
+def _ensure_mode_acknowledged(listing: PublicListingRecord, acknowledged_mode: str | None) -> None:
+    # The owner can flip the mode while a challenger is typing. Accepting the offer anyway
+    # would publish a price its author was told stayed sealed (CLAUDE.md, marketplace mechanics).
+    if acknowledged_mode is None:
+        return
+    current_mode = resolve_bidding_mode(listing.bidding_mode).value
+    if acknowledged_mode != current_mode:
+        raise HTTPException(
+            status_code=status.HTTP_409_CONFLICT,
+            detail=(
+                f"Bidding on this listing changed to {current_mode} after you opened the form "
+                f"(you were shown {acknowledged_mode}). Nothing was submitted. "
+                "Review the current terms and submit again."
+            ),
+        )
 
 
 def _ensure_deadline_open(listing: PublicListingRecord) -> None:

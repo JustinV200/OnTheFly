@@ -1,8 +1,21 @@
 """Response schemas for owner challenge inbox and comparison endpoints."""
 
+from datetime import datetime
+
 from pydantic import BaseModel
 
 from app.services.evidence.status import EvidenceRollup
+from app.services.listings.types import PublicListingProjection
+
+
+class EvidenceCheckSummary(BaseModel):
+    """One named check's source, time, and limits, so a status never displays without its origin."""
+
+    source: str
+    status: str
+    match_confidence: str | None
+    checked_at: datetime
+    limitations: str
 
 
 class SavingsResponse(BaseModel):
@@ -31,15 +44,23 @@ class InboxChallengeResponse(BaseModel):
     platform_check_status: str
     identity_check_status: str
     registry_check_status: str
+    # Every check, including ones that did not run, in a fixed order: platform, identity, registry.
+    evidence_checks: list[EvidenceCheckSummary]
+    evidence_last_updated: datetime
     provenance: str
     bidding_mode_at_submission: str
+    submitted_at: datetime
+    revised_at: datetime | None
 
 
 class InboxResponse(BaseModel):
-    """Wraps the owner inbox rows for one listing."""
+    """Wraps the owner inbox rows for one listing, plus the listing they answer."""
 
     challenges: list[InboxChallengeResponse]
     bidding_mode: str
+    # The stored public record for this listing. It reports "private" after unpublishing, which
+    # is how the inbox shows that retained offers belong to a listing nobody can see now.
+    listing: PublicListingProjection
 
 
 class ComparisonRowResponse(BaseModel):

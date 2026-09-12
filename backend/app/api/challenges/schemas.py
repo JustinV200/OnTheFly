@@ -11,8 +11,15 @@ BillingFrequency = Literal["weekly", "biweekly", "monthly", "quarterly", "annual
 
 
 class ChallengeInput(BaseModel):
-    """Captures a challenger submission or revision payload."""
+    """Captures a challenger submission or revision payload.
 
+    There is deliberately no provenance field: the server decides it (services/challenges/provenance.py),
+    so a web form can never label its own offer genuine. An extra "provenance" key is ignored.
+    """
+
+    # The mode the challenger was shown. Required so no client can submit without having
+    # displayed the terms; a mismatch with the listing's current mode is rejected with 409.
+    acknowledged_bidding_mode: Literal["sealed", "open"]
     price_minor: int
     price_currency: str = "USD"
     # Restricted to supported frequencies so normalize_to_monthly never raises.
@@ -29,7 +36,6 @@ class ChallengeInput(BaseModel):
     availability: str | None = None
     offer_expiry: datetime | None = None
     site_visit_required: bool = False
-    provenance: str = "challenger_submitted"
 
 
 class ChallengeResponse(BaseModel):
@@ -77,10 +83,17 @@ class LeaderboardEntry(BaseModel):
     price_currency: str
     scope_completeness: float
     submitted_at: datetime
+    # Origin label (challenger_submitted | captured_off_platform | demo_data). It names no one,
+    # and without it a simulated price on a public leaderboard would read as a real market rate.
+    provenance: str
 
 
 class LeaderboardResponse(BaseModel):
-    """Wraps leaderboard rows with the listing's active bidding mode."""
+    """Wraps leaderboard rows with the listing's active bidding mode and offer counts."""
 
     bidding_mode: str
     entries: list[LeaderboardEntry]
+    # Every active offer counts, including ones submitted while bidding was sealed. Those stay
+    # sealed (no row, no price), so sealed_offer_count explains why entries can be shorter.
+    total_offer_count: int
+    sealed_offer_count: int

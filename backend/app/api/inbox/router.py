@@ -9,6 +9,7 @@ from sqlalchemy.orm import Session
 from app.api.inbox.schemas import (
     ComparisonResponse,
     ComparisonRowResponse,
+    EvidenceCheckSummary,
     InboxChallengeResponse,
     InboxResponse,
     SavingsResponse,
@@ -23,6 +24,7 @@ from app.services.comparison.rank import rank_challenges
 from app.services.evidence.check import CheckResult
 from app.services.evidence.refresh import get_or_refresh_challenger_evidence
 from app.services.evidence.status import rollup_evidence
+from app.services.listings.projection import projection_from_record
 
 router = APIRouter(tags=["inbox"])
 
@@ -69,11 +71,21 @@ def get_inbox(
                 platform_check_status=platform_check.status,
                 identity_check_status=identity_check.status,
                 registry_check_status=registry_check.status,
+                evidence_checks=[
+                    _summarize_check(check) for check in (platform_check, identity_check, registry_check)
+                ],
+                evidence_last_updated=evidence.last_updated,
                 provenance=row.provenance,
                 bidding_mode_at_submission=row.bidding_mode_at_submission or "sealed",
+                submitted_at=challenge.submitted_at,
+                revised_at=challenge.revised_at,
             )
         )
-    return InboxResponse(challenges=responses, bidding_mode=listing.bidding_mode or "sealed")
+    return InboxResponse(
+        challenges=responses,
+        bidding_mode=listing.bidding_mode or "sealed",
+        listing=projection_from_record(listing),
+    )
 
 
 @router.get("/api/listings/{listing_id}/comparison", response_model=ComparisonResponse)
@@ -133,6 +145,18 @@ def _get_owner_listing_context(
     if scope is None or expense is None:
         raise HTTPException(status_code=status.HTTP_404_NOT_FOUND, detail="Listing context not found")
     return listing, scope, expense
+
+
+def _summarize_check(check: CheckResult) -> EvidenceCheckSummary:
+    # The check's result payload is left out on purpose: the inbox shows status with its source,
+    # and anything record-level stays behind the dedicated evidence endpoint.
+    return EvidenceCheckSummary(
+        source=check.source,
+        status=check.status,
+        match_confidence=check.match_confidence,
+        checked_at=check.checked_at,
+        limitations=check.limitations,
+    )
 
 
 def _serialize_savings(savings) -> SavingsResponse:
