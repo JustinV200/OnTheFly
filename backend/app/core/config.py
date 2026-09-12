@@ -17,6 +17,8 @@ class Settings(BaseSettings):
     claude_api_key: str = ""
     claude_model: str = "claude-3-5-sonnet-20241022"
     app_version: str = "0.1.0"
+    # Comma-separated allowed CORS origins; defaults to local dev frontend
+    cors_allow_origins: str = "http://localhost:5173"
 
     model_config = SettingsConfigDict(
         env_file=".env",

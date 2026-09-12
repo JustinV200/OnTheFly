@@ -38,18 +38,21 @@ def list_marketplace(
         query = query.where(PublicListingRecord.owner_account_id != acting_account_id)
 
     records = db.scalars(query.order_by(PublicListingRecord.created_at.desc())).all()
+
+    # Fetch challenge counts for all listing IDs in a single aggregated query to avoid N+1.
+    record_ids = [r.id for r in records]
+    count_rows = db.execute(
+        select(Challenge.listing_id, func.count().label("cnt"))
+        .where(Challenge.listing_id.in_(record_ids))
+        .where(Challenge.is_active.is_(True))
+        .group_by(Challenge.listing_id)
+    ).all()
+    counts_by_listing: dict[str, int] = {row.listing_id: row.cnt for row in count_rows}
+
     listings = [
         MarketplaceListingResponse(
             listing=projection_from_record(record),
-            challenge_count=int(
-                db.scalar(
-                    select(func.count()).select_from(Challenge).where(
-                        Challenge.listing_id == record.id,
-                        Challenge.is_active.is_(True),
-                    )
-                )
-                or 0
-            ),
+            challenge_count=counts_by_listing.get(record.id, 0),
         )
         for record in records
     ]

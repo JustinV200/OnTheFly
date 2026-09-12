@@ -84,7 +84,9 @@ def _classify_exclusion(transaction: NormalizedTransaction) -> str | None:
     )
     if "payroll" in haystack:
         return "payroll"
-    if "transfer" in haystack or transaction.direction == "credit":
+    # Only exclude credits that are explicitly transfers; ordinary vendor refunds/credits
+    # should not be blanket-excluded — they reduce net spend and must reconcile.
+    if "transfer" in haystack:
         return "transfer"
     if "tax" in haystack:
         return "tax"

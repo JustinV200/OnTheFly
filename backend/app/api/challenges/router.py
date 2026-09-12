@@ -102,17 +102,21 @@ def get_leaderboard(listing_id: str, db: Session = Depends(get_db)) -> Leaderboa
     scope = db.get(ScopeVersion, listing.scope_version_id)
     if scope is None:
         raise HTTPException(status_code=status.HTTP_404_NOT_FOUND, detail="Scope version not found")
-    entries = [
-        LeaderboardEntry(
-            challenge_id=challenge.id,
-            normalized_price_minor=normalize_to_monthly(challenge).monthly_price.amount,
-            price_currency=normalize_to_monthly(challenge).monthly_price.currency,
-            scope_completeness=is_scope_complete(challenge, scope).score,
-            submitted_at=challenge.submitted_at,
+    entries = []
+    for challenge in challenges:
+        if challenge.bidding_mode_at_submission != BiddingMode.open.value:
+            continue
+        # Compute normalization once per challenge to avoid redundant calculation.
+        normalized = normalize_to_monthly(challenge)
+        entries.append(
+            LeaderboardEntry(
+                challenge_id=challenge.id,
+                normalized_price_minor=normalized.monthly_price.amount,
+                price_currency=normalized.monthly_price.currency,
+                scope_completeness=is_scope_complete(challenge, scope).score,
+                submitted_at=challenge.submitted_at,
+            )
         )
-        for challenge in challenges
-        if challenge.bidding_mode_at_submission == BiddingMode.open.value
-    ]
     entries.sort(key=lambda entry: (-entry.scope_completeness, entry.normalized_price_minor, entry.submitted_at))
     return LeaderboardResponse(bidding_mode=listing.bidding_mode, entries=entries)
 
