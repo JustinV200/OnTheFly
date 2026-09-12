@@ -13,6 +13,7 @@ from app.models import Account
 from app.models import Challenge
 from app.models import ChallengeRevision
 from app.models import ChallengerEvidence
+from app.models import Invitation
 from app.models import PublicListingRecord
 from app.models import ScopeVersion
 from app.models import ServiceExpense
@@ -33,6 +34,7 @@ _ = (
     Challenge,
     ChallengeRevision,
     ChallengerEvidence,
+    Invitation,
     Transaction,
     ServiceExpense,
     VendorCorrection,

@@ -6,6 +6,7 @@ from fastapi import APIRouter
 
 from app.api.evidence.router import router as evidence_router
 from app.api.inbox.router import router as inbox_router
+from app.api.invitations.router import router as invitations_router
 from app.api.challenges.router import router as challenges_router
 from app.api.expenses.router import router as expenses_router
 from app.api.listings.router import router as listings_router
@@ -17,6 +18,7 @@ api_router.include_router(challenges_router)
 api_router.include_router(evidence_router)
 api_router.include_router(expenses_router)
 api_router.include_router(inbox_router)
+api_router.include_router(invitations_router)
 api_router.include_router(listings_router)
 api_router.include_router(marketplace_router)
 api_router.include_router(profiles_router)
