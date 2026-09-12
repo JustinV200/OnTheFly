@@ -139,10 +139,52 @@ def test_a_later_change_is_measured_from_the_first_established_price() -> None:
     assert analysis.current_level_transaction_ids == ["t-3", "t-4"]
 
 
-def test_an_opening_amount_that_comes_back_is_a_second_price() -> None:
-    # The opening $800 recurs later as a flash, so like any recurring off-level amount it
-    # is a second price and there is no single current price to report.
-    analysis = analyze_price_levels(_monthly_charges([80000, 240000, 240000, 80000, 240000, 240000]), "monthly")
+def test_a_price_change_after_a_prorated_first_month_keeps_the_current_price() -> None:
+    # New vendor: a prorated first month, two regular months, then the latest month at a new
+    # price. The opening charge is not held against a stable price, so the baseline stays the
+    # current $2,400 with the jump pending, not an average that folds in the prorated $800.
+    transactions = _monthly_charges([80000, 240000, 240000, 300000])
 
-    assert analysis.is_assessed is False
-    assert analysis.not_assessed_reason is NotAssessedReason.amounts_too_variable
+    analysis = analyze_price_levels(transactions, "monthly")
+
+    assert analysis.is_assessed is True
+    assert analysis.shifts == []
+    assert analysis.current_level_amount_minor == 240000
+    assert analysis.current_level_transaction_ids == ["t-1", "t-2"]
+    assert analysis.pending_change is not None
+    assert analysis.pending_change.transaction_ids == ["t-3"]
+    assert analysis.unconfirmed_earlier_price is not None
+    assert analysis.unconfirmed_earlier_price.transaction_ids == ["t-0"]
+
+    baseline = compute_baseline(transactions, detect_recurrence(transactions))
+    assert baseline.basis is BaselineBasis.current_price_level
+    assert baseline.amount_per_period.amount == 240000
+    assert baseline.supporting_transaction_ids == ["t-1", "t-2"]
+
+
+@pytest.mark.parametrize(
+    ("amounts", "one_off_ids"),
+    [
+        # A flash right after the opening charge: two of four charges sit outside the price.
+        ([80000, 500000, 240000, 240000], ["t-1"]),
+        # The opening amount comes back once later as a flash.
+        ([80000, 240000, 240000, 80000, 240000, 240000], ["t-3"]),
+    ],
+)
+def test_an_unestablished_opening_charge_never_pushes_the_baseline_to_the_average(
+    amounts: list[int],
+    one_off_ids: list[str],
+) -> None:
+    transactions = _monthly_charges(amounts)
+
+    analysis = analyze_price_levels(transactions, "monthly")
+
+    assert analysis.is_assessed is True
+    assert analysis.shifts == []
+    assert analysis.one_off_transaction_ids == one_off_ids
+    assert analysis.unconfirmed_earlier_price is not None
+    assert analysis.unconfirmed_earlier_price.transaction_ids == ["t-0"]
+
+    baseline = compute_baseline(transactions, detect_recurrence(transactions))
+    assert baseline.basis is BaselineBasis.current_price_level
+    assert baseline.amount_per_period.amount == 240000

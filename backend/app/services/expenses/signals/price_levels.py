@@ -31,6 +31,15 @@ MIN_SHARE_IN_LEVELS = 0.5
 # opening charges whose amount no charge repeated before the price moved.
 OFF_LEVEL_RESPONSES = frozenset({SampleResponse.transient, SampleResponse.pending, SampleResponse.unconfirmed})
 
+# The off-level charges the two stability guards in analyze_price_levels hold against a price:
+# one-offs and an unconfirmed trailing jump. Unestablished opening charges are left out on
+# purpose. A history that opens with a prorated month or a setup fee says nothing about
+# whether the charges after it hold a price, so the opening neither lowers the share of
+# charges at a price nor forms a recurring second price. Counting it would drop such a series
+# to the plain average, which averages that partial charge into the baseline. The opening
+# still stays out of every level and out of the baseline through OFF_LEVEL_RESPONSES.
+STABILITY_GUARD_OFF_LEVEL_RESPONSES = frozenset({SampleResponse.transient, SampleResponse.pending})
+
 # 5% contrast: a smaller move is billing noise absorbed into the level, a larger one
 # is a response. Tuning showed the Mushroom Body amount channel also crosses its
 # "unusual" threshold near 5%, so the two signals agree on what counts as different.
@@ -104,9 +113,10 @@ def analyze_price_levels(transactions: list[Transaction], cadence: str) -> Price
     real charges, never a value reconstructed from the detector's log-space state.
     Opening charges whose amount no charge repeated before the price moved come back as
     unconfirmed_earlier_price, never as a shift or a one-off. Returns not assessed
-    (amounts_too_variable) when no single price holds a strict majority of charges or
-    the charges outside the levels recur at one amount, so the baseline falls back to
-    the labelled plain average.
+    (amounts_too_variable) when the one-offs and a pending jump leave no strict majority
+    of charges at a price, or when those charges recur at one amount, so the baseline
+    falls back to the labelled plain average. An unestablished opening counts against
+    neither check.
     """
 
     charges = sorted(
@@ -124,10 +134,12 @@ def analyze_price_levels(transactions: list[Transaction], cadence: str) -> Price
     trace = PRICE_LEVEL_DETECTOR.run([float(charge.amount_minor) for charge in charges])
     level_starts = [0] + [shift.index for shift in trace.shifts]
     current_members = _level_members(trace.responses, level_starts, len(level_starts) - 1)
+    # Unestablished opening charges are not held against a stable price here; see
+    # STABILITY_GUARD_OFF_LEVEL_RESPONSES. They count with the charges at a price for the share.
     off_level_amounts = [
         charges[index].amount_minor
         for index, response in enumerate(trace.responses)
-        if response in OFF_LEVEL_RESPONSES
+        if response in STABILITY_GUARD_OFF_LEVEL_RESPONSES
     ]
     in_level_count = len(charges) - len(off_level_amounts)
     # The detector confirms a level only when the very next charge holds it, so an amount
