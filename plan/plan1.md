@@ -266,21 +266,53 @@ If the fly model does not improve the pipeline enough, standard motion gating re
 
 ---
 
-## Catalog Match Engine ("Mushroom Body")
+## Mushroom Body — Instance Memory and Catalog Match
 
-**Purpose:** narrow "what is this item / what's a good match or alternative" down to a short candidate list, before handing that list to Claude for the actual judgment call.
+Two jobs from one circuit. The fly's mushroom body expands a dense input into a large sparse code, and that code serves two separately published purposes: similarity search (FlyHash — Dasgupta, Stevens & Navlakha, *Science*, 2017) and novelty detection (Dasgupta, Sheehan, Stevens & Navlakha, *PNAS*, 2018). Different algorithms sharing a mechanism, and they earn very different places in this plan.
 
-**Technique — FlyHash:** modeled on the fruit fly olfactory circuit (the mushroom body / Kenyon cells), a real published approach to locality-sensitive hashing (Dasgupta, Stevens & Navlakha, *Science*, 2017):
-1. Take a feature vector for the item (a text embedding of title/description).
+**The shared mechanism:**
+1. Take a feature vector for the item.
 2. Project it through a large, sparse random projection — each output dimension sees only a small random subset of input dimensions, as the fly's ~2000 Kenyon cells do with ~50 random projections each.
-3. Keep only the top-k winner dimensions (winner-take-all), producing a small sparse binary code.
-4. Compare codes by overlap / Hamming distance. That's the entire search.
+3. Keep only the top-k winner dimensions (winner-take-all), producing a small sparse binary code — the *tag*.
+4. Compare tags by overlap. That is the entire operation.
+
+### Job 1: Instance memory for the audit count
+
+Vision Pipeline step 8 requires updating the audit count "without double-counting a tracked object across frames," and Mode B's headline output is a count — *7 of 8 planned items visually accounted for*. That number is correct only if the app can continuously answer one question: **is this the same physical object I already counted, or a new one?**
+
+Step 4's standard detection and tracking answers it only while an object stays visible and roughly in place. A sweep breaks exactly that assumption — pan off a monitor and back, and geometric tracking (IoU, centroid) has nothing left to match on. Re-count it and the audit reports two monitors where there is one: a wrong number in the demo's primary output, not a cosmetic glitch. Occlusion and re-entry are the normal case when someone walks a desk with a phone, not the edge case.
+
+Novelty detection answers it directly. Tag each detected crop, compare against the tags already seen in this audit session, and the overlap gives familiar-or-new. It is content-based, so re-entry survives. It is fuzzy, so the same monitor from a second angle still reads as familiar — which an exact hash never would.
+
+**The two camera modes want opposite decay.** The biological version carries a decaying familiarity trace. That decay is a feature in Before Purchase, where an item seen 30 seconds ago should drift back toward novel so a stale price overlay refreshes. It is a liability during an audit, where forgetting inside a sweep *is* double-counting. Same structure, two time constants: short decay before purchase, none within a single audit sweep.
+
+**Same status as Compound Eye — a benchmarked hypothesis, not a claim.** Conventional appearance distance over the same descriptor is the baseline and the fallback, behind the same interface. Benchmark on double-count rate across a pan-away-and-return sweep, re-identification accuracy after occlusion, and semantic-model calls saved. If the tag variant does not beat the baseline, the baseline ships and nothing else in the audit changes.
+
+**Failure is safe either way.** Bias the threshold toward "novel" and the worst case is a redundant vision call plus a re-counted object surfaced for user confirmation — which step 7 already requires the audit to support.
+
+**Input features.** Image embeddings stay out of scope, so the tag is built from a cheap hand-rolled crop descriptor: downsampled cells, per-cell colour histogram, gradient orientation. Roughly 60–100 dimensions, no extra model load, computed on a crop the detector already produced. This is *closer* to the biology than a learned embedding would be — the fly's input layer is about 50 crude chemical receptor channels, not a learned representation.
+
+### Job 2: Catalog retrieval — side demo
+
+**Purpose:** narrow "what is this item / what's a good match or alternative" down to a short candidate list, before handing that list to Claude for the actual judgment call. The feature vector here is a text embedding of title/description, compared by overlap / Hamming distance between tags.
 
 **What ships, and what's honest about it.** At our catalog size (hundreds of items, not millions), brute-force cosine similarity is already microseconds and has strictly better recall than any LSH scheme — FlyHash buys nothing at this scale, and the "no model inference" framing is misleading anyway, since the query still needs an embedding and *that* is the real latency cost, not the hash.
 
-So: **cosine is the live path. FlyHash ships alongside it as a runnable side-by-side** — same query, both retrievers, showing the codes and the overlap. It's ~30 lines, it's a genuinely good story, and it's real. It is not on the critical path and nothing blocks on it — this is a separate fly-inspired algorithm from Compound Eye's attention gating above, and the two must not be conflated.
+So: **cosine is the live retrieval path. FlyHash ships alongside it as a runnable side-by-side** — same query, both retrievers, showing the codes and the overlap. It's ~30 lines, it's a genuinely good story, and it's real. Nothing blocks on it.
 
 Image→catalog matching is **out of scope** — it needs CLIP or equivalent, which is a whole extra dependency. Text-side only.
+
+### Three fly components, not one
+
+Easy to conflate. They do different things and carry different risk:
+
+| Component | Decides | Status |
+|---|---|---|
+| **Compound Eye** attention gating | *Where and when* to look | Benchmarked hypothesis; conventional motion gating is the fallback |
+| **Mushroom Body** instance memory | *Whether this is something already seen* | Benchmarked hypothesis; appearance distance is the fallback |
+| **Mushroom Body** FlyHash retrieval | *Which catalog entries are nearest* | Side demo; cosine is the live path |
+
+None of them performs semantic identity — standard vision does that, and none of them is a single point of failure.
 
 ---
 
@@ -296,6 +328,7 @@ Image→catalog matching is **out of scope** — it needs CLIP or equivalent, wh
 - `<canvas>` overlay over live video
 - Explicit toggle between Before Purchase and Audit modes
 - Live reconciliation summary tied to the active plan
+- In-session instance memory so the audit count survives panning away and back
 
 ### Backend
 
@@ -316,7 +349,7 @@ Image→catalog matching is **out of scope** — it needs CLIP or equivalent, wh
 5. Use a vision-language model on a crop only when category or product identity needs refinement.
 6. Match the result to the active purchase plan.
 7. Ask for user confirmation when identity or quantity is uncertain.
-8. Update the audit count without double-counting a tracked object across frames.
+8. Update the audit count without double-counting a tracked object across frames — see [Mushroom Body instance memory](#mushroom-body--instance-memory-and-catalog-match), which is what has to survive panning away and back.
 
 For the demo, use objects `coco-ssd` already recognizes reliably — laptop, keyboard, mouse, tv, chair, backpack, book, clock, bottle, cup, potted plant, and scissors — so detection needs no custom model. Do not imply SKU-level certainty when only a broad object class was detected.
 
@@ -417,12 +450,12 @@ The audience sees one uninterrupted story: plan, research, buy, spend, and verif
 | Codename | Real fly anatomy | Maps to |
 |---|---|---|
 | **Compound Eye** | Wide-field, fast-motion-detecting vision | The fly-inspired attention-gating layer in the live camera pipeline — decides where/when to look, benchmarked against conventional motion gating (see [The Fruit-Fly Model's Narrow Responsibility](#the-fruit-fly-models-narrow-responsibility-compound-eye)) |
-| **Mushroom Body** | Kenyon cells — sparse coding / associative matching | The FlyHash catalog matcher (a genuine biological algorithm, run side-by-side with cosine similarity — not on the critical path) |
+| **Mushroom Body** | Kenyon cells — sparse coding, novelty detection | Two genuine fly-brain algorithms: instance memory that keeps the audit count from double-counting (benchmarked, conventional fallback), and the FlyHash catalog matcher (side-by-side demo — cosine is the live path) |
 | **Halteres** | Balance organs used for flight stability | Budget realism / balance check |
 | **Proboscis** | Feeding tube used to sample and taste | The "Ask More" research agent |
 | **Metabolism** | Consumption and energy use | Transaction sync — what's actually been spent, via the Rho API |
 
-Compound Eye and Mushroom Body map to real technical components; the rest is naming layered on features already planned above. Compound Eye is a benchmarked hypothesis with a conventional fallback — Mushroom Body's FlyHash path is a side demo that nothing depends on. Neither sits between a user and the reasoning that needs to be fast and correct.
+Compound Eye and Mushroom Body map to real technical components; the rest is naming layered on features already planned above. Compound Eye's attention gating and Mushroom Body's instance memory are both benchmarked hypotheses with conventional fallbacks behind the same interface — Mushroom Body's FlyHash retrieval path is a side demo that nothing depends on. None of them sits between a user and the reasoning that needs to be fast and correct.
 
 ---
 
@@ -431,9 +464,9 @@ Compound Eye and Mushroom Body map to real technical components; the rest is nam
 1. **Procurement spine:** budget, quantity-aware list, seeded catalog, projected total, and alternatives.
 2. **Transactions:** common `TransactionSource`, mock purchases, Rho sandbox path, actual-spend calculation, and user item attribution.
 3. **Reconciliation state:** model planned/paid/seen/reconciled separately and build the dashboard summary.
-4. **Camera audit spike:** on a real phone over HTTPS, detect and count the exact demo objects without double-counting.
+4. **Camera audit spike:** on a real phone over HTTPS, detect and count the exact demo objects without double-counting. Land conventional appearance-distance instance memory here — it is the baseline the fly variant is measured against in step 6.
 5. **Before-purchase camera state:** add remaining-budget, typical-price, historical-price, and alternative overlays.
-6. **Fly attention layer:** connect its live signal to region/frame selection and build the baseline comparison.
+6. **Fly layers:** connect Compound Eye's live signal to region/frame selection, add Mushroom Body instance memory, and build the baseline comparison for both.
 7. **Polish:** receipt-assisted attribution, saved audit evidence, unexpected-item review, and failure-state handling.
 
 Each stage leaves a coherent demo. If camera recognition is weak, the planning and spend workflow still works and the audit uses user confirmation. If the fly model underperforms, conventional gating handles recognition while Fly Mode truthfully shows the experimental response.
@@ -447,8 +480,9 @@ Each stage leaves a coherent demo. If camera recognition is weak, the planning a
 | Business procurement, not consumer shopping | Matches company card data and the sponsor context |
 | One plan-to-audit workflow | Keeps the product coherent and the demo easy to follow |
 | Camera supports before- and after-purchase states | Reuses one interface for buying decisions and verification |
-| Fly network only gates visual attention | Gives it a legitimate, testable perception role without putting reliability at risk |
+| Fly components gate attention and track instance identity, never semantic identity | Two narrow, testable perception roles. Each is benchmarked against a conventional baseline that ships if the fly path loses, so reliability never rests on the fly model |
 | Standard vision performs identity and boxes | Uses the right tool for semantic recognition |
+| Audit count uses instance memory, not geometric tracking alone | Panning away and back defeats IoU/centroid tracking, and a re-counted object is a wrong number in the audit's headline output |
 | Transactions prove spend, not physical arrival | Card data does not contain enough evidence for visual reconciliation |
 | Separate planned, paid, and seen states | Prevents the UI from overstating certainty |
 | Mock and Rho share one interface | Enables a controlled demo while preserving the real integration |
