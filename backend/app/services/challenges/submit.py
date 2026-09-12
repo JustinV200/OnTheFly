@@ -1,0 +1,166 @@
+"""Submits and revises marketplace challenges against public listings.
+It enforces owner exclusion, deadlines, and non-retroactive bidding visibility.
+"""
+
+from datetime import datetime, timezone
+import json
+
+from fastapi import HTTPException, status
+from sqlalchemy import func, select
+from sqlalchemy.orm import Session
+
+from app.core.visibility import ListingVisibility
+from app.models.challenge import Challenge, ChallengeRevision
+from app.models.listing import PublicListingRecord
+from app.services.listings.bidding_mode import resolve_bidding_mode
+
+
+
+def submit_challenge(
+    listing_id: str,
+    challenger_account_id: str,
+    form_data: dict,
+    db: Session,
+) -> Challenge:
+    """Create a new challenge or revise the challenger's existing active one."""
+
+    listing = _get_public_listing(listing_id, db)
+    _ensure_can_submit(listing, challenger_account_id)
+    existing = db.scalar(
+        select(Challenge).where(
+            Challenge.listing_id == listing_id,
+            Challenge.challenger_account_id == challenger_account_id,
+            Challenge.is_active.is_(True),
+        )
+    )
+    if existing is not None:
+        return revise_challenge(existing.id, challenger_account_id, form_data, db)
+
+    challenge = Challenge(
+        listing_id=listing.id,
+        scope_version_id=listing.scope_version_id,
+        challenger_account_id=challenger_account_id,
+        bidding_mode_at_submission=resolve_bidding_mode(listing.bidding_mode).value,
+        price_minor=form_data["price_minor"],
+        price_currency=form_data.get("price_currency", "USD"),
+        billing_frequency=form_data["billing_frequency"],
+        scope_included=json.dumps(form_data.get("scope_included", [])),
+        scope_excluded=json.dumps(form_data.get("scope_excluded", [])),
+        scope_extras=json.dumps(form_data.get("scope_extras", [])),
+        setup_fee_minor=form_data.get("setup_fee_minor", 0),
+        taxes_included=form_data.get("taxes_included"),
+        supplies_included=form_data.get("supplies_included"),
+        minimum_term=form_data.get("minimum_term"),
+        other_conditions=form_data.get("other_conditions"),
+        message_to_owner=form_data.get("message_to_owner"),
+        availability=form_data.get("availability"),
+        offer_expiry=form_data.get("offer_expiry"),
+        site_visit_required=form_data.get("site_visit_required", False),
+        provenance=form_data.get("provenance", "challenger_submitted"),
+    )
+    db.add(challenge)
+    db.commit()
+    db.refresh(challenge)
+    return challenge
+
+
+
+def revise_challenge(
+    challenge_id: str,
+    challenger_account_id: str,
+    form_data: dict,
+    db: Session,
+) -> Challenge:
+    """Store a revision snapshot, then update the challenger's active offer."""
+
+    challenge = db.scalar(
+        select(Challenge).where(
+            Challenge.id == challenge_id,
+            Challenge.challenger_account_id == challenger_account_id,
+            Challenge.is_active.is_(True),
+        )
+    )
+    if challenge is None:
+        raise HTTPException(status_code=status.HTTP_404_NOT_FOUND, detail="Challenge not found")
+
+    listing = _get_public_listing(challenge.listing_id, db)
+    _ensure_deadline_open(listing)
+    revision_number = int(
+        db.scalar(
+            select(func.coalesce(func.max(ChallengeRevision.revision_number), 0)).where(
+                ChallengeRevision.challenge_id == challenge.id,
+            )
+        )
+        or 0
+    ) + 1
+    revised_at = datetime.now(timezone.utc)
+    db.add(
+        ChallengeRevision(
+            challenge_id=challenge.id,
+            revision_number=revision_number,
+            bidding_mode_at_revision=resolve_bidding_mode(listing.bidding_mode).value,
+            price_minor=challenge.price_minor,
+            price_currency=challenge.price_currency,
+            billing_frequency=challenge.billing_frequency,
+            scope_included=challenge.scope_included,
+            scope_excluded=challenge.scope_excluded,
+            scope_extras=challenge.scope_extras,
+            setup_fee_minor=challenge.setup_fee_minor,
+            taxes_included=challenge.taxes_included,
+            supplies_included=challenge.supplies_included,
+            minimum_term=challenge.minimum_term,
+            other_conditions=challenge.other_conditions,
+            message_to_owner=challenge.message_to_owner,
+            availability=challenge.availability,
+            offer_expiry=challenge.offer_expiry,
+            site_visit_required=challenge.site_visit_required,
+            provenance=challenge.provenance,
+            revised_at=revised_at,
+        )
+    )
+    challenge.scope_version_id = listing.scope_version_id
+    challenge.price_minor = form_data["price_minor"]
+    challenge.price_currency = form_data.get("price_currency", challenge.price_currency)
+    challenge.billing_frequency = form_data["billing_frequency"]
+    challenge.scope_included = json.dumps(form_data.get("scope_included", []))
+    challenge.scope_excluded = json.dumps(form_data.get("scope_excluded", []))
+    challenge.scope_extras = json.dumps(form_data.get("scope_extras", []))
+    challenge.setup_fee_minor = form_data.get("setup_fee_minor", 0)
+    challenge.taxes_included = form_data.get("taxes_included")
+    challenge.supplies_included = form_data.get("supplies_included")
+    challenge.minimum_term = form_data.get("minimum_term")
+    challenge.other_conditions = form_data.get("other_conditions")
+    challenge.message_to_owner = form_data.get("message_to_owner")
+    challenge.availability = form_data.get("availability")
+    challenge.offer_expiry = form_data.get("offer_expiry")
+    challenge.site_visit_required = form_data.get("site_visit_required", False)
+    challenge.provenance = form_data.get("provenance", challenge.provenance)
+    challenge.revised_at = revised_at
+    db.commit()
+    db.refresh(challenge)
+    return challenge
+
+
+
+def _get_public_listing(listing_id: str, db: Session) -> PublicListingRecord:
+    listing = db.get(PublicListingRecord, listing_id)
+    if listing is None:
+        raise HTTPException(status_code=status.HTTP_404_NOT_FOUND, detail="Listing not found")
+    if listing.visibility != ListingVisibility.public.value:
+        raise HTTPException(status_code=status.HTTP_400_BAD_REQUEST, detail="Listing is not public")
+    return listing
+
+
+def _ensure_can_submit(listing: PublicListingRecord, challenger_account_id: str) -> None:
+    if listing.owner_account_id == challenger_account_id:
+        raise HTTPException(status_code=status.HTTP_400_BAD_REQUEST, detail="Owners cannot bid on their own listings")
+    _ensure_deadline_open(listing)
+
+
+
+def _ensure_deadline_open(listing: PublicListingRecord) -> None:
+    deadline = listing.challenge_deadline
+    if deadline and deadline.tzinfo is None:
+        deadline = deadline.replace(tzinfo=timezone.utc)
+    if deadline and deadline <= datetime.now(timezone.utc):
+        raise HTTPException(status_code=status.HTTP_400_BAD_REQUEST, detail="Challenge deadline has passed")

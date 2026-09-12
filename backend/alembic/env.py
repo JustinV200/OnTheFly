@@ -10,6 +10,8 @@ from sqlalchemy import engine_from_config, pool
 from app.core.config import get_settings
 from app.db.base import Base
 from app.models import Account
+from app.models import Challenge
+from app.models import ChallengeRevision
 from app.models import PublicListingRecord
 from app.models import ScopeVersion
 from app.models import ServiceExpense
@@ -27,6 +29,8 @@ if config.config_file_name is not None:
 target_metadata = Base.metadata
 _ = (
     Account,
+    Challenge,
+    ChallengeRevision,
     Transaction,
     ServiceExpense,
     VendorCorrection,
