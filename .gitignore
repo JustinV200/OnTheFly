@@ -6,6 +6,8 @@ __pycache__/
 backend/*.db
 backend/*.db-shm
 backend/*.db-wal
+# Genuine counteroffer ledger: may hold a real business's commercial terms (roadmap 01, step 1).
+backend/demo_data/
 node_modules/
 .npm-cache/
 dist/
