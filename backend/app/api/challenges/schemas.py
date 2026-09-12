@@ -20,14 +20,18 @@ class ChallengeInput(BaseModel):
     # The mode the challenger was shown. Required so no client can submit without having
     # displayed the terms; a mismatch with the listing's current mode is rejected with 409.
     acknowledged_bidding_mode: Literal["sealed", "open"]
-    price_minor: int
+    # Bounded because ranking sorts on price and savings subtract it: a zero or negative amount
+    # would top the leaderboard and fabricate potential savings. services/challenges/amounts.py
+    # applies the same rule to callers that skip this schema.
+    price_minor: int = Field(gt=0)
     price_currency: str = "USD"
     # Restricted to supported frequencies so normalize_to_monthly never raises.
     billing_frequency: BillingFrequency
     scope_included: list[str] = Field(default_factory=list)
     scope_excluded: list[str] = Field(default_factory=list)
     scope_extras: list[str] = Field(default_factory=list)
-    setup_fee_minor: int = 0
+    # Zero means no setup fee; a negative fee would add to first-year savings.
+    setup_fee_minor: int = Field(default=0, ge=0)
     taxes_included: bool | None = None
     supplies_included: bool | None = None
     minimum_term: str | None = None

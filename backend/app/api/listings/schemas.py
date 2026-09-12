@@ -2,7 +2,7 @@
 
 from datetime import datetime
 
-from pydantic import BaseModel
+from pydantic import BaseModel, Field
 
 from app.services.listings.types import PublicListingProjection
 
@@ -24,7 +24,9 @@ class ScopeVersionInput(BaseModel):
     start_date: str | None = None
     minimum_term: str | None = None
     cancellation_terms: str | None = None
-    current_price_minor: int | None = None
+    # Unstated stays None; a stated price must be positive, since savings are this baseline
+    # minus each offer and a zero or negative baseline would misstate every comparison.
+    current_price_minor: int | None = Field(default=None, gt=0)
     current_price_currency: str = "USD"
     billing_cadence: str | None = None
     challenge_deadline: datetime | None = None

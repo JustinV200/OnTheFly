@@ -1,5 +1,5 @@
 """Submits and revises marketplace challenges against public listings.
-It enforces owner exclusion, deadlines, acknowledged bidding terms, and non-retroactive bidding visibility.
+It enforces owner exclusion, deadlines, acknowledged bidding terms, valid amounts, and non-retroactive bidding visibility.
 """
 
 from datetime import datetime, timezone
@@ -12,6 +12,7 @@ from sqlalchemy.orm import Session
 from app.core.visibility import ListingVisibility
 from app.models.challenge import Challenge, ChallengeRevision
 from app.models.listing import PublicListingRecord
+from app.services.challenges.amounts import find_offer_amount_problem
 from app.services.challenges.provenance import resolve_offer_provenance
 from app.services.listings.bidding_mode import resolve_bidding_mode
 
@@ -28,8 +29,10 @@ def submit_challenge(
     form_data["acknowledged_bidding_mode"], when present, must equal the listing's current
     mode. form_data["provenance"] is honored only from operator code; the API schema has no
     such field, so web submissions get a server-resolved provenance.
+    Raises 400 when the price is not positive or the setup fee is negative.
     """
 
+    _ensure_valid_amounts(form_data)
     listing = _get_public_listing(listing_id, db)
     _ensure_can_submit(listing, challenger_account_id)
     _ensure_mode_acknowledged(listing, form_data.get("acknowledged_bidding_mode"))
@@ -78,8 +81,12 @@ def revise_challenge(
     form_data: dict,
     db: Session,
 ) -> Challenge:
-    """Store a revision snapshot, then update the challenger's active offer."""
+    """Store a revision snapshot, then update the challenger's active offer.
 
+    Raises 400 when the price is not positive or the setup fee is negative, before any snapshot is written.
+    """
+
+    _ensure_valid_amounts(form_data)
     challenge = db.scalar(
         select(Challenge).where(
             Challenge.id == challenge_id,
@@ -158,6 +165,14 @@ def _get_public_listing(listing_id: str, db: Session) -> PublicListingRecord:
     if listing.visibility != ListingVisibility.public.value:
         raise HTTPException(status_code=status.HTTP_400_BAD_REQUEST, detail="Listing is not public")
     return listing
+
+
+def _ensure_valid_amounts(form_data: dict) -> None:
+    # The API schema already bounds these, but operator code (demo seeding) calls this service
+    # directly, and a non-positive amount would rank first and fabricate potential savings.
+    problem = find_offer_amount_problem(form_data["price_minor"], form_data.get("setup_fee_minor", 0))
+    if problem is not None:
+        raise HTTPException(status_code=status.HTTP_400_BAD_REQUEST, detail=problem)
 
 
 def _ensure_can_submit(listing: PublicListingRecord, challenger_account_id: str) -> None:
