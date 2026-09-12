@@ -12,6 +12,7 @@ from app.db.base import Base
 from app.models import Account
 from app.models import Challenge
 from app.models import ChallengeRevision
+from app.models import ChallengerEvidence
 from app.models import PublicListingRecord
 from app.models import ScopeVersion
 from app.models import ServiceExpense
@@ -31,6 +32,7 @@ _ = (
     Account,
     Challenge,
     ChallengeRevision,
+    ChallengerEvidence,
     Transaction,
     ServiceExpense,
     VendorCorrection,

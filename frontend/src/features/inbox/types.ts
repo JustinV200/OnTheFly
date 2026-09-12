@@ -18,6 +18,9 @@ export interface InboxChallenge {
   unstated_items: string[];
   savings: SavingsResponse;
   evidence_status: string;
+  platform_check_status: string;
+  identity_check_status: string;
+  registry_check_status: string;
   provenance: string;
   bidding_mode_at_submission: string;
 }

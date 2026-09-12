@@ -26,6 +26,9 @@ class InboxChallengeResponse(BaseModel):
     unstated_items: list[str]
     savings: SavingsResponse
     evidence_status: str
+    platform_check_status: str
+    identity_check_status: str
+    registry_check_status: str
     provenance: str
     bidding_mode_at_submission: str
 

@@ -20,6 +20,8 @@ from app.models.challenge import Challenge
 from app.models.listing import PublicListingRecord, ScopeVersion
 from app.models.service_expense import ServiceExpense
 from app.services.comparison.rank import rank_challenges
+from app.services.evidence.check import CheckResult
+from app.services.evidence.refresh import get_or_refresh_challenger_evidence
 
 router = APIRouter(tags=["inbox"])
 
@@ -41,10 +43,16 @@ def get_inbox(
     ).all()
     ranked_rows = rank_challenges(challenges, scope, expense)[1:]
     responses = []
+    challenge_lookup = {challenge.id: challenge for challenge in challenges}
     for row in ranked_rows:
         challenger = db.get(Account, row.challenger_account_id)
-        if challenger is None or row.savings is None or row.challenge_id is None:
+        challenge = challenge_lookup.get(row.challenge_id or "")
+        if challenger is None or row.savings is None or row.challenge_id is None or challenge is None:
             continue
+        evidence = get_or_refresh_challenger_evidence(challenge, db)
+        platform_check = CheckResult.model_validate_json(evidence.platform_check)
+        identity_check = CheckResult.model_validate_json(evidence.identity_check)
+        registry_check = CheckResult.model_validate_json(evidence.registry_check)
         responses.append(
             InboxChallengeResponse(
                 challenge_id=row.challenge_id,
@@ -57,6 +65,9 @@ def get_inbox(
                 unstated_items=row.unstated_items,
                 savings=_serialize_savings(row.savings),
                 evidence_status="not_checked",
+                platform_check_status=platform_check.status,
+                identity_check_status=identity_check.status,
+                registry_check_status=registry_check.status,
                 provenance=row.provenance,
                 bidding_mode_at_submission=row.bidding_mode_at_submission or "sealed",
             )

@@ -25,7 +25,11 @@ export function ChallengeRow({ challenge }: ChallengeRowProps): JSX.Element {
         {challenge.savings.label}:{' '}
         <MoneyDisplay amountMinor={challenge.savings.first_year_net_savings_minor} currency={challenge.price_currency} />
       </td>
-      <td>{challenge.evidence_status}</td>
+      <td>
+        <div>Platform: {challenge.platform_check_status}</div>
+        <div>Identity: {challenge.identity_check_status}</div>
+        <div>Registry: {challenge.registry_check_status}</div>
+      </td>
       <td><ProvenanceBadge label={challenge.provenance} /></td>
     </tr>
   );
