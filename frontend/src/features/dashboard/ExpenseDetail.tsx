@@ -51,6 +51,8 @@ export function ExpenseDetail({ detail, hasSelection }: ExpenseDetailProps): JSX
             </div>
             <div style={{ display: 'flex', gap: '0.5rem', marginTop: '0.25rem' }}>
               <ProvenanceBadge kind="financial" value={transaction.source_type} />
+              {/* Pending Stripe charges and credits stay listed for audit but don't count toward the baseline. */}
+              <span style={{ color: '#475569' }}>{transaction.status} · {transaction.direction}</span>
               {transaction.is_excluded ? <span>Excluded from spend: {transaction.excluded_reason}</span> : null}
             </div>
           </li>

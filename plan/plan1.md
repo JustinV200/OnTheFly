@@ -58,9 +58,9 @@ The hackathon demo ends with a real counteroffer from a real business. Binding c
 
 ### Connection strategy
 
-- **Rho first:** the first real financial adapter.
-- **Mercury next:** another business account through the same normalized interface when time permits.
-- **Demo source:** clearly labeled fixtures for recurring service payments missing from the available sandbox.
+- **Stripe Financial Connections:** the sole MVP financial adapter, using Stripe sandbox accounts and test data for the hackathon.
+- **Demo source:** clearly labeled fixtures for the exact recurring service payments missing from Stripe's simulated data.
+- **Post-MVP:** additional providers can implement the same normalized interface, but Rho and Mercury are not part of the hackathon scope.
 
 Validate authentication, transaction access, pagination, available fields, and sandbox contents against provider documentation during implementation. Earlier notes about sandbox contents must be rechecked before being treated as dependencies.
 
@@ -300,14 +300,47 @@ For the hackathon, arrange a willing real business early and get a genuine count
 4. **Marketplace feed and listing detail:** browse public listings; challenge one.
 5. **Challenge inbox and comparison:** review counteroffers, normalized costs, scope gaps, evidence, savings.
 
+## Product Experience and Visual Direction
+
+The current interface is functional scaffolding and will be redesigned before the demo. The target is a modern financial product: Robinhood-like clarity around money and primary actions, combined with Supabase-like structure, restraint, and dashboard polish. These products are references for interaction quality and visual hierarchy, not templates to copy.
+
+### Design principles
+
+- **Make the money legible.** Current spend, potential savings, offer price, cadence, and provenance should be visually distinct and easy to scan.
+- **One obvious action per state.** Connect, publish, challenge, compare, and shortlist each get a clear primary action; secondary controls stay quiet.
+- **Trust before decoration.** Privacy state, data source, scope completeness, bidding mode, and whether savings are potential must remain visible without opening another screen.
+- **Calm density.** Use generous spacing, compact data tables, restrained borders, and cards only where they clarify grouping. Avoid a wall of disconnected dashboard cards.
+- **Progressive disclosure.** Summary first; transaction evidence, scope assumptions, audit history, and advanced controls expand on demand.
+- **Fast feedback.** Use skeletons for initial loading, optimistic feedback only for reversible actions, inline validation, actionable errors, and intentional empty states. Never leave the user on a blank white screen or indefinite `Loading...` text.
+- **Responsive by default.** Desktop supports dense spend review; mobile prioritizes marketplace browsing, listing detail, and challenge submission.
+- **Accessible and consistent.** Shared color, type, spacing, radius, shadow, focus, status, table, form, modal, toast, and navigation primitives; keyboard-visible focus and sufficient contrast.
+
+### Visual system
+
+- Neutral foundation with one restrained green accent for positive financial outcomes and primary actions; red is reserved for destructive or genuinely adverse states.
+- Modern sans-serif typography with tabular numerals for monetary values.
+- Persistent application shell with product identity, primary navigation, current-business switcher, and connection state.
+- Reusable primitives for buttons, inputs, badges, metric blocks, data tables, offer cards, comparison rows, dialogs, skeletons, empty states, and error banners.
+- Subtle motion may reinforce state changes, but must never delay publishing, unpublishing, or submitting a challenge.
+
+### Screen treatment
+
+1. **Expense dashboard:** headline spend and opportunity metrics, filter/search controls, a polished expense table, clear private/public states, and a side panel or focused flow for expense detail.
+2. **Publish flow:** a short step sequence for scope, disclosure, exact public preview, and confirmation; the final action must feel deliberate.
+3. **Marketplace:** browseable listing cards with category, service area, current spend, deadline, bidding mode, offer count, and scope completeness.
+4. **Listing and challenge:** strong price hierarchy, plain-language scope, trust/provenance cues, and a focused counteroffer form.
+5. **Comparison:** incumbent versus challengers in aligned columns, with scope gaps and assumptions shown before potential savings.
+
+The redesign is complete only when all five core screens share the same shell and component system, work at phone and desktop widths, and have loading, empty, error, success, and disabled states. A favicon and basic product metadata are included so the app no longer presents as an unfinished browser tab.
+
 ## Technical Architecture
 
 - **Frontend:** React + TypeScript with Vite; responsive, since a challenger will browse on a phone.
 - **Backend:** Python + FastAPI with Pydantic request/response models.
 - **Database:** Postgres via Supabase.
 - **Identity:** one account type. For the hackathon, seeded demo accounts with an in-app switcher — no signup, no password reset. Real auth is post-MVP.
-- **Jobs:** a small background worker for imports, evidence lookups, notifications, and outbound invitations.
-- **Financial adapters:** Rho first, labeled demo fixtures, then Mercury or imports.
+- **Jobs:** a small background worker for imports, evidence lookups, and outbound invitations.
+- **Financial adapters:** Stripe Financial Connections sandbox for the MVP, with labeled demo fixtures as the deterministic fallback.
 - **Discovery:** Tavily behind a provider interface (secondary path).
 - **Reasoning:** Claude for categorization suggestions, scope drafting, offer extraction, and evidence summaries; confirm the model ID during implementation.
 - **Updates:** polling is sufficient for incoming challenges.
@@ -347,12 +380,12 @@ Listing states: `private → scope confirmed → public → closed → shortlist
 
 All names, prices, and counts are a script template, not claims of existing integrations or received offers.
 
-1. Show a working Rho connection and the actual transaction data available.
+1. Show a working Stripe Financial Connections sandbox connection and label the returned data as sandbox data.
 2. Show the expense dashboard with every expense private by default.
 3. Toggle **commercial cleaning, $2,400/month** to public; confirm the scope; preview exactly what becomes public; publish.
 4. Show the public profile with the listing on it.
 5. Switch accounts. Browse the marketplace feed as a different business, open the listing, submit a counteroffer.
-6. Switch back. Show the challenge notification and the challenger's evidence.
+6. Switch back. Refresh the challenge inbox and show the new challenge and its evidence.
 7. Turn on **open bidding**, switch to a third account, and underbid the standing offer — showing the anonymized leaderboard with scope completeness beside each price.
 8. Display a genuine counteroffer from a real business, ideally **$1,875/month** if that is the actual price offered; otherwise its real amount.
 9. Show the scope comparison, outstanding evidence checks, and potential annual savings — at $1,875/month, **$6,300/year** before additional costs.
@@ -367,15 +400,15 @@ Detailed step-by-step breakdown lives in [../roadmap/](../roadmap/).
 
 1. **Foundations:** deploy early, since public profiles must be publicly reachable. Money and provenance primitives, seeded accounts, account switcher.
 2. **Validate the real counteroffer path:** identify a concrete need and a willing real provider; get them onto the platform, or capture their quote with provenance.
-3. **Financial ingestion:** Rho, the normalized transaction model, labeled fixtures — everything private.
+3. **Financial ingestion:** Stripe Financial Connections sandbox, the normalized transaction model, and labeled fixtures — everything private.
 4. **Expense dashboard:** vendor grouping, recurrence, annualized baseline, corrections, listing suggestions.
 5. **Visibility and profiles:** the toggle, the explicit public projection, scope confirmation, the publish preview, the profile page.
-6. **Marketplace and challenges:** feed, listing detail, challenge submission and revision, notifications.
+6. **Marketplace and challenges:** feed, listing detail, challenge submission and revision, and an inbox refreshed by polling.
 7. **Comparison:** normalization, scope gaps, savings arithmetic, the challenge inbox.
 8. **Challenger evidence:** identity matching first, then entity registration and reputation.
 9. **Outbound secondary path:** Tavily discovery, approved invitations, delivery tracking.
-10. **Demo polish:** provenance labels, failure states, the full script, rehearsal on deployed infrastructure.
-11. **Stretch:** Mercury, real auth, off-platform reply extraction, voice outreach, anonymous live underbidding, more categories.
+10. **UI modernization and demo polish:** implement the shared visual system and responsive shell, redesign the five core screens, add complete loading/empty/error states, then rehearse the full script on deployed infrastructure.
+11. **Stretch:** additional financial providers, real auth, off-platform reply extraction, voice outreach, anonymous live underbidding, more categories.
 
 The priority is completing the account → dashboard → publish → challenge → compare loop.
 
@@ -399,7 +432,7 @@ The priority is completing the account → dashboard → publish → challenge �
 
 **MVP:** one category, one service area, one financial integration, seeded accounts, per-expense visibility, public profiles, a marketplace feed, sealed counteroffers with an owner-controlled open-bidding toggle, evidence-backed comparison, and a genuine offer from a real business.
 
-**Later:** real authentication, more banks and categories, fully identified public bidding, payment routing, contract execution, subscription or success-fee pricing, savings tracking after switching, and reputation built from completed switches.
+**Later:** real authentication, additional financial providers, more categories, fully identified public bidding, payment routing, contract execution, subscription or success-fee pricing, savings tracking after switching, and reputation built from completed switches.
 
 **Removed from prior plans:** equipment shopping lists, product-camera overlays, visual inventory audits, camera attention gating, asset management, and the token-scoped private RFQ flow. The fly-brain circuits themselves (Compound Eye, Mushroom Body, FlyHash) were kept and retargeted to spend data.
 

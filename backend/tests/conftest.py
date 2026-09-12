@@ -40,6 +40,7 @@ def reset_settings_cache(monkeypatch: pytest.MonkeyPatch) -> None:
     if TEST_DB_PATH.exists():
         TEST_DB_PATH.unlink()
     monkeypatch.setenv("DATABASE_URL", TEST_DATABASE_URL)
+    monkeypatch.setenv("TRANSACTION_SOURCE", "fixture")
     get_settings.cache_clear()
     get_engine.cache_clear()
     yield

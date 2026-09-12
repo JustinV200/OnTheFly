@@ -1,24 +1,38 @@
-# Phase 09 — Demo polish
+# Phase 09 — UI modernization and demo polish
 
-**Goal:** the full loop runs end to end, in front of people, without a rescue — and every number on screen traces to its source.
+**Goal:** the product looks and behaves like a credible modern financial marketplace, and the full loop runs end to end in front of people without a rescue — with every number traceable to its source.
 
-**Depends on:** everything. **Size:** M. **Critical path:** yes.
+**Depends on:** everything. **Size:** L. **Critical path:** yes.
 
 **Runbook:** [notes/demo-runbook.md](notes/demo-runbook.md), the script as the product runs it today, with the privacy proof, recovery steps, and rehearsed answers.
 
 **Built so far:** a provenance badge on every financial figure and offer, plus an always-on seams strip (`GET /api/demo/status`). Defined loading, empty, and error states on every screen. A public-visitor mode for the logged-out view. A projector-sized account switcher. An open-bidding leaderboard with sealed-offer counts. A 409 guard when bidding changes while a challenger is typing. A genuine-offer callout in the owner inbox. An owner-only trace from savings to transactions (`GET /api/challenges/{id}/trace`). A reset command with live and staged scenarios and a durable genuine-offer ledger. A read-only preflight (`python -m app.cli.preflight`). **Not built:** shortlisting (demo step 10) went to [10](10-stretch.md) per "Don't start new features here". **Still human:** deployed rehearsal, cell-data check, backup recording, and phase 01's genuine offer.
 
-Polish here means *provenance, privacy proof, failure states, and rehearsal*, not visual refinement. A judge's first instinct is to ask where a number came from. Their second is to click something you didn't plan for. Their third, for this product specifically, is to ask what stops a business publishing something by accident.
+This phase includes a focused visual redesign as well as provenance, privacy proof, failure states, and rehearsal. The visual reference is Robinhood's clarity around money and actions plus Supabase's structured, restrained dashboard feel. Copy neither product's branding or layouts; use them as a quality bar for hierarchy, density, responsiveness, and interaction feedback. A judge's first instinct is to ask where a number came from. Their second is to click something you didn't plan for. Their third, for this product specifically, is to ask what stops a business publishing something by accident.
 
 ## Steps
 
-### 1. Provenance audit — every screen, every number
+### 1. Establish the visual system and application shell
+
+Define shared tokens for color, typography, spacing, radius, borders, shadows, motion, and responsive breakpoints. Use tabular numerals for money and reserve status colors for meaningful states.
+
+Build reusable primitives for buttons, inputs, selectors, badges, metric blocks, tables, cards, dialogs, drawers, tabs, skeletons, empty states, error banners, and toasts. Then build one persistent responsive shell containing product identity, primary navigation, current-business switcher, and connection status.
+
+Include a favicon and basic page metadata. Verify keyboard focus, contrast, and phone-width navigation before applying the system to feature screens.
+
+### 2. Redesign the five core screens
+
+Apply the system to the expense dashboard, publish flow, public profile, marketplace/listing experience, and challenge comparison. Keep money, privacy state, provenance, bidding mode, and scope completeness visually prominent.
+
+Desktop should support dense spend review without feeling crowded. Mobile should prioritize browsing listings, reading scope, and submitting a challenge. Every screen must define loading, empty, error, success, and disabled states; a blank white screen or indefinite plain-text loader fails this step.
+
+### 3. Provenance audit — every screen, every number
 
 Walk every screen and confirm each figure and claim shows its origin: `production | sandbox | imported | fixture` for financial data, `challenger-submitted | captured from an off-platform response | demo data` for offers, source plus timestamp for evidence.
 
 Anything unlabeled is a bug. This is the highest-value hour in the phase, because it's exactly what a skeptical judge probes.
 
-### 2. The privacy proof
+### 4. The privacy proof
 
 Rehearse the answer to *"what stops someone publishing their whole account by accident?"* as a **demonstration**, not a sentence:
 
@@ -29,13 +43,13 @@ Rehearse the answer to *"what stops someone publishing their whole account by ac
 
 That sequence takes forty seconds and answers the product's hardest question better than any slide. Practice it as a unit.
 
-### 3. Demo reset command
+### 5. Demo reset command
 
 `backend/app/cli/seed_demo.py` — one command that drops to a known state and reseeds accounts, transactions, and any demo listings. You will run this more than once, and a half-mutated database between attempts is how a working product looks broken.
 
 Reset must **not** destroy the genuine counteroffer from phase 01. Seed it back with its real provenance and timestamp.
 
-### 4. Failure and empty states
+### 6. Failure and empty states
 
 Every screen needs its unhappy paths, because someone will hit one:
 
@@ -50,14 +64,14 @@ Every screen needs its unhappy paths, because someone will hit one:
 
 An unstyled error is survivable. A blank white screen is not — nobody can tell whether it's broken or loading.
 
-### 5. Honest labeling of the demo's seams
+### 7. Honest labeling of the demo's seams
 
 Two things get said on screen, not just aloud:
 
-- **If the Rho sandbox has no recurring service spend**, the demo runs on fixtures. Label it, and volunteer it in the pitch. Offering it reads as rigor; being caught at it reads as the opposite.
+- **If Stripe's sandbox data has no recurring service spend matching the demo**, that expense comes from fixtures. Label both sources, and volunteer the distinction in the pitch. Offering it reads as rigor; being caught at it reads as the opposite.
 - **If no genuine counteroffer arrived before the cutoff**, every sample offer is labeled simulated in the UI. The working publish-and-challenge loop is still the real accomplishment.
 
-### 6. The account switch as a demo instrument
+### 8. The account switch as a demo instrument
 
 The strongest minute you have is switching accounts mid-demo: publish as one business, become another, find the listing in the feed, counter it, switch back, see it arrive. Then flip on open bidding, become a third business, and underbid — the leaderboard moving in front of the audience is the moment the product reads as a marketplace rather than a form.
 
@@ -65,19 +79,19 @@ Rehearse it until the switching is invisible and the *bidding* is what people no
 
 Seed the accounts so this works: one owner with spend, and at least two plausible challengers.
 
-### 7. The real counteroffer, front and centre
+### 9. The real counteroffer, front and centre
 
 If phase 01 delivered: show the actual amount, actual terms, actual timestamp, and say whether it came through the platform or was captured off it. One genuine offer from one real business is worth more than a screen of plausible fakes, and most teams won't have one.
 
-### 8. Walk the plan's demo script on deployed infrastructure
+### 10. Walk the plan's demo script on deployed infrastructure
 
 The ten-step script in [../plan/plan1.md](../plan/plan1.md). Rehearse it **deployed**, not on localhost. Then rehearse again on hotel wifi or tethered — conference networks are hostile, and a demo that needs a fast connection often doesn't get one.
 
-### 9. Trace one number all the way down
+### 11. Trace one number all the way down
 
 Pick the headline savings figure and click from it through the offer, the scope version, the listing, the expense, the annualized baseline, and finally the individual transactions. Any missing link gets fixed — that chain *is* the product's claim to credibility.
 
-### 10. Pre-demo checklist
+### 12. Pre-demo checklist
 
 Write it down here and run it before presenting. `python -m app.cli.seed_demo --confirm-remote` covers reseeding. `python -m app.cli.preflight --api … --frontend …` checks API health, frontend-to-API reach (CORS and deep-link refresh), seeded data, and whether a genuine offer exists. It prints the rest as MANUAL:
 
@@ -92,6 +106,10 @@ Write it down here and run it before presenting. `python -m app.cli.seed_demo --
 
 ## Done when
 
+- [ ] The five core screens use one coherent component system and responsive application shell.
+- [ ] Money, privacy, provenance, bidding mode, and scope completeness have clear and consistent hierarchy.
+- [ ] Desktop and phone layouts have been checked, including keyboard focus and contrast.
+- [ ] The browser tab has a favicon and intentional product metadata.
 - [ ] The full script runs deployed, cold, without intervention.
 - [ ] Every figure on screen shows its provenance.
 - [ ] The privacy proof runs in under a minute and is rehearsed.

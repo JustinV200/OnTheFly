@@ -83,6 +83,8 @@ def get_expense_detail(
                 amount_minor=transaction.amount_minor,
                 currency=transaction.currency,
                 posted_at=transaction.posted_at,
+                status=transaction.status,
+                direction=transaction.direction,
                 source_type=transaction.source_type,
                 is_excluded=transaction.is_excluded,
                 excluded_reason=transaction.excluded_reason,

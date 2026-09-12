@@ -1,4 +1,4 @@
-# rho_hackathon
+# On the Fly
 
 **List what you pay. Let anyone offer to beat it.**
 
@@ -35,7 +35,7 @@ The tradeoff is a cold-start problem, which is why outbound discovery survives a
 
 ## What it does
 
-- **Reads real transaction history** through a normalized adapter, starting with [Rho](https://docs.rho.co), with clearly labeled fixtures for spend the sandbox doesn't contain.
+- **Reads simulated transaction history** through Stripe Financial Connections in sandbox mode, with clearly labeled fixtures for spend the sandbox doesn't contain. Production financial data is post-MVP.
 - **Shows every expense** grouped by vendor, with detected cadence, recurrence confidence, annualized cost, and the individual payments behind each figure.
 - **Suggests what's worth listing** on an explainable heuristic — but the owner decides, and can publish something the heuristic ranked low.
 - **Confirms scope before publishing**, because a price with no scope isn't something anyone can meaningfully counter. AI drafts it from transaction evidence; unknown fields stay explicit questions rather than being invented from a merchant name.
@@ -62,8 +62,8 @@ Savings are **potential** until a switch actually happens, and the UI says so.
 | Backend | Python + FastAPI, Pydantic |
 | Database | Postgres via Supabase |
 | Identity | One account type; seeded demo accounts with an in-app switcher |
-| Jobs | Background worker for imports, evidence, notifications |
-| Financial data | `TransactionSource` adapter — Rho first, labeled fixtures, Mercury later |
+| Jobs | Background worker for imports and evidence |
+| Financial data | `TransactionSource` adapter — Stripe Financial Connections sandbox, with labeled fixtures as fallback |
 | Discovery | Tavily, behind a provider interface (secondary path) |
 | Reasoning | Claude for scope drafting, offer extraction, evidence summaries |
 | Fly-brain analysis | Compound Eye (contrast adaptation), Mushroom Body (FlyHash, novelty filter), pure Python |

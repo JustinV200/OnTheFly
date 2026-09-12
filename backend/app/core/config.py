@@ -12,15 +12,16 @@ class Settings(BaseSettings):
 
     database_url: str = "sqlite:///./dev.db"
     transaction_source: str = "fixture"
-    rho_api_key: str = ""
-    rho_base_url: str = "https://api.rho.co"
+    stripe_secret_key: str = ""
+    stripe_webhook_secret: str = ""
+    stripe_base_url: str = "https://api.stripe.com"
     claude_api_key: str = ""
     # Current default Claude model as of 2026-09-12. Nothing calls the API yet, so re-confirm
     # the ID when the first AI feature lands (CLAUDE.md: confirm during implementation).
     claude_model: str = "claude-opus-5"
     app_version: str = "0.1.0"
     # Comma-separated allowed CORS origins; defaults to local dev frontend
-    cors_allow_origins: str = "http://localhost:5173"
+    cors_allow_origins: str = "http://localhost:5173,http://127.0.0.1:5173"
 
     model_config = SettingsConfigDict(
         env_file=".env",

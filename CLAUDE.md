@@ -1,4 +1,4 @@
-# rho_hackathon — Project Guide
+# On the Fly — Project Guide
 
 A B2B marketplace built on voluntary price transparency. A business connects its financial account, sees every expense in a private dashboard, and toggles individual expenses public. Public expenses appear on the business's profile, where any other business on the platform can see them and post a counteroffer.
 
@@ -20,8 +20,8 @@ Two earlier concepts are **removed from scope**: an equipment-shopping and camer
 - **Backend:** Python + FastAPI. Async REST, Pydantic request/response models.
 - **Database:** Postgres via Supabase.
 - **Identity:** one account type — every account is a business that can both publish expenses and challenge others'. Seeded demo accounts with an in-app switcher. **No signup, no passwords, no auth flows.** Real auth is post-MVP.
-- **Jobs:** small background worker for imports, evidence lookups, notifications, invitations.
-- **Financial adapters:** `TransactionSource` interface — Rho first, labeled fixtures alongside, Mercury later.
+- **Jobs:** small background worker for imports, evidence lookups, and invitations.
+- **Financial adapters:** `TransactionSource` interface — Stripe Financial Connections sandbox for the MVP, with labeled fixtures as the deterministic fallback. Rho and Mercury are post-MVP.
 - **Discovery:** Tavily behind a provider interface (secondary path only).
 - **AI:** Claude for categorization suggestions, scope drafting, offer extraction, evidence summaries. Structured outputs everywhere JSON is consumed; never parse prose. Confirm the current model ID during implementation rather than hardcoding one from memory.
 - **Fly-brain analysis:** pure-Python circuits in `backend/app/services/flybrain/` — Mushroom Body (FlyHash similarity search, novelty filter) and Compound Eye (contrast adaptation). No model, no extra dependencies.
@@ -138,4 +138,4 @@ Three circuits, each with one narrow job. They rank, flag, or segment; they neve
 
 ## Open questions
 
-Tracked at the end of [plan/plan1.md](plan/plan1.md) and in [roadmap/README.md](roadmap/README.md). The two that block the most: which real business supplies the genuine counteroffer, and whether the Rho sandbox contains recurring service spend.
+Tracked at the end of [plan/plan1.md](plan/plan1.md) and in [roadmap/README.md](roadmap/README.md). The two that block the most: which real business supplies the genuine counteroffer, and whether the Stripe sandbox flow exposes enough simulated recurring service spend for the demo.

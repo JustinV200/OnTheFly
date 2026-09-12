@@ -3,6 +3,7 @@
 from app.models.account import Account
 from app.models.challenge import Challenge, ChallengeRevision
 from app.models.challenger_evidence import ChallengerEvidence
+from app.models.financial_connection import FinancialConnection
 from app.models.invitation import Invitation
 from app.models.listing import PublicListingRecord, ScopeVersion
 from app.models.service_expense import ServiceExpense
@@ -16,6 +17,7 @@ __all__ = [
     "Challenge",
     "ChallengeRevision",
     "ChallengerEvidence",
+    "FinancialConnection",
     "Invitation",
     "PublicListingRecord",
     "ScopeVersion",

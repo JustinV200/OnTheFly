@@ -6,6 +6,7 @@ from fastapi import APIRouter
 
 from app.api.challenges.router import router as challenges_router
 from app.api.connection.router import router as connection_router
+from app.api.connections.router import router as connections_router
 from app.api.demo.router import router as demo_router
 from app.api.evidence.router import router as evidence_router
 from app.api.expenses.router import router as expenses_router
@@ -21,6 +22,7 @@ from app.api.vendor_aliases.router import router as vendor_aliases_router
 api_router = APIRouter()
 api_router.include_router(challenges_router)
 api_router.include_router(connection_router)
+api_router.include_router(connections_router)
 api_router.include_router(demo_router)
 api_router.include_router(evidence_router)
 api_router.include_router(expenses_router)

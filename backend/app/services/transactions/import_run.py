@@ -13,7 +13,9 @@ from sqlalchemy.orm import Session
 from app.models.transaction import Transaction
 from app.services.expenses.sync import sync_service_expenses
 from app.services.transactions.factory import get_transaction_source
-from app.services.transactions.source import NormalizedTransaction
+from app.services.transactions.source import NormalizedTransaction, TransactionSource
+from app.models.financial_connection import FinancialConnection
+from app.services.transactions.stripe.client import StripeError
 
 
 class ImportResult(BaseModel):
@@ -26,16 +28,32 @@ class ImportResult(BaseModel):
 
 
 
-def run_import(owner_account_id: str, provider_account_id: str, db: Session) -> ImportResult:
+def run_import(owner_account_id: str, provider_account_id: str, db: Session,
+               source: TransactionSource | None = None) -> ImportResult:
     """Import, deduplicate, classify, and persist transactions for one owner account."""
 
-    source = get_transaction_source()
+    source = source or get_transaction_source()
+    if provider_account_id.startswith("fca_"):
+        connection = db.get(FinancialConnection, owner_account_id)
+        if connection is None or connection.bank_account_id != provider_account_id:
+            raise StripeError("Bank account does not belong to this company.")
     window_end = date.today()
     window_start = window_end - timedelta(days=730)
     counts = ImportResult(new=0, duplicate=0, excluded=0, failed=0)
 
     for transaction in source.list_transactions(provider_account_id, window_start, window_end):
-        if _find_duplicate(db, transaction) is not None:
+        existing = _find_duplicate(db, transaction)
+        if existing is not None:
+            if existing.owner_account_id != owner_account_id:
+                raise StripeError("Transaction belongs to another company.")
+            if transaction.provider == "stripe":
+                # Retain identity while applying status and amount corrections.
+                for field, value in transaction.model_dump().items():
+                    if field != "normalized_vendor":
+                        setattr(existing, field, value)
+                reason = _classify_exclusion(transaction)
+                existing.is_excluded = reason is not None
+                existing.excluded_reason = reason
             counts.duplicate += 1
             continue
 
@@ -83,6 +101,8 @@ def _find_duplicate(db: Session, transaction: NormalizedTransaction) -> Transact
 
 
 def _classify_exclusion(transaction: NormalizedTransaction) -> str | None:
+    if transaction.provider == "stripe" and transaction.status != "posted":
+        return transaction.status
     haystack = " ".join(
         value.lower()
         for value in [transaction.raw_description, transaction.category or "", transaction.memo or ""]

@@ -28,8 +28,23 @@ def sync_service_expenses(owner_account_id: str, db: Session) -> list[ServiceExp
     results: list[ServiceExpense] = []
 
     for vendor_key, vendor_transactions in grouped.items():
-        recurrence = detect_recurrence(vendor_transactions)
-        baseline = compute_baseline(vendor_transactions, recurrence)
+        # Keep all rows for audit; unsettled Stripe payments are not baseline spend.
+        stripe_group = any(t.provider == "stripe" for t in vendor_transactions)
+        charge_transactions = [t for t in vendor_transactions if t.status == "posted" and t.direction == "debit"] if stripe_group else vendor_transactions
+        if not charge_transactions:
+            existing = db.scalar(select(ServiceExpense).where(
+                ServiceExpense.owner_account_id == owner_account_id,
+                ServiceExpense.normalized_vendor == vendor_key))
+            if existing:
+                existing.amount_minor_per_period = 0
+                existing.annualized_amount_minor = 0
+                existing.period_count = 0
+                existing.is_publishable = False
+                existing.is_eligible = False
+                existing.eligibility_reason = "no_posted_debits"
+            continue
+        recurrence = detect_recurrence(charge_transactions)
+        baseline = compute_baseline(charge_transactions, recurrence)
         display_vendor = vendor_transactions[0].normalized_vendor or vendor_key
         category = _choose_category(vendor_transactions)
         eligibility = classify_eligibility(display_vendor, category, vendor_transactions[0].direction)
@@ -103,7 +118,7 @@ def _group_transactions(
     correction_store = VendorCorrectionStore()
     grouped: dict[str, list[Transaction]] = defaultdict(list)
     for transaction in transactions:
-        fallback_vendor = transaction.normalized_vendor or normalize_vendor_description(
+        fallback_vendor = (None if transaction.provider == "stripe" else transaction.normalized_vendor) or normalize_vendor_description(
             transaction.raw_description
         )
         vendor, category = correction_store.resolve(
@@ -115,6 +130,10 @@ def _group_transactions(
         )
         transaction.normalized_vendor = vendor
         transaction.category = category
+        # Separate Stripe currencies without changing existing fixture grouping keys.
+        if transaction.provider == "stripe":
+            vendor = f"{vendor} [{transaction.currency}]"
+            transaction.normalized_vendor = vendor
         grouped[vendor].append(transaction)
     return dict(grouped)
 

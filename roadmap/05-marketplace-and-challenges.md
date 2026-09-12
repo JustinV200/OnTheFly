@@ -56,7 +56,7 @@ When open bidding is on, the listing detail shows the standing offers, anonymize
 
 **Never rank on bare price.** A price-only leaderboard teaches challengers that the cheapest way to climb is to quietly offer less, which corrodes exactly the comparison the product exists to make. Show what each offer covers next to what it costs — reuse the scope-delta computation from [06](06-counteroffer-comparison.md) rather than writing a second one.
 
-"You've been outbid" notifications close the loop and are what makes open bidding feel live.
+Polling refreshes the leaderboard during the demo; outbound notifications are outside the hackathon scope.
 
 ### 5. The challenge form
 
@@ -101,13 +101,7 @@ Write these as tests. They're cheap now, and they're exactly the rules a judge w
 
 The trickiest one is the last: a listing that has been sealed *and* open over its life has offers in both states at once, and the leaderboard must show only the ones submitted while open.
 
-### 8. Notifications
-
-`backend/app/workers/notifications/`. The owner learns a challenge arrived; in open bidding, a challenger learns they've been outbid. In-app badge plus email, polling, no websockets.
-
-The in-app path is what the demo uses, so build that first and treat email as a bonus. A notification that needs an inbox on screen is one that won't be visible on stage.
-
-### 9. The unpublish interaction
+### 8. The unpublish interaction
 
 Decide and implement what happens to live challenges when a listing is unpublished. Recommended: challenges are **retained and remain visible to the owner**, the listing stops accepting new ones, and challengers see it as closed rather than vanished.
 
