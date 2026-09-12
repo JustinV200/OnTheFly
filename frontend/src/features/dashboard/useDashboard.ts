@@ -22,10 +22,16 @@ export function useDashboard(): UseDashboardResult {
 
   useEffect(() => {
     void (async () => {
-      const response = await get<ExpenseListResponse>('/api/expenses');
-      setExpenses(response.expenses);
-      setMessage(response.message ?? null);
-      setIsLoading(false);
+      try {
+        const response = await get<ExpenseListResponse>('/api/expenses');
+        setExpenses(response.expenses);
+        setMessage(response.message ?? null);
+      } catch {
+        // A visible failure is more useful than leaving the dashboard in a permanent loading state.
+        setMessage('Could not reach the backend at http://127.0.0.1:8000.');
+      } finally {
+        setIsLoading(false);
+      }
     })();
   }, []);
 

@@ -3,7 +3,7 @@
 import { getStoredActingAccountId } from '../../app/AccountSwitcher';
 import type { ErrorEnvelope } from './types';
 
-export const API_BASE_URL = import.meta.env.VITE_API_URL ?? 'http://localhost:8000';
+export const API_BASE_URL = import.meta.env.VITE_API_URL ?? 'http://127.0.0.1:8000';
 
 export class ApiError extends Error {
   public readonly envelope: ErrorEnvelope;
