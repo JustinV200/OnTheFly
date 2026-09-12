@@ -1,8 +1,8 @@
-# Plan 1: Antenna — Procurement Assistant
+# Plan 1: On the Fly — Procurement Assistant
 
 ## Concept
 
-Antenna helps a team lead set a budget, build an equipment list, and make smarter purchase decisions against real card spend — as a web app for buying online, extended into a live augmented-reality view for buying in physical stores. See [Brand: Fruit Fly Vocabulary](#brand-fruit-fly-vocabulary) below for the naming convention used throughout.
+On the Fly helps a team lead set a budget, build an equipment list, and make smarter purchase decisions against real card spend — as a web app for buying online, extended into a live augmented-reality view for buying in physical stores. See [Brand: Fruit Fly Vocabulary](#brand-fruit-fly-vocabulary) below for the naming convention used throughout.
 
 ## Who it's for
 
@@ -12,7 +12,7 @@ This is deliberate, and it drives most of the decisions below. Rho is business b
 
 Nothing about the feature set changes under this framing. The budget, the list, the reviews, the realism check, the research agent, and the AR view all work the same. Only the customer is different.
 
-**Target demo narrative:** a team lead has $4,000 to equip two new hires. They build the list; Antenna says the budget is ~$900 short and flags which line items are the risk. They walk an office-supply aisle with the camera up, seeing what's on the list and what's already been bought. Card spend posts to the Rho account and reconciles the budget as it lands.
+**Target demo narrative:** a team lead has $4,000 to equip two new hires. They build the list; On the Fly says the budget is ~$900 short and flags which line items are the risk. They walk an office-supply aisle with the camera up, seeing what's on the list and what's already been bought. Card spend posts to the Rho account and reconciles the budget as it lands.
 
 ---
 
@@ -216,7 +216,6 @@ Pick the source with one env var (`TRANSACTION_SOURCE=rho|mock`). Default to `mo
 
 | Codename | Real fly anatomy | Maps to |
 |---|---|---|
-| **Antenna** | Sensory organs used to detect and navigate the environment | Product name — senses relevant items and prices, online and in stores |
 | **Compound Eye** | Wide-field, fast-motion-detecting vision | The live AR camera detection view |
 | **Mushroom Body** | Kenyon cells — sparse coding / associative matching | The FlyHash catalog matcher (a genuine biological algorithm, not just a name) |
 | **Halteres** | Balance organs used for flight stability | Budget realism / balance check |
