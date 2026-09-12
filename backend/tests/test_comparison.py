@@ -3,6 +3,8 @@
 from datetime import datetime, timezone
 import json
 
+import pytest
+
 from app.models.challenge import Challenge
 from app.models.listing import ScopeVersion
 from app.models.service_expense import ServiceExpense
@@ -129,6 +131,64 @@ def test_scope_gap_detects_two_visits_vs_three() -> None:
 
     assert any(item.startswith("visit_frequency:") for item in result.missing_items)
     assert result.score < 1.0
+
+
+def _challenge_including(included: list[str]) -> Challenge:
+    return Challenge(
+        id="challenge-1",
+        scope_version_id="scope-1",
+        challenger_account_id="acc_challenger_1",
+        bidding_mode_at_submission="sealed",
+        price_minor=187500,
+        price_currency="USD",
+        billing_frequency="monthly",
+        scope_included=json.dumps(included),
+        scope_excluded="[]",
+        scope_extras="[]",
+        setup_fee_minor=0,
+        taxes_included=True,
+        supplies_included=True,
+        provenance="challenger_submitted",
+    )
+
+
+@pytest.mark.parametrize("scope_frequency", ["3× weekly", "3 times a week", "3x/week", "3x per week", "3X Weekly"])
+def test_visit_gap_is_flagged_for_every_common_frequency_notation(scope_frequency: str) -> None:
+    """A two-visit offer against a three-visit scope is a gap however the owner wrote the frequency."""
+    scope = _build_scope()
+    scope.visit_frequency = scope_frequency
+
+    result = is_scope_complete(_challenge_including(["vacuum", "trash", "2x weekly"]), scope)
+
+    assert result.breakdown["visit_frequency"] == 0.0
+    assert result.missing_items == [f"visit_frequency:{scope_frequency}"]
+    assert result.score < 1.0
+
+
+@pytest.mark.parametrize(
+    ("scope_frequency", "offer_frequency"),
+    [("3 times a week", "3x weekly"), ("3x weekly", "3 times a week"), ("3× weekly", "3x per week")],
+)
+def test_matching_visit_counts_in_different_notations_are_a_match(scope_frequency: str, offer_frequency: str) -> None:
+    scope = _build_scope()
+    scope.visit_frequency = scope_frequency
+
+    result = is_scope_complete(_challenge_including(["vacuum", "trash", offer_frequency, "equipment"]), scope)
+
+    assert result.breakdown["visit_frequency"] == 1.0
+    assert not any(item.startswith("visit_frequency:") for item in result.missing_items + result.unstated_items)
+
+
+def test_unparseable_scope_frequency_needs_review_instead_of_matching() -> None:
+    """The comparison can't check a frequency it can't read, so it never reports a full match."""
+    scope = _build_scope()
+    scope.visit_frequency = "Mon, Wed and Fri evenings"
+
+    result = is_scope_complete(_challenge_including(["vacuum", "trash", "2x weekly", "equipment"]), scope)
+
+    assert result.breakdown["visit_frequency"] == 0.5
+    assert result.unstated_items == ["visit_frequency:Mon, Wed and Fri evenings"]
+    assert not any(item.startswith("visit_frequency:") for item in result.missing_items)
 
 
 def test_savings_are_provisional_when_setup_fee_unknown() -> None:
