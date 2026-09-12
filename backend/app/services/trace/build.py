@@ -14,6 +14,7 @@ from app.models.service_expense import ServiceExpense
 from app.models.transaction import Transaction
 from app.services.comparison.rank import RankedChallenge, rank_challenges
 from app.services.listings.current_price import resolve_current_price
+from app.services.trace.baseline_membership import baseline_transaction_ids
 from app.services.trace.types import (
     OfferTrace,
     TraceBaseline,
@@ -58,6 +59,8 @@ def build_offer_trace(challenge_id: str, acting_account_id: str, db: Session) ->
         .where(Transaction.normalized_vendor == expense.normalized_vendor)
         .order_by(Transaction.posted_at.desc())
     ).all()
+    # The vendor's rows include refunds, unsettled charges, and earlier prices; mark the ones the baseline used.
+    counted_ids = baseline_transaction_ids(transactions)
 
     return OfferTrace(
         savings=_savings(offer_row),
@@ -67,7 +70,7 @@ def build_offer_trace(challenge_id: str, acting_account_id: str, db: Session) ->
         # The answered version's price, matching the savings above and the "still answers version N" text.
         baseline=_baseline(expense, answered_scope, offer_row),
         expense=_expense(expense, transactions),
-        transactions=[_transaction(transaction) for transaction in transactions],
+        transactions=[_transaction(transaction, transaction.id in counted_ids) for transaction in transactions],
     )
 
 
@@ -181,14 +184,17 @@ def _expense(expense: ServiceExpense, transactions: list[Transaction]) -> TraceE
     )
 
 
-def _transaction(transaction: Transaction) -> TraceTransaction:
+def _transaction(transaction: Transaction, counts_toward_baseline: bool) -> TraceTransaction:
     return TraceTransaction(
         id=transaction.id,
         posted_at=transaction.posted_at,
         raw_description=transaction.raw_description,
         amount_minor=transaction.amount_minor,
         currency=transaction.currency,
+        direction=transaction.direction,
+        status=transaction.status,
         source_type=transaction.source_type,
         is_excluded=transaction.is_excluded,
         excluded_reason=transaction.excluded_reason,
+        counts_toward_baseline=counts_toward_baseline,
     )

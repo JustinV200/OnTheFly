@@ -118,16 +118,24 @@ class TraceExpense(BaseModel):
 
 
 class TraceTransaction(BaseModel):
-    """One original transaction behind the expense, with its source label."""
+    """One original transaction filed under the expense's vendor, with its source label.
+
+    Not every row supports the baseline: counts_toward_baseline says which ones it was computed from.
+    """
 
     id: str
     posted_at: datetime
     raw_description: str
+    # Unsigned, as imported; direction carries the sign, so a refund credit has the same amount as a charge.
     amount_minor: int
     currency: str
+    direction: str
+    status: str
     source_type: str
     is_excluded: bool
     excluded_reason: str | None
+    # Computed by the baseline code itself, so the page never re-derives which rows count.
+    counts_toward_baseline: bool
 
 
 class OfferTrace(BaseModel):
