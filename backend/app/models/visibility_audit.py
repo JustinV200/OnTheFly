@@ -1,4 +1,4 @@
-"""Audits every explicit listing visibility transition.
+"""Audits every explicit listing visibility transition and bidding-mode change.
 The snapshot captures the exact public payload served at that moment.
 """
 
@@ -12,7 +12,7 @@ from app.db.base import Base
 
 
 class VisibilityAudit(Base):
-    """Represents one visibility transition for a service expense."""
+    """Represents one visibility transition or bidding-mode change for a service expense."""
 
     __tablename__ = "visibility_audits"
 
