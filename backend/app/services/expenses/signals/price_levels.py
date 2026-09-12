@@ -4,6 +4,7 @@ It finds confirmed price changes, one-off charges, and an unconfirmed latest jum
 
 from datetime import datetime
 from enum import StrEnum
+import math
 
 from pydantic import BaseModel
 
@@ -17,12 +18,16 @@ RECURRING_CADENCES = frozenset({"weekly", "biweekly", "monthly", "bimonthly", "q
 
 # Same minimum as detect_recurrence: fewer than three charges can't establish a level.
 MIN_CHARGES = 3
-# A price level must be held by at least two charges, and most charges must sit in
-# some level. Otherwise amounts vary too much for a "current price" to exist (office
-# supplies bought on a schedule), and taking the first charge as the price would be
-# worse than the plain average.
+# A price level must be held by at least two charges, and a strict majority of charges
+# must sit in some level. Otherwise amounts vary too much for a "current price" to exist
+# (office supplies bought on a schedule), and taking the first charge as the price would
+# be worse than the plain average. At exactly half, which amount counts as "the price"
+# depends only on which one came first.
 MIN_CURRENT_LEVEL_CHARGES = 2
 MIN_SHARE_IN_LEVELS = 0.5
+
+# Charges the detector kept out of every level: one-offs and an unconfirmed trailing jump.
+OFF_LEVEL_RESPONSES = frozenset({SampleResponse.transient, SampleResponse.pending})
 
 # 5% contrast: a smaller move is billing noise absorbed into the level, a larger one
 # is a response. Tuning showed the Mushroom Body amount channel also crosses its
@@ -80,6 +85,9 @@ def analyze_price_levels(transactions: list[Transaction], cadence: str) -> Price
     Assumes the transactions are one vendor group. Credits (refunds) are not charges
     and are left out of the levels. Every amount reported is an integer median of
     real charges, never a value reconstructed from the detector's log-space state.
+    Returns not assessed (amounts_too_variable) when no single price holds a strict
+    majority of charges or the charges outside the levels recur at one amount, so the
+    baseline falls back to the labelled plain average.
     """
 
     charges = sorted(
@@ -97,10 +105,21 @@ def analyze_price_levels(transactions: list[Transaction], cadence: str) -> Price
     trace = PRICE_LEVEL_DETECTOR.run([float(charge.amount_minor) for charge in charges])
     level_starts = [0] + [shift.index for shift in trace.shifts]
     current_members = _level_members(trace.responses, level_starts, len(level_starts) - 1)
-    in_level_count = sum(
-        1 for response in trace.responses if response not in (SampleResponse.transient, SampleResponse.pending)
-    )
-    if len(current_members) < MIN_CURRENT_LEVEL_CHARGES or in_level_count / len(charges) < MIN_SHARE_IN_LEVELS:
+    off_level_amounts = [
+        charges[index].amount_minor
+        for index, response in enumerate(trace.responses)
+        if response in OFF_LEVEL_RESPONSES
+    ]
+    in_level_count = len(charges) - len(off_level_amounts)
+    # The detector confirms a level only when the very next charge holds it, so an amount
+    # that keeps coming back every other period (500, 700, 500, 700) is marked a one-off
+    # each time. Off-level charges that recur at one amount are a second price, not
+    # one-offs: calling them one-offs would drop real spend from the baseline.
+    if (
+        len(current_members) < MIN_CURRENT_LEVEL_CHARGES
+        or in_level_count / len(charges) <= MIN_SHARE_IN_LEVELS
+        or _largest_similar_amount_group(off_level_amounts) >= MIN_CURRENT_LEVEL_CHARGES
+    ):
         return _not_assessed(NotAssessedReason.amounts_too_variable)
 
     shifts: list[PriceLevelShift] = []
@@ -144,11 +163,23 @@ def _level_members(
     # trailing jump sit inside that span but are not charges at this price.
     start = level_starts[level_number]
     end = level_starts[level_number + 1] if level_number + 1 < len(level_starts) else len(responses)
-    return [
-        index
-        for index in range(start, end)
-        if responses[index] not in (SampleResponse.transient, SampleResponse.pending)
-    ]
+    return [index for index in range(start, end) if responses[index] not in OFF_LEVEL_RESPONSES]
+
+
+def _largest_similar_amount_group(amounts: list[int]) -> int:
+    # Size of the largest set of amounts all within the detector's contrast threshold of
+    # each other, measured in log space exactly as the detector compares charges. Once
+    # sorted, a window whose first and last amounts are within the threshold is such a
+    # set, so two pointers find the largest one. Amounts are positive charges.
+    threshold = math.log1p(PRICE_LEVEL_DETECTOR.contrast_threshold)
+    log_amounts = sorted(math.log(amount) for amount in amounts)
+    largest = 0
+    end = 0
+    for start, lowest in enumerate(log_amounts):
+        while end < len(log_amounts) and log_amounts[end] - lowest < threshold:
+            end += 1
+        largest = max(largest, end - start)
+    return largest
 
 
 def _level_amounts(
