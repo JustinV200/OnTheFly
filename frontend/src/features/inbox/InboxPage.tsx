@@ -1,5 +1,6 @@
 /* The owner's offers inbox for one listing: controls, any genuine offer first, every offer, then the comparison.
    It polls, so an offer made by another business shows up after switching back without a refresh. */
+import { Fragment } from 'react';
 import { Link, useParams } from 'react-router-dom';
 
 import { useActingAccount } from '../../shared/account/ActingAccountContext';
@@ -9,6 +10,8 @@ import { ErrorState } from '../../shared/components/ErrorState';
 import { LoadingSpinner } from '../../shared/components/LoadingSpinner';
 import { MoneyDisplay } from '../../shared/components/MoneyDisplay';
 import { categoryLabel } from '../../shared/format/categoryLabel';
+import { OfferGroupHeadingRow } from '../../shared/offers/OfferGroupHeadingRow';
+import { groupHeadingBefore } from '../../shared/offers/offerGroups';
 import { ChallengeRow } from './ChallengeRow';
 import { ComparisonView } from './ComparisonView';
 import { ListingControls } from './controls/ListingControls';
@@ -38,7 +41,7 @@ export function InboxPage(): JSX.Element {
       : <LoadingSpinner label="Loading offers…" />;
   }
 
-  const { listing, challenges } = inbox.data;
+  const { listing, challenges, current_scope_version_number: currentScopeVersionNumber } = inbox.data;
   return (
     <section>
       <h2 style={{ marginBottom: '0.25rem' }}>Offers on your {categoryLabel(listing.category).toLowerCase()} listing</h2>
@@ -75,13 +78,24 @@ export function InboxPage(): JSX.Element {
               </tr>
             </thead>
             <tbody>
-              {challenges.map((challenge) => <ChallengeRow challenge={challenge} key={challenge.challenge_id} />)}
+              {challenges.map((challenge, index) => {
+                // Rows arrive grouped by the server; a heading marks where offers on an earlier scope, or unranked ones, begin.
+                const heading = groupHeadingBefore(challenges, index);
+                return (
+                  <Fragment key={challenge.challenge_id}>
+                    {heading ? <OfferGroupHeadingRow colSpan={5} group={heading} /> : null}
+                    <ChallengeRow challenge={challenge} currentScopeVersionNumber={currentScopeVersionNumber} />
+                  </Fragment>
+                );
+              })}
             </tbody>
           </table>
         </div>
       )}
 
-      {challenges.length > 0 && comparison.data ? <ComparisonView rows={comparison.data.rows} /> : null}
+      {challenges.length > 0 && comparison.data ? (
+        <ComparisonView currentScopeVersionNumber={comparison.data.current_scope_version_number} rows={comparison.data.rows} />
+      ) : null}
       {challenges.length > 0 && !comparison.data && comparison.error ? (
         <ErrorState error={comparison.error} onRetry={reload} title="Couldn’t load the comparison" />
       ) : null}

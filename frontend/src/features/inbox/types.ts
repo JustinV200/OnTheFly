@@ -32,7 +32,15 @@ export interface InboxChallenge {
   missing_items: string[];
   added_items: string[];
   unstated_items: string[];
-  savings: SavingsResponse;
+  // Scope figures and savings are measured against the version this offer answered, not the newest one.
+  answered_scope_version_number: number;
+  is_current_scope_version: boolean;
+  // The monthly price this offer's savings use: the one confirmed on its answered scope version.
+  baseline_monthly_minor: number;
+  baseline_currency: string;
+  // Null only for an unranked offer; unranked_reason then says why there is no figure.
+  savings: SavingsResponse | null;
+  unranked_reason: string | null;
   evidence_rollup: EvidenceRollup;
   platform_check_status: string;
   identity_check_status: string;
@@ -48,6 +56,7 @@ export interface InboxChallenge {
 export interface InboxResponse {
   challenges: InboxChallenge[];
   bidding_mode: string;
+  current_scope_version_number: number;
   // The stored listing record; visibility is "private" once unpublished, while its offers are kept.
   listing: PublicListingProjection;
 }
@@ -62,12 +71,20 @@ export interface ComparisonRow {
   missing_items: string[];
   added_items: string[];
   unstated_items: string[];
+  // The incumbent row reports the current version; an offer reports the version it answered.
+  answered_scope_version_number: number;
+  is_current_scope_version: boolean;
+  baseline_monthly_minor: number;
+  baseline_currency: string;
+  // Null for the incumbent row and for unranked offers; unranked_reason explains the latter.
   savings: SavingsResponse | null;
+  unranked_reason: string | null;
   provenance: string;
 }
 
 export interface ComparisonResponse {
   rows: ComparisonRow[];
+  current_scope_version_number: number;
 }
 
 // Full owner-visible offer terms from GET /api/listings/{id}/challenges (backend ChallengeResponse).

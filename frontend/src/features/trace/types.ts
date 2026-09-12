@@ -1,5 +1,7 @@
 /* Declares the offer trace response (backend app/services/trace/types.py). */
 export interface OfferTrace {
+  // Null when the offer is unranked: there is no figure to trace, and offer.unranked_reason says why.
+  // The baseline is the price confirmed on the scope version the offer answered, not necessarily today's.
   savings: {
     label: string;
     currency: string;
@@ -9,7 +11,7 @@ export interface OfferTrace {
     first_year_net_savings_minor: number;
     is_provisional: boolean;
     assumptions: string[];
-  };
+  } | null;
   offer: {
     challenge_id: string;
     challenger_name: string;
@@ -26,6 +28,7 @@ export interface OfferTrace {
     scope_completeness: number;
     missing_items: string[];
     unstated_items: string[];
+    unranked_reason: string | null;
     submitted_at: string;
     revised_at: string | null;
     revision_count: number;
