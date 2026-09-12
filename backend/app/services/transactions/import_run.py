@@ -89,9 +89,10 @@ def _classify_exclusion(transaction: NormalizedTransaction) -> str | None:
     )
     if "payroll" in haystack:
         return "payroll"
-    # Only exclude credits that are explicitly transfers; ordinary vendor refunds/credits
-    # should not be blanket-excluded — they reduce net spend and must reconcile.
-    if "transfer" in haystack:
+    # Exclude only credits that are also identified as transfers.  A debit transaction
+    # whose vendor name contains "transfer" (e.g. "Transfer Pro Cleaning") is legitimate
+    # spend and must not be excluded — checking direction prevents false positives.
+    if transaction.direction == "credit" and "transfer" in haystack:
         return "transfer"
     # Use a whole-word match to avoid false-positives on vendor names that contain
     # "tax" as a substring (e.g. "Syntaxco", "Exacta Supplies").
