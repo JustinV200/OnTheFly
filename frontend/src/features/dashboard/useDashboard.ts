@@ -2,7 +2,7 @@
    Data loading stays here so presentational components stay focused on rendering. */
 import { useEffect, useState } from 'react';
 
-import { get } from '../../shared/api/client';
+import { API_BASE_URL, ApiError, get } from '../../shared/api/client';
 import type { Expense, ExpenseDetail, ExpenseListResponse } from './types';
 
 interface UseDashboardResult {
@@ -26,9 +26,15 @@ export function useDashboard(): UseDashboardResult {
         const response = await get<ExpenseListResponse>('/api/expenses');
         setExpenses(response.expenses);
         setMessage(response.message ?? null);
-      } catch {
+      } catch (error) {
         // A visible failure is more useful than leaving the dashboard in a permanent loading state.
-        setMessage('Could not reach the backend at http://127.0.0.1:8000.');
+        // An ApiError means the backend answered and refused (e.g. no acting account); anything
+        // else means no usable response came back, so point at the configured address.
+        setMessage(
+          error instanceof ApiError
+            ? `The backend refused the request: ${error.message}`
+            : `Could not reach the backend at ${API_BASE_URL}.`,
+        );
       } finally {
         setIsLoading(false);
       }
