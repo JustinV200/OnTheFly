@@ -9,6 +9,7 @@ from sqlalchemy import select
 from sqlalchemy.orm import Session
 
 from app.models.transaction import Transaction
+from app.services.expenses.sync import sync_service_expenses
 from app.services.transactions.factory import get_transaction_source
 from app.services.transactions.source import NormalizedTransaction
 
@@ -63,6 +64,7 @@ def run_import(owner_account_id: str, provider_account_id: str, db: Session) -> 
             counts.excluded += 1
 
     db.commit()
+    sync_service_expenses(owner_account_id, db)
     return counts
 
 
