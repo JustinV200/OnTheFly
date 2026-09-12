@@ -151,8 +151,8 @@ Image→catalog matching is **out of scope** — it needs CLIP or equivalent, wh
 - **Overlay:** `<canvas>` over `<video>`.
 
 ### Backend / API
-- **Runtime:** Node.js + TypeScript, Express or Fastify — simple REST.
-- **Hosting:** whatever stands up fastest (Vercel / Render / Fly.io). Needs to be HTTPS and reachable from a phone on day one.
+- **Runtime:** Python + FastAPI — simple REST, async support for the transaction poll loop, and Pydantic models line up naturally with the structured outputs the AI layer needs.
+- **Hosting:** whatever stands up fastest (Render / Fly.io / Railway). Needs to be HTTPS and reachable from a phone on day one.
 
 ### AI Layer
 
@@ -206,7 +206,7 @@ Pick the source with one env var (`TRANSACTION_SOURCE=rho|mock`). Default to `mo
 
 ### Dev/Deploy
 - **Version control:** Git/GitHub (this repo).
-- **Packages:** npm/pnpm workspaces if frontend and backend live in one monorepo.
+- **Packages:** two package managers, one repo — npm for the frontend (`frontend/`), a Python venv + `pip`/`poetry` for the backend (`backend/`). No workspace tooling to share between them since the languages differ.
 
 ---
 
