@@ -80,3 +80,45 @@ def test_public_projection_is_explicit_and_does_not_leak_private_fields() -> Non
 
     assert "secret_notes" not in projection.model_dump()
     assert projection.category == "cleaning"
+
+
+def test_public_price_and_cadence_come_from_the_same_source() -> None:
+    """A quarterly amount must never be published under a scope's monthly cadence."""
+    expense = ServiceExpense(
+        id="expense-1",
+        owner_account_id="acc_owner_1",
+        normalized_vendor="Window Co",
+        category="cleaning",
+        cadence="quarterly",
+        recurrence_confidence=1.0,
+        amount_minor_per_period=600000,
+        currency="USD",
+        annualized_amount_minor=2400000,
+        first_seen=datetime.now(timezone.utc),
+        last_seen=datetime.now(timezone.utc),
+        period_count=4,
+        is_eligible=True,
+        eligibility_reason="eligible",
+        is_publishable=True,
+        visibility="scope_confirmed",
+    )
+    listing = PublicListingRecord(
+        id="listing-1",
+        expense_id="expense-1",
+        owner_account_id="acc_owner_1",
+        visibility="scope_confirmed",
+    )
+    # The owner typed a cadence but no price, so the pair falls back to the transactions whole.
+    scope = ScopeVersion(
+        id="scope-1",
+        expense_id="expense-1",
+        version_number=1,
+        billing_cadence="monthly",
+        current_price_minor=None,
+        current_price_currency="USD",
+    )
+
+    projection = build_public_listing(listing, expense, scope, PublishChoices())
+
+    assert projection.price_minor == 600000
+    assert projection.billing_cadence == "quarterly"

@@ -2,25 +2,16 @@
 Scope gaps are surfaced before price so under-scoped bids do not rank first.
 """
 
-from decimal import Decimal
 import json
 import re
 
 from pydantic import BaseModel
 
+from app.core.cadence import to_monthly
 from app.core.money import Money
 from app.models.challenge import Challenge
 from app.models.listing import ScopeVersion
 
-
-FREQUENCY_FACTORS = {
-    "weekly": Decimal("52") / Decimal("12"),
-    "biweekly": Decimal("26") / Decimal("12"),
-    "monthly": Decimal("1"),
-    "quarterly": Decimal("1") / Decimal("3"),
-    "annual": Decimal("1") / Decimal("12"),
-    "yearly": Decimal("1") / Decimal("12"),
-}
 
 FREQUENCY_RE = re.compile(r"(\d+)x\s+weekly", re.IGNORECASE)
 
@@ -47,12 +38,8 @@ class ScopeCompletenessResult(BaseModel):
 def normalize_to_monthly(challenge: Challenge) -> NormalizedOffer:
     """Normalize one challenge's billing frequency to a monthly Money amount."""
 
-    raw_frequency = challenge.billing_frequency.casefold()
-    factor = FREQUENCY_FACTORS.get(raw_frequency)
-    if factor is None:
-        raise ValueError(f"Unsupported billing frequency: {challenge.billing_frequency}")
     base = Money(amount=challenge.price_minor, currency=challenge.price_currency)
-    return NormalizedOffer(monthly_price=base.multiply_by(factor))
+    return NormalizedOffer(monthly_price=to_monthly(base, challenge.billing_frequency))
 
 
 

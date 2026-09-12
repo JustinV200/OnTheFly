@@ -1,5 +1,7 @@
 """Exercises guarded listing visibility transitions and audit persistence."""
 
+from fastapi import HTTPException
+import pytest
 from sqlalchemy import func, select
 
 from app.models.listing import PublicListingRecord
@@ -55,6 +57,34 @@ def test_publish_and_unpublish_write_audit_records(db_session) -> None:
     assert preview.visibility == "public"
     assert unpublished.visibility == "private"
     assert audit_count == 3
+
+
+def test_draft_rejects_a_price_with_no_monthly_figure(db_session) -> None:
+    """Irregular spend with no owner-stated cadence can't become a comparable listing."""
+    run_import("acc_owner_1", PROVIDER_ACCOUNT_ID, db_session)
+    expense = db_session.scalar(select(ServiceExpense).where(ServiceExpense.normalized_vendor == "Sparkle Clean"))
+    assert expense is not None
+    expense.cadence = "irregular"
+    scope = build_scope_version(expense.id, {"service_area": "Bay Area"}, db_session)
+
+    with pytest.raises(HTTPException) as raised:
+        create_listing_draft(expense, scope, PublishChoices(), db_session)
+
+    assert raised.value.status_code == 400
+    assert "irregular" in raised.value.detail
+
+
+def test_draft_records_the_confirmed_price_on_the_scope_version(db_session) -> None:
+    """The baseline is versioned with the scope, so a later re-import can't move it."""
+    run_import("acc_owner_1", PROVIDER_ACCOUNT_ID, db_session)
+    expense = db_session.scalar(select(ServiceExpense).where(ServiceExpense.normalized_vendor == "Sparkle Clean"))
+    assert expense is not None
+    scope = build_scope_version(expense.id, {"service_area": "Bay Area"}, db_session)
+
+    create_listing_draft(expense, scope, PublishChoices(), db_session)
+
+    assert scope.current_price_minor == expense.amount_minor_per_period
+    assert scope.billing_cadence == expense.cadence
 
 
 def test_unpublish_is_available_for_existing_listing(db_session) -> None:

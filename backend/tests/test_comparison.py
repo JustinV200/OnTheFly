@@ -193,3 +193,37 @@ def test_rank_challenges_includes_incumbent_baseline() -> None:
     ranked = rank_challenges([challenge], scope, expense)
 
     assert ranked[0].is_incumbent is True
+
+
+def test_baseline_is_normalized_from_a_non_monthly_expense() -> None:
+    """A quarterly expense's per-period amount is not a monthly price."""
+    scope = _build_scope()
+    scope.current_price_minor = None
+    scope.billing_cadence = None
+    expense = ServiceExpense(
+        id="expense-1",
+        cadence="quarterly",
+        amount_minor_per_period=600000,
+        currency="USD",
+    )
+    challenge = Challenge(
+        id="challenge-1",
+        challenger_account_id="acc_challenger_1",
+        bidding_mode_at_submission="open",
+        price_minor=150000,
+        price_currency="USD",
+        billing_frequency="monthly",
+        scope_included=json.dumps(["vacuum", "trash", "3x weekly", "equipment"]),
+        scope_excluded="[]",
+        scope_extras="[]",
+        setup_fee_minor=0,
+        taxes_included=True,
+        supplies_included=True,
+        provenance="demo_data",
+    )
+
+    ranked = rank_challenges([challenge], scope, expense)
+
+    assert ranked[0].normalized_price.amount == 200000
+    assert ranked[1].savings is not None
+    assert ranked[1].savings.annual_recurring_savings.amount == 600000

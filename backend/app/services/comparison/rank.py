@@ -4,12 +4,14 @@ It also injects the incumbent baseline row used by owner-side comparisons.
 
 from pydantic import BaseModel
 
+from app.core.cadence import to_monthly
 from app.core.money import Money
 from app.models.challenge import Challenge
 from app.models.listing import ScopeVersion
 from app.models.service_expense import ServiceExpense
 from app.services.comparison.normalize import is_scope_complete, normalize_to_monthly
 from app.services.comparison.savings import SavingsResult, compute_savings
+from app.services.listings.current_price import resolve_current_price
 
 
 class RankedChallenge(BaseModel):
@@ -38,10 +40,11 @@ def rank_challenges(
 ) -> list[RankedChallenge]:
     """Rank challenges with the incumbent baseline row included first."""
 
-    current_monthly = Money(
-        amount=current_expense.amount_minor_per_period,
-        currency=current_expense.currency,
-    )
+    # Same resolver the public listing uses, so the baseline matches the published price.
+    # Draft creation already rejected cadences with no monthly figure, so this does not raise
+    # for a listing that went through the publish flow.
+    current_price = resolve_current_price(current_expense, scope_version)
+    current_monthly = to_monthly(current_price.amount, current_price.cadence)
     ranked: list[RankedChallenge] = [
         RankedChallenge(
             challenge_id=None,

@@ -4,13 +4,16 @@ Draft creation does not publish anything; it only prepares the later preview flo
 
 import uuid
 
+from fastapi import HTTPException, status
 from sqlalchemy import func, select
 from sqlalchemy.orm import Session
 
+from app.core.cadence import UnsupportedCadenceError, to_monthly
 from app.core.visibility import ListingVisibility
 from app.models.listing import PublicListingRecord, ScopeVersion
 from app.models.service_expense import ServiceExpense
 from app.models.visibility_audit import VisibilityAudit
+from app.services.listings.current_price import resolve_current_price
 from app.services.listings.projection import build_public_listing
 from app.services.listings.types import PublishChoices
 
@@ -22,8 +25,13 @@ def create_listing_draft(
     choices: PublishChoices,
     db: Session,
 ) -> PublicListingRecord:
-    """Create or update a scope-confirmed draft listing for one expense."""
+    """Create or update a scope-confirmed draft listing for one expense.
 
+    Raises 400 when the current price has no monthly figure, because every offer
+    is compared on a monthly basis and an unconvertible baseline cannot be ranked.
+    """
+
+    _confirm_current_price(expense, scope)
     existing = db.scalar(
         select(PublicListingRecord).where(PublicListingRecord.expense_id == expense.id)
     )
@@ -81,6 +89,26 @@ def build_scope_version(expense_id: str, payload: dict, db: Session) -> ScopeVer
     db.add(scope)
     db.flush()
     return scope
+
+
+def _confirm_current_price(expense: ServiceExpense, scope: ScopeVersion) -> None:
+    current_price = resolve_current_price(expense, scope)
+    try:
+        to_monthly(current_price.amount, current_price.cadence)
+    except UnsupportedCadenceError as error:
+        raise HTTPException(
+            status_code=status.HTTP_400_BAD_REQUEST,
+            detail=(
+                f"Current price cadence '{current_price.cadence}' can't be compared per month. "
+                "Confirm a price with a weekly, biweekly, monthly, quarterly, or annual cadence."
+            ),
+        ) from error
+
+    # Record the confirmed pair on this scope version so the baseline is versioned with the
+    # scope: a later re-import that changes the expense can't reframe offers on this version.
+    scope.current_price_minor = current_price.amount.amount
+    scope.current_price_currency = current_price.amount.currency
+    scope.billing_cadence = current_price.cadence
 
 
 def _write_audit(

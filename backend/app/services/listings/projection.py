@@ -7,6 +7,7 @@ import json
 
 from app.models.listing import PublicListingRecord, ScopeVersion
 from app.models.service_expense import ServiceExpense
+from app.services.listings.current_price import resolve_current_price
 from app.services.listings.types import PublicListingProjection, PublishChoices
 
 
@@ -19,14 +20,15 @@ def build_public_listing(
 ) -> PublicListingProjection:
     """Build the public listing field by field from safe source values."""
 
+    current_price = resolve_current_price(expense, scope)
     return PublicListingProjection(
         id=listing.id,
         expense_id=expense.id,
         category=expense.category or "commercial_cleaning",
         scope_summary=_build_scope_summary(scope),
-        price_minor=expense.amount_minor_per_period,
-        price_currency=expense.currency,
-        billing_cadence=scope.billing_cadence or expense.cadence,
+        price_minor=current_price.amount.amount,
+        price_currency=current_price.amount.currency,
+        billing_cadence=current_price.cadence,
         service_area_approximate=scope.service_area or scope.location_approximate or "",
         bidding_mode=choices.bidding_mode,
         challenge_deadline=scope.challenge_deadline,
