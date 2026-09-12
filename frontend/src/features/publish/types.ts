@@ -4,6 +4,9 @@ export interface PublishableExpense {
   id: string;
   vendor: string;
   category: string | null;
+  cadence: string;
+  amount_minor_per_period: number;
+  currency: string;
 }
 
 export interface ListingDraftResponse {

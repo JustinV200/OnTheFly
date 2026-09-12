@@ -7,11 +7,12 @@ import { usePublish } from './usePublish';
 
 /** Render the draft, preview, and publish flow for one expense listing. */
 export function PublishFlow(): JSX.Element {
-  const { expenses, preview, createDraft, publish } = usePublish();
+  const { expenses, preview, errorMessage, createDraft, publish } = usePublish();
 
   return (
     <section>
       <ScopeForm expenses={expenses} onSubmit={createDraft} />
+      {errorMessage ? <p role="alert">{errorMessage}</p> : null}
       <DisclosureChoices />
       <PublishPreview preview={preview} />
       <button disabled={!preview} onClick={() => void publish()} type="button">
