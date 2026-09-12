@@ -23,6 +23,8 @@ export interface ExpenseTransaction {
   amount_minor: number;
   currency: string;
   posted_at: string;
+  status: string;
+  direction: string;
   source_type: string;
   is_excluded: boolean;
   excluded_reason: string | null;

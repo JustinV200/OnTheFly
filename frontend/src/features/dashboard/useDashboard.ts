@@ -11,11 +11,13 @@ interface UseDashboardResult {
   message: string | null;
   selectedExpense: ExpenseDetail | null;
   selectExpense: (expenseId: string) => Promise<void>;
+  reload: () => void;
 }
 
 /** Load dashboard expenses and provide selection helpers for detail requests. */
 export function useDashboard(): UseDashboardResult {
   const [expenses, setExpenses] = useState<Expense[]>([]);
+  const [revision, setRevision] = useState(0);
   const [isLoading, setIsLoading] = useState<boolean>(true);
   const [message, setMessage] = useState<string | null>(null);
   const [selectedExpense, setSelectedExpense] = useState<ExpenseDetail | null>(null);
@@ -33,12 +35,13 @@ export function useDashboard(): UseDashboardResult {
         setIsLoading(false);
       }
     })();
-  }, []);
+  }, [revision]);
 
   const selectExpense = async (expenseId: string): Promise<void> => {
     const response = await get<ExpenseDetail>(`/api/expenses/${expenseId}`);
     setSelectedExpense(response);
   };
 
-  return { expenses, isLoading, message, selectedExpense, selectExpense };
+  return { expenses, isLoading, message, selectedExpense, selectExpense,
+    reload: () => { setSelectedExpense(null); setRevision((value) => value + 1); } };
 }

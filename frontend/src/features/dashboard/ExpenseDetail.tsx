@@ -26,6 +26,7 @@ export function ExpenseDetail({ expense }: ExpenseDetailProps): JSX.Element {
             </div>
             <div style={{ display: 'flex', gap: '0.5rem', marginTop: '0.25rem' }}>
               <ProvenanceBadge label={transaction.source_type} />
+              <span>{new Date(transaction.posted_at).toLocaleDateString()} · {transaction.status} · {transaction.direction}</span>
               {transaction.is_excluded ? <span>Excluded: {transaction.excluded_reason}</span> : null}
             </div>
           </li>

@@ -31,6 +31,8 @@ export function AccountSwitcher(): JSX.Element {
           const nextId = event.target.value;
           window.localStorage.setItem(STORAGE_KEY, nextId);
           setSelectedId(nextId);
+          // Clear private screen state and cancel company-bound polling on switches.
+          window.location.reload();
         }}
         value={selectedId}
       >
