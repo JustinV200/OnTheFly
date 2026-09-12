@@ -27,6 +27,13 @@ A shopping assistant that helps people set a budget, build a shopping list (for 
 - A chat-style agent scoped to a specific product.
 - User can ask follow-up questions ("is this durable?", "is there a better value alternative?", "does this work for X use case?") and the agent does research (reviews, specs, comparisons) to answer.
 
+### 6. Transaction Sync → Auto Budget Update
+- Pull card/account transactions via the **Rho API** (read-only) so real purchases are picked up automatically instead of relying on the user to manually log what they bought.
+- When a new transaction comes in, match it against the active shopping list (merchant name, amount, timing, and item still-open status) to figure out which list item it corresponds to.
+- On a match: mark that item as purchased, deduct the actual spent amount from the budget, and recompute remaining budget / realism for what's left on the list.
+- Ambiguous matches (e.g. multiple open items near the same price at the same merchant) should prompt the user to confirm which item it was rather than guessing silently.
+- This makes the budget live and accurate — it reflects what was actually spent, not just what was planned — and feeds back into the realism assessment (e.g. "you've spent more than planned on X category, tighten up elsewhere").
+
 ---
 
 ## Part 2: AR Physical-Store Shopping (Phone Camera / Web) — Full Live Demo
@@ -65,10 +72,12 @@ Use the phone's camera through the browser (web-based AR, no native app required
 Both parts likely share:
 - **Shopping list & budget store** — user's lists, budgets, and progress against them.
 - **Product data layer** — pricing, specs, and reviews, aggregated from available sources (retailer APIs/scraping, review sites).
+- **Transaction sync & matching** — reads card transactions via the Rho API, matches them to open shopping-list items, and updates the budget (spent vs. remaining) automatically when a match is found.
 - **AI agent layer**:
-  - Budget realism assessment (reasoning over list + live pricing data)
+  - Budget realism assessment (reasoning over list + live pricing data + actual spend from transactions)
   - Ask More conversational research agent (product-scoped Q&A)
   - Alternative suggestion engine (finds comparable items by price/rating/fit)
+  - Transaction-to-item matching (fuzzy match on merchant/amount/timing; asks the user to confirm ambiguous cases)
 - **Item recognition** (Part 2 only) — vision model to detect/classify items in a live camera feed and match them to product data.
 
 ---
@@ -99,8 +108,14 @@ Both parts likely share:
   - Item identification from a camera crop (Claude's vision input) when the on-device model needs a second opinion on *what* an object is, not just that something is there.
 
 ### Data
-- **Database:** Postgres (e.g. via Supabase, which also gives auth for free) for users, budgets, shopping lists, and cached product/review data.
+- **Database:** Postgres (e.g. via Supabase, which also gives auth for free) for users, budgets, shopping lists, cached product/review data, and transaction records.
 - **Product/review data:** a shopping/product-data API if available (e.g. SerpApi, Rainforest API, or similar), otherwise a mocked/curated dataset scoped to the demo's item set.
+
+### Transactions
+- **Rho API** (docs.rho.co) for read-only access to card spend, ACH, wires, and refunds on the linked Rho business banking/card account — this is our transaction source, not a generic bank-aggregator like Plaid.
+- **Auth:** scoped, revocable API access tokens (IP allowlist support); OAuth 2.0 is also available for partner-style customer access if needed.
+- **Ingestion:** poll the transactions endpoint (or use a webhook if Rho exposes one) to pick up new transactions, run them through the matching logic, and update the relevant budget.
+- Since Rho is business banking/corporate cards rather than a personal-bank aggregator, the demo account should be a Rho account/card set up for this purpose (real or provided test credentials) rather than an arbitrary personal bank login.
 
 ### Dev/Deploy
 - **Version control:** Git/GitHub (this repo).
@@ -124,3 +139,5 @@ Part 2's live detection loop is the highest-risk/highest-effort piece and the th
 - On-device detection model (TensorFlow.js/ONNX) vs. periodic backend vision calls — which is more reliable to get working live within the hackathon window?
 - What's the demo item set (the specific products/shelf we'll point the camera at)? Deciding this early lets detection be tuned/curated for it instead of aiming for open-vocabulary recognition.
 - Single-user or shared/family budgets and lists?
+- For the demo, do we have (or can we get) a Rho account/API access token with test transaction data, or do we need to generate real transactions on a Rho card during the hackathon to have something to demo against?
+- How strict should transaction-to-item matching be before asking the user to confirm vs. auto-applying? Getting this wrong either annoys the user (too many confirmations) or mis-attributes spend (too aggressive auto-matching).
