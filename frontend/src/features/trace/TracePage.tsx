@@ -15,6 +15,7 @@ import { scopeItemLabel } from '../../shared/format/scopeItemLabel';
 import { ProvenanceBadge } from '../../shared/provenance/ProvenanceBadge';
 import { SavingsStep } from './SavingsStep';
 import { TraceStep } from './TraceStep';
+import { TransactionsStep } from './TransactionsStep';
 import type { OfferTrace } from './types';
 
 /** Render the owner-only trace for one offer. */
@@ -114,7 +115,8 @@ export function TracePage(): JSX.Element {
         </p>
       </TraceStep>
 
-      <TraceStep leadsTo={`The ${transactions.length} transactions behind it`} step={6} title={`Private expense: ${expense.vendor}`}>
+      {/* Not every listed row is behind the figure: refunds, unsettled charges, and earlier prices are listed but don't count. */}
+      <TraceStep leadsTo={describeTransactionCounts(transactions)} step={6} title={`Private expense: ${expense.vendor}`}>
         <p style={{ margin: 0 }}>
           {money(expense.amount_minor_per_period, expense.currency)} per {expense.cadence} period from {expense.period_count} payments
           ({formatTimestamp(expense.first_seen, { dateOnly: true })} to {formatTimestamp(expense.last_seen, { dateOnly: true })}),
@@ -124,30 +126,15 @@ export function TracePage(): JSX.Element {
         </p>
       </TraceStep>
 
-      <TraceStep step={7} title="Original transactions (private, never published)">
-        <div style={{ overflowX: 'auto' }}>
-          <table style={{ borderCollapse: 'collapse', width: '100%' }}>
-            <thead>
-              <tr style={{ textAlign: 'left' }}><th>Posted</th><th>Description</th><th>Amount</th><th>Source</th></tr>
-            </thead>
-            <tbody>
-              {transactions.map((transaction) => (
-                <tr key={transaction.id} style={{ borderTop: '1px solid #e2e8f0' }}>
-                  <td>{formatTimestamp(transaction.posted_at, { dateOnly: true })}</td>
-                  <td>
-                    <code>{transaction.raw_description}</code>
-                    {transaction.is_excluded ? ` (excluded: ${transaction.excluded_reason})` : ''}
-                  </td>
-                  <td>{money(transaction.amount_minor, transaction.currency)}</td>
-                  <td><ProvenanceBadge kind="financial" value={transaction.source_type} /></td>
-                </tr>
-              ))}
-            </tbody>
-          </table>
-        </div>
-      </TraceStep>
+      <TransactionsStep transactions={transactions} />
     </section>
   );
+}
+
+function describeTransactionCounts(transactions: OfferTrace['transactions']): string {
+  const countedCount = transactions.filter((transaction) => transaction.counts_toward_baseline).length;
+  const noun = transactions.length === 1 ? 'transaction' : 'transactions';
+  return `${transactions.length} ${noun} from this vendor, ${countedCount} counted in the baseline`;
 }
 
 function describeBoolean(value: boolean | null): string {

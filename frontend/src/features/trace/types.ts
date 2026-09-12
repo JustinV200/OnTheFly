@@ -85,14 +85,20 @@ export interface OfferTrace {
     last_seen: string;
     provenance: string[];
   };
+  // Every row filed under the expense's vendor, not only the ones behind the baseline.
   transactions: {
     id: string;
     posted_at: string;
     raw_description: string;
+    // Unsigned, as imported: direction carries the sign, so a refund credit has the same amount as a charge.
     amount_minor: number;
     currency: string;
+    direction: string;
+    status: string;
     source_type: string;
     is_excluded: boolean;
     excluded_reason: string | null;
+    // Set by the server's baseline code; the page shows it and never re-derives the rule.
+    counts_toward_baseline: boolean;
   }[];
 }
