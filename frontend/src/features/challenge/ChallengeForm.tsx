@@ -59,11 +59,13 @@ export function ChallengeForm({ acknowledgedMode, scopeSummary, isSubmitting, on
 
   return (
     <form onSubmit={submit}>
-      {/* Shown before the price field: a challenger must never find out afterwards that their price went public. */}
+      {/* Shown before the price field: a challenger must never find out afterwards that their price went public.
+          A resubmission is a revision, and the server records it under the mode in force now, not the old offer's. */}
       <p role="note" style={{ backgroundColor: acknowledgedMode === 'open' ? '#eff6ff' : '#f8fafc', border: '1px solid #cbd5e1', borderRadius: '8px', padding: '0.75rem' }}>
         {acknowledgedMode === 'open'
           ? '⚠ Open bidding: your price and scope will be visible to other challengers. Your identity will not.'
-          : '🔒 Sealed bidding: only the listing owner sees your price. Your identity is never shown to other challengers.'}
+          : '🔒 Sealed bidding: only the listing owner sees your price. Your identity is never shown to other challengers.'}{' '}
+        If you already have an offer on this listing, this one replaces it.
       </p>
 
       <div style={gridStyle}>
