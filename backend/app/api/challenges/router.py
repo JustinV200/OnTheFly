@@ -19,7 +19,8 @@ from app.core.identity import require_acting_account_id
 from app.db.session import get_db
 from app.models.account import Account
 from app.models.challenge import Challenge
-from app.models.listing import PublicListingRecord
+from app.models.listing import PublicListingRecord, ScopeVersion
+from app.services.comparison.normalize import is_scope_complete, normalize_to_monthly
 from app.services.challenges.submit import revise_challenge, submit_challenge
 from app.services.listings.bidding_mode import BiddingMode, resolve_bidding_mode
 
@@ -97,19 +98,22 @@ def get_leaderboard(listing_id: str, db: Session = Depends(get_db)) -> Leaderboa
         select(Challenge)
         .where(Challenge.listing_id == listing_id)
         .where(Challenge.is_active.is_(True))
-        .order_by(Challenge.price_minor.asc(), Challenge.submitted_at.asc())
     ).all()
+    scope = db.get(ScopeVersion, listing.scope_version_id)
+    if scope is None:
+        raise HTTPException(status_code=status.HTTP_404_NOT_FOUND, detail="Scope version not found")
     entries = [
         LeaderboardEntry(
             challenge_id=challenge.id,
-            normalized_price_minor=challenge.price_minor,
-            price_currency=challenge.price_currency,
-            scope_completeness=1.0 if json.loads(challenge.scope_included) else 0.5,
+            normalized_price_minor=normalize_to_monthly(challenge).monthly_price.amount,
+            price_currency=normalize_to_monthly(challenge).monthly_price.currency,
+            scope_completeness=is_scope_complete(challenge, scope).score,
             submitted_at=challenge.submitted_at,
         )
         for challenge in challenges
         if challenge.bidding_mode_at_submission == BiddingMode.open.value
     ]
+    entries.sort(key=lambda entry: (-entry.scope_completeness, entry.normalized_price_minor, entry.submitted_at))
     return LeaderboardResponse(bidding_mode=listing.bidding_mode, entries=entries)
 
 
