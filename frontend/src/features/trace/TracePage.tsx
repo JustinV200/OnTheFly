@@ -38,7 +38,7 @@ export function TracePage(): JSX.Element {
       : <LoadingSpinner label="Tracing this number…" />;
   }
 
-  const { savings, offer, scope_version: scope, listing, baseline, expense, transactions } = trace.data;
+  const { savings, offer, scope_version: scope, listing, baseline, expense, transactions, fly_brain: flyBrain } = trace.data;
   const money = (amountMinor: number, currency = baseline.currency): JSX.Element => <MoneyDisplay amountMinor={amountMinor} currency={currency} />;
 
   return (
@@ -126,7 +126,7 @@ export function TracePage(): JSX.Element {
         </p>
       </TraceStep>
 
-      <TransactionsStep transactions={transactions} />
+      <TransactionsStep flyBrain={flyBrain} transactions={transactions} />
     </section>
   );
 }

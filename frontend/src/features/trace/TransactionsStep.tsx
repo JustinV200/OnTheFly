@@ -1,6 +1,10 @@
 /* Step 7 of the offer trace: every private transaction filed under the expense's vendor, and which of them set the baseline.
-   Refunds and unsettled rows stay listed for audit. Which rows count comes from the server; nothing is re-derived here. */
+   Refunds and unsettled rows stay listed for audit. Which rows count comes from the server; nothing is re-derived here.
+   The Compound Eye chooses the counted charges, so the step carries its fly-brain badge and note. */
 import { MoneyDisplay } from '../../shared/components/MoneyDisplay';
+import { FlyBrainBadge } from '../../shared/flybrain/FlyBrainBadge';
+import { FlyBrainNote } from '../../shared/flybrain/FlyBrainNote';
+import type { FlyBrainAttribution } from '../../shared/flybrain/types';
 import { formatTimestamp } from '../../shared/format/formatTimestamp';
 import { ProvenanceBadge } from '../../shared/provenance/ProvenanceBadge';
 import { TraceStep } from './TraceStep';
@@ -10,15 +14,20 @@ type TraceTransaction = OfferTrace['transactions'][number];
 
 interface TransactionsStepProps {
   transactions: OfferTrace['transactions'];
+  // The trace response's fly_brain list; the backend always includes the Compound Eye, even when it didn't run.
+  flyBrain: FlyBrainAttribution[];
 }
 
-/** Render the original-transactions step, signing credits and marking every row the baseline didn't use. */
-export function TransactionsStep({ transactions }: TransactionsStepProps): JSX.Element {
+/** Render the original-transactions step, signing credits, marking every row the baseline didn't use, and labelling the circuit. */
+export function TransactionsStep({ transactions, flyBrain }: TransactionsStepProps): JSX.Element {
+  const compoundEye = flyBrain.find((attribution) => attribution.component === 'compound_eye');
   return (
     <TraceStep step={7} title="Original transactions (private, never published)">
       <p style={{ color: '#475569', margin: '0 0 0.5rem' }}>
         Rows marked “not counted” are listed for audit but did not set the expense baseline in step 6, such as refunds and
-        credits, pending or void charges, and one-off or earlier-price charges.
+        credits, pending or void charges, and one-off or earlier-price charges.{' '}
+        {/* One-off and earlier-price charges are the circuit's call; its note below says whether it ran for this vendor. */}
+        {compoundEye ? <FlyBrainBadge attribution={compoundEye} /> : null}
       </p>
       <div style={{ overflowX: 'auto' }}>
         <table style={{ borderCollapse: 'collapse', width: '100%' }}>
@@ -30,6 +39,7 @@ export function TransactionsStep({ transactions }: TransactionsStepProps): JSX.E
           </tbody>
         </table>
       </div>
+      <FlyBrainNote attributions={flyBrain} />
     </TraceStep>
   );
 }

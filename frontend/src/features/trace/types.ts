@@ -1,4 +1,6 @@
 /* Declares the offer trace response (backend app/services/trace/types.py). */
+import type { FlyBrainAttribution } from '../../shared/flybrain/types';
+
 export interface OfferTrace {
   // Null when the offer is unranked: there is no figure to trace, and offer.unranked_reason says why.
   // The baseline is the price confirmed on the scope version the offer answered, not necessarily today's.
@@ -101,4 +103,6 @@ export interface OfferTrace {
     // Set by the server's baseline code; the page shows it and never re-derives the rule.
     counts_toward_baseline: boolean;
   }[];
+  // The Compound Eye chose the counted rows; the backend lists it with its reason when it didn't run.
+  fly_brain: FlyBrainAttribution[];
 }

@@ -7,6 +7,8 @@ from typing import Literal
 
 from pydantic import BaseModel
 
+from app.services.flybrain import FlyBrainAttribution
+
 
 class TraceSavings(BaseModel):
     """The headline potential-savings figure and the two monthly amounts it is computed from.
@@ -149,3 +151,5 @@ class OfferTrace(BaseModel):
     baseline: TraceBaseline
     expense: TraceExpense
     transactions: list[TraceTransaction]
+    # Labels the Compound Eye, which chose the counted rows; it is still listed, with its reason, when it didn't run.
+    fly_brain: list[FlyBrainAttribution]

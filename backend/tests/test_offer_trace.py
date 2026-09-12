@@ -7,11 +7,14 @@ from sqlalchemy import select
 
 from app.models.listing import PublicListingRecord
 from app.models.service_expense import ServiceExpense
+from app.models.transaction import Transaction
 from app.services.challenges.submit import submit_challenge
 from app.services.listings.create import build_scope_version, create_listing_draft
 from app.services.listings.projection import build_payload_hash, build_public_listing
 from app.services.listings.types import PublishChoices
 from app.services.listings.visibility import publish_listing
+from app.services.trace.baseline_membership import find_baseline_membership
+from app.services.trace.compound_eye_attribution import compound_eye_attribution
 from app.services.transactions.import_run import run_import
 from app.services.transactions.source import NormalizedTransaction
 from tests.test_challenges import _create_public_listing
@@ -136,6 +139,12 @@ def _trace_as_owner(client, db_session, listing: PublicListingRecord) -> dict[st
     return client.get(f"/api/challenges/{challenge.id}/trace", headers={"X-Account-ID": "acc_owner_1"}).json()
 
 
+def _compound_eye_role(trace: dict[str, Any]) -> str:
+    # The Compound Eye is the only circuit behind the counted marks, and it is listed even when it didn't run.
+    assert [entry["component"] for entry in trace["fly_brain"]] == ["compound_eye"]
+    return trace["fly_brain"][0]["role"]
+
+
 def test_trace_marks_refunds_and_voided_charges_as_outside_the_baseline(client, db_session) -> None:
     debits = [_stripe_row(f"txn_debit_{index}", 30 * index) for index in range(6)]
     refund = _stripe_row("txn_refund", 160, direction="credit")
@@ -157,6 +166,10 @@ def test_trace_marks_refunds_and_voided_charges_as_outside_the_baseline(client, 
     assert trace["expense"]["amount_minor_per_period"] == 240000
     assert len(counted) == 6
     assert {(row["direction"], row["status"]) for row in counted} == {("debit", "posted")}
+    # A steady price is a level the Compound Eye found, so the counted marks are labelled as its choice.
+    assert _compound_eye_role(trace) == (
+        "Separated real price changes from one-off charges and chose the charges the baseline counts."
+    )
 
 
 def test_trace_counts_only_the_current_price_level_after_an_increase(client, db_session) -> None:
@@ -172,6 +185,7 @@ def test_trace_counts_only_the_current_price_level_after_an_increase(client, db_
     # Every row is a posted debit, but the stored baseline is the current price; the earlier charges don't set it.
     assert trace["expense"]["amount_minor_per_period"] == 265000
     assert counted_amounts == [265000, 265000, 265000]
+    assert "chose the charges the baseline counts" in _compound_eye_role(trace)
 
 
 def test_fixture_trace_rows_carry_direction_and_status(client, db_session) -> None:
@@ -182,3 +196,28 @@ def test_fixture_trace_rows_carry_direction_and_status(client, db_session) -> No
     # The fixture's Sparkle Clean charges are one steady price, so every row sets the baseline.
     assert {(row["direction"], row["status"]) for row in trace["transactions"]} == {("debit", "posted")}
     assert all(row["counts_toward_baseline"] for row in trace["transactions"])
+
+
+def test_trace_lists_the_compound_eye_as_not_run_for_two_charges(client, db_session) -> None:
+    listing = _publish_stripe_listing(db_session, [_stripe_row(f"txn_debit_{index}", 30 * index) for index in range(2)])
+
+    trace = _trace_as_owner(client, db_session, listing)
+
+    # Two charges don't establish a recurring schedule, so there is no price level to find: both count toward a
+    # plain average, and the attribution gives the circuit's own reason instead of implying it chose them.
+    assert all(row["counts_toward_baseline"] for row in trace["transactions"])
+    assert _compound_eye_role(trace) == (
+        "Not run: this spend doesn't recur on a regular schedule;"
+        " the baseline is the plain average of the charges marked counted."
+    )
+
+
+def test_compound_eye_is_listed_as_not_run_when_no_charge_counts() -> None:
+    pending_only = [Transaction(id="txn_pending", provider="stripe", status="pending", direction="debit")]
+
+    membership = find_baseline_membership(pending_only)
+
+    # Sync zeroes a group with no posted debits; the circuit never ran, and the attribution must still say so.
+    assert membership.transaction_ids == set()
+    assert membership.basis is None
+    assert compound_eye_attribution(membership).role.startswith("Not run: this vendor has no posted charges")

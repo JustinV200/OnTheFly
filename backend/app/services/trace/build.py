@@ -14,7 +14,8 @@ from app.models.service_expense import ServiceExpense
 from app.models.transaction import Transaction
 from app.services.comparison.rank import RankedChallenge, rank_challenges
 from app.services.listings.current_price import resolve_current_price
-from app.services.trace.baseline_membership import baseline_transaction_ids
+from app.services.trace.baseline_membership import find_baseline_membership
+from app.services.trace.compound_eye_attribution import compound_eye_attribution
 from app.services.trace.types import (
     OfferTrace,
     TraceBaseline,
@@ -60,7 +61,7 @@ def build_offer_trace(challenge_id: str, acting_account_id: str, db: Session) ->
         .order_by(Transaction.posted_at.desc())
     ).all()
     # The vendor's rows include refunds, unsettled charges, and earlier prices; mark the ones the baseline used.
-    counted_ids = baseline_transaction_ids(transactions)
+    membership = find_baseline_membership(transactions)
 
     return OfferTrace(
         savings=_savings(offer_row),
@@ -70,7 +71,11 @@ def build_offer_trace(challenge_id: str, acting_account_id: str, db: Session) ->
         # The answered version's price, matching the savings above and the "still answers version N" text.
         baseline=_baseline(expense, answered_scope, offer_row),
         expense=_expense(expense, transactions),
-        transactions=[_transaction(transaction, transaction.id in counted_ids) for transaction in transactions],
+        transactions=[
+            _transaction(transaction, transaction.id in membership.transaction_ids) for transaction in transactions
+        ],
+        # The Compound Eye chose which charges count, so the response labels it (or says why it didn't run).
+        fly_brain=[compound_eye_attribution(membership)],
     )
 
 
