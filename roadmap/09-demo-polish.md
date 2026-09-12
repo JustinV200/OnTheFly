@@ -4,6 +4,10 @@
 
 **Depends on:** everything. **Size:** M. **Critical path:** yes.
 
+**Runbook:** [notes/demo-runbook.md](notes/demo-runbook.md), the script as the product runs it today, with the privacy proof, recovery steps, and rehearsed answers.
+
+**Built so far:** a provenance badge on every financial figure and offer, plus an always-on seams strip (`GET /api/demo/status`). Defined loading, empty, and error states on every screen. A public-visitor mode for the logged-out view. A projector-sized account switcher. An open-bidding leaderboard with sealed-offer counts. A 409 guard when bidding changes while a challenger is typing. A genuine-offer callout in the owner inbox. An owner-only trace from savings to transactions (`GET /api/challenges/{id}/trace`). A reset command with live and staged scenarios and a durable genuine-offer ledger. A read-only preflight (`python -m app.cli.preflight`). **Not built:** shortlisting (demo step 10) went to [10](10-stretch.md) per "Don't start new features here". **Still human:** deployed rehearsal, cell-data check, backup recording, and phase 01's genuine offer.
+
 Polish here means *provenance, privacy proof, failure states, and rehearsal*, not visual refinement. A judge's first instinct is to ask where a number came from. Their second is to click something you didn't plan for. Their third, for this product specifically, is to ask what stops a business publishing something by accident.
 
 ## Steps
@@ -75,7 +79,7 @@ Pick the headline savings figure and click from it through the offer, the scope 
 
 ### 10. Pre-demo checklist
 
-Write it down here and run it before presenting:
+Write it down here and run it before presenting. `python -m app.cli.seed_demo --confirm-remote` covers reseeding. `python -m app.cli.preflight --api … --frontend …` checks API health, frontend-to-API reach (CORS and deep-link refresh), seeded data, and whether a genuine offer exists. It prints the rest as MANUAL:
 
 - [ ] Deployed API healthy
 - [ ] Deployed frontend reaching it
