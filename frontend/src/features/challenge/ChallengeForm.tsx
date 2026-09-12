@@ -3,24 +3,28 @@
 import { FormEvent, ReactNode, useState } from 'react';
 
 import { TriStateSelect } from '../../shared/components/TriStateSelect';
+import { describeScopeExpectations } from '../../shared/format/describeScopeExpectations';
+import type { PublicListingProjection } from '../publish/types';
 import { buildChallengePayload, ChallengeFormFields } from './buildChallengePayload';
+import { fullRequestedScope } from './fullRequestedScope';
 import type { BiddingModeValue, ChallengePayload } from './types';
 
-// The cleaning tasks the demo scope template names; anything else goes in "other inclusions".
-const STANDARD_TASKS = ['vacuum', 'trash', 'restrooms'];
+// The demo scope template's tasks (plan1.md §4). Offered only when a listing names no tasks of its own,
+// and labelled as common tasks rather than requested ones; anything else goes in "other inclusions".
+const TEMPLATE_TASKS = ['vacuum', 'trash', 'restrooms'];
 // Must stay within the backend's BillingFrequency literal (api/challenges/schemas.py).
 // Must stay in sync with BillingFrequency in backend/app/api/challenges/schemas.py.
 const FREQUENCIES = ['monthly', 'weekly', 'biweekly', 'bimonthly', 'quarterly', 'annual'];
 
 interface ChallengeFormProps {
   acknowledgedMode: BiddingModeValue;
-  scopeSummary: string;
+  listing: PublicListingProjection;
   isSubmitting: boolean;
   onSubmit: (payload: ChallengePayload) => Promise<void>;
 }
 
 /** Render the challenge form; acknowledgedMode must be the mode currently shown to the challenger. */
-export function ChallengeForm({ acknowledgedMode, scopeSummary, isSubmitting, onSubmit }: ChallengeFormProps): JSX.Element {
+export function ChallengeForm({ acknowledgedMode, listing, isSubmitting, onSubmit }: ChallengeFormProps): JSX.Element {
   const [fields, setFields] = useState<ChallengeFormFields>({
     price: '',
     billingFrequency: 'monthly',
@@ -40,11 +44,13 @@ export function ChallengeForm({ acknowledgedMode, scopeSummary, isSubmitting, on
   const [validationError, setValidationError] = useState<string | null>(null);
   const update = (patch: Partial<ChallengeFormFields>): void => setFields((current) => ({ ...current, ...patch }));
 
+  const requested = fullRequestedScope(listing);
+  const isTemplateTasks = requested.tasks.length === 0;
+  const taskChoices = isTemplateTasks ? TEMPLATE_TASKS : requested.tasks;
   // An explicit action, not a default: claiming the full scope is the challenger's decision to make.
-  const matchRequestedScope = (): void => {
-    const requestedVisits = /(\d+)x\s+weekly/i.exec(scopeSummary)?.[1] ?? '';
-    update({ tasks: STANDARD_TASKS, visitsPerWeek: requestedVisits, equipmentIncluded: true, suppliesIncluded: true, taxesIncluded: true });
-  };
+  // It copies the listing's own requirements, so the offer is scored against exactly what it claims.
+  // With no tasks requested there are none to copy, so any template tasks the challenger ticked stay ticked.
+  const matchRequestedScope = (): void => update(isTemplateTasks ? { ...requested, tasks: fields.tasks } : requested);
 
   const submit = (event: FormEvent<HTMLFormElement>): void => {
     event.preventDefault();
@@ -80,12 +86,16 @@ export function ChallengeForm({ acknowledgedMode, scopeSummary, isSubmitting, on
 
       <fieldset style={{ border: '1px solid #e2e8f0', borderRadius: '8px', margin: '1rem 0', padding: '0.5rem 0.75rem' }}>
         <legend>What your price covers</legend>
+        <p style={{ margin: '0 0 0.25rem' }}>Requested: {listing.scope_summary}</p>
         <p style={{ margin: '0 0 0.5rem' }}>
-          Requested: {scopeSummary}{' '}
+          Requested terms: {describeScopeExpectations(listing)}{' '}
           <button onClick={matchRequestedScope} type="button">Offer the full requested scope</button>
         </p>
+        <p style={{ color: '#475569', margin: '0 0 0.25rem' }}>
+          {isTemplateTasks ? 'This listing names no required tasks. Common cleaning tasks, if your price covers them:' : 'Required tasks your price covers:'}
+        </p>
         <div style={{ display: 'flex', flexWrap: 'wrap', gap: '1rem', marginBottom: '0.5rem' }}>
-          {STANDARD_TASKS.map((task) => (
+          {taskChoices.map((task) => (
             <label key={task}>
               <input
                 checked={fields.tasks.includes(task)}

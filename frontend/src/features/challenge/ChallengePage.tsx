@@ -110,7 +110,7 @@ export function ChallengePage(): JSX.Element {
         <EmptyState title="Closed to new offers">The deadline has passed, so offers and revisions are no longer accepted.</EmptyState>
       ) : null}
       {!submitted && !deadline.isClosed && shownMode === currentMode ? (
-        <ChallengeForm acknowledgedMode={shownMode} isSubmitting={isSubmitting} onSubmit={handleSubmit} scopeSummary={listing.scope_summary} />
+        <ChallengeForm acknowledgedMode={shownMode} isSubmitting={isSubmitting} listing={listing} onSubmit={handleSubmit} />
       ) : null}
     </section>
   );
