@@ -4,21 +4,7 @@ Hard exclusions stay hard exclusions regardless of any later UI action.
 
 from pydantic import BaseModel
 
-import re
-
-# Known payroll-provider vendor-name signals.  These supplement the generic
-# "payroll" keyword to catch transactions from specific processors whose
-# names don't include the word.  Extend this list rather than adding more
-# inline conditionals.
-PAYROLL_VENDOR_SIGNALS: tuple[str, ...] = (
-    "payroll",
-    "gusto",
-    "adp",
-    "rippling",
-    "paychex",
-    "bamboohr",
-    "justworks",
-)
+from app.services.expenses.exclusions import classify_spend_exclusion
 
 
 class EligibilityResult(BaseModel):
@@ -30,24 +16,16 @@ class EligibilityResult(BaseModel):
 
 
 
-def classify_eligibility(vendor: str, category: str | None, direction: str) -> EligibilityResult:
-    """Apply deterministic hard exclusions for payroll, taxes, and transfers.
+def classify_eligibility(vendor: str, category: str | None) -> EligibilityResult:
+    """Apply deterministic hard exclusions for payroll, taxes, and transfers to one vendor group.
 
-    Credits are excluded only when they are also identified as transfers in the
-    vendor/category text; ordinary vendor refunds/credits reduce net spend and
-    should reconcile against the expense group, not make it ineligible.
+    Uses the same classifier the import applies to each transaction. Direction is deliberately
+    not an input: an outbound transfer arrives as a debit like any vendor payment, and one
+    group's rows can mix debits with refunds. Ordinary refunds and credits reduce net spend and
+    reconcile against the group rather than making it ineligible.
     """
 
-    haystack = f"{vendor} {category or ''}".casefold()
-    # Exclude only when direction is credit AND the text identifies it as a transfer.
-    # Debit transactions with "transfer" in the vendor/category name (e.g. "Transfer Pro
-    # Cleaning") are legitimate spend and must not be excluded.
-    if direction == "credit" and "transfer" in haystack:
-        return EligibilityResult(eligible=False, reason="transfer", publishable=False)
-    if any(signal in haystack for signal in PAYROLL_VENDOR_SIGNALS):
-        return EligibilityResult(eligible=False, reason="payroll", publishable=False)
-    # Use a whole-word match to avoid false-positives on vendor names that contain
-    # "tax" as a substring (e.g. "Syntaxco", "Exacta Supplies").
-    if re.search(r"\btax\b", haystack):
-        return EligibilityResult(eligible=False, reason="tax", publishable=False)
+    reason = classify_spend_exclusion(vendor, category)
+    if reason is not None:
+        return EligibilityResult(eligible=False, reason=reason, publishable=False)
     return EligibilityResult(eligible=True, reason="eligible", publishable=True)

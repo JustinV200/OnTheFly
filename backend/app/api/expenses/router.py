@@ -118,7 +118,7 @@ def update_expense(
 
     display_vendor = update.owner_corrected_vendor or expense.owner_corrected_vendor or expense.normalized_vendor
     category = update.owner_corrected_category or expense.owner_corrected_category or expense.category
-    eligibility = classify_eligibility(display_vendor, category, "debit")
+    eligibility = classify_eligibility(display_vendor, category)
 
     expense.owner_corrected_vendor = update.owner_corrected_vendor
     expense.owner_corrected_category = update.owner_corrected_category

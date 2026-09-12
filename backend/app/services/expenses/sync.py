@@ -48,7 +48,7 @@ def sync_service_expenses(owner_account_id: str, db: Session) -> list[ServiceExp
         baseline = compute_baseline(charge_transactions, recurrence)
         display_vendor = vendor_transactions[0].normalized_vendor or vendor_key
         category = _choose_category(vendor_transactions)
-        eligibility = classify_eligibility(display_vendor, category, vendor_transactions[0].direction)
+        eligibility = classify_eligibility(display_vendor, category)
         existing = db.scalar(
             select(ServiceExpense).where(
                 ServiceExpense.owner_account_id == owner_account_id,
