@@ -12,7 +12,7 @@ from app.services.listings.bidding_mode import BiddingMode, set_bidding_mode
 from app.services.listings.create import build_scope_version, create_listing_draft
 from app.services.listings.projection import build_payload_hash, build_public_listing
 from app.services.listings.types import PublishChoices
-from app.services.listings.visibility import publish_listing
+from app.services.listings.visibility import publish_listing, unpublish_listing
 from app.services.transactions.import_run import run_import
 
 
@@ -135,6 +135,24 @@ def test_leaderboard_never_reveals_challenger_identity(client, db_session) -> No
     first_entry = response.json()["entries"][0]
     assert "challenger_account_id" not in first_entry
     assert "challenger_name" not in first_entry
+
+
+def test_leaderboard_goes_dark_when_listing_is_unpublished(client, db_session) -> None:
+    """Unpublishing must hide open-bid prices, not just the listing detail page."""
+    listing = _create_public_listing(db_session, bidding_mode="open")
+    submit_challenge(
+        listing.id,
+        "acc_challenger_1",
+        {"price_minor": 187500, "billing_frequency": "monthly", "scope_included": ["full scope"]},
+        db_session,
+    )
+    assert client.get(f"/api/listings/{listing.id}/leaderboard").json()["entries"]
+
+    unpublish_listing(listing.id, "acc_owner_1", db_session)
+
+    response = client.get(f"/api/listings/{listing.id}/leaderboard")
+    assert response.status_code == 404
+    assert "187500" not in response.text
 
 
 def test_private_expense_not_in_marketplace_feed(client, db_session) -> None:

@@ -16,6 +16,7 @@ from app.api.challenges.schemas import (
     LeaderboardResponse,
 )
 from app.core.identity import require_acting_account_id
+from app.core.visibility import ListingVisibility
 from app.db.session import get_db
 from app.models.account import Account
 from app.models.challenge import Challenge
@@ -88,7 +89,14 @@ def list_owner_challenges(
 def get_leaderboard(listing_id: str, db: Session = Depends(get_db)) -> LeaderboardResponse:
     """Return anonymized leaderboard rows for challenges submitted while bidding was open."""
 
-    listing = db.get(PublicListingRecord, listing_id)
+    # Filter on visibility in the query, not just existence: an unpublished listing
+    # keeps its record and its challenges, and its offer prices must go dark with it.
+    listing = db.scalar(
+        select(PublicListingRecord).where(
+            PublicListingRecord.id == listing_id,
+            PublicListingRecord.visibility == ListingVisibility.public.value,
+        )
+    )
     if listing is None:
         raise HTTPException(status_code=status.HTTP_404_NOT_FOUND, detail="Listing not found")
     if resolve_bidding_mode(listing.bidding_mode) != BiddingMode.open:
