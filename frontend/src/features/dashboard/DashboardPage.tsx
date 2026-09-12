@@ -7,6 +7,7 @@ import type { DemoAccount } from '../../shared/account/demoAccounts';
 import { EmptyState } from '../../shared/components/EmptyState';
 import { ErrorState } from '../../shared/components/ErrorState';
 import { LoadingSpinner } from '../../shared/components/LoadingSpinner';
+import { StripeConnection } from '../connections/StripeConnection';
 import { VendorAliasPanel } from './aliases/VendorAliasPanel';
 import { ConnectionPanel } from './connection/ConnectionPanel';
 import { useConnection } from './connection/useConnection';
@@ -44,6 +45,9 @@ function OwnerDashboard({ account }: { account: DemoAccount }): JSX.Element {
         onImport={() => void connection.runImport()}
         status={connection.status}
       />
+      {/* Keyed by account: the Stripe hook loads once on mount, so without a remount a switch would
+          keep showing the previous business's connection and imported transactions. */}
+      <StripeConnection key={account.id} onImported={dashboard.reload} />
 
       {hasImported ? <ExpenseList account={account} dashboard={dashboard} expenses={expenses} /> : null}
     </section>
