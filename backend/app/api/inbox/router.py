@@ -1,5 +1,5 @@
 """Implements owner-only inbox and side-by-side comparison endpoints.
-These endpoints sort by scope completeness before normalized price.
+These endpoints sort by scope completeness before normalized price, each offer against the scope version it answered.
 """
 
 from fastapi import APIRouter, Depends, HTTPException, Request, status
@@ -20,6 +20,7 @@ from app.models.account import Account
 from app.models.challenge import Challenge
 from app.models.listing import PublicListingRecord, ScopeVersion
 from app.models.service_expense import ServiceExpense
+from app.services.comparison.answered_scopes import load_answered_scopes
 from app.services.comparison.rank import rank_challenges
 from app.services.evidence.check import CheckResult
 from app.services.evidence.refresh import get_or_refresh_challenger_evidence
@@ -38,19 +39,20 @@ def get_inbox(
     """Return ranked owner-visible challenges for one owned listing."""
 
     acting_account_id = require_acting_account_id(request)
-    listing, scope, expense = _get_owner_listing_context(listing_id, acting_account_id, db)
+    listing, current_scope, expense = _get_owner_listing_context(listing_id, acting_account_id, db)
     challenges = db.scalars(
         select(Challenge)
         .where(Challenge.listing_id == listing.id)
         .where(Challenge.is_active.is_(True))
     ).all()
-    ranked_rows = rank_challenges(challenges, scope, expense)[1:]
+    ranked_rows = rank_challenges(challenges, current_scope, expense, load_answered_scopes(challenges, db))[1:]
     responses = []
     challenge_lookup = {challenge.id: challenge for challenge in challenges}
     for row in ranked_rows:
         challenger = db.get(Account, row.challenger_account_id)
         challenge = challenge_lookup.get(row.challenge_id or "")
-        if challenger is None or row.savings is None or row.challenge_id is None or challenge is None:
+        # An unranked offer (no savings) stays in the list: hiding it would make the rest look like every offer.
+        if challenger is None or row.challenge_id is None or challenge is None:
             continue
         evidence = get_or_refresh_challenger_evidence(challenge, db)
         platform_check = CheckResult.model_validate_json(evidence.platform_check)
@@ -66,7 +68,12 @@ def get_inbox(
                 missing_items=row.missing_items,
                 added_items=row.added_items,
                 unstated_items=row.unstated_items,
-                savings=_serialize_savings(row.savings),
+                answered_scope_version_number=row.answered_scope_version_number,
+                is_current_scope_version=row.is_current_scope_version,
+                baseline_monthly_minor=row.baseline_monthly.amount,
+                baseline_currency=row.baseline_monthly.currency,
+                savings=_serialize_savings(row.savings) if row.savings else None,
+                unranked_reason=row.unranked_reason,
                 evidence_rollup=rollup_evidence([platform_check, identity_check, registry_check]),
                 platform_check_status=platform_check.status,
                 identity_check_status=identity_check.status,
@@ -84,6 +91,7 @@ def get_inbox(
     return InboxResponse(
         challenges=responses,
         bidding_mode=listing.bidding_mode or "sealed",
+        current_scope_version_number=current_scope.version_number,
         listing=projection_from_record(listing),
     )
 
@@ -97,14 +105,14 @@ def get_comparison(
     """Return the incumbent baseline row plus ranked challenges for one listing."""
 
     acting_account_id = require_acting_account_id(request)
-    listing, scope, expense = _get_owner_listing_context(listing_id, acting_account_id, db)
+    listing, current_scope, expense = _get_owner_listing_context(listing_id, acting_account_id, db)
     challenges = db.scalars(
         select(Challenge)
         .where(Challenge.listing_id == listing.id)
         .where(Challenge.is_active.is_(True))
     ).all()
     rows = []
-    for row in rank_challenges(challenges, scope, expense):
+    for row in rank_challenges(challenges, current_scope, expense, load_answered_scopes(challenges, db)):
         challenger_name = "Incumbent baseline"
         if row.challenger_account_id:
             challenger = db.get(Account, row.challenger_account_id)
@@ -120,11 +128,16 @@ def get_comparison(
                 missing_items=row.missing_items,
                 added_items=row.added_items,
                 unstated_items=row.unstated_items,
+                answered_scope_version_number=row.answered_scope_version_number,
+                is_current_scope_version=row.is_current_scope_version,
+                baseline_monthly_minor=row.baseline_monthly.amount,
+                baseline_currency=row.baseline_monthly.currency,
                 savings=_serialize_savings(row.savings) if row.savings else None,
+                unranked_reason=row.unranked_reason,
                 provenance=row.provenance,
             )
         )
-    return ComparisonResponse(rows=rows)
+    return ComparisonResponse(rows=rows, current_scope_version_number=current_scope.version_number)
 
 
 def _get_owner_listing_context(

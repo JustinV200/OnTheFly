@@ -218,7 +218,7 @@ def test_rank_challenges_includes_incumbent_baseline() -> None:
         is_active=True,
     )
 
-    ranked = rank_challenges([challenge], scope, expense)
+    ranked = rank_challenges([challenge], scope, expense, {scope.id: scope})
 
     assert ranked[0].is_incumbent is True
 
@@ -236,6 +236,7 @@ def test_baseline_is_normalized_from_a_non_monthly_expense() -> None:
     )
     challenge = Challenge(
         id="challenge-1",
+        scope_version_id="scope-1",
         challenger_account_id="acc_challenger_1",
         bidding_mode_at_submission="open",
         price_minor=150000,
@@ -250,7 +251,7 @@ def test_baseline_is_normalized_from_a_non_monthly_expense() -> None:
         provenance="demo_data",
     )
 
-    ranked = rank_challenges([challenge], scope, expense)
+    ranked = rank_challenges([challenge], scope, expense, {scope.id: scope})
 
     assert ranked[1].savings.label == "Potential savings"
     assert ranked[0].normalized_price.amount == 200000
@@ -263,6 +264,7 @@ def test_ranked_offer_missing_required_tasks_carries_the_gap_into_savings() -> N
     expense = ServiceExpense(id="expense-1", cadence="monthly", amount_minor_per_period=240000, currency="USD")
     challenge = Challenge(
         id="challenge-1",
+        scope_version_id="scope-1",
         challenger_account_id="acc_challenger_1",
         bidding_mode_at_submission="open",
         price_minor=180000,
@@ -277,8 +279,70 @@ def test_ranked_offer_missing_required_tasks_carries_the_gap_into_savings() -> N
         provenance="challenger_submitted",
     )
 
-    ranked = rank_challenges([challenge], scope, expense)
+    ranked = rank_challenges([challenge], scope, expense, {scope.id: scope})
 
     assert ranked[1].savings is not None
     assert ranked[1].savings.label == "Potential savings (scope gaps)"
     assert "task:vacuum" in ranked[1].savings.assumptions[0]
+
+
+def test_an_offer_is_scored_against_the_scope_version_it_answered() -> None:
+    """A newer scope version prices the incumbent row only; it never reframes an offer made on an older one."""
+    answered = _build_scope()
+    current = _build_scope()
+    current.id = "scope-2"
+    current.version_number = 2
+    current.required_tasks = json.dumps(["vacuum", "trash", "windows"])
+    current.current_price_minor = 210000
+    expense = ServiceExpense(id="expense-1", cadence="monthly", amount_minor_per_period=240000, currency="USD")
+    challenge = Challenge(
+        id="challenge-1",
+        scope_version_id="scope-1",
+        challenger_account_id="acc_challenger_1",
+        bidding_mode_at_submission="open",
+        price_minor=200000,
+        price_currency="USD",
+        billing_frequency="monthly",
+        scope_included=json.dumps(["vacuum", "trash", "3x weekly", "equipment"]),
+        scope_excluded="[]",
+        scope_extras="[]",
+        setup_fee_minor=0,
+        taxes_included=True,
+        supplies_included=True,
+        provenance="challenger_submitted",
+    )
+
+    incumbent, offer = rank_challenges([challenge], current, expense, {answered.id: answered, current.id: current})
+
+    assert incumbent.normalized_price.amount == 210000
+    assert offer.scope_completeness == 1.0
+    assert offer.missing_items == []
+    assert offer.baseline_monthly.amount == 240000
+    assert offer.savings is not None
+    assert offer.savings.annual_recurring_savings.amount == (240000 - 200000) * 12
+    assert (offer.answered_scope_version_number, offer.is_current_scope_version) == (1, False)
+
+
+def test_an_offer_in_another_currency_is_unranked_with_no_savings() -> None:
+    scope = _build_scope()
+    expense = ServiceExpense(id="expense-1", cadence="monthly", amount_minor_per_period=240000, currency="USD")
+    challenge = Challenge(
+        id="challenge-1",
+        scope_version_id="scope-1",
+        challenger_account_id="acc_challenger_1",
+        bidding_mode_at_submission="open",
+        price_minor=100,
+        price_currency="usd",
+        billing_frequency="monthly",
+        scope_included="[]",
+        scope_excluded="[]",
+        scope_extras="[]",
+        setup_fee_minor=0,
+        provenance="challenger_submitted",
+    )
+
+    ranked = rank_challenges([challenge], scope, expense, {scope.id: scope})
+
+    assert ranked[1].savings is None
+    assert ranked[1].unranked_reason is not None
+    assert "usd" in ranked[1].unranked_reason

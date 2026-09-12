@@ -9,7 +9,10 @@ from pydantic import BaseModel
 
 
 class TraceSavings(BaseModel):
-    """The headline potential-savings figure and the two monthly amounts it is computed from."""
+    """The headline potential-savings figure and the two monthly amounts it is computed from.
+
+    The baseline is the price confirmed on the scope version the offer answered, not necessarily today's.
+    """
 
     label: str
     currency: str
@@ -39,6 +42,8 @@ class TraceOffer(BaseModel):
     scope_completeness: float
     missing_items: list[str]
     unstated_items: list[str]
+    # Set when the offer can't be compared with its baseline (e.g. another currency); savings is then None.
+    unranked_reason: str | None
     submitted_at: datetime
     revised_at: datetime | None
     revision_count: int
@@ -81,7 +86,10 @@ class TraceListing(BaseModel):
 
 
 class TraceBaseline(BaseModel):
-    """The current price savings are measured against, and where that price came from."""
+    """The price this offer's savings are measured against, and where that price came from.
+
+    It is resolved from the scope version the offer answered, so a later re-scope doesn't move it.
+    """
 
     source: Literal["owner_confirmed_scope", "transaction_baseline"]
     amount_minor: int
@@ -125,7 +133,8 @@ class TraceTransaction(BaseModel):
 class OfferTrace(BaseModel):
     """The whole chain for one offer, visible only to the listing owner."""
 
-    savings: TraceSavings
+    # None when the offer is unranked; there is no figure to trace, and offer.unranked_reason says why.
+    savings: TraceSavings | None
     offer: TraceOffer
     scope_version: TraceScopeVersion
     listing: TraceListing
