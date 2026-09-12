@@ -1,266 +1,409 @@
-# Plan 1: On the Fly — Procurement Assistant
+# Plan 1: On the Fly — Procurement Planning and Visual Audit
 
 ## Concept
 
-On the Fly helps a team lead set a budget, build an equipment list, and make smarter purchase decisions against real card spend — as a web app for buying online, extended into a live augmented-reality view for buying in physical stores. See [Brand: Fruit Fly Vocabulary](#brand-fruit-fly-vocabulary) below for the naming convention used throughout.
+On the Fly solves one connected problem:
 
-## Who it's for
+> A team has a fixed budget and shopping list. On the Fly helps the team decide what to buy, tracks what it actually bought, and visually audits whether the plan matches reality.
 
-**A team lead spending company money on a defined budget.** New-hire equipment, an office setup, supplies for a team offsite — a fixed number, a list of things to buy, and a corporate card the spend lands on.
+This keeps the original procurement-assistant concept—budget, list, recommendations, and actual spend—while giving the camera a practical role after the purchase. It is not a generalized asset-management product.
 
-This is deliberate, and it drives most of the decisions below. Rho is business banking and corporate cards, not a personal-bank aggregator: the transaction data we have to work with is business spend, the sandbox is populated with business merchants, and the customer being served is a company. A consumer framing ("camping trip", "dorm setup") would demo against data we don't have, for a user the platform doesn't serve.
+```text
+                 ON THE FLY
 
-Nothing about the feature set changes under this framing. The budget, the list, the reviews, the realism check, the research agent, and the AR view all work the same. Only the customer is different.
+       “I have $4,000 and need to
+              equip two hires”
+                       │
+                       ▼
+             BUDGET + SHOPPING LIST
+                       │
+                       ▼
+                AI RESEARCH LAYER
+        best fit / budget / reviews / specs
+        alternatives / historical company spend
+                       │
+                       ▼
+                 PURCHASE PLAN
+                  $3,870 / $4,000
+                       │
+                       ▼
+              CARD / FINANCIAL DATA
+                  actual company spend
+                       │
+                       ▼
+                  LIVE AUDIT MODE
+                  phone camera sweep
+                       │
+              ┌────────┴────────┐
+              ▼                 ▼
+        standard vision      fly model
+        identifies items     motion/attention
+              └────────┬────────┘
+                       ▼
+                 RECONCILIATION
 
-**Target demo narrative:** a team lead has $4,000 to equip two new hires. They build the list; On the Fly says the budget is ~$900 short and flags which line items are the risk. They walk an office-supply aisle with the camera up, seeing what's on the list and what's already been bought. Card spend posts to the Rho account and reconciles the budget as it lands.
-
----
-
-## Part 1: Budget & List Surface (Web App)
-
-### 1. Budget + List Setup
-- User creates a budget tied to a purpose (e.g. "2 new-hire setups", "Q3 office refresh") or as a standing departmental budget.
-- User builds a list of items needed against that budget.
-
-### 2. Suggested Items
-- Surface suggested items relevant to the active list — what's still open, what's commonly bought alongside what's already on it.
-- Suggestions respond to what the user is currently looking at or searching for.
-
-### 3. Reviews Aggregation
-- For each suggested or listed item, pull together review data (ratings, review highlights/summary) so the user doesn't have to leave the page to vet a product.
-
-### 4. Budget Realism Assessment
-- Given the list + budget, an AI assessment of whether the budget is realistic for what's on it (e.g. "your $4,000 budget is ~$900 short — these items typically run $4,900+").
-- Flags which items are the biggest risk to the budget and suggests cheaper alternatives.
-
-### 5. "Ask More" Agent
-- A chat-style agent scoped to a specific product.
-- User can ask follow-up questions ("is this durable enough for daily use?", "is there a better value alternative?", "does this work for X?") and the agent researches (reviews, specs, comparisons) to answer.
-
-### 6. Transaction Sync → Auto Budget Update
-
-Pull card transactions so real purchases update the budget automatically instead of relying on manual logging.
-
-**Two sources, one interface.** Transactions come from a `TransactionSource` the rest of the app codes against — `listTransactions(since)` returning a stream of transaction records. Two implementations satisfy it:
-
-- **`RhoSource`** — the live Rho sandbox. Real integration with the sponsor's actual API, free and open (see Tech Stack below).
-- **`MockSource`** — a seeded JSON fixture plus an inject endpoint, emitting the **identical Rho response shape**.
-
-Nothing downstream — matching, budget math, the AR already-bought check — knows or cares which is active. It's a config flag. This is what makes the mock worth having rather than a compromise: the sandbox holds ~12 static transactions that can't be added to, so a live "the charge just posted" demo moment is impossible against it, and its merchants are business travel rather than anything on our catalog. `MockSource` gives us merchants that match the demo list, amounts that match the budget story, and a transaction we can inject on cue mid-demo. `RhoSource` gives us the real integration. Build against the mock, demo the Rho path as real, and keep both working.
-
-**What the data supports.** A card transaction carries merchant and amount, not line items — this is true of the Rho schema and the mock mirrors it rather than inventing richer data we wouldn't have in production:
-
-```json
-{"counterparty_name": "Northstar Office Supply",
- "amount": {"amount": -4947, "currency": "USD"},
- "transaction_type": "card_debit", "posted_at": "...",
- "card_name": "Daniel Rivera",
- "attachments": [{"file_id": "...", "file_name": "office-supply-receipt.pdf"}]}
+             ✓ Laptop bought
+             ✓ Monitor bought
+             ✓ Keyboard bought
+             ? Mouse still needed
+             ⚠ Extra monitor detected
 ```
 
-There is no SKU, no line-item breakdown, and no MCC. A single $49.47 charge at an office-supply store is routinely four items. **Matching a transaction to one specific list item is therefore not something the data can support**, and designing around it would mean guessing wrong most of the time.
+## Who It Is For
 
-**So matching works at the budget level, not the item level:**
-- A new transaction is matched to a **budget** (merchant, timing, card, and which budgets are active), and its amount is deducted from that budget's remaining. This is reliable and needs no guessing.
-- Remaining budget and the realism assessment recompute immediately against what's still open on the list.
-- **Item attribution is a user action, not an inference.** The transaction shows up as "$49.47 at Northstar Office Supply — which of these did it cover?" with the open list items as checkboxes. One tap, no wrong guesses, and the user is the one who actually knows.
-- **Receipt-assisted attribution (stretch):** `GET /transactions/{id}/files/{file_id}` returns a signed download URL for attached receipts. Passing that PDF to Claude as a document input gets line items, which pre-fills the checkboxes above. The Rho sandbox's receipt PDFs are content-free stubs (see Tech Stack), so `MockSource` is what makes this demoable — it serves a real itemized receipt through the same endpoint shape.
+**A team lead spending company money against a defined budget.** Examples include new-hire equipment, an office setup, or supplies for a team offsite.
 
----
+The demo centers on one concrete job:
 
-## Part 2: Compound Eye — AR In-Store View
+> Equip two new hires with a $4,000 budget, select the right products, track the resulting card spend, and verify that all planned items arrived.
 
-### Core Idea
-Use the phone camera through the browser to overlay useful information onto items on a shelf, live, as the phone is panned — not a barcode scan or a point-and-tap fallback. Same web app as Part 1, different view.
+The four questions the product answers are:
 
-### 1. Live Item Detection
-- Camera feed continuously identifies items relevant to the active list as the phone moves.
-- Relevant items get a bounding box drawn over them, tracked frame-to-frame.
-
-### 2. Box Overlay Info
-Each box shows or links to:
-- Reviews for that item
-- Price match info (is this price competitive vs. online?)
-- **Already-purchased status** — checked against transaction history (Part 1 §6), so something already bought shows a dimmed "already bought" box instead of a buy pitch. Avoids pitching a duplicate of something already expensed.
-
-### 3. Tap-to-Expand Panel
-Tapping a box opens a detail panel with the same AI features as Part 1:
-- Budget realism check (does this fit what's left?)
-- Ask More (product-scoped research agent)
-- Suggest Better Alternatives (cheaper or better-reviewed options)
-
-### Technical Approach
-
-**The demo item set is chosen so detection is nearly free.** `coco-ssd` detects 80 fixed COCO classes and will never recognize a specific retail product. Rather than fight that, the demo list is built from items that *are* COCO classes:
-
-> `laptop` · `keyboard` · `mouse` · `tv` (monitor) · `chair` · `backpack` · `book` · `clock` · `bottle` · `cup` · `potted plant` · `scissors`
-
-That is a completely believable new-hire-equipment and office-setup list, and it turns the single riskiest component into the most reliable one. No training, no custom model.
-
-- **Camera access:** `getUserMedia` (rear camera) in a mobile browser. Requires HTTPS on a real phone — tunnel or deploy on day one, don't leave this to demo night. iOS Safari also needs the `playsinline` attribute and a user gesture to start; in-app browsers (Slack, Instagram) block the camera entirely, so demo in real Safari or Chrome on a device we control.
-- **Detection loop:** `coco-ssd` via TensorFlow.js in-browser for frame-to-frame boxes. Fast, runs on-device, no network in the hot path.
-- **Identity, when needed:** Claude vision on a cropped frame to go from "that's a `laptop`" to a specific product. Async, off the frame-rate path, and only when the class alone isn't enough. Note Claude returns identity reliably but *not* pixel-accurate box coordinates — boxes come from the local model, identity from Claude. Don't invert this.
-- **Overlay rendering:** `<canvas>` layered over the `<video>`, redrawn each frame; tap hit-testing against the current box list opens the detail panel.
-- **Matching to product data:** detected class + crop → product data layer (same one Part 1 uses) for price, reviews, price match.
-- **Purchase-history cross-check:** matched product looked up against synced transactions; already-bought items render dimmed.
+1. What do we need?
+2. What should we buy given our budget?
+3. What did we actually spend?
+4. Did everything we planned and paid for actually show up?
 
 ---
 
-## Shared Backend / AI Components
+## Part 1: Budget, List, and Purchase Plan
 
-- **Budget & list store** — budgets, lists, and progress against them.
-- **Product data layer** — pricing, specs, and reviews for the demo catalog.
-- **Transaction sync & matching** — reads card transactions via the Rho API, attributes them to budgets, updates spent vs. remaining.
-- **AI agent layer**:
-  - Budget realism assessment (list + pricing + actual spend)
-  - Ask More research agent (product-scoped Q&A)
-  - Alternative suggestion engine
-  - Transaction-to-budget attribution, with item-level confirmation surfaced to the user
-- **Item recognition** (Part 2) — local detection for boxes, Claude vision for identity.
-- **Catalog match engine ("Mushroom Body")** — fast shortlisting between a query item and the catalog, used by both parts.
+Part 1 remains the core of the original product.
+
+### 1. Budget and Shopping List
+
+The user creates a purpose-specific budget, for example:
+
+> **2 New-Hire Setups — Budget: $4,000**
+
+They build a quantity-aware shopping list:
+
+- 2 laptops
+- 2 monitors
+- 2 keyboards
+- 2 mice
+- 2 headsets
+
+The interface shows planned cost, actual spend, remaining budget, and item status in one place.
+
+### 2. AI Research and Recommendations
+
+For each category or candidate product, On the Fly combines:
+
+- Current product prices, specifications, ratings, and review summaries
+- Alternatives that better satisfy the list and budget
+- Typical market prices
+- Historical prices the company has paid for similar purchases
+- The remaining budget and every other item still required
+
+Historical financial data is a research signal, not a separate product. The system answers both:
+
+- “What does the market say is a good price?”
+- “What has this company actually paid before?”
+
+An example assessment:
+
+> Your current plan is about $620 over budget. These monitors are poor value relative to comparable alternatives, and your company has historically paid $430–$520 for similar monitors. Swap these two items to bring the projected total to $3,870.
+
+### 3. Budget Realism
+
+The plan is evaluated as a whole rather than treating each product recommendation independently. The assistant:
+
+- Estimates the total cost of the current list
+- Identifies the line items creating the overage
+- Warns when a candidate price is materially above market or company history
+- Suggests specific substitutions
+- Recalculates the projected total after each change
+- Preserves required quantities and user constraints
+
+### 4. Product-Scoped “Ask More” Agent
+
+The user can ask focused follow-up questions such as:
+
+- Is this durable enough for daily use?
+- Is there a better-value alternative?
+- Does it work with our existing docks?
+- Is this price unusually high?
+
+The agent researches reviews, specifications, comparisons, and the company's relevant spend history, then returns a concise recommendation with supporting evidence.
+
+### 5. Purchase Plan
+
+Accepted recommendations become the purchase plan. Each planned line records:
+
+- Category and quantity
+- Selected product
+- Expected unit and total price
+- Required constraints
+- Purchase status
+- Reconciliation status
+
+This plan is the shared reference for card transactions and the camera audit.
+
+### 6. Financial Data and Actual Spend
+
+Card transactions update the budget automatically. The app codes against a `TransactionSource` interface so the Rho sandbox and a controlled demo source use the same downstream logic.
+
+- **`RhoSource`** reads real Rho sandbox transactions.
+- **`MockSource`** emits the same response shape and supports an on-cue demo transaction.
+
+The financial feed supplies merchant, amount, card, and time—not dependable SKU-level line items. Therefore:
+
+- Transactions are automatically attributed to the most likely active budget using merchant, timing, card, and amount.
+- Actual spend and remaining budget update immediately.
+- The user confirms which planned items a transaction covered.
+- Receipt extraction may prefill that confirmation when an itemized receipt is available.
+- The system must not claim that a card transaction alone proves a particular physical item arrived.
+
+Historical transactions are also normalized into category-level price ranges so the research layer can compare a candidate with prior company purchases.
 
 ---
 
-## Catalog Match Engine ("Mushroom Body")
+## Part 2: Compound Eye — Live Camera and Audit
 
-**Purpose:** narrow "what is this item / what's a good match or alternative" down to a short candidate list, before handing that list to Claude for the actual judgment call.
+The camera is not a separate AR shopping gimmick. It is the visual layer for the same purchase plan and works in two explicit states.
 
-**Technique — FlyHash:** modeled on the fruit fly olfactory circuit (the mushroom body / Kenyon cells), a real published approach to locality-sensitive hashing (Dasgupta, Stevens & Navlakha, *Science*, 2017):
-1. Take a feature vector for the item (a text embedding of title/description).
-2. Project it through a large, sparse random projection — each output dimension sees only a small random subset of input dimensions, as the fly's ~2000 Kenyon cells do with ~50 random projections each.
-3. Keep only the top-k winner dimensions (winner-take-all), producing a small sparse binary code.
-4. Compare codes by overlap / Hamming distance. That's the entire search.
+```text
+BEFORE PURCHASE
+“What should I buy?”
 
-**What ships, and what's honest about it.** At our catalog size (hundreds of items, not millions), brute-force cosine similarity is already microseconds and has strictly better recall than any LSH scheme — FlyHash buys nothing at this scale, and the "no model inference" framing is misleading anyway, since the query still needs an embedding and *that* is the real latency cost, not the hash.
+AFTER PURCHASE
+“Did what we planned and paid for actually show up?”
+```
 
-So: **cosine is the live path. FlyHash ships alongside it as a runnable side-by-side** — same query, both retrievers, showing the codes and the overlap. It's ~30 lines, it's a genuinely good story, and it's real. It is not on the critical path and nothing blocks on it.
+### Mode A: Before-Purchase Check
 
-Image→catalog matching is **out of scope** — it needs CLIP or equivalent, which is a whole extra dependency. Text-side only.
+Point the camera at a candidate product in a store or stockroom. The app identifies the item and compares it with the active plan.
+
+Example overlay:
+
+```text
+Dell 27-inch monitor
+Shopping list: ✓ Monitor needed
+Remaining budget: $1,280
+Shelf price: $499
+Typical price: about $430
+Company previously paid: $449
+
+WAIT — mediocre value
+Better option: $399
+```
+
+The user can open the same reviews, alternatives, and Ask More experience available in Part 1. This mode supports a buying decision; it does not automatically approve a purchase.
+
+### Mode B: After-Purchase Audit
+
+The user sweeps the phone camera across the completed setup or delivery area. Detected objects are reconciled against the purchase plan and confirmed transaction data.
+
+Example result:
+
+```text
+Laptop   ✓
+Monitor  ✓
+Keyboard ✓
+Mouse    • missing
+
+7 of 8 planned items visually accounted for
+$3,721 actual spend
+$279 budget remaining
+```
+
+The audit distinguishes between three facts:
+
+- **Paid:** supported by financial data and user item attribution
+- **Seen:** detected during the current or a saved visual audit
+- **Reconciled:** both planned and accounted for through the available evidence
+
+An unexpected item can be flagged for review, but vision alone must not label it fraud, duplicate billing, or a company asset.
+
+### Live Overlay
+
+Relevant objects receive tracked bounding boxes. Each overlay can show:
+
+- Planned quantity and quantity seen
+- Needed, paid, seen, or reconciled state
+- Candidate price versus typical and historical prices in before-purchase mode
+- Missing or unexpected-item warning in after-purchase mode
+- A tap target for product and reconciliation details
 
 ---
 
-## Tech Stack
+## The Fruit-Fly Model’s Narrow Responsibility
 
-### Frontend — one app, two views
+The fly-inspired neural network has one job in the live camera pipeline:
 
-**Decision: no Chrome extension.** A Manifest V3 build means a separate manifest, Vite extension config, service worker messaging, content script injection, storage sync, and a separate deploy — all to deliver features a web page delivers identically. Part 2 has to be a mobile web page regardless. One responsive web app covers both, cuts a large slice of the work, and loses nothing that matters for the demo.
+> Determine when and where the scene changed enough to warrant deeper semantic analysis.
 
-- **Framework:** React + TypeScript, bundled with Vite.
-- **Layout:** responsive — desktop is the budget/list surface (Part 1), mobile is that plus the camera view (Part 2).
-- **Detection:** TensorFlow.js `coco-ssd`, kept off the main thread's critical path.
-- **Overlay:** `<canvas>` over `<video>`.
+It does **not** make purchase recommendations, perform financial reasoning, or identify products by itself.
 
-### Backend / API
-- **Runtime:** Node.js + TypeScript, Express or Fastify — simple REST.
-- **Hosting:** whatever stands up fastest (Vercel / Render / Fly.io). Needs to be HTTPS and reachable from a phone on day one.
+```text
+LIVE VIDEO
+    │
+    ├── fly neural network
+    │      ↓
+    │   motion / visual-interest signal
+    │      ↓
+    │   region and moment worth inspecting
+    │
+    └── standard CV / vision-language model
+           ↓
+       identify and classify object
+           ↓
+       reconcile with purchase plan
+```
+
+As the phone pans across a shelf or desk, the fly layer produces an attention spike and candidate region. The app crops that region and invokes the more expensive semantic model only when useful instead of sending every frame.
+
+This is a hypothesis to test, not a performance claim. The benchmark compares the fly layer with conventional motion/saliency methods on:
+
+- Semantic-model calls per minute
+- Detection and reconciliation recall
+- Time to first useful identification
+- End-to-end latency
+- False attention triggers
+
+If the fly model does not improve the pipeline enough, standard motion gating remains the production path. **Fly Mode** can still visualize the model's real response to the live camera while standard vision performs recognition. The product must remain reliable regardless of the benchmark result.
+
+---
+
+## System Architecture
+
+### Frontend
+
+- React + TypeScript responsive web app
+- Desktop-first planning and spend dashboard
+- Mobile camera view using `getUserMedia`
+- `<canvas>` overlay over live video
+- Explicit toggle between Before Purchase and Audit modes
+- Live reconciliation summary tied to the active plan
+
+### Backend
+
+- Node.js + TypeScript REST API
+- Budget, list, purchase-plan, and audit-session store
+- Product catalog and product-research layer
+- Transaction ingestion and budget attribution
+- Historical-spend aggregation by normalized category
+- Reconciliation engine that keeps planned, paid, and seen evidence separate
+
+### Vision Pipeline
+
+1. Capture the live browser video stream.
+2. Run the fly model and a conventional baseline on sampled frames.
+3. Use the selected gating signal to choose a frame and region of interest.
+4. Run standard object detection for bounding boxes and tracking.
+5. Use a vision-language model on a crop only when category or product identity needs refinement.
+6. Match the result to the active purchase plan.
+7. Ask for user confirmation when identity or quantity is uncertain.
+8. Update the audit count without double-counting a tracked object across frames.
+
+For the demo, use objects that standard detectors handle reliably: laptop, keyboard, mouse, monitor/TV, chair, backpack, book, bottle, cup, and scissors. Do not imply SKU-level certainty when only a broad object class was detected.
 
 ### AI Layer
 
-**Claude API (`claude-opus-5`)** for the reasoning-heavy pieces. This is the *cheapest* part of the plan to build — five small prompts, not five systems:
+- Budget realism assessment
+- Product alternatives and tradeoff explanation
+- Product-scoped research Q&A
+- Historical-price comparison
+- Vision-based product/category refinement
+- Transaction-to-budget suggestion with user-confirmed item attribution
 
-| Feature | Shape |
-|---|---|
-| Budget realism | one call, `output_config: {format: ...}` for guaranteed-shape JSON |
-| Alternatives | one call, structured output |
-| Transaction → budget attribution | one call, structured output |
-| Ask More | `web_search_20260209` server tool does the research; no scraping to build |
-| Item identity from a crop | vision input on the cropped frame |
-
-Use structured outputs everywhere JSON is consumed — don't parse prose.
+Use structured outputs anywhere the application consumes model results. Every recommendation should return a decision, reasons, confidence, and cited or stored evidence.
 
 ### Data
-- **Database:** Postgres via Supabase. **Do not build auth** — hardcode a demo user. Auth is a classic hackathon time sink with zero demo value.
-- **Product/review data:** a **curated JSON catalog** scoped to the ~12 demo items above, seeded by hand. Retailer scraping is blocked and ToS-hostile; SerpApi/Rainforest mean signup, cost, and rate limits for data we can just write down. Live research comes from Claude's web search tool in Ask More, where it's actually qualitative. Be upfront with judges that the catalog is seeded — it's the right call, not a shortcut to hide.
 
-### Transactions
-
-Two implementations of `TransactionSource` (see Part 1 §6). Rho's schema is the contract both conform to.
-
-#### `RhoSource` — the real integration
-
-**Verified: the sandbox is open and needs no account.**
-
-```
-https://rhoapi-sandbox.rho.co/api/v1/     any non-empty bearer token, no signup, no KYC
-```
-
-`GET /accounts` and `GET /transactions` both return data immediately. Production (`https://rhoapi.rho.co/api/v1/`) needs a real token created in Rho banking settings by an Admin or Account Owner behind a 2FA challenge — not something to depend on for the demo.
-
-**What's in the sandbox, precisely:**
-- Transaction fields: `counterparty_name`, `amount` (integer cents, negative for debits), `initiated_at`, `posted_at`, `status`, `transaction_type`, `card_id`, `card_name`, `user_full_name`, `memo`, `note`, `attachments[]`. Cursor-paginated via `page.next_page_token`.
-- **~12 card transactions exist in the entire sandbox**, and they are static and historical (dated June 2026). New ones can't be generated, so no live "transaction lands, budget updates" moment is possible against Rho. That's `MockSource`'s job, below — it's the reason the mock exists rather than a fallback.
-- Merchants are business travel and office supply: `Northstar Office Supply` ($53.31, $49.47), `Midtown Parking Services`, `Graceway Car Service`, `Island Resort Maldives`, `Teamline Software`. Northstar is the natural anchor for the demo.
-- `GET /transactions/{id}/files/{file_id}` works and returns a signed download URL for receipt attachments. **The sandbox PDFs are one-line stubs** (`"Rho API Sandbox - Fictional Document | ... | Amount -4947 USD"`) with no line items. The endpoint and the plumbing are real; the data isn't. To demo receipt line-item extraction we supply our own receipt PDF through the same code path.
-- **No webhooks documented — ingestion is poll-only.** Poll on an interval, diff against what's been seen.
-
-#### `MockSource` — the development and demo path
-
-A local implementation of the same interface, emitting the same schema. Roughly:
-
-- **Fixture:** a JSON file of transactions shaped exactly like Rho's, with merchants drawn from the demo catalog and amounts that fit the $4,000 budget story. Dated relative to now, not hardcoded, so the demo never looks stale.
-- **Inject endpoint:** `POST /mock/transactions` appends a transaction and it shows up on the next poll. This is the live demo moment — a purchase posts, the budget moves, on cue rather than on a timer.
-- **Receipts:** serves a real itemized receipt PDF through the same `files/{file_id}` shape, which is what makes line-item extraction demoable at all.
-- **Same poll loop, same matching code.** If the mock and Rho ever disagree in shape, that's a bug in the mock — Rho's schema is the spec.
-
-Pick the source with one env var (`TRANSACTION_SOURCE=rho|mock`). Default to `mock` in development so nobody is blocked by network or conference wifi, and have the Rho path working and demonstrable.
-
-### Dev/Deploy
-- **Version control:** Git/GitHub (this repo).
-- **Packages:** npm/pnpm workspaces if frontend and backend live in one monorepo.
+- Postgres via Supabase; hardcoded demo user, no auth
+- Curated demo catalog for reliable product matching
+- Live web research for qualitative questions and fresh comparisons
+- `TransactionSource` abstraction with Rho and mock implementations
+- Saved audit observations with timestamp, category, confidence, and optional frame crop
 
 ---
 
-## Brand: Fruit Fly Vocabulary
+## Reconciliation Model
 
-*Drosophila melanogaster* is one of the most studied nervous systems in neuroscience — a tiny brain with extremely fast, well-characterized reflexes. We use it as both a real technical inspiration (the Mushroom Body matcher is a real fly-brain algorithm) and a naming convention, so the theme is more than skin-deep without adding risk where quality or latency actually matter:
+The reconciliation state should be explainable and conservative.
 
-| Codename | Real fly anatomy | Maps to |
-|---|---|---|
-| **Compound Eye** | Wide-field, fast-motion-detecting vision | The live AR camera detection view |
-| **Mushroom Body** | Kenyon cells — sparse coding / associative matching | The FlyHash catalog matcher (a genuine biological algorithm, not just a name) |
-| **Halteres** | Balance organs used for flight stability | Budget realism / balance check |
-| **Proboscis** | Feeding tube used to sample and taste | The "Ask More" research agent |
-| **Metabolism** | Consumption and energy use | Transaction sync — what's actually been spent, via the Rho API |
+| Plan state | Financial evidence | Visual evidence | UI result |
+|---|---|---|---|
+| Planned | None | None | Needed |
+| Planned | Confirmed purchase | None | Paid, not yet seen |
+| Planned | None | Seen | Seen, purchase unconfirmed |
+| Planned | Confirmed purchase | Seen | Reconciled |
+| Not planned | None or unknown | Seen | Unexpected; review |
 
-Only Compound Eye and Mushroom Body map to real technical components; the rest is naming layered on features already planned above. None of it sits between a user and the reasoning that needs to be fast and correct.
+Quantity matters. A plan for two monitors is not complete after detecting one. Repeated detections of the same tracked object do not increment the count. For the hackathon, a user confirmation step resolves ambiguous counts or identities.
+
+---
+
+## End-to-End Demo
+
+1. A team lead says, **“We have $4,000 to equip two new hires.”**
+2. They build a list for two laptops, monitors, keyboards, mice, and headsets.
+3. On the Fly estimates the original plan at **$4,760** and identifies the expensive monitors and accessories.
+4. It uses current product research plus historical company spend to recommend alternatives.
+5. The accepted purchase plan becomes **$3,890**.
+6. Show the real Rho sandbox integration and its historical business transactions.
+7. Inject demo purchases through the same transaction interface; actual spend becomes **$3,847**.
+8. Pick up the phone and sweep the completed desks.
+9. The audit finds the laptops, monitors, and keyboards, but one mouse is missing.
+10. The result reads: **7/8 purchases reconciled. One item still missing. $153 remaining.**
+11. Turn on Fly Mode to show the live fruit-fly attention response alongside the regions sent for semantic recognition.
+
+The audience sees one uninterrupted story: plan, research, buy, spend, and verify.
 
 ---
 
 ## Build Order
 
-The Rho integration is what's being judged at a Rho hackathon, so it doesn't go last. Detection still gets spiked first because it's the only piece that can fail outright — but on a hard timebox, with a known fallback.
+1. **Procurement spine:** budget, quantity-aware list, seeded catalog, projected total, and alternatives.
+2. **Transactions:** common `TransactionSource`, mock purchases, Rho sandbox path, actual-spend calculation, and user item attribution.
+3. **Reconciliation state:** model planned/paid/seen/reconciled separately and build the dashboard summary.
+4. **Camera audit spike:** on a real phone over HTTPS, detect and count the exact demo objects without double-counting.
+5. **Before-purchase camera state:** add remaining-budget, typical-price, historical-price, and alternative overlays.
+6. **Fly attention layer:** connect its live signal to region/frame selection and build the baseline comparison.
+7. **Polish:** receipt-assisted attribution, saved audit evidence, unexpected-item review, and failure-state handling.
 
-1. **Camera → box spike. 2-hour timebox.** `coco-ssd` boxing a laptop and a chair over live video on a real phone, over HTTPS. Validates the demo item set and the whole AR premise. If it doesn't hold in two hours, fall back to periodic backend vision calls with held/interpolated boxes — and if *that* doesn't hold, Part 2 is cut and the plan is still a complete product.
-2. **Transaction sync + budget core.** Write `MockSource` first — it's a JSON file and a poll loop, and it unblocks everyone immediately with no network dependency. Then budget/list data model, transaction → budget attribution, item confirmation UI. This is the spine. `RhoSource` slots in behind the same interface whenever someone has an hour; it's a small job precisely because the interface came first.
-3. **AI layer.** Realism check, alternatives, Ask More. Five prompts, structured outputs.
-4. **Compound Eye.** Wire the proven detection loop to the product data layer — box → tap → detail panel, with already-bought state from step 2.
-5. **Stretch, in order:** receipt line-item extraction, FlyHash side-by-side, price match.
+Each stage leaves a coherent demo. If camera recognition is weak, the planning and spend workflow still works and the audit uses user confirmation. If the fly model underperforms, conventional gating handles recognition while Fly Mode truthfully shows the experimental response.
 
 ---
 
-## Scope Decisions Already Made
+## Scope Decisions
 
-Recorded so they don't get relitigated mid-build:
-
-| Decision | Why |
+| Decision | Reason |
 |---|---|
-| Business procurement, not consumer shopping | Matches the sponsor's actual customer. (This holds on its own merits — mocking the data doesn't reopen it.) |
-| Transactions behind a `TransactionSource` interface, mock + Rho | Mock unblocks dev and enables a live inject on demo day; Rho keeps the real sponsor integration. Not either/or |
-| One responsive web app; no Chrome extension | MV3 is pure overhead for features a web page delivers identically |
-| Demo items are COCO classes | Turns the riskiest component into the most reliable one, for free |
-| Transactions attribute to budgets; items are user-confirmed | Card data has no line items — item-level inference would guess wrong most of the time |
-| Curated JSON catalog | Scraping is blocked; product APIs cost time and money for data we can write down |
-| No auth — hardcoded demo user | Classic time sink, zero demo value |
-| Cosine ships live; FlyHash ships as a side-by-side | Cosine is better at our scale; FlyHash is a real story, not a critical path |
-| No image embeddings / CLIP | Whole extra dependency for marginal gain |
+| Business procurement, not consumer shopping | Matches company card data and the sponsor context |
+| One plan-to-audit workflow | Keeps the product coherent and the demo easy to follow |
+| Camera supports before- and after-purchase states | Reuses one interface for buying decisions and verification |
+| Fly network only gates visual attention | Gives it a legitimate, testable perception role without putting reliability at risk |
+| Standard vision performs identity and boxes | Uses the right tool for semantic recognition |
+| Transactions prove spend, not physical arrival | Card data does not contain enough evidence for visual reconciliation |
+| Separate planned, paid, and seen states | Prevents the UI from overstating certainty |
+| Mock and Rho share one interface | Enables a controlled demo while preserving the real integration |
+| Curated demo catalog and detector-friendly objects | Makes the live demo repeatable |
+| No generalized asset management | Warranties, offboarding, depreciation, and inventory administration are future products, not this MVP |
 
 ---
 
-## Open Questions
+## Success Criteria
 
-- **How long is the hackathon, and how many of us are there?** Everything above assumes the scope cuts are sufficient. If it's a short event or a small team, Part 2 gets cut and Part 1 becomes the whole product — which is a complete, coherent demo on its own.
-- What's the actual demo shelf — do we have real versions of the COCO-class items on hand to point a camera at, or do we need to source them?
-- Which source do we demo on? `MockSource` gives a clean live inject and on-catalog merchants; `RhoSource` is the real sponsor integration. Showing the Rho path working and *then* injecting through the mock gets both, if it doesn't feel like a dodge.
-- Do we author an itemized receipt PDF for the mock to demo line-item extraction, or leave that as a stretch and show budget-level attribution only?
-- Single budget owner, or shared/team budgets with multiple people spending against one?
-- How far does price match go — real comparison data, or seeded alongside the catalog?
+The MVP succeeds if a judge can watch one team:
+
+- Create a fixed budget and quantity-aware list
+- Receive a credible over-budget warning and better alternatives
+- See current market evidence alongside historical company spend
+- Convert recommendations into a purchase plan
+- Watch actual company-card spend update the budget
+- Scan a physical setup and understand what is paid, seen, reconciled, or missing
+- Observe the fly model performing a real, narrow attention task without being asked to trust an unsupported superiority claim
+
+## Future Features, Not MVP
+
+- General asset inventory
+- Warranty and lifecycle management
+- Employee assignment and offboarding
+- Accounting depreciation
+- Procurement approvals and vendor management
+- Automated fraud or loss conclusions
+
+These may follow naturally later, but they should not enter the hackathon build or pitch.
