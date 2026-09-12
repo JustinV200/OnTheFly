@@ -24,6 +24,7 @@ export async function apiFetch<T>(path: string, options: RequestInit = {}): Prom
   const headers = new Headers(options.headers);
   headers.set('Content-Type', 'application/json');
 
+  // This tab's own acting account, never a later switch made in another tab.
   // A public visitor sends no header at all, which is exactly what a stranger's browser does.
   const actingAccountId = actingAccountStore.read();
   if (actingAccountId) {

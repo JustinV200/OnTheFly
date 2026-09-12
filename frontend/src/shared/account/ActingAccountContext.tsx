@@ -1,5 +1,8 @@
 /* Shares the acting demo business across the app so a switch re-renders every page as that business.
-   The API client reads the same store, so the header and the UI can't disagree about who is acting. */
+   State and the API client's header both come from this tab's in-memory store, so within a tab they
+   can't disagree. A switch in another tab changes neither: each window keeps acting as its own business
+   (a new tab starts from the last choice). There is deliberately no storage-event listener, which would
+   make every window follow the last switch and remount a half-typed offer form. */
 import { createContext, ReactNode, useCallback, useContext, useMemo, useState } from 'react';
 
 import { actingAccountStore } from './actingAccountStore';
@@ -13,13 +16,13 @@ interface ActingAccountValue {
 
 const ActingAccountContext = createContext<ActingAccountValue | null>(null);
 
-/** Provide the acting account, starting from storage so a refresh keeps the current business. */
+/** Provide the acting account, starting from the tab's store so a refresh keeps the current business. */
 export function ActingAccountProvider({ children }: { children: ReactNode }): JSX.Element {
   const [accountId, setAccountIdState] = useState<string | null>(() => {
     const storedId = actingAccountStore.read();
     if (storedId !== null && !demoAccounts.some((candidate) => candidate.id === storedId)) {
-      // A stale id (e.g. a renamed seed) is cleared, not just hidden: the API client reads the
-      // store directly and would otherwise keep sending it while the UI shows a public visitor.
+      // A stale id (e.g. a renamed seed) is cleared in the store, not just hidden: the API client
+      // reads the store and would otherwise keep sending it while the UI shows a public visitor.
       actingAccountStore.write(null);
       return null;
     }
