@@ -23,6 +23,7 @@ from app.services.expenses.eligibility import classify_eligibility
 from app.services.expenses.sync import sync_service_expenses
 from app.services.expenses.vendor_normalize import VendorCorrectionStore
 from app.services.transactions.import_run import run_import
+from app.core.config import get_settings
 
 router = APIRouter(prefix="/api/expenses", tags=["expenses"])
 
@@ -41,6 +42,8 @@ def trigger_import(
     """
 
     account_id = require_acting_account_id(request)
+    if get_settings().transaction_source == "stripe" or payload.provider_account_id.startswith("fca_"):
+        raise HTTPException(400, "Use the company-scoped Stripe connection refresh endpoint.")
     result = run_import(account_id, payload.provider_account_id, db)
     return ImportResultResponse(
         new=result.new,
@@ -96,6 +99,8 @@ def get_expense_detail(
             amount_minor=transaction.amount_minor,
             currency=transaction.currency,
             posted_at=transaction.posted_at,
+            status=transaction.status,
+            direction=transaction.direction,
             source_type=transaction.source_type,
             is_excluded=transaction.is_excluded,
             excluded_reason=transaction.excluded_reason,

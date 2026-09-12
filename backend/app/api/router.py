@@ -3,6 +3,7 @@ Each feature router owns its endpoints; this file only wires them together.
 """
 
 from fastapi import APIRouter
+from app.api.connections.router import router as connections_router
 
 from app.api.evidence.router import router as evidence_router
 from app.api.inbox.router import router as inbox_router
@@ -14,6 +15,7 @@ from app.api.marketplace.router import router as marketplace_router
 from app.api.profiles.router import router as profiles_router
 
 api_router = APIRouter()
+api_router.include_router(connections_router)
 api_router.include_router(challenges_router)
 api_router.include_router(evidence_router)
 api_router.include_router(expenses_router)

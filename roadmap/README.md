@@ -15,7 +15,7 @@ One file per phase. Work them in numeric order, with the exception noted below.
 | [06](06-counteroffer-comparison.md) | Counteroffer comparison | 05 | M | Yes |
 | [07](07-challenger-evidence.md) | Challenger evidence | 05 | L | No |
 | [08](08-outbound-invitations.md) | Outbound invitations (secondary path) | 05 | M | No |
-| [09](09-demo-polish.md) | Demo polish | all | M | Yes |
+| [09](09-demo-polish.md) | UI modernization and demo polish | all | L | Yes |
 | [10](10-stretch.md) | Stretch | all | — | No |
 
 Sizes are relative to each other, not hour estimates — team size and window are still open questions.
@@ -81,7 +81,7 @@ Settled, so they don't get relitigated mid-build:
 ## Decisions to lock before phase 02
 
 - **Which real business and cleaning scope anchors the genuine counteroffer**, and will they create an account or respond off-platform? Blocks phase 01.
-- **What Rho sandbox access exists, and does it contain recurring service spend?** Blocks the phase 02 spike. If not, fixtures become the demo path and the pitch says so out loud.
+- **Does the Stripe Financial Connections sandbox flow expose enough simulated recurring service spend?** Blocks the phase 02 spike. If not, fixtures remain the deterministic demo path and the pitch says so out loud.
 - **What is the cutoff after which the demo runs on labeled-simulated offers?** Pick a wall-clock hour and write it here:
 
   > Real-counteroffer cutoff: `TBD — fill this in`

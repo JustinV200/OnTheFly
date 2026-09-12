@@ -1,6 +1,6 @@
 # Phase 02 — Financial ingestion
 
-**Goal:** normalized, deduplicated, account-scoped transaction records in the database — from a real Rho connection and from labeled fixtures, behind one interface neither the UI nor any service can tell apart.
+**Goal:** normalized, deduplicated, account-scoped transaction records in the database — from Stripe Financial Connections sandbox and from labeled fixtures, behind one interface neither the UI nor any service can tell apart.
 
 **Depends on:** [00](00-foundations.md). **Size:** L. **Critical path:** yes.
 
@@ -8,19 +8,26 @@ Everything imported here is **private and owner-scoped**. Nothing in this phase 
 
 ## Steps
 
-### 1. Spike Rho first, timeboxed, before designing anything
+### Minimal sandbox implementation status
+
+Implemented: transaction-only Stripe consent sessions, company/account binding, paginated imports, updating existing transaction statuses and amounts, bounded refresh polling, private transaction inspection, and dashboard refresh. The migration is `0008_financial_connections`.
+
+Balances, webhooks, and scheduled refreshes below are deferred from this minimal slice. The dedicated Stripe endpoints work alongside the fixture default. See [setup and verification notes](../backend/app/services/transactions/stripe/NOTES.md). Automated mocked-provider tests pass; real sandbox consent remains unverified until keys are configured. Do not mark the full phase complete on that basis.
+
+### 1. Spike Stripe Financial Connections sandbox first
 
 Before writing the adapter, answer against the actual API and its documentation:
 
-- How does authentication work, and what does it require?
-- Which endpoint returns transaction history, and how is it paginated?
-- What fields come back — merchant description, category, memo, counterparty, status, attachments?
+- How is a Financial Connections Session created and completed from the frontend?
+- Which permissions are required for transactions and balances, and how are they disclosed to the user?
+- How do transaction refreshes, pagination, and webhook completion events work?
+- What fields come back — description, status, timestamps, currency, and account identifiers?
 - What is the amount's sign convention and unit? Cents or dollars, negative for debits or not?
-- **What is actually in the sandbox?** Any recurring service payments at all?
+- **What is actually in Stripe's simulated accounts?** Any recurring service payments matching the demo?
 
-Write the answers into `backend/app/services/transactions/rho/NOTES.md`. The plan explicitly says earlier assumptions about sandbox contents must be rechecked before being treated as dependencies — this step is that recheck.
+Write the answers into `backend/app/services/transactions/stripe/NOTES.md`. Verify against Stripe's current documentation and actual sandbox responses before treating assumptions as dependencies.
 
-Timebox it. If the sandbox holds nothing resembling recurring service spend, that's a finding, not a failure: fixtures become the demo path, phase 08 says so plainly in the pitch, and the Rho adapter still ships as a real integration on real data.
+Timebox it. If the sandbox holds nothing resembling recurring service spend, fixtures remain the deterministic demo path. The Stripe connection still demonstrates the real consent and import flow, and every record is labeled `sandbox` or `fixture` on screen.
 
 ### 2. Normalized transaction model
 
@@ -56,9 +63,11 @@ class TransactionSource(Protocol):
 
 Per the coding rules: implementations live in their own modules, and only the composition point imports a concrete one.
 
-### 4. `RhoSource`
+### 4. `StripeFinancialConnectionsSource`
 
-`backend/app/services/transactions/rho/source.py`. Handles auth, pagination, and mapping into the normalized model. Sign-convention and unit conversion happen **here**, at the edge, so nothing downstream ever sees a provider quirk.
+`backend/app/services/transactions/stripe/source.py`. Handles transaction pagination and mapping into the normalized model after the user completes the Stripe-hosted consent flow. Sign-convention and unit conversion happen **here**, at the edge, so nothing downstream ever sees a provider quirk.
+
+Add server endpoints to create a Financial Connections Session and receive Stripe webhooks. Request only the `transactions` and `balances` permissions needed by the product. Store Stripe account and session identifiers server-side; never expose the secret key in the frontend. Treat refresh completion as asynchronous and make webhook processing idempotent.
 
 Specific errors, never a bare catch. An unreachable provider surfaces as an import failure the UI can display, not as an empty result that looks like "no transactions."
 
@@ -94,8 +103,10 @@ The transaction list matters for the demo: it's the evidence behind every later 
 
 ## Done when
 
-- [ ] Rho sandbox findings are written down, including whether recurring service spend exists.
-- [ ] `RhoSource` returns normalized records from the live sandbox.
+- [ ] Stripe sandbox findings are written down, including whether recurring service spend exists.
+- [ ] A user can complete the Stripe Financial Connections sandbox consent flow.
+- [ ] `StripeFinancialConnectionsSource` returns normalized records after a completed transaction refresh.
+- [ ] Stripe webhook signatures are verified and repeat delivery is idempotent.
 - [ ] `FixtureSource` returns the same shape, labeled `fixture`.
 - [ ] Flipping `TRANSACTION_SOURCE` changes the data with no other code change.
 - [ ] Running the same import twice produces zero new rows the second time.
@@ -106,7 +117,7 @@ The transaction list matters for the demo: it's the evidence behind every later 
 ## Watch out for
 
 - **Amount sign and unit bugs are the classic loss here.** Convert once, at the adapter, and comment the convention where you do it.
-- Don't let the fixture drift from the normalized shape. If `RhoSource` gains a field, the fixture gains it too, or phase 03 works against one source and breaks against the other.
+- Don't let the fixture drift from the normalized shape. If `StripeFinancialConnectionsSource` gains a field, the fixture gains it too, or phase 03 works against one source and breaks against the other.
 - Don't build vendor normalization here. It belongs to phase 03 and it is not a one-liner.
 - Don't give transactions a visibility field, however convenient it looks. Raw payments are permanently private.
 - Resist storing amounts as floats "just for now."

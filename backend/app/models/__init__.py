@@ -1,6 +1,7 @@
 """Re-exports SQLAlchemy models so metadata registration is explicit."""
 
 from app.models.account import Account
+from app.models.financial_connection import FinancialConnection
 from app.models.challenge import Challenge, ChallengeRevision
 from app.models.challenger_evidence import ChallengerEvidence
 from app.models.invitation import Invitation

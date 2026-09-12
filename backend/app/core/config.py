@@ -12,8 +12,9 @@ class Settings(BaseSettings):
 
     database_url: str = "sqlite:///./dev.db"
     transaction_source: str = "fixture"
-    rho_api_key: str = ""
-    rho_base_url: str = "https://api.rho.co"
+    stripe_secret_key: str = ""
+    stripe_webhook_secret: str = ""
+    stripe_base_url: str = "https://api.stripe.com"
     claude_api_key: str = ""
     # Model ID verified against Anthropic API docs as of 2024-10 release.
     # Confirm the current ID at https://docs.anthropic.com/en/docs/about-claude/models
@@ -21,7 +22,7 @@ class Settings(BaseSettings):
     claude_model: str = "claude-3-5-sonnet-20241022"
     app_version: str = "0.1.0"
     # Comma-separated allowed CORS origins; defaults to local dev frontend
-    cors_allow_origins: str = "http://localhost:5173"
+    cors_allow_origins: str = "http://localhost:5173,http://127.0.0.1:5173"
 
     model_config = SettingsConfigDict(
         env_file=".env",

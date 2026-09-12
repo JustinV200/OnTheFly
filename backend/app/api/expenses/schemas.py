@@ -16,6 +16,8 @@ class TransactionResponse(BaseModel):
     amount_minor: int
     currency: str
     posted_at: datetime
+    status: str
+    direction: str
     source_type: str
     is_excluded: bool
     excluded_reason: str | None

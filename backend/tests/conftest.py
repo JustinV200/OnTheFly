@@ -28,10 +28,14 @@ def reset_settings_cache(monkeypatch: pytest.MonkeyPatch) -> None:
     if TEST_DB_PATH.exists():
         TEST_DB_PATH.unlink()
     monkeypatch.setenv("DATABASE_URL", TEST_DATABASE_URL)
+    monkeypatch.setenv("TRANSACTION_SOURCE", "fixture")
     get_settings.cache_clear()
     get_engine.cache_clear()
     yield
     get_settings.cache_clear()
+    # Close pooled SQLite connections before unlinking the database on Windows.
+    if get_engine.cache_info().currsize:
+        get_engine().dispose()
     get_engine.cache_clear()
     if TEST_DB_PATH.exists():
         TEST_DB_PATH.unlink()
