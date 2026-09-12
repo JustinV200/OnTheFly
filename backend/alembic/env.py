@@ -18,6 +18,7 @@ from app.models import PublicListingRecord
 from app.models import ScopeVersion
 from app.models import ServiceExpense
 from app.models import Transaction
+from app.models import VendorAliasDismissal
 from app.models import VendorCorrection
 from app.models import VisibilityAudit
 
@@ -37,6 +38,7 @@ _ = (
     Invitation,
     Transaction,
     ServiceExpense,
+    VendorAliasDismissal,
     VendorCorrection,
     ScopeVersion,
     PublicListingRecord,

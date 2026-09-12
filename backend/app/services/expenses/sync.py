@@ -12,6 +12,7 @@ from app.models.service_expense import ServiceExpense
 from app.models.transaction import Transaction
 from app.services.expenses.baseline import compute_baseline
 from app.services.expenses.eligibility import classify_eligibility
+from app.services.expenses.listing_references import listed_expense_ids
 from app.services.expenses.recurrence import detect_recurrence
 from app.services.expenses.vendor_normalize import VendorCorrectionStore, normalize_vendor_description
 
@@ -76,8 +77,22 @@ def sync_service_expenses(owner_account_id: str, db: Session) -> list[ServiceExp
         existing.is_publishable = eligibility.publishable
         results.append(existing)
 
+    _remove_orphaned_expenses(owner_account_id, set(grouped), db)
     db.commit()
     return results
+
+
+def _remove_orphaned_expenses(owner_account_id: str, current_vendor_keys: set[str], db: Session) -> None:
+    # A vendor rename or alias merge regroups transactions under a new key, which left
+    # the old row on the dashboard as a stale duplicate. Rows no transaction groups
+    # under any more are deleted, unless the listing flow references them: scope
+    # versions, listings, and visibility audits must keep resolving to their expense.
+    stored = db.scalars(select(ServiceExpense).where(ServiceExpense.owner_account_id == owner_account_id)).all()
+    orphaned = [expense for expense in stored if expense.normalized_vendor not in current_vendor_keys]
+    referenced = listed_expense_ids([expense.id for expense in orphaned], db)
+    for expense in orphaned:
+        if expense.id not in referenced:
+            db.delete(expense)
 
 
 def _group_transactions(

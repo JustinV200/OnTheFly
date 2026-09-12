@@ -7,6 +7,7 @@ from app.models.invitation import Invitation
 from app.models.listing import PublicListingRecord, ScopeVersion
 from app.models.service_expense import ServiceExpense
 from app.models.transaction import Transaction
+from app.models.vendor_alias_dismissal import VendorAliasDismissal
 from app.models.vendor_correction import VendorCorrection
 from app.models.visibility_audit import VisibilityAudit
 
@@ -20,6 +21,7 @@ __all__ = [
     "ScopeVersion",
     "ServiceExpense",
     "Transaction",
+    "VendorAliasDismissal",
     "VendorCorrection",
     "VisibilityAudit",
 ]

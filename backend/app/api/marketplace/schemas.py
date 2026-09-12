@@ -2,6 +2,7 @@
 
 from pydantic import BaseModel
 
+from app.services.flybrain import FlyBrainAttribution
 from app.services.listings.types import PublicListingProjection
 
 
@@ -17,3 +18,20 @@ class MarketplaceFeedResponse(BaseModel):
 
     listings: list[MarketplaceListingResponse]
     message: str | None = None
+
+
+class SimilarListingResponse(BaseModel):
+    """One public listing with similar scope, and the scope terms both listings share."""
+
+    listing: PublicListingProjection
+    challenge_count: int
+    scope_similarity: float
+    shared_terms: list[str]
+
+
+class SimilarListingsResponse(BaseModel):
+    """Similar public listings plus the fly-brain circuit that retrieved them."""
+
+    listings: list[SimilarListingResponse]
+    message: str | None = None
+    fly_brain: list[FlyBrainAttribution]

@@ -6,13 +6,20 @@ from fastapi import APIRouter, Depends, HTTPException, Query, Request, status
 from sqlalchemy import func, select
 from sqlalchemy.orm import Session
 
-from app.api.marketplace.schemas import MarketplaceFeedResponse, MarketplaceListingResponse
+from app.api.marketplace.schemas import (
+    MarketplaceFeedResponse,
+    MarketplaceListingResponse,
+    SimilarListingResponse,
+    SimilarListingsResponse,
+)
 from app.core.identity import get_acting_account_id
 from app.core.visibility import ListingVisibility
 from app.db.session import get_db
 from app.models.challenge import Challenge
 from app.models.listing import PublicListingRecord
+from app.services.flybrain import FlyBrainComponent, attribute
 from app.services.listings.projection import projection_from_record
+from app.services.marketplace import find_similar_listings
 
 router = APIRouter(prefix="/api/marketplace", tags=["marketplace"])
 
@@ -38,16 +45,7 @@ def list_marketplace(
         query = query.where(PublicListingRecord.owner_account_id != acting_account_id)
 
     records = db.scalars(query.order_by(PublicListingRecord.created_at.desc())).all()
-
-    # Fetch challenge counts for all listing IDs in a single aggregated query to avoid N+1.
-    record_ids = [r.id for r in records]
-    count_rows = db.execute(
-        select(Challenge.listing_id, func.count().label("cnt"))
-        .where(Challenge.listing_id.in_(record_ids))
-        .where(Challenge.is_active.is_(True))
-        .group_by(Challenge.listing_id)
-    ).all()
-    counts_by_listing: dict[str, int] = {row.listing_id: row.cnt for row in count_rows}
+    counts_by_listing = _active_challenge_counts([record.id for record in records], db)
 
     listings = [
         MarketplaceListingResponse(
@@ -80,13 +78,57 @@ def get_listing_detail(
     if record is None:
         raise HTTPException(status_code=status.HTTP_404_NOT_FOUND, detail="Listing not found")
 
-    challenge_count = db.scalar(
-        select(func.count()).select_from(Challenge).where(
-            Challenge.listing_id == listing_id,
-            Challenge.is_active.is_(True),
-        )
-    ) or 0
     return MarketplaceListingResponse(
         listing=projection_from_record(record),
-        challenge_count=int(challenge_count),
+        challenge_count=_active_challenge_counts([listing_id], db).get(listing_id, 0),
     )
+
+
+@router.get("/{listing_id}/similar", response_model=SimilarListingsResponse)
+def get_similar_listings(
+    listing_id: str,
+    request: Request,
+    db: Session = Depends(get_db),
+) -> SimilarListingsResponse:
+    """Return public listings whose scope resembles this public listing's scope.
+
+    Public like the detail page; the viewer's own listings are left out when the
+    acting account is known.
+    """
+
+    similar = find_similar_listings(listing_id, get_acting_account_id(request), db)
+    if similar is None:
+        raise HTTPException(status_code=status.HTTP_404_NOT_FOUND, detail="Listing not found")
+
+    counts_by_listing = _active_challenge_counts([item.projection.id for item in similar], db)
+    return SimilarListingsResponse(
+        listings=[
+            SimilarListingResponse(
+                listing=item.projection,
+                challenge_count=counts_by_listing.get(item.projection.id, 0),
+                scope_similarity=item.similarity,
+                shared_terms=item.shared_terms,
+            )
+            for item in similar
+        ],
+        message=None if similar else "No other public listings with similar scope yet",
+        fly_brain=[
+            attribute(
+                FlyBrainComponent.mushroom_body_flyhash,
+                "Found listings with similar scope from public listing fields only; price is not used to match.",
+            )
+        ],
+    )
+
+
+def _active_challenge_counts(listing_ids: list[str], db: Session) -> dict[str, int]:
+    # One aggregated query for every listing on the page, to avoid N+1 count queries.
+    if not listing_ids:
+        return {}
+    rows = db.execute(
+        select(Challenge.listing_id, func.count().label("cnt"))
+        .where(Challenge.listing_id.in_(listing_ids))
+        .where(Challenge.is_active.is_(True))
+        .group_by(Challenge.listing_id)
+    ).all()
+    return {row.listing_id: int(row.cnt) for row in rows}

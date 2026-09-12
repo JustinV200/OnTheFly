@@ -7,7 +7,7 @@ from pydantic import BaseModel, Field
 
 # Supported billing frequencies for challenge submissions.
 # Must stay in sync with MONTHLY_FACTORS in app/core/cadence.py.
-BillingFrequency = Literal["weekly", "biweekly", "monthly", "quarterly", "annual", "yearly"]
+BillingFrequency = Literal["weekly", "biweekly", "monthly", "bimonthly", "quarterly", "annual", "yearly"]
 
 
 class ChallengeInput(BaseModel):

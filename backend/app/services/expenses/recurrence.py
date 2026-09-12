@@ -69,6 +69,10 @@ def _classify_cadence(average_interval: float) -> str:
         return "biweekly"
     if average_interval <= 40:
         return "monthly"
+    # Every-two-months billing (~61 days) used to fall into "quarterly" and was
+    # annualized x4 instead of x6, understating the yearly cost by a third.
+    if average_interval <= 75:
+        return "bimonthly"
     if average_interval <= 100:
         return "quarterly"
     return "irregular"

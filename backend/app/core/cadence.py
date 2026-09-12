@@ -12,6 +12,7 @@ MONTHLY_FACTORS: dict[str, Decimal] = {
     "weekly": Decimal("52") / Decimal("12"),
     "biweekly": Decimal("26") / Decimal("12"),
     "monthly": Decimal("1"),
+    "bimonthly": Decimal("1") / Decimal("2"),
     "quarterly": Decimal("1") / Decimal("3"),
     "annual": Decimal("1") / Decimal("12"),
     "yearly": Decimal("1") / Decimal("12"),

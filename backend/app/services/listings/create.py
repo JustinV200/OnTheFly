@@ -100,7 +100,7 @@ def _confirm_current_price(expense: ServiceExpense, scope: ScopeVersion) -> None
             status_code=status.HTTP_400_BAD_REQUEST,
             detail=(
                 f"Current price cadence '{current_price.cadence}' can't be compared per month. "
-                "Confirm a price with a weekly, biweekly, monthly, quarterly, or annual cadence."
+                "Confirm a price with a weekly, biweekly, monthly, bimonthly, quarterly, or annual cadence."
             ),
         ) from error
 
