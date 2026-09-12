@@ -1,516 +1,338 @@
-# Plan 1: On the Fly — Procurement Planning and Visual Audit
+# Plan 1: Spend-Driven Bidding Marketplace
 
-## Concept
+## Product
 
-On the Fly solves one connected problem:
+> Connect your business account and let competitors bid to beat what you already pay.
 
-> A team has a fixed budget and shopping list. On the Fly helps the team decide what to buy, tracks what it actually bought, and visually audits whether the plan matches reality.
+A B2B procurement marketplace that turns existing company spend into competitive requests for quotes and reverse auctions. Connected financial data identifies the opportunity; web discovery finds competing providers; public records help the buyer evaluate them; real vendors submit offers for the same service.
 
-This keeps the original procurement-assistant concept—budget, list, recommendations, and actual spend—while giving the camera a practical role after the purchase. It is not a generalized asset-management product.
+The product sits at the intersection of fintech, procurement, and marketplaces. Its starting point is a payment the company already makes.
 
-```text
-                 ON THE FLY
+**Core interaction:** “You're paying $2,400/month for cleaning. Want to see if someone can beat it?”
 
-       “I have $4,000 and need to
-              equip two hires”
-                       │
-                       ▼
-             BUDGET + SHOPPING LIST
-                       │
-                       ▼
-                AI RESEARCH LAYER
-        best fit / budget / reviews / specs
-        alternatives / historical company spend
-                       │
-                       ▼
-                 PURCHASE PLAN
-                  $3,870 / $4,000
-                       │
-                       ▼
-              CARD / FINANCIAL DATA
-                  actual company spend
-                       │
-                       ▼
-                  LIVE AUDIT MODE
-                  phone camera sweep
-                       │
-              ┌────────┴────────┐
-              ▼                 ▼
-        standard vision      fly model
-        identifies items     motion/attention
-              └────────┬────────┘
-                       ▼
-                 RECONCILIATION
+Working name is undecided. This plan supersedes the equipment-shopping and camera-audit concept. The fruit-fly theme, neural models, and camera features are outside this build.
 
-             ✓ Laptop bought
-             ✓ Monitor bought
-             ✓ Keyboard bought
-             ? Mouse still needed
-             ⚠ Extra monitor detected
-```
+## Target Customer and Initial Category
 
-## Who It Is For
+The buyer is a small-business owner, operations lead, or finance manager responsible for recurring service expenses.
 
-**A team lead spending company money against a defined budget.** Examples include new-hire equipment, an office setup, or supplies for a team offsite.
+Start with **commercial cleaning in one city or service area**. A quote request can be structured around location, square footage, frequency, bathrooms, included supplies, and service expectations. Confirm these details with the buyer before contacting providers.
 
-The demo centers on one concrete job:
+Later categories could include landscaping, pest control, waste hauling, office coffee/water, copier servicing, managed IT, and security services. Each needs its own scope template and qualification criteria.
 
-> Equip two new hires with a $4,000 budget, select the right products, track the resulting card spend, and verify that all planned items arrived.
-
-The four questions the product answers are:
-
-1. What do we need?
-2. What should we buy given our budget?
-3. What did we actually spend?
-4. Did everything we planned and paid for actually show up?
-
----
-
-## Part 1: Budget, List, and Purchase Plan
-
-Part 1 remains the core of the original product.
-
-### 1. Budget and Shopping List
-
-The user creates a purpose-specific budget, for example:
-
-> **2 New-Hire Setups — Budget: $4,000**
-
-They build a quantity-aware shopping list:
-
-- 2 laptops
-- 2 monitors
-- 2 keyboards
-- 2 mice
-- 2 headsets
-
-The interface shows planned cost, actual spend, remaining budget, and item status in one place.
-
-### 2. AI Research and Recommendations
-
-For each category or candidate product, On the Fly combines:
-
-- Current product prices, specifications, ratings, and review summaries
-- Alternatives that better satisfy the list and budget
-- Typical market prices
-- Historical prices the company has paid for similar purchases
-- The remaining budget and every other item still required
-
-Historical financial data is a research signal, not a separate product. The system answers both:
-
-- “What does the market say is a good price?”
-- “What has this company actually paid before?”
-
-An example assessment:
-
-> Your current plan is about $620 over budget. These monitors are poor value relative to comparable alternatives, and your company has historically paid $430–$520 for similar monitors. Swap these two items to bring the projected total to $3,870.
-
-### 3. Budget Realism
-
-The plan is evaluated as a whole rather than treating each product recommendation independently. The assistant:
-
-- Estimates the total cost of the current list
-- Identifies the line items creating the overage
-- Warns when a candidate price is materially above market or company history
-- Suggests specific substitutions
-- Recalculates the projected total after each change
-- Preserves required quantities and user constraints
-
-### 4. Product-Scoped “Ask More” Agent
-
-The user can ask focused follow-up questions such as:
-
-- Is this durable enough for daily use?
-- Is there a better-value alternative?
-- Does it work with our existing docks?
-- Is this price unusually high?
-
-The agent researches reviews, specifications, comparisons, and the company's relevant spend history, then returns a concise recommendation with supporting evidence.
-
-### 5. Purchase Plan
-
-Accepted recommendations become the purchase plan. Each planned line records:
-
-- Category and quantity
-- Selected product
-- Expected unit and total price
-- Required constraints
-- Purchase status
-- Reconciliation status
-
-This plan is the shared reference for card transactions and the camera audit.
-
-### 6. Financial Data and Actual Spend
-
-Card transactions update the budget automatically. The app codes against a `TransactionSource` interface so the Rho sandbox and a controlled demo source use the same downstream logic.
-
-- **`RhoSource`** reads real Rho sandbox transactions.
-- **`MockSource`** emits the same response shape and supports an on-cue demo transaction.
-
-The financial feed supplies merchant, amount, card, and time—not dependable SKU-level line items. Therefore:
-
-- Transactions are automatically attributed to the most likely active budget using merchant, timing, card, and amount.
-- Actual spend and remaining budget update immediately.
-- The user confirms which planned items a transaction covered.
-- Receipt extraction may prefill that confirmation when an itemized receipt is available.
-- The system must not claim that a card transaction alone proves a particular physical item arrived.
-
-Historical transactions are also normalized into category-level price ranges so the research layer can compare a candidate with prior company purchases.
-
----
-
-## Part 2: Compound Eye — Live Camera and Audit
-
-The camera is not a separate AR shopping gimmick. It is the visual layer for the same purchase plan and works in two explicit states.
+## The Product Loop
 
 ```text
-BEFORE PURCHASE
-“What should I buy?”
-
-AFTER PURCHASE
-“Did what we planned and paid for actually show up?”
+Connect business account
+          ↓
+Group vendor payments and detect recurring spend
+          ↓
+Rank services worth putting out to bid
+          ↓
+Buyer selects “Challenge this price”
+          ↓
+Confirm service scope and publish a quote request
+          ↓
+Find competitors and collect public evidence
+          ↓
+Invite qualified vendors
+          ↓
+Vendors submit or revise bids
+          ↓
+Compare equivalent offers, evidence, and potential savings
+          ↓
+Buyer shortlists a provider and requests a follow-up
 ```
 
-### Mode A: Before-Purchase Check
+The hackathon demo ends with a real competing quote. Accepting a binding contract, paying for the service, and having it performed are outside the MVP.
 
-Point the camera at a candidate product in a store or stockroom. The app identifies the item and compares it with the active plan.
+## 1. Connect Financial Data
 
-Example overlay:
+### Connection strategy
+
+- **Rho first:** build the first real financial adapter for the hackathon.
+- **Mercury next:** support another business account through the same normalized interface when time permits.
+- **Other accounts later:** add connectors or a structured transaction import.
+- **Demo source:** provide clearly labeled fixtures for recurring service payments missing from the available sandbox.
+
+Validate authentication, transaction access, pagination, available fields, and sandbox contents against provider documentation during implementation. Earlier plan notes about sandbox access and specific transaction counts must be rechecked before being treated as dependencies.
+
+The MVP only needs read access to transaction history. Keep provider credentials server-side.
+
+### Shared data model
+
+A `TransactionSource` adapter returns normalized records:
+
+- Provider, account ID, transaction ID, and source type
+- Raw merchant description and normalized vendor
+- Amount in integer minor units, currency, date, and status
+- Available category, memo, counterparty, and supporting attachment references
+
+Deduplicate imports and preserve links back to the original records. Exclude transfers and reconcile reversals/refunds so spend is not inflated. Keep different currencies separate unless an explicit conversion basis is supplied.
+
+Display whether evidence came from a connected production account, sandbox, imported record, or demo fixture.
+
+## 2. Find Expenses Worth Challenging
+
+Group payments by vendor, identify recurrence, and estimate the current cost of each service. Show the observation period and the transactions supporting the estimate.
+
+A large expense is not automatically a good opportunity. Rank candidates using an explainable heuristic:
 
 ```text
-Dell 27-inch monitor
-Shopping list: ✓ Monitor needed
-Remaining budget: $1,280
-Shelf price: $499
-Typical price: about $430
-Company previously paid: $449
-
-WAIT — mediocre value
-Better option: $399
+opportunity priority =
+annualized spend × replaceability × recurrence confidence × ease of quoting
 ```
 
-The user can open the same reviews, alternatives, and Ask More experience available in Part 1. This mode supports a buying decision; it does not automatically approve a purchase.
+The factors are normalized heuristics; this ranks opportunities and does not predict guaranteed savings. Show the reasons alongside the rank.
 
-### Mode B: After-Purchase Audit
+| Expense | Initial treatment |
+|---|---|
+| Commercial cleaning | Strong candidate when scope and location can be confirmed |
+| Landscaping, pest control, waste hauling | Candidates for later category templates |
+| Managed IT or security | Requires more detail about service levels and switching constraints |
+| Cloud infrastructure | Often complex to substitute; deprioritize for this MVP |
+| Rent | Usually constrained by an existing lease; deprioritize |
+| Payroll, taxes, internal transfers | Exclude from vendor bidding |
 
-The user sweeps the phone camera across the completed setup or delivery area. Detected objects are reconciled against the purchase plan and confirmed transaction data.
+Transactions reveal payment patterns, but often do not reveal contract terms or service scope. Let the user correct the vendor/category and confirm that the expense is eligible to be challenged.
 
-Example result:
+### Opportunity screen
+
+Example figures throughout this plan are illustrative until replaced with actual evidence.
 
 ```text
-Laptop   ✓
-Monitor  ✓
-Keyboard ✓
-Mouse    • missing
+$87,400/year in potentially contestable spend
 
-7 of 8 planned items visually accounted for
-$3,721 actual spend
-$279 budget remaining
+ABC Cleaning
+$2,400/month · $28,800/year
+Recurring payments detected
+Scope confirmation needed
+
+[ Challenge this price ]
 ```
 
-The audit distinguishes between three facts:
+“Contestable spend” is the value of eligible expenses, not the amount the platform will save.
 
-- **Paid:** supported by financial data and user item attribution
-- **Seen:** detected during the current or a saved visual audit
-- **Reconciled:** both planned and accounted for through the available evidence
+## 3. Turn Spend Into a Comparable Quote Request
 
-An unexpected item can be flagged for review, but vision alone must not label it fraud, duplicate billing, or a company asset.
+Clicking **Challenge this price** opens a short request-for-quote (RFQ) draft.
 
-### Live Overlay
+For the cleaning demo:
 
-Relevant objects receive tracked bounding boxes. Each overlay can show:
+- Service area and approximate location
+- Office size: 8,000 square feet
+- Frequency: three visits per week
+- Bathrooms: four
+- Required tasks and quality expectations
+- Whether supplies, equipment, and taxes are included
+- Required insurance or other buyer requirements
+- Desired start date, minimum term, and known cancellation constraints
+- Current price: $2,400/month, subject to buyer confirmation
+- Bid deadline and quote validity requirements
 
-- Planned quantity and quantity seen
-- Needed, paid, seen, or reconciled state
-- Candidate price versus typical and historical prices in before-purchase mode
-- Missing or unexpected-item warning in after-purchase mode
-- A tap target for product and reconciliation details
+AI drafts the RFQ from transaction evidence plus buyer-provided details. Missing details remain explicit questions; the model must not invent them from a merchant name.
 
----
+The buyer reviews the scope, recipients, and information to be shared before publishing or sending invitations. Current price may be disclosed as the price to beat if the buyer chooses; raw transaction history and account details are never part of the vendor-facing request.
 
-## The Fruit-Fly Model's Narrow Responsibility (Compound Eye)
+## 4. Find Competing Providers
 
-The fly-inspired neural network — branded **Compound Eye** — has one job in the live camera pipeline:
+Use Tavily for vendor discovery and extraction of relevant public business pages. Search by category, service area, and the confirmed requirements.
 
-> Determine when and where the scene changed enough to warrant deeper semantic analysis.
+For each candidate, collect:
 
-It does **not** make purchase recommendations, perform financial reasoning, or identify products by itself.
+- Business and, where available, legal entity name
+- Website and source URLs
+- Service coverage and category fit
+- Business contact details published for inquiries
+- Relevant capabilities and evidence of scope fit
 
-```text
-LIVE VIDEO
-    │
-    ├── fly neural network (Compound Eye)
-    │      ↓
-    │   motion / visual-interest signal
-    │      ↓
-    │   region and moment worth inspecting
-    │
-    └── standard CV / vision-language model
-           ↓
-       identify and classify object
-           ↓
-       reconcile with purchase plan
-```
+Deduplicate directory listings and distinguish an actual provider from an aggregator. Save source links and retrieval times. Extract service claims from provider pages, but do not treat marketing text as independent verification.
 
-As the phone pans across a shelf or desk, the fly layer produces an attention spike and candidate region. The app crops that region and invokes the more expensive semantic model only when useful instead of sending every frame.
+The initial target is a short list of roughly 5–10 relevant providers. Broad discovery counts matter less than whether a provider can quote the actual job.
 
-This is a hypothesis to test, not a performance claim. The benchmark compares the fly layer with conventional motion/saliency methods on:
+## 5. Evaluate Providers With Public Evidence
 
-- Semantic-model calls per minute
-- Detection and reconciliation recall
-- Time to first useful identification
-- End-to-end latency
-- False attention triggers
+Show verifiable facts and gaps next to each bid. Avoid an opaque “trustworthiness” score.
 
-If the fly model does not improve the pipeline enough, standard motion gating remains the production path. **Fly Mode** can still visualize the model's real response to the live camera while standard vision performs recognition. The product must remain reliable regardless of the benchmark result.
+The following are candidate sources to validate during implementation; access requirements and coverage may vary.
 
----
-
-## Mushroom Body — Instance Memory and Catalog Match
-
-Two jobs from one circuit. The fly's mushroom body expands a dense input into a large sparse code, and that code serves two separately published purposes: similarity search (FlyHash — Dasgupta, Stevens & Navlakha, *Science*, 2017) and novelty detection (Dasgupta, Sheehan, Stevens & Navlakha, *PNAS*, 2018). Different algorithms sharing a mechanism, and they earn very different places in this plan.
-
-**The shared mechanism:**
-1. Take a feature vector for the item.
-2. Project it through a large, sparse random projection — each output dimension sees only a small random subset of input dimensions, as the fly's ~2000 Kenyon cells do with ~50 random projections each.
-3. Keep only the top-k winner dimensions (winner-take-all), producing a small sparse binary code — the *tag*.
-4. Compare tags by overlap. That is the entire operation.
-
-### Job 1: Instance memory for the audit count
-
-Vision Pipeline step 8 requires updating the audit count "without double-counting a tracked object across frames," and Mode B's headline output is a count — *7 of 8 planned items visually accounted for*. That number is correct only if the app can continuously answer one question: **is this the same physical object I already counted, or a new one?**
-
-Step 4's standard detection and tracking answers it only while an object stays visible and roughly in place. A sweep breaks exactly that assumption — pan off a monitor and back, and geometric tracking (IoU, centroid) has nothing left to match on. Re-count it and the audit reports two monitors where there is one: a wrong number in the demo's primary output, not a cosmetic glitch. Occlusion and re-entry are the normal case when someone walks a desk with a phone, not the edge case.
-
-Novelty detection answers it directly. Tag each detected crop, compare against the tags already seen in this audit session, and the overlap gives familiar-or-new. It is content-based, so re-entry survives. It is fuzzy, so the same monitor from a second angle still reads as familiar — which an exact hash never would.
-
-**The two camera modes want opposite decay.** The biological version carries a decaying familiarity trace. That decay is a feature in Before Purchase, where an item seen 30 seconds ago should drift back toward novel so a stale price overlay refreshes. It is a liability during an audit, where forgetting inside a sweep *is* double-counting. Same structure, two time constants: short decay before purchase, none within a single audit sweep.
-
-**Same status as Compound Eye — a benchmarked hypothesis, not a claim.** Conventional appearance distance over the same descriptor is the baseline and the fallback, behind the same interface. Benchmark on double-count rate across a pan-away-and-return sweep, re-identification accuracy after occlusion, and semantic-model calls saved. If the tag variant does not beat the baseline, the baseline ships and nothing else in the audit changes.
-
-**Failure is safe either way.** Bias the threshold toward "novel" and the worst case is a redundant vision call plus a re-counted object surfaced for user confirmation — which step 7 already requires the audit to support.
-
-**Input features.** Image embeddings stay out of scope, so the tag is built from a cheap hand-rolled crop descriptor: downsampled cells, per-cell colour histogram, gradient orientation. Roughly 60–100 dimensions, no extra model load, computed on a crop the detector already produced. This is *closer* to the biology than a learned embedding would be — the fly's input layer is about 50 crude chemical receptor channels, not a learned representation.
-
-### Job 2: Catalog retrieval — side demo
-
-**Purpose:** narrow "what is this item / what's a good match or alternative" down to a short candidate list, before handing that list to Claude for the actual judgment call. The feature vector here is a text embedding of title/description, compared by overlap / Hamming distance between tags.
-
-**What ships, and what's honest about it.** At our catalog size (hundreds of items, not millions), brute-force cosine similarity is already microseconds and has strictly better recall than any LSH scheme — FlyHash buys nothing at this scale, and the "no model inference" framing is misleading anyway, since the query still needs an embedding and *that* is the real latency cost, not the hash.
-
-So: **cosine is the live retrieval path. FlyHash ships alongside it as a runnable side-by-side** — same query, both retrievers, showing the codes and the overlap. It's ~30 lines, it's a genuinely good story, and it's real. Nothing blocks on it.
-
-Image→catalog matching is **out of scope** — it needs CLIP or equivalent, which is a whole extra dependency. Text-side only.
-
-### Three fly components, not one
-
-Easy to conflate. They do different things and carry different risk:
-
-| Component | Decides | Status |
+| Signal | Candidate source | What the UI should communicate |
 |---|---|---|
-| **Compound Eye** attention gating | *Where and when* to look | Benchmarked hypothesis; conventional motion gating is the fallback |
-| **Mushroom Body** instance memory | *Whether this is something already seen* | Benchmarked hypothesis; appearance distance is the fallback |
-| **Mushroom Body** FlyHash retrieval | *Which catalog entries are nearest* | Side demo; cosine is the live path |
+| Entity registration | Relevant state business registry, such as New York's | Matched legal entity, status, formation date, and source |
+| Reputation | Google Places or accessible review sources | Rating, review count, source, and recency; reviews are user-generated |
+| Government exclusions | SAM.gov exclusion records | Match, possible match, or no match within the source checked |
+| Relevant regulatory history | OSHA for applicable businesses | Relevant matched records and their dates/context |
+| Insurance or required license | Vendor documents and applicable issuer/registry | Supplied, checked, expired, or still unverified |
 
-None of them performs semantic identity — standard vision does that, and none of them is a single point of failure.
+Match records using legal name plus location and identifiers where available. Similar names require review before attaching an adverse record to a provider.
 
----
+Each check records its source, timestamp, match confidence, result, and limitations. An unavailable source means **not checked**. A search with no result means **no match found in this source**, never “proven safe.”
 
-## System Architecture
+Use evidence labels such as **checks complete for selected sources**, **needs review**, and **information missing**. Do not apply a blanket “verified vendor” badge when only some facts have been checked.
 
-### Frontend
+For a tight MVP, prioritize entity matching and reputation evidence; add SAM and relevant regulatory checks as source access permits. Show unimplemented or unavailable checks honestly.
 
-**Decision: no Chrome extension.** A Manifest V3 build means a separate manifest, Vite extension config, service worker messaging, content script injection, storage sync, and a separate deploy — all to deliver features a web page delivers identically. The camera view has to be a mobile web page regardless. One responsive web app covers both, cuts a large slice of the work, and loses nothing that matters for the demo.
+## 6. Publish the Opportunity and Invite Bids
 
-- React + TypeScript responsive web app, bundled with Vite
-- Desktop-first planning and spend dashboard
-- Mobile camera view using `getUserMedia`
-- `<canvas>` overlay over live video
-- Explicit toggle between Before Purchase and Audit modes
-- Live reconciliation summary tied to the active plan
-- In-session instance memory so the audit count survives panning away and back
+Each approved RFQ becomes a listing with a vendor response link. The initial marketplace is invitation-based: providers can participate without first creating a full account.
 
-### Backend
+- Buyer sees the RFQ, invited providers, outreach status, and incoming bids.
+- Vendor sees the confirmed service scope and can submit a quote through its invitation link.
+- The link is scoped to that RFQ and provider, with an expiration.
+- Email is the first outreach channel.
+- SMS and ElevenLabs voice outreach are stretch integrations.
 
-- Python + FastAPI — async REST, Pydantic models for request/response shapes that line up with the AI layer's structured outputs
-- Budget, list, purchase-plan, and audit-session store
-- Product catalog and product-research layer
-- Transaction ingestion and budget attribution
-- Historical-spend aggregation by normalized category
-- Reconciliation engine that keeps planned, paid, and seen evidence separate
-- **Hosting:** whatever stands up fastest (Render / Fly.io / Railway). Needs to be HTTPS and reachable from a phone on day one.
+Invitations identify the requesting business and explain the job and response deadline. A job queue tracks deliveries, failures, retries, and responses; repeated processing must not send duplicate invitations.
 
-### Vision Pipeline
+For the hackathon, arrange a willing real business early and obtain a genuine quote for a concrete scope. Sending external messages is a separate implementation/demo action requiring the buyer's approval; rewriting this plan does not initiate outreach.
 
-1. Capture the live browser video stream.
-2. Run the fly model and a conventional baseline on sampled frames.
-3. Use the selected gating signal to choose a frame and region of interest.
-4. Run standard object detection for bounding boxes and tracking.
-5. Use a vision-language model on a crop only when category or product identity needs refinement.
-6. Match the result to the active purchase plan.
-7. Ask for user confirmation when identity or quantity is uncertain.
-8. Update the audit count without double-counting a tracked object across frames — see [Mushroom Body instance memory](#mushroom-body--instance-memory-and-catalog-match), which is what has to survive panning away and back.
+## 7. Bidding Mechanics
 
-For the demo, use objects `coco-ssd` already recognizes reliably — laptop, keyboard, mouse, tv, chair, backpack, book, clock, bottle, cup, potted plant, and scissors — so detection needs no custom model. Do not imply SKU-level certainty when only a broad object class was detected.
+The MVP uses **private competitive quotes**:
 
-### AI Layer
+- Invited providers submit offers for the same version of the scope.
+- They can revise their own offers until the deadline; retain revision history.
+- Competitors' identities and individual quotes stay private.
+- The buyer sees the full comparison and selects whom to follow up with.
 
-- Budget realism assessment
-- Product alternatives and tradeoff explanation
-- Product-scoped research Q&A
-- Historical-price comparison
-- Vision-based product/category refinement
-- Transaction-to-budget suggestion with user-confirmed item attribution
+A later live reverse-auction mode can show an anonymous best eligible price and let providers bid lower. The MVP proves the competitive procurement loop without depending on simultaneous vendor attendance.
 
-Every reasoning step above runs through the Claude API (`claude-opus-5`), including the "Ask More" agent's live research via the `web_search_20260209` server tool. Use structured outputs anywhere the application consumes model results — never parse prose. Every recommendation should return a decision, reasons, confidence, and cited or stored evidence.
+A bid contains:
 
-### Data
+- Vendor identity and contact
+- Price, currency, and billing frequency
+- Included service scope, exclusions, and optional extras
+- Setup fees, taxes, supplies, minimum term, and other price conditions
+- Availability, quote expiry, and whether a site visit is required
+- Supporting documents and submission timestamp
+- Provenance: vendor-submitted, captured from a vendor response, or demo data
 
-- Postgres via Supabase; hardcoded demo user, no auth — auth is a classic hackathon time sink with zero demo value.
-- Curated JSON catalog scoped to the ~12 demo items, seeded by hand. Retailer scraping is blocked and ToS-hostile; SerpApi/Rainforest mean signup, cost, and rate limits for data we can just write down. Be upfront with judges that the catalog is seeded — it's the right call, not a shortcut to hide.
-- Live web research for qualitative questions and fresh comparisons, via Claude's web search tool in Ask More.
-- `TransactionSource` abstraction with Rho and mock implementations (below).
-- Saved audit observations with timestamp, category, confidence, and optional frame crop.
+AI can extract a quote from a response, but the displayed amount must retain its original evidence. An AI estimate is not a vendor bid.
 
-### Transactions
+## 8. Compare Cost, Scope, and Evidence
 
-Two implementations of `TransactionSource` (see Part 1 §6). Rho's schema is the contract both conform to. Pick the source with one env var (`TRANSACTION_SOURCE=rho|mock`). Default to `mock` in development so nobody is blocked by network or conference wifi, and have the Rho path working and demonstrable.
+Normalize offers to a common period and highlight differences before ranking them. A lower price for fewer visits does not satisfy the original scope.
 
-#### `RhoSource` — the real integration
+For equivalent monthly service:
 
-**Verified: the sandbox is open and needs no account.**
+```text
+annual recurring savings = (current monthly cost − bid monthly cost) × 12
 
-```
-https://rhoapi-sandbox.rho.co/api/v1/     any non-empty bearer token, no signup, no KYC
+first-year net savings =
+annual recurring savings − switching costs − setup fees − cancellation fees
 ```
 
-`GET /accounts` and `GET /transactions` both return data immediately. Production (`https://rhoapi.rho.co/api/v1/`) needs a real token created in Rho banking settings by an Admin or Account Owner behind a 2FA challenge — not something to depend on for the demo.
+Include known recurring extras on the same basis. If material costs or conditions are unknown, label the result provisional and show the assumptions.
 
-**What's in the sandbox, precisely:**
-- Transaction fields: `counterparty_name`, `amount` (integer cents, negative for debits), `initiated_at`, `posted_at`, `status`, `transaction_type`, `card_id`, `card_name`, `user_full_name`, `memo`, `note`, `attachments[]`. Cursor-paginated via `page.next_page_token`.
-- **~12 card transactions exist in the entire sandbox**, and they are static and historical (dated June 2026). New ones can't be generated, so no live "transaction lands, budget updates" moment is possible against Rho. That's `MockSource`'s job, below — it's the reason the mock exists rather than a fallback.
-- Merchants are business travel and office supply: `Northstar Office Supply` ($53.31, $49.47), `Midtown Parking Services`, `Graceway Car Service`, `Island Resort Maldives`, `Teamline Software`. Northstar is the natural anchor for the demo.
-- `GET /transactions/{id}/files/{file_id}` works and returns a signed download URL for receipt attachments. **The sandbox PDFs are one-line stubs** (`"Rho API Sandbox - Fictional Document | ... | Amount -4947 USD"`) with no line items. The endpoint and the plumbing are real; the data isn't. To demo receipt line-item extraction we supply our own receipt PDF through the same code path.
-- **No webhooks documented — ingestion is poll-only.** Poll on an interval, diff against what's been seen.
+Example comparison, assuming equivalent scope and no additional fees:
 
-#### `MockSource` — the development and demo path
+| Provider | Monthly price | Potential annual recurring savings | Evidence status |
+|---|---:|---:|---|
+| Current provider | $2,400 | Baseline | Existing expense confirmed |
+| Company A | $2,200 | $2,400 | Selected checks complete |
+| Company B | $1,875 | $6,300 | Stronger evidence; insurance pending |
+| Company C | $1,500 | $10,800 | Legal entity match unresolved |
 
-A local implementation of the same interface, emitting the same schema. Roughly:
+The recommendation explains price and scope tradeoffs and points to specific evidence. Company B may be the better shortlist candidate even though Company C is cheaper.
 
-- **Fixture:** a JSON file of transactions shaped exactly like Rho's, with merchants drawn from the demo catalog and amounts that fit the $4,000 budget story. Dated relative to now, not hardcoded, so the demo never looks stale.
-- **Inject endpoint:** `POST /mock/transactions` appends a transaction and it shows up on the next poll. This is the live demo moment — a purchase posts, the budget moves, on cue rather than on a timer.
-- **Receipts:** serves a real itemized receipt PDF through the same `files/{file_id}` shape, which is what makes line-item extraction demoable at all.
-- **Same poll loop, same matching code.** If the mock and Rho ever disagree in shape, that's a bug in the mock — Rho's schema is the spec.
+Actions are **View evidence**, **Request clarification**, and **Shortlist / Request follow-up**. Quotes remain potential savings until a switch actually happens.
 
-### Dev/Deploy
+## Core Screens
 
-- **Version control:** Git/GitHub (this repo).
-- **Packages:** two package managers, one repo — npm for the frontend (`frontend/`), a Python venv + `pip`/`poetry` for the backend (`backend/`). No workspace tooling to share between them since the languages differ.
+1. **Connections and opportunities:** connect an account, view import status, and browse ranked recurring expenses.
+2. **Challenge builder:** confirm service scope, price baseline, requirements, and disclosure settings.
+3. **Vendor discovery and evidence:** review provider fit, public-record findings, and invitation recipients.
+4. **Vendor bid page:** read the scope and submit or revise a quote.
+5. **Bid comparison:** compare normalized costs, scope gaps, evidence, and projected savings.
 
----
+## Technical Architecture
 
-## Reconciliation Model
+Preserve the existing general stack choices:
 
-The reconciliation state should be explainable and conservative.
+- **Frontend:** React + TypeScript with Vite; responsive buyer and vendor pages.
+- **Backend:** Python + FastAPI with Pydantic request/response models.
+- **Database:** Postgres via Supabase.
+- **Jobs:** a small background worker for imports, discovery, evidence lookups, and outreach.
+- **Financial adapters:** Rho first, labeled demo fixtures, then Mercury or imports.
+- **Discovery:** Tavily search/extraction behind a provider interface.
+- **Reasoning:** Claude for categorization suggestions, scope drafting, quote extraction, and evidence summaries; choose an available model during implementation.
+- **Outreach:** one email provider first; ElevenLabs voice as stretch.
+- **Updates:** polling is sufficient for incoming bids in the MVP.
+- **Hosting:** deploy an HTTPS app and API with a publicly reachable vendor form.
 
-| Plan state | Financial evidence | Visual evidence | UI result |
-|---|---|---|---|
-| Planned | None | None | Needed |
-| Planned | Confirmed purchase | None | Paid, not yet seen |
-| Planned | None | Seen | Seen, purchase unconfirmed |
-| Planned | Confirmed purchase | Seen | Reconciled |
-| Not planned | None or unknown | Seen | Unexpected; review |
+Use deterministic code for monetary calculations, deduplication, deadlines, and bid versions. Use structured model outputs for the fields the application consumes. Store supporting evidence for recommendations and extracted claims.
 
-Quantity matters. A plan for two monitors is not complete after detecting one. Repeated detections of the same tracked object do not increment the count. For the hackathon, a user confirmation step resolves ambiguous counts or identities.
+A single demo buyer workspace is sufficient; a full organization/role system can wait. Keep its financial screens private and restrict public access to the intended vendor invitation pages.
 
----
+### Main entities
+
+| Entity | Purpose |
+|---|---|
+| Connection / Transaction | Source account and original spend evidence |
+| Vendor / ServiceExpense | Normalized payee and recurring service baseline |
+| Opportunity | Challenge candidate, ranking reasons, and confidence |
+| RFQ / ScopeVersion | Buyer-confirmed requirements, disclosure choices, deadline |
+| VendorEvidence | Source-backed checks and identity-match status |
+| Invitation | Provider, authorized message, delivery state, and response link |
+| Bid / BidRevision | Vendor offer, conditions, provenance, and revision history |
+| Comparison | Normalized costs, scope differences, and savings assumptions |
+
+RFQ states: draft → scope confirmed → open for bids → closed → shortlisted. A cancelled RFQ stays recorded with its bids and outreach history.
 
 ## End-to-End Demo
 
-1. A team lead says, **“We have $4,000 to equip two new hires.”**
-2. They build a list for two laptops, monitors, keyboards, mice, and headsets.
-3. On the Fly estimates the original plan at **$4,760** and identifies the expensive monitors and accessories.
-4. It uses current product research plus historical company spend to recommend alternatives.
-5. The accepted purchase plan becomes **$3,890**.
-6. Show the real Rho sandbox integration and its historical business transactions.
-7. Inject demo purchases through the same transaction interface; actual spend becomes **$3,847**.
-8. Pick up the phone and sweep the completed desks.
-9. The audit finds the laptops, monitors, and keyboards, but one mouse is missing.
-10. The result reads: **7/8 purchases reconciled. One item still missing. $153 remaining.**
-11. Turn on Fly Mode to show the live fruit-fly attention response alongside the regions sent for semantic recognition.
+All names, prices, and counts below are a script template, not claims of existing integrations or received bids.
 
-The audience sees one uninterrupted story: plan, research, buy, spend, and verify.
+1. Show a working Rho connection and the actual transaction data available.
+2. Show a confirmed recurring cleaning expense of **$2,400/month**. If this is absent from the sandbox, switch visibly to a labeled fixture or use a consenting business's imported records.
+3. Click **Challenge this price** and confirm the cleaning scope.
+4. Find relevant local providers and open the evidence behind one candidate.
+5. Publish the RFQ and show approved invitation delivery.
+6. Open the vendor response page and demonstrate the bid submission flow.
+7. Display a genuine provider quote, ideally **$1,875/month** if that is the actual price offered; otherwise use its real amount.
+8. Show the scope comparison, outstanding evidence checks, and potential annual savings. At $1,875/month, that is **$6,300/year** before additional costs.
+9. Shortlist the provider and show that the original expense, RFQ, evidence, and quote are linked.
 
----
-
-## Brand: Fruit Fly Vocabulary
-
-*Drosophila melanogaster* is one of the most studied nervous systems in neuroscience — a tiny brain with extremely fast, well-characterized reflexes. We use it as both a real technical inspiration and a naming convention, so the theme is more than skin-deep without adding risk where quality or latency actually matter:
-
-| Codename | Real fly anatomy | Maps to |
-|---|---|---|
-| **Compound Eye** | Wide-field, fast-motion-detecting vision | The fly-inspired attention-gating layer in the live camera pipeline — decides where/when to look, benchmarked against conventional motion gating (see [The Fruit-Fly Model's Narrow Responsibility](#the-fruit-fly-models-narrow-responsibility-compound-eye)) |
-| **Mushroom Body** | Kenyon cells — sparse coding, novelty detection | Two genuine fly-brain algorithms: instance memory that keeps the audit count from double-counting (benchmarked, conventional fallback), and the FlyHash catalog matcher (side-by-side demo — cosine is the live path) |
-| **Halteres** | Balance organs used for flight stability | Budget realism / balance check |
-| **Proboscis** | Feeding tube used to sample and taste | The "Ask More" research agent |
-| **Metabolism** | Consumption and energy use | Transaction sync — what's actually been spent, via the Rho API |
-
-Compound Eye and Mushroom Body map to real technical components; the rest is naming layered on features already planned above. Compound Eye's attention gating and Mushroom Body's instance memory are both benchmarked hypotheses with conventional fallbacks behind the same interface — Mushroom Body's FlyHash retrieval path is a side demo that nothing depends on. None of them sits between a user and the reasoning that needs to be fast and correct.
-
----
+**Minimum target: one genuine quote.** Additional comparison bids may be labeled demo examples. Obtain the real response before judging when possible and display its actual timestamp; a live response is a bonus. If none arrives, show the working invitation/submission loop and label all sample bids as simulated.
 
 ## Build Order
 
-1. **Procurement spine:** budget, quantity-aware list, seeded catalog, projected total, and alternatives.
-2. **Transactions:** common `TransactionSource`, mock purchases, Rho sandbox path, actual-spend calculation, and user item attribution.
-3. **Reconciliation state:** model planned/paid/seen/reconciled separately and build the dashboard summary.
-4. **Camera audit spike:** on a real phone over HTTPS, detect and count the exact demo objects without double-counting. Land conventional appearance-distance instance memory here — it is the baseline the fly variant is measured against in step 6.
-5. **Before-purchase camera state:** add remaining-budget, typical-price, historical-price, and alternative overlays.
-6. **Fly layers:** connect Compound Eye's live signal to region/frame selection, add Mushroom Body instance memory, and build the baseline comparison for both.
-7. **Polish:** receipt-assisted attribution, saved audit evidence, unexpected-item review, and failure-state handling.
+1. **Validate the real-bid path early:** identify one concrete cleaning need and a willing provider; prepare the scope and request a quote once the buyer approves.
+2. **Financial ingestion:** implement Rho, the normalized transaction model, and labeled recurring-spend fixtures.
+3. **Opportunity detection:** vendor grouping, recurrence, annualized baseline, and explainable prioritization.
+4. **RFQ and bid loop:** scope confirmation, invitation links, vendor form, bid persistence, and comparison arithmetic.
+5. **Vendor discovery:** Tavily search/extraction, service-area fit, source links, and deduplication.
+6. **Evidence checks:** entity matching and reputation first; other applicable sources as access permits.
+7. **Approved email outreach:** delivery tracking, idempotent retries, and connection to the vendor response form.
+8. **Demo polish:** real quote provenance, source labels, complete example, and failure states.
+9. **Stretch:** Mercury, email-reply extraction, voice outreach, anonymous live underbidding, and more service categories.
 
-Each stage leaves a coherent demo. If camera recognition is weak, the planning and spend workflow still works and the audit uses user confirmation. If the fly model underperforms, conventional gating handles recognition while Fly Mode truthfully shows the experimental response.
-
----
-
-## Scope Decisions
-
-| Decision | Reason |
-|---|---|
-| Business procurement, not consumer shopping | Matches company card data and the sponsor context |
-| One plan-to-audit workflow | Keeps the product coherent and the demo easy to follow |
-| Camera supports before- and after-purchase states | Reuses one interface for buying decisions and verification |
-| Fly components gate attention and track instance identity, never semantic identity | Two narrow, testable perception roles. Each is benchmarked against a conventional baseline that ships if the fly path loses, so reliability never rests on the fly model |
-| Standard vision performs identity and boxes | Uses the right tool for semantic recognition |
-| Audit count uses instance memory, not geometric tracking alone | Panning away and back defeats IoU/centroid tracking, and a re-counted object is a wrong number in the audit's headline output |
-| Transactions prove spend, not physical arrival | Card data does not contain enough evidence for visual reconciliation |
-| Separate planned, paid, and seen states | Prevents the UI from overstating certainty |
-| Mock and Rho share one interface | Enables a controlled demo while preserving the real integration |
-| Curated demo catalog and detector-friendly objects | Makes the live demo repeatable |
-| Cosine ships live; FlyHash ships as a side-by-side | Catalog matching needs recall at our scale, not LSH's sublinear-search tradeoff; FlyHash stays a genuine, honest demo rather than the real path |
-| No generalized asset management | Warranties, offboarding, depreciation, and inventory administration are future products, not this MVP |
-
----
+The priority is completing the account → opportunity → RFQ → real quote → comparison loop.
 
 ## Success Criteria
 
-The MVP succeeds if a judge can watch one team:
+- A real financial adapter works and exposes traceable transaction evidence.
+- Recurring expenses are identified without counting transfers or duplicate imports.
+- The user can confirm the service scope before publication.
+- Discovery returns relevant providers with source evidence.
+- Public checks distinguish matched facts, uncertain matches, and missing information.
+- A provider can submit and revise a bid for the same scope.
+- At least one actual business supplies a quote for the demo target.
+- Savings calculations use comparable prices and make unknown costs visible.
+- The buyer can explain why a shortlisted provider is attractive beyond its price.
 
-- Create a fixed budget and quantity-aware list
-- Receive a credible over-budget warning and better alternatives
-- See current market evidence alongside historical company spend
-- Convert recommendations into a purchase plan
-- Watch actual company-card spend update the budget
-- Scan a physical setup and understand what is paid, seen, reconciled, or missing
-- Observe the fly model performing a real, narrow attention task without being asked to trust an unsupported superiority claim
+## Scope Boundaries
 
-## Future Features, Not MVP
+**MVP:** one category, one service area, one financial integration, approved email invitations, private competitive bidding, evidence-backed comparison, and a genuine vendor quote.
 
-- General asset inventory
-- Warranty and lifecycle management
-- Employee assignment and offboarding
-- Accounting depreciation
-- Procurement approvals and vendor management
-- Automated fraud or loss conclusions
+**Later:** more banks and categories, a public marketplace, live reverse auctions, payment routing, contract execution, subscription or success-fee pricing, and savings tracking after switching.
 
-These may follow naturally later, but they should not enter the hackathon build or pitch.
+**Removed from the prior plan:** equipment shopping lists, product-camera overlays, visual inventory audits, fly attention models, FlyHash, and asset management.
+
+## Questions to Resolve During the Build
+
+- Which actual business, service area, and cleaning scope will anchor the real quote?
+- What account or sandbox access is available, and does it contain relevant recurring spend?
+- Which public-data sources can be accessed reliably within the build window?
+- Who can approve provider invitations and which email identity will send them?
+- How much time and how many builders are available?
