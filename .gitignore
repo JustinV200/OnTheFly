@@ -1,4 +1,7 @@
 .env
+backend/*.db
+backend/*.db-shm
+backend/*.db-wal
 node_modules/
 dist/
 build/
