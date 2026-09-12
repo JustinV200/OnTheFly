@@ -77,6 +77,8 @@ def _build_scope_summary(scope: ScopeVersion) -> str:
         f"{scope.square_footage} sq ft" if scope.square_footage else "Square footage not specified",
         scope.visit_frequency or "Visit frequency not specified",
     ]
-    if scope.required_tasks:
-        parts.append(scope.required_tasks)
+    # Stored as a JSON array (validated at the listings API boundary); challengers read prose.
+    required_tasks = json.loads(scope.required_tasks) if scope.required_tasks else []
+    if required_tasks:
+        parts.append(", ".join(required_tasks))
     return " · ".join(parts)

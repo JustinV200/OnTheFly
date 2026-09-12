@@ -15,7 +15,8 @@ class ScopeVersionInput(BaseModel):
     square_footage: int | None = None
     visit_frequency: str | None = None
     bathroom_count: int | None = None
-    required_tasks: str | None = None
+    # A list at the boundary; stored as a JSON array string that scope completeness parses back.
+    required_tasks: list[str] | None = None
     supplies_included: bool | None = None
     equipment_included: bool | None = None
     taxes_included: bool | None = None

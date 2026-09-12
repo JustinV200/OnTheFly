@@ -2,6 +2,8 @@
 These handlers only orchestrate guarded listing services.
 """
 
+import json
+
 from fastapi import APIRouter, Depends, HTTPException, Request, status
 from sqlalchemy import select
 from sqlalchemy.orm import Session
@@ -41,7 +43,10 @@ def create_listing(
     if not expense.is_publishable:
         raise HTTPException(status_code=status.HTTP_400_BAD_REQUEST, detail="Expense is not publishable")
 
-    scope = build_scope_version(expense.id, payload.scope.model_dump(), db)
+    scope_payload = payload.scope.model_dump()
+    if payload.scope.required_tasks is not None:
+        scope_payload["required_tasks"] = json.dumps(payload.scope.required_tasks)
+    scope = build_scope_version(expense.id, scope_payload, db)
     listing = create_listing_draft(expense, scope, PublishChoices(**payload.choices.model_dump()), db)
     db.commit()
     db.refresh(listing)

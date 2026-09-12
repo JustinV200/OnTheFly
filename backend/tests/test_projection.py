@@ -2,10 +2,13 @@
 
 from datetime import datetime, timezone
 
+from sqlalchemy import select
+
 from app.models.listing import PublicListingRecord, ScopeVersion
 from app.models.service_expense import ServiceExpense
 from app.services.listings.projection import build_public_listing
 from app.services.listings.types import PublishChoices
+from app.services.transactions.import_run import run_import
 
 
 
@@ -122,3 +125,47 @@ def test_public_price_and_cadence_come_from_the_same_source() -> None:
 
     assert projection.price_minor == 600000
     assert projection.billing_cadence == "quarterly"
+
+
+def test_public_scope_summary_lists_required_tasks_as_text() -> None:
+    expense = ServiceExpense(id="expense-1", category="cleaning", cadence="monthly", amount_minor_per_period=240000, currency="USD")
+    listing = PublicListingRecord(
+        id="listing-1",
+        expense_id="expense-1",
+        owner_account_id="acc_owner_1",
+        visibility="scope_confirmed",
+    )
+    scope = ScopeVersion(
+        id="scope-1",
+        expense_id="expense-1",
+        version_number=1,
+        location_approximate="San Francisco, CA",
+        square_footage=8000,
+        visit_frequency="3x weekly",
+        required_tasks='["vacuum", "trash", "restrooms"]',
+        current_price_currency="USD",
+    )
+
+    projection = build_public_listing(listing, expense, scope, PublishChoices())
+
+    assert projection.scope_summary == "San Francisco, CA · 8000 sq ft · 3x weekly · vacuum, trash, restrooms"
+
+
+def test_listing_api_rejects_free_text_required_tasks(client, db_session) -> None:
+    """Free text would be stored where scope completeness expects a JSON array and crash it."""
+    run_import("acc_owner_1", "fixture_apex_main", db_session)
+    expense = db_session.scalar(select(ServiceExpense).where(ServiceExpense.normalized_vendor == "Sparkle Clean"))
+    assert expense is not None
+    body = {"expense_id": expense.id, "choices": {}, "scope": {"required_tasks": "vacuum and trash"}}
+
+    rejected = client.post("/api/listings", headers={"X-Account-ID": "acc_owner_1"}, json=body)
+    body["scope"]["required_tasks"] = ["vacuum", "trash"]
+    accepted = client.post("/api/listings", headers={"X-Account-ID": "acc_owner_1"}, json=body)
+
+    assert rejected.status_code == 422
+    assert accepted.status_code == 200
+    preview = client.get(
+        f"/api/listings/{accepted.json()['listing_id']}/preview",
+        headers={"X-Account-ID": "acc_owner_1"},
+    )
+    assert preview.json()["projection"]["scope_summary"].endswith("vacuum, trash")
