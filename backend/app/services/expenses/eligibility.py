@@ -15,10 +15,16 @@ class EligibilityResult(BaseModel):
 
 
 def classify_eligibility(vendor: str, category: str | None, direction: str) -> EligibilityResult:
-    """Apply deterministic hard exclusions for payroll, taxes, and transfers."""
+    """Apply deterministic hard exclusions for payroll, taxes, and transfers.
+
+    Credits are excluded only when they are also identified as transfers in the
+    vendor/category text; ordinary vendor refunds/credits reduce net spend and
+    should reconcile against the expense group, not make it ineligible.
+    """
 
     haystack = f"{vendor} {category or ''}".casefold()
-    if direction == "credit" or "transfer" in haystack:
+    # Only exclude credits that are explicitly transfers; plain refunds stay in.
+    if "transfer" in haystack or (direction.casefold() == "credit" and "transfer" in haystack):
         return EligibilityResult(eligible=False, reason="transfer", publishable=False)
     if "payroll" in haystack or "gusto" in haystack:
         return EligibilityResult(eligible=False, reason="payroll", publishable=False)

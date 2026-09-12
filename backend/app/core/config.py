@@ -15,6 +15,9 @@ class Settings(BaseSettings):
     rho_api_key: str = ""
     rho_base_url: str = "https://api.rho.co"
     claude_api_key: str = ""
+    # Model ID verified against Anthropic API docs as of 2024-10 release.
+    # Confirm the current ID at https://docs.anthropic.com/en/docs/about-claude/models
+    # before each deployment; Anthropic releases new versions on its own schedule.
     claude_model: str = "claude-3-5-sonnet-20241022"
     app_version: str = "0.1.0"
     # Comma-separated allowed CORS origins; defaults to local dev frontend
