@@ -14,4 +14,5 @@ export const demoAccounts: DemoAccount[] = [
   { id: 'acc_challenger_1', handle: 'bay-clean-pro', businessName: 'Bay Clean Professional Services', initials: 'BC', color: '#047857' },
   { id: 'acc_challenger_2', handle: 'golden-gate-janitorial', businessName: 'Golden Gate Janitorial', initials: 'GG', color: '#b45309' },
   { id: 'acc_challenger_3', handle: 'summit-building-services', businessName: 'Summit Building Services', initials: 'SB', color: '#7c3aed' },
+  { id: 'acc_owner_2', handle: 'tidewater-architecture', businessName: 'Tidewater Architecture Studio', initials: 'TA', color: '#0f766e' },
 ];

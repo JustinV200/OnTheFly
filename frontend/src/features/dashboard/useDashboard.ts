@@ -9,7 +9,8 @@ interface UseDashboardResult {
   list: ApiQueryState<ExpenseListResponse>;
   detail: ApiQueryState<ExpenseDetail>;
   selectedExpenseId: string | null;
-  selectExpense: (expenseId: string) => void;
+  // Null clears the selection, e.g. after a vendor-alias merge deletes the selected row.
+  selectExpense: (expenseId: string | null) => void;
   reload: () => void;
 }
 

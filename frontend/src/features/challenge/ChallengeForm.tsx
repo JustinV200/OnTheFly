@@ -9,7 +9,8 @@ import type { BiddingModeValue, ChallengePayload } from './types';
 // The cleaning tasks the demo scope template names; anything else goes in "other inclusions".
 const STANDARD_TASKS = ['vacuum', 'trash', 'restrooms'];
 // Must stay within the backend's BillingFrequency literal (api/challenges/schemas.py).
-const FREQUENCIES = ['monthly', 'weekly', 'biweekly', 'quarterly', 'annual'];
+// Must stay in sync with BillingFrequency in backend/app/api/challenges/schemas.py.
+const FREQUENCIES = ['monthly', 'weekly', 'biweekly', 'bimonthly', 'quarterly', 'annual'];
 
 interface ChallengeFormProps {
   acknowledgedMode: BiddingModeValue;

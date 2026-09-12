@@ -12,6 +12,7 @@ import { categoryLabel } from '../../shared/format/categoryLabel';
 import { describeDeadline } from '../../shared/format/describeDeadline';
 import { formatTimestamp } from '../../shared/format/formatTimestamp';
 import { Leaderboard } from './leaderboard/Leaderboard';
+import { SimilarListings } from './similar/SimilarListings';
 import type { MarketplaceListing } from './types';
 
 const POLL_INTERVAL_MS = 10000;
@@ -76,6 +77,8 @@ export function ListingDetailPage(): JSX.Element {
       ) : (
         <Leaderboard listingId={listing.id} />
       )}
+
+      <SimilarListings listingId={listing.id} />
     </section>
   );
 }

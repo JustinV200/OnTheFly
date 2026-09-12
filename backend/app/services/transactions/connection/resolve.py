@@ -17,7 +17,7 @@ class DemoConnection(BaseModel):
 # provider accounts today; the Rho adapter is unverified (services/transactions/rho/NOTES.md),
 # so a rho-configured deploy honestly reports every account as not connected.
 DEMO_CONNECTIONS: dict[str, dict[str, str]] = {
-    "fixture": {"acc_owner_1": "fixture_apex_main"},
+    "fixture": {"acc_owner_1": "fixture_apex_main", "acc_owner_2": "fixture_tidewater_main"},
     "rho": {},
 }
 

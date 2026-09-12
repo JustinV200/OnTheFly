@@ -22,6 +22,10 @@ DEMO_OWNER_ID = "acc_owner_1"
 DEMO_EXPENSE_VENDOR = "Sparkle Clean"
 # Long enough that a rehearsal days before the demo still has an open deadline on the day.
 DEMO_SCOPE_DAYS_OPEN = 14
+# A second business with a comparable cleaning scope, so fly-brain similar listings has a match.
+NEIGHBOR_OWNER_ID = "acc_owner_2"
+NEIGHBOR_EXPENSE_VENDOR = "Brightline Janitorial"
+NEIGHBOR_SCOPE_DAYS_OPEN = 21
 
 
 def publish_demo_cleaning_listing(db: Session) -> PublicListingRecord:
@@ -31,17 +35,9 @@ def publish_demo_cleaning_listing(db: Session) -> PublicListingRecord:
     figures, not a real business's terms. Real terms enter only through the genuine-offer ledger.
     """
 
-    expense = db.scalar(
-        select(ServiceExpense).where(
-            ServiceExpense.owner_account_id == DEMO_OWNER_ID,
-            ServiceExpense.normalized_vendor == DEMO_EXPENSE_VENDOR,
-        )
-    )
-    if expense is None:
-        raise RuntimeError(f"The import did not produce a '{DEMO_EXPENSE_VENDOR}' expense for {DEMO_OWNER_ID}")
-
-    scope = build_scope_version(
-        expense.id,
+    return _publish_sealed_listing(
+        DEMO_OWNER_ID,
+        DEMO_EXPENSE_VENDOR,
         {
             "service_area": "San Francisco Bay Area",
             "location_approximate": "San Francisco, CA",
@@ -62,6 +58,54 @@ def publish_demo_cleaning_listing(db: Session) -> PublicListingRecord:
         },
         db,
     )
+
+
+def publish_neighbor_cleaning_listing(db: Session) -> PublicListingRecord:
+    """Publish Tidewater Architecture Studio's comparable cleaning listing with sealed bidding.
+
+    Illustrative figures for a fictional business. Its scope overlaps the demo owner's on purpose,
+    so fly-brain similar listings has a real match to show. No offers are seeded on it.
+    """
+
+    return _publish_sealed_listing(
+        NEIGHBOR_OWNER_ID,
+        NEIGHBOR_EXPENSE_VENDOR,
+        {
+            "service_area": "San Francisco Bay Area",
+            "location_approximate": "Oakland, CA",
+            "square_footage": 7500,
+            "visit_frequency": "3x weekly",
+            "bathroom_count": 3,
+            "required_tasks": json.dumps(["vacuum", "trash", "restrooms"]),
+            "supplies_included": True,
+            "equipment_included": True,
+            "taxes_included": True,
+            "current_price_minor": 215000,
+            "current_price_currency": "USD",
+            "billing_cadence": "monthly",
+            "challenge_deadline": datetime.now(timezone.utc) + timedelta(days=NEIGHBOR_SCOPE_DAYS_OPEN),
+            "incumbent_vendor_name": NEIGHBOR_EXPENSE_VENDOR,
+        },
+        db,
+    )
+
+
+def _publish_sealed_listing(
+    owner_account_id: str,
+    expense_vendor: str,
+    scope_payload: dict[str, object],
+    db: Session,
+) -> PublicListingRecord:
+    expense = db.scalar(
+        select(ServiceExpense).where(
+            ServiceExpense.owner_account_id == owner_account_id,
+            ServiceExpense.normalized_vendor == expense_vendor,
+        )
+    )
+    if expense is None:
+        raise RuntimeError(f"The import did not produce a '{expense_vendor}' expense for {owner_account_id}")
+
+    scope = build_scope_version(expense.id, scope_payload, db)
     choices = PublishChoices(bidding_mode=BiddingMode.sealed.value)
     listing = create_listing_draft(expense, scope, choices, db)
     db.commit()
@@ -74,7 +118,7 @@ def publish_demo_cleaning_listing(db: Session) -> PublicListingRecord:
         scope_version_id=scope.id,
         choices=choices,
         previewed_payload_hash=build_payload_hash(preview),
-        acting_account_id=DEMO_OWNER_ID,
+        acting_account_id=owner_account_id,
         db=db,
     )
     db.refresh(listing)

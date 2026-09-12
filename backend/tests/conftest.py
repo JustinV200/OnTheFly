@@ -2,7 +2,6 @@
 Tests use a repository-local SQLite file instead of external infrastructure.
 """
 
-import os
 from pathlib import Path
 
 import pytest

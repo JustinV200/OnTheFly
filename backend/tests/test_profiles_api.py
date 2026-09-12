@@ -2,7 +2,6 @@
 
 from sqlalchemy import select
 
-from app.models.listing import PublicListingRecord
 from app.models.service_expense import ServiceExpense
 from app.services.listings.create import build_scope_version, create_listing_draft
 from app.services.listings.projection import build_payload_hash, build_public_listing
@@ -35,7 +34,7 @@ def test_profile_endpoint_is_public_and_excludes_private_listings(client, db_ses
     db_session.commit()
     db_session.refresh(listing)
 
-    draft_response = client.get(f"/api/profiles/apex-facilities")
+    draft_response = client.get("/api/profiles/apex-facilities")
     draft_payload = draft_response.json()
     preview = build_public_listing(listing, expense, scope, PublishChoices())
     publish_listing(

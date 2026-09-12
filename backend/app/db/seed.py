@@ -32,11 +32,19 @@ SEEDED_ACCOUNTS = [
         "business_name": "Summit Building Services",
         "service_area": "San Francisco Bay Area",
     },
+    # A second publishing business, so the demo owner's listing has a comparable neighbour
+    # for fly-brain similar listings. Fictional, like every other seeded account.
+    {
+        "id": "acc_owner_2",
+        "handle": "tidewater-architecture",
+        "business_name": "Tidewater Architecture Studio",
+        "service_area": "San Francisco Bay Area",
+    },
 ]
 
 
 def run_seed(db: Session) -> int:
-    """Insert or update the four seeded demo accounts and return the count."""
+    """Insert or update the seeded demo accounts and return the count."""
 
     for payload in SEEDED_ACCOUNTS:
         account = db.get(Account, payload["id"])

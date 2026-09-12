@@ -6,6 +6,7 @@ import { LoadingSpinner } from '../../shared/components/LoadingSpinner';
 import { MoneyDisplay } from '../../shared/components/MoneyDisplay';
 import { formatTimestamp } from '../../shared/format/formatTimestamp';
 import { ProvenanceBadge } from '../../shared/provenance/ProvenanceBadge';
+import { SpendSignalsPanel } from './signals/SpendSignalsPanel';
 import type { ExpenseDetail as ExpenseDetailModel } from './types';
 
 interface ExpenseDetailProps {
@@ -55,6 +56,7 @@ export function ExpenseDetail({ detail, hasSelection }: ExpenseDetailProps): JSX
           </li>
         ))}
       </ul>
+      <SpendSignalsPanel expenseId={expense.id} />
     </section>
   );
 }

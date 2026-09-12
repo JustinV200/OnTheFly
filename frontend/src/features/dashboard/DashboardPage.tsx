@@ -7,6 +7,7 @@ import type { DemoAccount } from '../../shared/account/demoAccounts';
 import { EmptyState } from '../../shared/components/EmptyState';
 import { ErrorState } from '../../shared/components/ErrorState';
 import { LoadingSpinner } from '../../shared/components/LoadingSpinner';
+import { VendorAliasPanel } from './aliases/VendorAliasPanel';
 import { ConnectionPanel } from './connection/ConnectionPanel';
 import { useConnection } from './connection/useConnection';
 import { ExpenseDetail } from './ExpenseDetail';
@@ -71,6 +72,13 @@ function ExpenseList({ account, dashboard, expenses }: ExpenseListProps): JSX.El
 
   return (
     <>
+      <VendorAliasPanel
+        onMerged={() => {
+          // A merge deletes the alias expense row, so drop a selection that would now 404.
+          dashboard.selectExpense(null);
+          dashboard.reload();
+        }}
+      />
       <ExpenseSummary expenses={expenses} />
       {dashboard.list.error ? (
         <ErrorState error={dashboard.list.error} onRetry={dashboard.list.reload} title="Showing the last loaded expenses; a refresh failed" />

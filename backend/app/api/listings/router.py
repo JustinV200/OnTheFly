@@ -14,7 +14,6 @@ from app.api.listings.schemas import (
     CreateListingRequest,
     ListingDraftResponse,
     ListingPreviewResponse,
-    PublishChoicesInput,
     PublishRequest,
 )
 from app.core.identity import require_acting_account_id

@@ -20,6 +20,7 @@ from app.models.account import Account
 from app.models.challenge import Challenge
 from app.models.listing import PublicListingRecord
 from app.models.service_expense import ServiceExpense
+from app.services.marketplace import find_similar_listings
 
 REAL_SUBMITTED_AT = datetime(2026, 9, 10, 15, 30, tzinfo=timezone.utc)
 
@@ -111,20 +112,46 @@ def test_staged_scenario_restores_genuine_offer_with_real_time_and_provenance(db
     assert genuine.provenance == "captured_off_platform"
     assert genuine.bidding_mode_at_submission == "sealed"
     assert genuine.submitted_at.replace(tzinfo=timezone.utc) == REAL_SUBMITTED_AT
-    assert summary.public_listings == 1
+    # The demo owner's listing plus the neighbouring business's comparable one.
+    assert summary.public_listings == 2
     assert summary.demo_offers == 2
 
 
 def test_staged_scenario_seeds_a_sealed_offer_before_opening_bidding(db_session) -> None:
     seed_scenario("staged", GenuineOfferLedger(), "fixture", db_session)
 
-    listing = db_session.scalar(select(PublicListingRecord))
+    listing = db_session.scalar(select(PublicListingRecord).where(PublicListingRecord.owner_account_id == "acc_owner_1"))
     modes = {
         challenge.challenger_account_id: challenge.bidding_mode_at_submission
         for challenge in db_session.scalars(select(Challenge)).all()
     }
     assert listing is not None and listing.bidding_mode == "open"
     assert modes == {"acc_challenger_1": "sealed", "acc_challenger_2": "open"}
+
+
+def test_staged_scenario_gives_the_demo_listing_a_similar_neighbour(db_session) -> None:
+    """Fly-brain similar listings needs a second comparable public listing to show anything."""
+    seed_scenario("staged", GenuineOfferLedger(), "fixture", db_session)
+    listings = {record.owner_account_id: record for record in db_session.scalars(select(PublicListingRecord)).all()}
+
+    neighbour = listings["acc_owner_2"]
+    as_challenger = find_similar_listings(listings["acc_owner_1"].id, "acc_challenger_1", db_session)
+    as_neighbour_owner = find_similar_listings(listings["acc_owner_1"].id, "acc_owner_2", db_session)
+
+    assert neighbour.bidding_mode == "sealed" and neighbour.incumbent_vendor_name is None
+    assert db_session.scalar(select(func.count()).select_from(Challenge).where(Challenge.listing_id == neighbour.id)) == 0
+    assert as_challenger is not None and [item.projection.id for item in as_challenger] == [neighbour.id]
+    assert as_neighbour_owner == []
+
+
+def test_live_scenario_imports_the_neighbour_privately(db_session) -> None:
+    summary = seed_scenario("live", GenuineOfferLedger(), "fixture", db_session)
+
+    neighbour_expenses = db_session.scalars(
+        select(ServiceExpense).where(ServiceExpense.owner_account_id == "acc_owner_2")
+    ).all()
+    assert summary.public_listings == 0
+    assert neighbour_expenses and all(expense.visibility == "private" for expense in neighbour_expenses)
 
 
 def test_capture_skips_offers_from_seeded_demo_accounts(db_session) -> None:
