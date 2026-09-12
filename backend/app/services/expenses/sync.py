@@ -15,12 +15,17 @@ from app.services.expenses.baseline_charges import baseline_charges
 from app.services.expenses.eligibility import classify_eligibility
 from app.services.expenses.listing_references import listed_expense_ids
 from app.services.expenses.recurrence import detect_recurrence
+from app.services.expenses.vendor_group_key import vendor_group_key
 from app.services.expenses.vendor_normalize import VendorCorrectionStore, normalize_vendor_description
 
 
 
-def sync_service_expenses(owner_account_id: str, db: Session) -> list[ServiceExpense]:
-    """Upsert grouped service expenses for one owner from imported transactions."""
+def sync_service_expenses(owner_account_id: str, db: Session, commit: bool = True) -> list[ServiceExpense]:
+    """Upsert grouped service expenses for one owner from imported transactions.
+
+    With commit=False the regroup is only flushed, so a caller (the alias merge) can
+    inspect the result and then commit or roll back the whole operation as one unit.
+    """
 
     transactions = db.scalars(
         select(Transaction).where(Transaction.owner_account_id == owner_account_id)
@@ -94,7 +99,10 @@ def sync_service_expenses(owner_account_id: str, db: Session) -> list[ServiceExp
         results.append(existing)
 
     _remove_orphaned_expenses(owner_account_id, set(grouped), db)
-    db.commit()
+    if commit:
+        db.commit()
+    else:
+        db.flush()
     return results
 
 
@@ -122,20 +130,20 @@ def _group_transactions(
         fallback_vendor = (None if transaction.provider == "stripe" else transaction.normalized_vendor) or normalize_vendor_description(
             transaction.raw_description
         )
-        vendor, category = correction_store.resolve(
+        vendor_name, category = correction_store.resolve(
             owner_account_id=owner_account_id,
             raw_description=transaction.raw_description,
             fallback_vendor=fallback_vendor,
             fallback_category=transaction.category,
             db=db,
         )
-        transaction.normalized_vendor = vendor
         transaction.category = category
-        # Separate Stripe currencies without changing existing fixture grouping keys.
-        if transaction.provider == "stripe":
-            vendor = f"{vendor} [{transaction.currency}]"
-            transaction.normalized_vendor = vendor
-        grouped[vendor].append(transaction)
+        # Rules store currency-free names, but the key is built idempotently anyway: a rule
+        # saved from a suffixed key before that fix must not stack a second " [USD]".
+        group_key = vendor_group_key(vendor_name, transaction.provider, transaction.currency)
+        # Expense detail, spend signals and traces find a group's rows by this key.
+        transaction.normalized_vendor = group_key
+        grouped[group_key].append(transaction)
     return dict(grouped)
 
 

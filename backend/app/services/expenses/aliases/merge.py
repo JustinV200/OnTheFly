@@ -10,6 +10,7 @@ from app.models.transaction import Transaction
 from app.services.expenses.aliases.errors import AliasRequestError
 from app.services.expenses.listing_references import listed_expense_ids
 from app.services.expenses.sync import sync_service_expenses
+from app.services.expenses.vendor_group_key import base_vendor_name
 from app.services.expenses.vendor_normalize import VendorCorrectionStore
 
 
@@ -23,8 +24,10 @@ def merge_vendor_alias(
 
     Only explicit owner action reaches this function; suggestions never call it. It
     refuses a merge that would delete an expense the listing flow references, or mix
-    currencies. Merging never changes visibility: the canonical expense keeps its own
-    state and any listing keeps its stored public projection.
+    currencies. The rules and the regroup commit together only once the canonical group
+    has gained exactly the alias's charges; otherwise everything rolls back and the
+    merge is refused. Merging never changes visibility: the canonical expense keeps its
+    own state and any listing keeps its stored public projection.
     """
 
     alias = _get_owned_expense(alias_expense_id, owner_account_id, db)
@@ -51,10 +54,17 @@ def merge_vendor_alias(
     if not raw_descriptions:
         raise AliasRequestError("The expense to merge has no transactions; refresh the dashboard and try again")
 
+    # Read before the regroup: sync rewrites these rows in place.
+    canonical_id = canonical.id
+    canonical_key = canonical.normalized_vendor
+    expected_period_count = canonical.period_count + alias.period_count
+
     # One rule per exact descriptor the alias group was built from. Exact descriptors
     # (not the alias's display name) make the rules match only these payees' charges.
+    # Rules store the currency-free name: sync adds the Stripe " [CUR]" suffix itself, so
+    # storing the suffixed key would regroup the alias under "Name [USD] [USD]".
     store = VendorCorrectionStore()
-    canonical_vendor = canonical.normalized_vendor
+    canonical_vendor = base_vendor_name(canonical_key, canonical.currency)
     for raw_description in raw_descriptions:
         store.upsert(
             owner_account_id=owner_account_id,
@@ -63,16 +73,24 @@ def merge_vendor_alias(
             corrected_category=None,
             db=db,
         )
-    # upsert() flushes each new rule, so the sync below reads them all back.
-    sync_service_expenses(owner_account_id, db)
+    # upsert() flushes each new rule, so the sync below reads them all back. It must not
+    # commit: a merge that doesn't land has to leave neither rules nor regroup behind.
+    sync_service_expenses(owner_account_id, db, commit=False)
     merged = db.scalar(
         select(ServiceExpense).where(
+            ServiceExpense.id == canonical_id,
             ServiceExpense.owner_account_id == owner_account_id,
-            ServiceExpense.normalized_vendor == canonical_vendor,
         )
     )
-    if merged is None:
-        raise RuntimeError(f"Merged expense '{canonical_vendor}' disappeared during re-sync")
+    if merged is None or merged.normalized_vendor != canonical_key or merged.period_count != expected_period_count:
+        # A listed canonical survives orphaning with stale figures, so the count is checked
+        # too. Exact equality also refuses a rule that would sweep in a third group's charges.
+        db.rollback()
+        raise AliasRequestError(
+            "These expenses can't be merged: the merge wouldn't move exactly the other expense's charges "
+            "into this one. Nothing was changed."
+        )
+    db.commit()
     return merged
 
 

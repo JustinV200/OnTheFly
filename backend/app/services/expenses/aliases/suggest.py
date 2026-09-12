@@ -15,6 +15,7 @@ from app.services.expenses.aliases.vendor_name import (
     vendor_name_receptors,
 )
 from app.services.expenses.listing_references import listed_expense_ids
+from app.services.expenses.vendor_group_key import base_vendor_name, is_currency_keyed
 from app.services.flybrain import FlyHashIndex, MushroomBodyShape, build_flyhash
 
 # Same shape the charge-description channel uses; tuning on vendor names showed tag
@@ -56,8 +57,10 @@ def suggest_vendor_aliases(owner_account_id: str, db: Session) -> list[VendorAli
     """Return merge suggestions for one owner's stored vendor groups, strongest first.
 
     Never suggests: groups with a hard exclusion or owner ineligibility, groups with
-    different known categories or currencies, a pair the owner dismissed, or folding
-    away a group the listing flow already references. Each alias appears at most once.
+    different known categories or currencies, a currency-keyed Stripe group with another
+    provider's group, a pair the owner dismissed, or folding away a group the listing
+    flow already references. Each alias appears at most once. Names are compared without
+    the Stripe " [CUR]" key suffix.
     """
 
     expenses = [
@@ -75,12 +78,12 @@ def suggest_vendor_aliases(owner_account_id: str, db: Session) -> list[VendorAli
     dismissed = _dismissed_pairs(owner_account_id, db)
     index: FlyHashIndex[str] = FlyHashIndex(build_flyhash(VENDOR_NAME_SHAPE))
     for expense in expenses:
-        index.add(expense.id, vendor_name_receptors(expense.normalized_vendor, VENDOR_NAME_SHAPE.input_dim))
+        index.add(expense.id, vendor_name_receptors(_comparable_name(expense), VENDOR_NAME_SHAPE.input_dim))
 
     best_by_alias: dict[str, VendorAliasSuggestion] = {}
     for expense in expenses:
         matches = index.query(
-            vendor_name_receptors(expense.normalized_vendor, VENDOR_NAME_SHAPE.input_dim),
+            vendor_name_receptors(_comparable_name(expense), VENDOR_NAME_SHAPE.input_dim),
             limit=CANDIDATES_PER_VENDOR,
             min_similarity=CANDIDATE_FLOOR,
             exclude={expense.id},
@@ -109,17 +112,21 @@ def suggest_vendor_aliases(owner_account_id: str, db: Session) -> list[VendorAli
 def _is_plausible_pair(left: ServiceExpense, right: ServiceExpense, name_similarity: float) -> bool:
     if left.currency != right.currency:
         return False
+    # A Stripe group's key carries its currency and another provider's doesn't, so correction
+    # rules can never fold one into the other; suggesting the pair would only offer a refused merge.
+    if is_currency_keyed(left.normalized_vendor, left.currency) != is_currency_keyed(right.normalized_vendor, right.currency):
+        return False
     left_category = left.owner_corrected_category or left.category
     right_category = right.owner_corrected_category or right.category
     if left_category and right_category and left_category != right_category:
         return False
+    left_name = _comparable_name(left)
+    right_name = _comparable_name(right)
     # The brand word must match, whichever name test passes. This is what stops two
     # different businesses in one trade from being suggested on the trade word alone.
-    if brand_word_similarity(left.normalized_vendor, right.normalized_vendor, VENDOR_NAME_SHAPE.input_dim) < BRAND_WORD_THRESHOLD:
+    if brand_word_similarity(left_name, right_name, VENDOR_NAME_SHAPE.input_dim) < BRAND_WORD_THRESHOLD:
         return False
-    return name_similarity >= NAME_SIMILARITY_THRESHOLD or is_contained_name(
-        left.normalized_vendor, right.normalized_vendor
-    )
+    return name_similarity >= NAME_SIMILARITY_THRESHOLD or is_contained_name(left_name, right_name)
 
 
 def _assign_roles(
@@ -147,8 +154,14 @@ def _build_suggestion(alias: ServiceExpense, canonical: ServiceExpense, name_sim
         canonical=_summarize(canonical),
         currency=canonical.currency,
         name_similarity=round(name_similarity, 2),
-        shared_words=shared_core_words(alias.normalized_vendor, canonical.normalized_vendor),
+        shared_words=shared_core_words(_comparable_name(alias), _comparable_name(canonical)),
     )
+
+
+def _comparable_name(expense: ServiceExpense) -> str:
+    # Stripe group keys end in " [USD]"; left in, "usd" is a core word every Stripe vendor
+    # shares, which lifts unrelated same-brand pairs ("Metro Cleaning"/"Metro Parking") over the threshold.
+    return base_vendor_name(expense.normalized_vendor, expense.currency)
 
 
 def _summarize(expense: ServiceExpense) -> VendorGroupSummary:
