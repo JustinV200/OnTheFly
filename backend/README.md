@@ -44,6 +44,8 @@ python -m app.cli.seed_demo --confirm-remote     # required when DATABASE_URL is
 
 Before anything is dropped, the command copies every genuine offer (`challenger_submitted` or `captured_off_platform`, from a non-seeded account) into `backend/demo_data/genuine_counteroffers.json`, then writes that file atomically. The file is gitignored because it can hold a real business's terms. `staged` restores each offer with its original provenance, bidding mode, and timestamps. `live` keeps the offers in the ledger, because the listing they attach to doesn't exist until the owner publishes it.
 
+If reading those offers fails (a locked database, a dropped connection, a timeout), the command prints the error, exits 1, and drops nothing. Rerun it once the database is reachable. Only a database with no `challenges` table yet counts as a first run with nothing to capture, and the summary reports that as `schema_missing_before_reset: true`.
+
 To enter a quote received off the platform, add an entry to the ledger by hand, then run `--scenario staged`:
 
 ```json
