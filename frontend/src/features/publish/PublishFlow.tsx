@@ -28,7 +28,7 @@ export function PublishFlow(): JSX.Element {
 function OwnerPublishFlow({ account }: { account: DemoAccount }): JSX.Element {
   const [searchParams] = useSearchParams();
   const navigate = useNavigate();
-  const { expenses, preview, step, errorMessage, createDraft, publish } = usePublish();
+  const { expenses, preview, step, errorMessage, createDraft, invalidatePreview, publish } = usePublish();
 
   if (!expenses.data) {
     return expenses.error
@@ -56,11 +56,14 @@ function OwnerPublishFlow({ account }: { account: DemoAccount }): JSX.Element {
       <ScopeForm
         expenses={publishable}
         initialExpenseId={searchParams.get('expense')}
+        isPublishing={step === 'publishing'}
         isSubmitting={step === 'drafting'}
+        onEdit={invalidatePreview}
         onSubmit={createDraft}
       />
       {errorMessage ? <ErrorState error={null} title={errorMessage} /> : null}
       <PublishPreview preview={preview} />
+      {/* Any form edit clears the preview (usePublish.invalidatePreview), so Publish only ever posts a fresh one. */}
       {preview ? (
         <div style={{ marginTop: '1rem' }}>
           <button
@@ -71,7 +74,9 @@ function OwnerPublishFlow({ account }: { account: DemoAccount }): JSX.Element {
           >
             {step === 'publishing' ? 'Publishing…' : '3. Publish this listing'}
           </button>{' '}
-          <span style={{ color: '#475569' }}>Editing the form above creates a new preview; nothing is public until you click publish.</span>
+          <span style={{ color: '#475569' }}>
+            Changing anything above clears this preview; preview again before publishing. Nothing is public until you click publish.
+          </span>
         </div>
       ) : null}
     </section>

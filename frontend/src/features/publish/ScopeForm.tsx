@@ -14,12 +14,15 @@ const CADENCES = ['weekly', 'biweekly', 'monthly', 'quarterly', 'annual'];
 interface ScopeFormProps {
   expenses: PublishableExpense[];
   initialExpenseId: string | null;
+  isPublishing: boolean;
   isSubmitting: boolean;
+  // Called on every owner edit, in the same update as the new value, so a preview of the old values can't be published.
+  onEdit: () => void;
   onSubmit: (payload: Record<string, unknown>) => Promise<void>;
 }
 
-/** Render the scope-confirmation form for creating a draft listing. */
-export function ScopeForm({ expenses, initialExpenseId, isSubmitting, onSubmit }: ScopeFormProps): JSX.Element {
+/** Render the scope-confirmation form for creating a draft listing; every edit is reported through onEdit. */
+export function ScopeForm({ expenses, initialExpenseId, isPublishing, isSubmitting, onEdit, onSubmit }: ScopeFormProps): JSX.Element {
   const [expenseId, setExpenseId] = useState<string>('');
   // Demo-template defaults (plan1.md §4). The owner confirms or edits every one before previewing.
   const [serviceArea, setServiceArea] = useState('San Francisco Bay Area');
@@ -88,7 +91,9 @@ export function ScopeForm({ expenses, initialExpenseId, isSubmitting, onSubmit }
   };
 
   return (
-    <form onSubmit={submit}>
+    // React change events bubble, so this one handler hears every input, select, and checkbox below,
+    // DisclosureChoices included. New controls must stay native inputs inside this form to be covered.
+    <form onChange={onEdit} onSubmit={submit}>
       <h2 style={{ marginBottom: '0.25rem' }}>1. Confirm the scope</h2>
       <p style={{ color: '#475569', marginTop: 0 }}>A price with no scope isn’t something anyone can meaningfully counter.</p>
       <div style={{ display: 'grid', gap: '0.75rem', gridTemplateColumns: 'repeat(auto-fit, minmax(220px, 1fr))' }}>
@@ -121,7 +126,8 @@ export function ScopeForm({ expenses, initialExpenseId, isSubmitting, onSubmit }
 
       <DisclosureChoices choices={choices} incumbentVendorName={incumbentVendorName} onChange={setChoices} />
       {validationError ? <p role="alert" style={{ color: '#991b1b' }}>{validationError}</p> : null}
-      <button disabled={isSubmitting || !expenseId} type="submit">
+      {/* Re-drafting while a publish is on the wire would race it on the server. */}
+      <button disabled={isSubmitting || isPublishing || !expenseId} type="submit">
         {isSubmitting ? 'Preparing preview…' : '2. Preview exactly what goes public'}
       </button>
     </form>
