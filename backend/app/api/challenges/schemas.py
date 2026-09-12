@@ -53,6 +53,8 @@ class ChallengeResponse(BaseModel):
     scope_version_id: str
     challenger_account_id: str
     challenger_name: str | None = None
+    # The mode the current version was made under: set at submission and re-recorded at each revision.
+    # Earlier versions keep their own mode in the private revision history.
     bidding_mode_at_submission: str
     price_minor: int
     price_currency: str

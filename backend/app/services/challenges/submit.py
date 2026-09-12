@@ -1,6 +1,6 @@
 """Submits and revises marketplace challenges against public listings.
 It enforces owner exclusion, deadlines, acknowledged bidding terms, valid amounts, the listing's currency,
-and non-retroactive bidding visibility.
+and non-retroactive bidding visibility: every version records the mode in force when it was made.
 """
 
 from datetime import datetime, timezone
@@ -15,6 +15,7 @@ from app.models.challenge import Challenge, ChallengeRevision
 from app.models.listing import PublicListingRecord
 from app.services.challenges.amounts import find_offer_amount_problem
 from app.services.challenges.currency import find_offer_currency_problem
+from app.services.challenges.mode import resolve_offer_bidding_mode
 from app.services.challenges.provenance import resolve_offer_provenance
 from app.services.listings.bidding_mode import resolve_bidding_mode
 
@@ -51,11 +52,12 @@ def submit_challenge(
     if existing is not None:
         return revise_challenge(existing.id, challenger_account_id, form_data, db)
 
+    provenance = form_data.get("provenance") or resolve_offer_provenance(challenger_account_id)
     challenge = Challenge(
         listing_id=listing.id,
         scope_version_id=listing.scope_version_id,
         challenger_account_id=challenger_account_id,
-        bidding_mode_at_submission=resolve_bidding_mode(listing.bidding_mode).value,
+        bidding_mode_at_submission=resolve_offer_bidding_mode(listing.bidding_mode, provenance),
         price_minor=form_data["price_minor"],
         # The listing's exact code, not the caller's spelling: the baseline Money shares it, so
         # savings and ranking never compare two currencies (or two casings of one).
@@ -73,7 +75,7 @@ def submit_challenge(
         availability=form_data.get("availability"),
         offer_expiry=form_data.get("offer_expiry"),
         site_visit_required=form_data.get("site_visit_required", False),
-        provenance=form_data.get("provenance") or resolve_offer_provenance(challenger_account_id),
+        provenance=provenance,
     )
     db.add(challenge)
     db.commit()
@@ -90,9 +92,11 @@ def revise_challenge(
 ) -> Challenge:
     """Store a revision snapshot, then update the challenger's active offer.
 
-    The revised offer takes the listing's currency, which also repairs an older row stored in another one.
-    Raises 400 when the price is not positive, the setup fee is negative, or a sent currency differs
-    from the listing's, before any snapshot is written.
+    The snapshot keeps the mode the replaced version was made under; the revised offer takes the
+    listing's current mode, which API callers have acknowledged, so its publicity follows the terms it
+    was typed under (roadmap/05 §6). The revised offer also takes the listing's currency, which repairs
+    an older row stored in another one. Raises 400 when the price is not positive, the setup fee is
+    negative, or a sent currency differs from the listing's, before any snapshot is written.
     """
 
     _ensure_valid_amounts(form_data)
@@ -110,6 +114,9 @@ def revise_challenge(
     _ensure_deadline_open(listing)
     _ensure_mode_acknowledged(listing, form_data.get("acknowledged_bidding_mode"))
     _ensure_listing_currency(listing, form_data.get("price_currency"))
+    # Read before anything changes: the snapshot records the mode the old price was made under, not the
+    # listing's mode today, or the history mislabels which prices were given in confidence.
+    previous_mode = resolve_bidding_mode(challenge.bidding_mode_at_submission).value
     revision_number = int(
         db.scalar(
             select(func.coalesce(func.max(ChallengeRevision.revision_number), 0)).where(
@@ -123,7 +130,7 @@ def revise_challenge(
         ChallengeRevision(
             challenge_id=challenge.id,
             revision_number=revision_number,
-            bidding_mode_at_revision=resolve_bidding_mode(listing.bidding_mode).value,
+            bidding_mode_at_revision=previous_mode,
             price_minor=challenge.price_minor,
             price_currency=challenge.price_currency,
             billing_frequency=challenge.billing_frequency,
@@ -162,6 +169,9 @@ def revise_challenge(
     challenge.site_visit_required = form_data.get("site_visit_required", False)
     # A revision keeps the offer's origin; only operator code passes an explicit provenance.
     challenge.provenance = form_data.get("provenance") or challenge.provenance
+    # The leaderboard publishes a price only when this says open. Keeping the old value would publish a
+    # price typed under sealed terms once the owner reopened bidding, and hide one the form said was open.
+    challenge.bidding_mode_at_submission = resolve_offer_bidding_mode(listing.bidding_mode, challenge.provenance)
     challenge.revised_at = revised_at
     db.commit()
     db.refresh(challenge)
