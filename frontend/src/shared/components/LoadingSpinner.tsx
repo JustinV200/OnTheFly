@@ -1,6 +1,14 @@
-/* Renders a small loading indicator used by async feature screens.
-   It stays intentionally simple during early build phases. */
-/** Shows a text-based loading indicator. */
-export function LoadingSpinner(): JSX.Element {
-  return <div aria-busy="true">Loading…</div>;
+/* Renders a loading indicator that names what is loading.
+   Named loading text keeps a slow network from looking like a blank, broken page. */
+interface LoadingSpinnerProps {
+  label?: string;
+}
+
+/** Show a text-based loading indicator. */
+export function LoadingSpinner({ label = 'Loading…' }: LoadingSpinnerProps): JSX.Element {
+  return (
+    <div aria-busy="true" role="status" style={{ color: '#475569', padding: '1.5rem 0' }}>
+      {label}
+    </div>
+  );
 }

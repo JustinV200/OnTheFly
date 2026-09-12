@@ -10,10 +10,16 @@ export interface Expense {
   currency: string;
   annualized_amount_minor: number;
   period_count: number;
+  first_seen: string;
+  last_seen: string;
   visibility: string;
   is_eligible: boolean;
   eligibility_reason: string;
   is_publishable: boolean;
+  // Present once a listing was drafted; kept after unpublishing so retained offers stay reachable.
+  listing_id: string | null;
+  // Financial provenance of the transactions behind this row: production | sandbox | imported | fixture.
+  provenance: string[];
 }
 
 export interface ExpenseTransaction {

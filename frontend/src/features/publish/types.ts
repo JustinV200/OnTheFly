@@ -7,6 +7,13 @@ export interface PublishableExpense {
   cadence: string;
   amount_minor_per_period: number;
   currency: string;
+  visibility: string;
+}
+
+export interface PublishChoices {
+  bidding_mode: 'sealed' | 'open';
+  show_incumbent_vendor: boolean;
+  show_exact_address: boolean;
 }
 
 export interface ListingDraftResponse {
