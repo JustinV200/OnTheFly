@@ -6,7 +6,9 @@ import { FlyBrainNote } from '../../../shared/flybrain/FlyBrainNote';
 import type { FlyBrainAttribution, FlyBrainComponent } from '../../../shared/flybrain/types';
 import { BaselineBasisSummary } from './BaselineBasisSummary';
 import { ChargeReviewList } from './ChargeReviewList';
+import { formatNotAnalyzedSummary } from './formatSignals';
 import { PriceChangeList } from './PriceChangeList';
+import type { NotAnalyzedTransaction } from './types';
 import { useSpendSignals } from './useSpendSignals';
 
 interface SpendSignalsPanelProps {
@@ -24,15 +26,25 @@ export function SpendSignalsPanel({ expenseId }: SpendSignalsPanelProps): JSX.El
     return <p role="alert">{error ?? 'Spend signals are unavailable.'}</p>;
   }
 
-  const currency = report.baseline.currency;
+  const { baseline } = report;
 
   return (
     <section aria-label="Spend signals" style={{ border: '1px solid #e2e8f0', borderRadius: '12px', marginTop: '1rem', padding: '0.75rem 1rem' }}>
       <h4 style={{ margin: '0 0 0.5rem' }}>Spend signals</h4>
+      <NotAnalyzedNote transactions={report.not_analyzed_transactions} />
 
       <SectionHeading title="Price" attribution={findAttribution(report.fly_brain, 'compound_eye')} />
-      <BaselineBasisSummary baseline={report.baseline} />
-      <PriceChangeList priceLevels={report.price_levels} currency={currency} />
+      {baseline ? (
+        <>
+          <BaselineBasisSummary baseline={baseline} />
+          <PriceChangeList priceLevels={report.price_levels} currency={baseline.currency} />
+        </>
+      ) : (
+        // No posted charges: there is no baseline, which must not read as a $0 price.
+        <p style={{ color: '#475569', margin: '0.25rem 0' }}>
+          <strong>No baseline:</strong> no charge from this vendor has posted, so there is no price to explain or check for changes.
+        </p>
+      )}
 
       <SectionHeading
         title={
@@ -46,6 +58,18 @@ export function SpendSignalsPanel({ expenseId }: SpendSignalsPanelProps): JSX.El
 
       <FlyBrainNote attributions={report.fly_brain} />
     </section>
+  );
+}
+
+function NotAnalyzedNote({ transactions }: { transactions: NotAnalyzedTransaction[] }): JSX.Element | null {
+  // The transaction list above shows every stored row; say which ones these signals skipped.
+  if (transactions.length === 0) {
+    return null;
+  }
+  return (
+    <p style={{ color: '#475569', fontSize: '0.9rem', margin: '0 0 0.5rem' }}>
+      Only posted charges are analyzed. Left out: {formatNotAnalyzedSummary(transactions)} (listed above with their status).
+    </p>
   );
 }
 

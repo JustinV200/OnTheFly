@@ -7,7 +7,9 @@ export type NotAssessedReason =
   | 'cadence_not_recurring'
   | 'too_few_charges'
   | 'mixed_currency'
-  | 'amounts_too_variable';
+  | 'amounts_too_variable'
+  // Every stored row in a Stripe group is pending, void, or a credit; nothing was analyzed.
+  | 'no_posted_charges';
 
 export type ChargeStatus = 'not_enough_history' | 'no_stable_pattern' | 'typical' | 'unusual';
 
@@ -65,12 +67,21 @@ export interface ChargeNovelty {
   reasons: NoveltyReason[];
 }
 
+/** A stored row the circuits did not read (a pending, void, or credit Stripe row). */
+export interface NotAnalyzedTransaction {
+  transaction_id: string;
+  status: string;
+  direction: string;
+}
+
 export interface SpendSignalsReport {
   expense_id: string;
   vendor: string;
-  baseline: BaselineExplanation;
+  // Null when the expense has no posted charges: there is no baseline, which is not a zero price.
+  baseline: BaselineExplanation | null;
   price_levels: PriceLevelAnalysis;
   charges: ChargeNovelty[];
   unusual_charge_count: number;
+  not_analyzed_transactions: NotAnalyzedTransaction[];
   fly_brain: FlyBrainAttribution[];
 }

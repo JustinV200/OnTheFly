@@ -11,6 +11,7 @@ from app.core.visibility import ListingVisibility
 from app.models.service_expense import ServiceExpense
 from app.models.transaction import Transaction
 from app.services.expenses.baseline import compute_baseline
+from app.services.expenses.baseline_charges import baseline_charges
 from app.services.expenses.eligibility import classify_eligibility
 from app.services.expenses.listing_references import listed_expense_ids
 from app.services.expenses.recurrence import detect_recurrence
@@ -28,9 +29,9 @@ def sync_service_expenses(owner_account_id: str, db: Session) -> list[ServiceExp
     results: list[ServiceExpense] = []
 
     for vendor_key, vendor_transactions in grouped.items():
-        # Keep all rows for audit; unsettled Stripe payments are not baseline spend.
-        stripe_group = any(t.provider == "stripe" for t in vendor_transactions)
-        charge_transactions = [t for t in vendor_transactions if t.status == "posted" and t.direction == "debit"] if stripe_group else vendor_transactions
+        # Keep all rows for audit; unsettled Stripe payments are not baseline spend. The
+        # spend-signals report selects with the same helper so it explains these exact charges.
+        charge_transactions = baseline_charges(vendor_transactions)
         if not charge_transactions:
             existing = db.scalar(select(ServiceExpense).where(
                 ServiceExpense.owner_account_id == owner_account_id,

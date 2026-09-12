@@ -15,6 +15,7 @@ from app.services.expenses.signals.price_levels import (
     PriceLevelAnalysis,
     PriceLevelShift,
     analyze_price_levels,
+    not_assessed_price_levels,
 )
 
 __all__ = [
@@ -28,5 +29,6 @@ __all__ = [
     "analyze_price_levels",
     "change_basis_points",
     "median_minor",
+    "not_assessed_price_levels",
     "score_charge_novelty",
 ]
