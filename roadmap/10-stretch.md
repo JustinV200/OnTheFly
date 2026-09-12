@@ -58,7 +58,7 @@ Let a provider's own system watch for listings matching its service area and cap
 
 Recorded so they don't come back as ideas:
 
-- **Equipment shopping lists, product-camera overlays, visual inventory audits, fruit-fly neural models, FlyHash, asset management.** The first superseded concept.
+- **Equipment shopping lists, product-camera overlays, visual inventory audits, asset management.** The first superseded concept. Its fruit-fly circuits (Compound Eye, Mushroom Body, FlyHash) were kept and now run on spend data. See [plan1.md](../plan/plan1.md#fly-brain-circuits).
 - **Token-scoped private RFQ flows.** The second superseded concept. Invited challengers use the same public listing as everyone else.
 - **A separate vendor account type.** One account type. A challenger is just another business.
 - **Counteroffers public by default.** Open bidding ships, but as a toggle the owner turns on, defaulting off — and never retroactively.

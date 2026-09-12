@@ -12,7 +12,7 @@ Full product spec and scope decisions: [plan/plan1.md](plan/plan1.md). Step-by-s
 
 Planning → early build. No application code exists yet; `frontend/` and `backend/` get created as work starts.
 
-Two earlier concepts are **removed from scope**: an equipment-shopping and camera-audit product (with fruit-fly neural models — Compound Eye, Mushroom Body, FlyHash), and an outbound RFQ product where the platform emailed token-scoped invitations to vendors it discovered. Don't reintroduce either; treat surviving references as stale. Outbound discovery and invitation persist only as a **secondary path for seeding marketplace supply**, subordinate to the public loop.
+Two earlier concepts are **removed from scope**: an equipment-shopping and camera-audit product, and an outbound RFQ product where the platform emailed token-scoped invitations to vendors it discovered. Don't reintroduce either; treat surviving references as stale. The fruit-fly neural models (Compound Eye, Mushroom Body, FlyHash) are **in scope** as deterministic analysis circuits inside the marketplace — see [Fly-brain circuits](#fly-brain-circuits). The camera features they were first designed for stay removed. Outbound discovery and invitation persist only as a **secondary path for seeding marketplace supply**, subordinate to the public loop.
 
 ## Tech stack
 
@@ -24,6 +24,7 @@ Two earlier concepts are **removed from scope**: an equipment-shopping and camer
 - **Financial adapters:** `TransactionSource` interface — Rho first, labeled fixtures alongside, Mercury later.
 - **Discovery:** Tavily behind a provider interface (secondary path only).
 - **AI:** Claude for categorization suggestions, scope drafting, offer extraction, evidence summaries. Structured outputs everywhere JSON is consumed; never parse prose. Confirm the current model ID during implementation rather than hardcoding one from memory.
+- **Fly-brain analysis:** pure-Python circuits in `backend/app/services/flybrain/` — Mushroom Body (FlyHash similarity search, novelty filter) and Compound Eye (contrast adaptation). No model, no extra dependencies.
 - **Updates:** polling. No websockets.
 - **Hosting:** HTTPS app and API with publicly reachable profile and listing pages.
 
@@ -33,7 +34,7 @@ Two earlier concepts are **removed from scope**: an equipment-shopping and camer
 - `backend/` — FastAPI app.
 - `plan/` — design docs. `plan1.md` is the plan of record.
 - `roadmap/` — phase-by-phase build order, one file per phase.
-- `assets/` — brand assets. Current contents are from the removed fly concept and are stale.
+- `assets/` — brand assets. Current contents are from the earlier fly concept's branding.
 - `.claude/` — Claude Code project configuration and coding rules.
 
 ## Working conventions
@@ -89,6 +90,23 @@ Publishing a business's spend is irreversible in practice: once seen, it's seen.
 - **Scope is versioned, and offers attach to the version they answered.** Editing scope never retroactively reframes an existing offer.
 - **One account type.** The same business publishes its own expenses and challenges others'. Don't build a buyer/vendor role split.
 
+### Fly-brain circuits
+
+Three circuits, each with one narrow job. They rank, flag, or segment; they never decide anything the rules above reserve for the owner or for identifiers.
+
+| Circuit | Used for | Decides |
+|---|---|---|
+| **Compound Eye** (contrast adaptation) | Price levels in a recurring expense's charges | Which charges form the current price; confirmed changes vs one-offs vs an unconfirmed jump |
+| **Mushroom Body · novelty filter** | Per-charge review in spend signals | Whether a charge looks unlike the vendor's earlier charges |
+| **Mushroom Body · FlyHash** | Vendor alias suggestions; similar public listings | Which names or listings are candidates; exact similarity sets the order |
+
+- **Deterministic code, never a model.** The baseline a circuit selects is still an integer median of real charges. Irregular spend with no stable price falls back to the plain average, and the report says so.
+- **Suggest and flag only.** A vendor merge happens only on the owner's click and is stored as ordinary correction rules. No circuit publishes, changes visibility, or edits eligibility.
+- **Never for identity.** Fuzzy name similarity must not touch challenger identity, evidence, adverse records, or import deduplication. Those stay identifier-level.
+- **Public in, public out.** Similar-listing features are built from the public projection only, and never from price, the incumbent vendor, or owner fields.
+- **Always labelled.** Every fly-brain API response carries `fly_brain` attributions, and the UI shows `FlyBrainBadge` / `FlyBrainNote` wherever fly-brain output appears. A circuit that could not run is listed with its reason, never omitted.
+- **Shapes are tuned, not arbitrary.** `backend/tests/flybrain/` locks in how closely FlyHash tracks exact similarity. Re-run it before changing any `MushroomBodyShape`.
+
 ### Outbound (secondary path)
 
 - **Nothing sends without explicit owner approval of recipients and message contents.** Editing a plan, seeding data, or running a job does not authorize outreach.
@@ -110,6 +128,7 @@ Publishing a business's spend is irreversible in practice: once seen, it's seen.
 | Account / BusinessProfile | Platform identity and public presence |
 | Connection / Transaction | Source account and original spend evidence |
 | Vendor / ServiceExpense | Normalized payee and recurring service baseline |
+| VendorCorrection / VendorAliasDismissal | Owner corrections (including alias merges) and rejected alias suggestions |
 | Visibility | Per-expense public/private state, disclosure options, audit trail |
 | Listing / ScopeVersion | The public projection, its versioned scope, its bidding mode |
 | Challenge / ChallengeRevision | A counteroffer, conditions, provenance, revisions, and the bidding mode in force at submission |

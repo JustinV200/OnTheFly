@@ -44,6 +44,7 @@ The tradeoff is a cold-start problem, which is why outbound discovery survives a
 - **Opens the bidding, if you want it.** Offers are sealed by default — you see them, nobody else does. Flip open bidding on and challengers see each other's prices and scope and can underbid, while their identities stay yours alone. Flipping it on never exposes an offer someone already made in confidence.
 - **Checks who's offering** — entity registration, reputation, exclusion lists, regulatory history — reporting each check's source, timestamp, and limits.
 - **Compares on normalized cost and scope**, not price alone.
+- **Reads spend with fruit-fly-inspired circuits.** Compound Eye separates a real price change from a one-off charge, so the baseline is what you pay now. Mushroom Body flags unusual charges, suggests duplicate vendors to merge, and finds similar public listings. It's all deterministic code with no AI model, labelled "Fly brain" wherever it appears, and you confirm every merge.
 
 ## The two rules everything else follows from
 
@@ -65,6 +66,7 @@ Savings are **potential** until a switch actually happens, and the UI says so.
 | Financial data | `TransactionSource` adapter — Rho first, labeled fixtures, Mercury later |
 | Discovery | Tavily, behind a provider interface (secondary path) |
 | Reasoning | Claude for scope drafting, offer extraction, evidence summaries |
+| Fly-brain analysis | Compound Eye (contrast adaptation), Mushroom Body (FlyHash, novelty filter), pure Python |
 
 Monetary math, deduplication, deadlines, visibility state, and offer versioning are deterministic code. The model drafts and extracts; it doesn't calculate, and it doesn't decide what's public.
 
@@ -72,7 +74,7 @@ Monetary math, deduplication, deadlines, visibility state, and offer versioning 
 
 Planning → early build. [plan/plan1.md](plan/plan1.md) has the full design and the record of scope decisions; [roadmap/](roadmap/) breaks it into ordered phases with done-when criteria.
 
-Two earlier concepts are out of scope: an equipment-shopping and camera-audit product with fruit-fly neural models, and an outbound RFQ product with token-scoped vendor invitations. The images in [assets/](assets/) are left over from the first of those.
+Two earlier concepts are out of scope: an equipment-shopping and camera-audit product, and an outbound RFQ product with token-scoped vendor invitations. The first concept's fruit-fly neural models are back in scope, now running on spend data instead of camera frames. The images in [assets/](assets/) come from that concept's fly branding.
 
 ## Repo layout
 
@@ -81,6 +83,6 @@ frontend/   React + TS app (not yet created)
 backend/    FastAPI app (not yet created)
 plan/       Design docs — plan1.md is the plan of record
 roadmap/    Phase-by-phase build order
-assets/     Brand assets (stale, from a prior concept)
+assets/     Brand assets (fruit-fly branding)
 .claude/    Claude Code config and coding rules
 ```

@@ -12,7 +12,7 @@ The product sits at the intersection of fintech, procurement, and marketplaces. 
 
 Working name is undecided.
 
-This plan supersedes two earlier concepts: an equipment-shopping and camera-audit product, and an outbound RFQ product in which the platform found vendors and emailed them invitations. The fruit-fly theme, neural models, and camera features are outside this build. Outbound discovery and invitation survive only as a **secondary path** for seeding the marketplace's supply side (§8).
+This plan supersedes two earlier concepts: an equipment-shopping and camera-audit product, and an outbound RFQ product in which the platform found vendors and emailed them invitations. The camera features are outside this build. The fruit-fly neural models are back in scope, retargeted from camera frames to spend data — see [Fly-Brain Circuits](#fly-brain-circuits). Outbound discovery and invitation survive only as a **secondary path** for seeding the marketplace's supply side (§8).
 
 ## Why inbound
 
@@ -315,6 +315,18 @@ For the hackathon, arrange a willing real business early and get a genuine count
 
 Use deterministic code for monetary calculations, deduplication, deadlines, visibility state, and offer versions. Use structured model outputs for every field the application consumes.
 
+### Fly-Brain Circuits
+
+Three fruit-fly-inspired circuits run as deterministic, pure-Python analysis. Each has one narrow job with a conventional check behind it, and none sits between the owner and a decision that belongs to the owner or to identifiers.
+
+| Circuit | Biology | Job in this product | Guardrail |
+|---|---|---|---|
+| **Compound Eye** | Photoreceptors report Weber contrast against an adapted level | Splits a recurring expense's charges into price levels: confirmed change, one-off, or unconfirmed jump. The baseline is the integer median of the current level. | Runs only on recurring cadences. Gives up and uses the plain average when no stable price exists (e.g. variable supply purchases). |
+| **Mushroom Body · novelty filter** | Kenyon-cell output weights depress for familiar odours (Dasgupta et al., *PNAS* 2018) | Flags a charge whose amount or description looks unlike the vendor's earlier charges | Flags only. It never changes a baseline, and says "not judged" when the vendor has no stable pattern. |
+| **Mushroom Body · FlyHash** | Sparse random expansion with winner-take-all (Dasgupta et al., *Science* 2017) | Suggests vendor aliases to merge, and finds public listings with similar scope | Exact similarity re-ranks every candidate. Merges are owner-confirmed. Listing features come from the public projection only, never price. |
+
+Rules that follow from the evidence section: fly-brain similarity never establishes identity, never touches challenger evidence or import deduplication, and every fly-brain result carries an attribution that the UI shows as a "Fly brain" label.
+
 ### Main entities
 
 | Entity | Purpose |
@@ -389,7 +401,7 @@ The priority is completing the account → dashboard → publish → challenge �
 
 **Later:** real authentication, more banks and categories, fully identified public bidding, payment routing, contract execution, subscription or success-fee pricing, savings tracking after switching, and reputation built from completed switches.
 
-**Removed from prior plans:** equipment shopping lists, product-camera overlays, visual inventory audits, fly attention models, FlyHash, asset management, and the token-scoped private RFQ flow.
+**Removed from prior plans:** equipment shopping lists, product-camera overlays, visual inventory audits, camera attention gating, asset management, and the token-scoped private RFQ flow. The fly-brain circuits themselves (Compound Eye, Mushroom Body, FlyHash) were kept and retargeted to spend data.
 
 ## Questions to Resolve During the Build
 
