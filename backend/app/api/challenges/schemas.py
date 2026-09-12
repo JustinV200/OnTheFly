@@ -24,7 +24,10 @@ class ChallengeInput(BaseModel):
     # would top the leaderboard and fabricate potential savings. services/challenges/amounts.py
     # applies the same rule to callers that skip this schema.
     price_minor: int = Field(gt=0)
-    price_currency: str = "USD"
+    # Optional with no default: the offer is always stored in the listing's currency. A value that
+    # differs from it (ignoring case) is rejected with 400 by services/challenges/currency.py, since
+    # an offer in another currency can't be compared with the listing's current price.
+    price_currency: str | None = None
     # Restricted to supported frequencies so normalize_to_monthly never raises.
     billing_frequency: BillingFrequency
     scope_included: list[str] = Field(default_factory=list)

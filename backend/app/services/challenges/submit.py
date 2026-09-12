@@ -1,5 +1,6 @@
 """Submits and revises marketplace challenges against public listings.
-It enforces owner exclusion, deadlines, acknowledged bidding terms, valid amounts, and non-retroactive bidding visibility.
+It enforces owner exclusion, deadlines, acknowledged bidding terms, valid amounts, the listing's currency,
+and non-retroactive bidding visibility.
 """
 
 from datetime import datetime, timezone
@@ -13,6 +14,7 @@ from app.core.visibility import ListingVisibility
 from app.models.challenge import Challenge, ChallengeRevision
 from app.models.listing import PublicListingRecord
 from app.services.challenges.amounts import find_offer_amount_problem
+from app.services.challenges.currency import find_offer_currency_problem
 from app.services.challenges.provenance import resolve_offer_provenance
 from app.services.listings.bidding_mode import resolve_bidding_mode
 
@@ -29,13 +31,16 @@ def submit_challenge(
     form_data["acknowledged_bidding_mode"], when present, must equal the listing's current
     mode. form_data["provenance"] is honored only from operator code; the API schema has no
     such field, so web submissions get a server-resolved provenance.
-    Raises 400 when the price is not positive or the setup fee is negative.
+    form_data["price_currency"] is optional; the offer is stored in the listing's currency.
+    Raises 400 when the price is not positive, the setup fee is negative, or a sent currency
+    differs from the listing's.
     """
 
     _ensure_valid_amounts(form_data)
     listing = _get_public_listing(listing_id, db)
     _ensure_can_submit(listing, challenger_account_id)
     _ensure_mode_acknowledged(listing, form_data.get("acknowledged_bidding_mode"))
+    _ensure_listing_currency(listing, form_data.get("price_currency"))
     existing = db.scalar(
         select(Challenge).where(
             Challenge.listing_id == listing_id,
@@ -52,7 +57,9 @@ def submit_challenge(
         challenger_account_id=challenger_account_id,
         bidding_mode_at_submission=resolve_bidding_mode(listing.bidding_mode).value,
         price_minor=form_data["price_minor"],
-        price_currency=form_data.get("price_currency", "USD"),
+        # The listing's exact code, not the caller's spelling: the baseline Money shares it, so
+        # savings and ranking never compare two currencies (or two casings of one).
+        price_currency=listing.price_currency,
         billing_frequency=form_data["billing_frequency"],
         scope_included=json.dumps(form_data.get("scope_included", [])),
         scope_excluded=json.dumps(form_data.get("scope_excluded", [])),
@@ -83,7 +90,9 @@ def revise_challenge(
 ) -> Challenge:
     """Store a revision snapshot, then update the challenger's active offer.
 
-    Raises 400 when the price is not positive or the setup fee is negative, before any snapshot is written.
+    The revised offer takes the listing's currency, which also repairs an older row stored in another one.
+    Raises 400 when the price is not positive, the setup fee is negative, or a sent currency differs
+    from the listing's, before any snapshot is written.
     """
 
     _ensure_valid_amounts(form_data)
@@ -100,6 +109,7 @@ def revise_challenge(
     listing = _get_public_listing(challenge.listing_id, db)
     _ensure_deadline_open(listing)
     _ensure_mode_acknowledged(listing, form_data.get("acknowledged_bidding_mode"))
+    _ensure_listing_currency(listing, form_data.get("price_currency"))
     revision_number = int(
         db.scalar(
             select(func.coalesce(func.max(ChallengeRevision.revision_number), 0)).where(
@@ -135,7 +145,8 @@ def revise_challenge(
     )
     challenge.scope_version_id = listing.scope_version_id
     challenge.price_minor = form_data["price_minor"]
-    challenge.price_currency = form_data.get("price_currency", challenge.price_currency)
+    # The snapshot above keeps whatever currency the offer had; the live offer follows the listing.
+    challenge.price_currency = listing.price_currency
     challenge.billing_frequency = form_data["billing_frequency"]
     challenge.scope_included = json.dumps(form_data.get("scope_included", []))
     challenge.scope_excluded = json.dumps(form_data.get("scope_excluded", []))
@@ -171,6 +182,14 @@ def _ensure_valid_amounts(form_data: dict) -> None:
     # The API schema already bounds these, but operator code (demo seeding) calls this service
     # directly, and a non-positive amount would rank first and fabricate potential savings.
     problem = find_offer_amount_problem(form_data["price_minor"], form_data.get("setup_fee_minor", 0))
+    if problem is not None:
+        raise HTTPException(status_code=status.HTTP_400_BAD_REQUEST, detail=problem)
+
+
+def _ensure_listing_currency(listing: PublicListingRecord, offered_currency: str | None) -> None:
+    # Rejected rather than silently replaced: a price typed in another currency would otherwise be
+    # recorded as an amount in the listing's currency, ranked, and published under open bidding.
+    problem = find_offer_currency_problem(offered_currency, listing.price_currency)
     if problem is not None:
         raise HTTPException(status_code=status.HTTP_400_BAD_REQUEST, detail=problem)
 
