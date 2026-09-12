@@ -1,4 +1,5 @@
-/* Lists Compound Eye price-level findings: confirmed changes, an unconfirmed jump, or why none were checked. */
+/* Lists Compound Eye price-level findings: confirmed changes, an earlier price that was never established,
+   an unconfirmed jump, or why none were checked. */
 import { MoneyDisplay } from '../../../shared/components/MoneyDisplay';
 import { formatBasisPoints, formatPostedDate } from './formatSignals';
 import type { NotAssessedReason, PriceLevelAnalysis } from './types';
@@ -16,7 +17,7 @@ const NOT_ASSESSED_TEXT: Record<NotAssessedReason, string> = {
   amounts_too_variable: 'No stable price to track: amounts differ from charge to charge.',
 };
 
-/** Render price changes, a pending change, or the reason price levels were not assessed. */
+/** Render price changes, an unestablished earlier price, a pending change, or the reason price levels were not assessed. */
 export function PriceChangeList({ priceLevels, currency }: PriceChangeListProps): JSX.Element {
   if (!priceLevels.is_assessed) {
     return (
@@ -26,11 +27,33 @@ export function PriceChangeList({ priceLevels, currency }: PriceChangeListProps)
     );
   }
 
-  const { shifts, pending_change: pending } = priceLevels;
+  const { shifts, pending_change: pending, unconfirmed_earlier_price: earlier } = priceLevels;
 
   return (
     <ul style={{ margin: '0.25rem 0', paddingLeft: '1.1rem' }}>
-      {shifts.length === 0 && !pending ? <li>No price changes found across these charges.</li> : null}
+      {shifts.length === 0 && !pending && !earlier ? <li>No price changes found across these charges.</li> : null}
+      {earlier ? (
+        // Never "Price changed": the opening charge never became a price to change from. Nor
+        // "one-off": a real price that changed after one period looks exactly the same.
+        <li>
+          Earlier price not established:{' '}
+          {earlier.transaction_ids.length === 1 ? (
+            <>
+              the first charge (<MoneyDisplay amountMinor={earlier.amount_minor} currency={currency} />,{' '}
+              {formatPostedDate(earlier.first_seen_at)}) differs from the charges after it, and no charge repeated that
+              amount before the price moved.
+            </>
+          ) : (
+            <>
+              the first {earlier.transaction_ids.length} charges (median{' '}
+              <MoneyDisplay amountMinor={earlier.amount_minor} currency={currency} />, from{' '}
+              {formatPostedDate(earlier.first_seen_at)}) differ from the charges after them, and too few repeated that
+              amount before the price moved.
+            </>
+          )}{' '}
+          Not counted as a price change, and left out of the baseline.
+        </li>
+      ) : null}
       {shifts.map((shift) => (
         <li key={shift.transaction_id}>
           Price changed {formatPostedDate(shift.changed_at)}:{' '}
