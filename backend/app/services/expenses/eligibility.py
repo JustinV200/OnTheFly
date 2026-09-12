@@ -4,6 +4,20 @@ Hard exclusions stay hard exclusions regardless of any later UI action.
 
 from pydantic import BaseModel
 
+# Known payroll-provider vendor-name signals.  These supplement the generic
+# "payroll" keyword to catch transactions from specific processors whose
+# names don't include the word.  Extend this list rather than adding more
+# inline conditionals.
+PAYROLL_VENDOR_SIGNALS: tuple[str, ...] = (
+    "payroll",
+    "gusto",
+    "adp",
+    "rippling",
+    "paychex",
+    "bamboohr",
+    "justworks",
+)
+
 
 class EligibilityResult(BaseModel):
     """States whether a grouped expense may appear in the publish flow."""
@@ -28,7 +42,7 @@ def classify_eligibility(vendor: str, category: str | None, direction: str) -> E
     # they reduce net spend and should reconcile against the expense group.
     if "transfer" in haystack:
         return EligibilityResult(eligible=False, reason="transfer", publishable=False)
-    if "payroll" in haystack or "gusto" in haystack:
+    if any(signal in haystack for signal in PAYROLL_VENDOR_SIGNALS):
         return EligibilityResult(eligible=False, reason="payroll", publishable=False)
     if "tax" in haystack:
         return EligibilityResult(eligible=False, reason="tax", publishable=False)

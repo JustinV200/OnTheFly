@@ -64,7 +64,9 @@ def get_inbox(
                 added_items=row.added_items,
                 unstated_items=row.unstated_items,
                 savings=_serialize_savings(row.savings),
-                evidence_status="not_checked",
+                evidence_status=_rollup_evidence_status(
+                    platform_check.status, identity_check.status, registry_check.status
+                ),
                 platform_check_status=platform_check.status,
                 identity_check_status=identity_check.status,
                 registry_check_status=registry_check.status,
@@ -142,3 +144,22 @@ def _serialize_savings(savings) -> SavingsResponse:
         assumptions=savings.assumptions,
         label=savings.label,
     )
+
+
+def _rollup_evidence_status(*statuses: str) -> str:
+    """Compute a simple rollup across individual check statuses.
+
+    Returns the most informative single label for the inbox row:
+    - "matched" if any check confirmed a match
+    - "uncertain" if any check is uncertain
+    - "not_checked" if all checks are not_checked or unavailable
+    - "no_match_found" if all available checks returned no match
+    """
+    status_set = set(statuses)
+    if "matched" in status_set:
+        return "matched"
+    if "uncertain" in status_set:
+        return "uncertain"
+    if status_set <= {"not_checked", "unavailable"}:
+        return "not_checked"
+    return "no_match_found"

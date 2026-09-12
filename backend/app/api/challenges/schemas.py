@@ -1,8 +1,13 @@
 """Request and response schemas for marketplace challenge endpoints."""
 
 from datetime import datetime
+from typing import Literal
 
 from pydantic import BaseModel, Field
+
+# Supported billing frequencies for challenge submissions.
+# Must stay in sync with FREQUENCY_FACTORS in comparison/normalize.py.
+BillingFrequency = Literal["weekly", "biweekly", "monthly", "quarterly", "annual", "yearly"]
 
 
 class ChallengeInput(BaseModel):
@@ -10,7 +15,8 @@ class ChallengeInput(BaseModel):
 
     price_minor: int
     price_currency: str = "USD"
-    billing_frequency: str
+    # Restricted to supported frequencies so normalize_to_monthly never raises.
+    billing_frequency: BillingFrequency
     scope_included: list[str] = Field(default_factory=list)
     scope_excluded: list[str] = Field(default_factory=list)
     scope_extras: list[str] = Field(default_factory=list)
