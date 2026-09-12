@@ -74,7 +74,7 @@ def get_inbox(
                 bidding_mode_at_submission=row.bidding_mode_at_submission or "sealed",
             )
         )
-    return InboxResponse(challenges=responses)
+    return InboxResponse(challenges=responses, bidding_mode=listing.bidding_mode or "sealed")
 
 
 @router.get("/api/listings/{listing_id}/comparison", response_model=ComparisonResponse)

@@ -135,3 +135,78 @@ def test_leaderboard_never_reveals_challenger_identity(client, db_session) -> No
     first_entry = response.json()["entries"][0]
     assert "challenger_account_id" not in first_entry
     assert "challenger_name" not in first_entry
+
+
+def test_private_expense_not_in_marketplace_feed(client, db_session) -> None:
+    """An expense whose listing is private must never appear in the public marketplace feed."""
+    run_import("acc_owner_1", PROVIDER_ACCOUNT_ID, db_session)
+    expense = db_session.scalar(select(ServiceExpense).where(ServiceExpense.normalized_vendor == "Sparkle Clean"))
+    assert expense is not None
+
+    # Create a draft listing but do NOT publish it.
+    scope = build_scope_version(
+        expense.id,
+        {
+            "service_area": "San Francisco Bay Area",
+            "location_approximate": "San Francisco, CA",
+            "square_footage": 8000,
+            "visit_frequency": "3x weekly",
+            "current_price_minor": 240000,
+            "billing_cadence": "monthly",
+        },
+        db_session,
+    )
+    choices = PublishChoices(bidding_mode="sealed")
+    listing = create_listing_draft(expense, scope, choices, db_session)
+    db_session.commit()
+
+    feed = client.get("/api/marketplace")
+    assert feed.status_code == 200
+    listing_ids = [entry["listing"]["id"] for entry in feed.json()["listings"]]
+    assert listing.id not in listing_ids
+
+
+def test_private_listing_not_accessible_by_direct_id(client, db_session) -> None:
+    """A private listing must return 404 when accessed by a direct ID on the public API."""
+    run_import("acc_owner_1", PROVIDER_ACCOUNT_ID, db_session)
+    expense = db_session.scalar(select(ServiceExpense).where(ServiceExpense.normalized_vendor == "Sparkle Clean"))
+    assert expense is not None
+
+    scope = build_scope_version(
+        expense.id,
+        {
+            "service_area": "San Francisco Bay Area",
+            "location_approximate": "San Francisco, CA",
+            "square_footage": 8000,
+            "visit_frequency": "3x weekly",
+            "current_price_minor": 240000,
+            "billing_cadence": "monthly",
+        },
+        db_session,
+    )
+    choices = PublishChoices(bidding_mode="sealed")
+    listing = create_listing_draft(expense, scope, choices, db_session)
+    db_session.commit()
+
+    # Must not be reachable from the public route even if you guess the ID.
+    response = client.get(f"/api/marketplace/{listing.id}")
+    assert response.status_code == 404
+
+
+def test_challenger_cannot_see_other_challenger_identity_in_inbox(client, db_session) -> None:
+    """The owner inbox exposes challenger identities; other challengers must not be able to read it."""
+    listing = _create_public_listing(db_session, bidding_mode="sealed")
+    submit_challenge(
+        listing.id,
+        "acc_challenger_1",
+        {"price_minor": 187500, "billing_frequency": "monthly", "scope_included": ["full scope"]},
+        db_session,
+    )
+
+    # acc_challenger_2 is NOT the owner — must be denied.
+    response = client.get(
+        f"/api/listings/{listing.id}/inbox",
+        headers={"X-Account-ID": "acc_challenger_2"},
+    )
+
+    assert response.status_code in (403, 404)

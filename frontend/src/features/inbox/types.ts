@@ -27,6 +27,7 @@ export interface InboxChallenge {
 
 export interface InboxResponse {
   challenges: InboxChallenge[];
+  bidding_mode?: string;
 }
 
 export interface ComparisonRow {

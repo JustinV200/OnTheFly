@@ -2,7 +2,7 @@
 This router never queries private expense models to build browsing results.
 """
 
-from fastapi import APIRouter, Depends, Query, Request
+from fastapi import APIRouter, Depends, HTTPException, Query, Request, status
 from sqlalchemy import func, select
 from sqlalchemy.orm import Session
 
@@ -62,3 +62,31 @@ def list_marketplace(
             message="No public listings in this category yet",
         )
     return MarketplaceFeedResponse(listings=listings)
+
+
+@router.get("/{listing_id}", response_model=MarketplaceListingResponse)
+def get_listing_detail(
+    listing_id: str,
+    db: Session = Depends(get_db),
+) -> MarketplaceListingResponse:
+    """Return one public listing by ID; accessible without an acting account."""
+
+    record = db.scalar(
+        select(PublicListingRecord).where(
+            PublicListingRecord.id == listing_id,
+            PublicListingRecord.visibility == ListingVisibility.public.value,
+        )
+    )
+    if record is None:
+        raise HTTPException(status_code=status.HTTP_404_NOT_FOUND, detail="Listing not found")
+
+    challenge_count = db.scalar(
+        select(func.count()).select_from(Challenge).where(
+            Challenge.listing_id == listing_id,
+            Challenge.is_active.is_(True),
+        )
+    ) or 0
+    return MarketplaceListingResponse(
+        listing=projection_from_record(record),
+        challenge_count=int(challenge_count),
+    )

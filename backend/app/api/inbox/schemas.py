@@ -37,6 +37,7 @@ class InboxResponse(BaseModel):
     """Wraps the owner inbox rows for one listing."""
 
     challenges: list[InboxChallengeResponse]
+    bidding_mode: str
 
 
 class ComparisonRowResponse(BaseModel):

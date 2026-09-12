@@ -11,6 +11,8 @@ from app.api.expenses.schemas import (
     ExpenseListResponse,
     ExpenseResponse,
     ExpenseUpdateRequest,
+    ImportRequest,
+    ImportResultResponse,
     TransactionResponse,
 )
 from app.core.identity import require_acting_account_id
@@ -20,8 +22,33 @@ from app.models.transaction import Transaction
 from app.services.expenses.eligibility import classify_eligibility
 from app.services.expenses.sync import sync_service_expenses
 from app.services.expenses.vendor_normalize import VendorCorrectionStore
+from app.services.transactions.import_run import run_import
 
 router = APIRouter(prefix="/api/expenses", tags=["expenses"])
+
+
+@router.post("/import", response_model=ImportResultResponse, status_code=202)
+def trigger_import(
+    payload: ImportRequest,
+    request: Request,
+    db: Session = Depends(get_db),
+) -> ImportResultResponse:
+    """Run the import pipeline for the acting account and return counts.
+
+    The provider_account_id must match the acting account's connected financial
+    account. For the fixture source this is the seeded demo account ID.
+    This endpoint is synchronous for simplicity at MVP scale.
+    """
+
+    account_id = require_acting_account_id(request)
+    result = run_import(account_id, payload.provider_account_id, db)
+    return ImportResultResponse(
+        new=result.new,
+        duplicate=result.duplicate,
+        excluded=result.excluded,
+        failed=result.failed,
+    )
+
 
 
 @router.get("", response_model=ExpenseListResponse)

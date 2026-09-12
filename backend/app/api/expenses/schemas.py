@@ -52,6 +52,21 @@ class ExpenseListResponse(BaseModel):
     message: str | None = None
 
 
+class ImportRequest(BaseModel):
+    """Captures the provider account ID to use for a manual import trigger."""
+
+    provider_account_id: str
+
+
+class ImportResultResponse(BaseModel):
+    """Summarizes one import run's new, duplicate, excluded, and failed counts."""
+
+    new: int
+    duplicate: int
+    excluded: int
+    failed: int
+
+
 class ExpenseUpdateRequest(BaseModel):
     """Captures owner corrections for vendor/category and explicit publishability."""
 

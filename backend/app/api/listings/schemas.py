@@ -66,3 +66,16 @@ class PublishRequest(BaseModel):
     """Captures the preview hash confirmation required to publish safely."""
 
     previewed_payload_hash: str
+
+
+class BiddingModeRequest(BaseModel):
+    """Captures the new bidding mode for an owner-controlled listing toggle."""
+
+    mode: str  # "sealed" | "open"
+
+
+class BiddingModeResponse(BaseModel):
+    """Returns the listing's active bidding mode after a toggle."""
+
+    listing_id: str
+    bidding_mode: str

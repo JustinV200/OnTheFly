@@ -7,6 +7,8 @@ from sqlalchemy import select
 from sqlalchemy.orm import Session
 
 from app.api.listings.schemas import (
+    BiddingModeRequest,
+    BiddingModeResponse,
     CreateListingRequest,
     ListingDraftResponse,
     ListingPreviewResponse,
@@ -17,6 +19,7 @@ from app.core.identity import require_acting_account_id
 from app.db.session import get_db
 from app.models.listing import PublicListingRecord, ScopeVersion
 from app.models.service_expense import ServiceExpense
+from app.services.listings.bidding_mode import set_bidding_mode
 from app.services.listings.create import build_scope_version, create_listing_draft
 from app.services.listings.projection import build_payload_hash, build_public_listing
 from app.services.listings.types import PublishChoices
@@ -102,6 +105,25 @@ def unpublish_listing_route(
     acting_account_id = require_acting_account_id(request)
     projection = unpublish_listing(listing_id, acting_account_id, db)
     return ListingPreviewResponse(payload_hash=build_payload_hash(projection), projection=projection)
+
+
+@router.post("/{listing_id}/bidding-mode", response_model=BiddingModeResponse)
+def set_bidding_mode_route(
+    listing_id: str,
+    request: Request,
+    payload: BiddingModeRequest,
+    db: Session = Depends(get_db),
+) -> BiddingModeResponse:
+    """Toggle bidding mode for an owner-controlled listing.
+
+    A mode change is NEVER retroactive — offers already submitted retain the
+    mode that was in force at the time they were submitted.
+    Only the listing owner may call this endpoint.
+    """
+
+    acting_account_id = require_acting_account_id(request)
+    listing = set_bidding_mode(listing_id, payload.mode, acting_account_id, db)
+    return BiddingModeResponse(listing_id=listing.id, bidding_mode=listing.bidding_mode)
 
 
 def _get_owner_expense(expense_id: str, acting_account_id: str, db: Session) -> ServiceExpense:
