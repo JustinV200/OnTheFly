@@ -1,0 +1,29 @@
+"""Audits every explicit listing visibility transition.
+The snapshot captures the exact public payload served at that moment.
+"""
+
+from datetime import datetime, timezone
+import uuid
+
+from sqlalchemy import DateTime, String, Text
+from sqlalchemy.orm import Mapped, mapped_column
+
+from app.db.base import Base
+
+
+class VisibilityAudit(Base):
+    """Represents one visibility transition for a service expense."""
+
+    __tablename__ = "visibility_audits"
+
+    id: Mapped[str] = mapped_column(String(36), primary_key=True, default=lambda: str(uuid.uuid4()))
+    expense_id: Mapped[str] = mapped_column(String(36), nullable=False, index=True)
+    account_id: Mapped[str] = mapped_column(String(64), nullable=False)
+    previous_state: Mapped[str] = mapped_column(String(32), nullable=False)
+    new_state: Mapped[str] = mapped_column(String(32), nullable=False)
+    public_payload_snapshot: Mapped[str | None] = mapped_column(Text, nullable=True)
+    changed_at: Mapped[datetime] = mapped_column(
+        DateTime(timezone=True),
+        nullable=False,
+        default=lambda: datetime.now(timezone.utc),
+    )

@@ -1,6 +1,22 @@
-/* Placeholder publish flow route for later visibility work.
-   The real multi-step publish experience is added in a later phase. */
-/** Render the publish flow placeholder page. */
+/* Implements the early publish flow around draft creation and preview.
+   It keeps steps explicit so the owner sees what will become public. */
+import { DisclosureChoices } from './DisclosureChoices';
+import { PublishPreview } from './PublishPreview';
+import { ScopeForm } from './ScopeForm';
+import { usePublish } from './usePublish';
+
+/** Render the draft, preview, and publish flow for one expense listing. */
 export function PublishFlow(): JSX.Element {
-  return <section><h2>Publish</h2><p>Publish flow will appear here.</p></section>;
+  const { expenses, preview, createDraft, publish } = usePublish();
+
+  return (
+    <section>
+      <ScopeForm expenses={expenses} onSubmit={createDraft} />
+      <DisclosureChoices />
+      <PublishPreview preview={preview} />
+      <button disabled={!preview} onClick={() => void publish()} type="button">
+        Publish listing
+      </button>
+    </section>
+  );
 }
