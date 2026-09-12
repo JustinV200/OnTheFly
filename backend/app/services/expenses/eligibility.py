@@ -23,8 +23,10 @@ def classify_eligibility(vendor: str, category: str | None, direction: str) -> E
     """
 
     haystack = f"{vendor} {category or ''}".casefold()
-    # Only exclude credits that are explicitly transfers; plain refunds stay in.
-    if "transfer" in haystack or (direction.casefold() == "credit" and "transfer" in haystack):
+    # Exclude transactions explicitly identified as transfers by description or category.
+    # Ordinary vendor refunds and credits (no "transfer" keyword) are not excluded —
+    # they reduce net spend and should reconcile against the expense group.
+    if "transfer" in haystack:
         return EligibilityResult(eligible=False, reason="transfer", publishable=False)
     if "payroll" in haystack or "gusto" in haystack:
         return EligibilityResult(eligible=False, reason="payroll", publishable=False)
