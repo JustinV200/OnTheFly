@@ -2,6 +2,8 @@
 It deduplicates source records and marks excluded spend without publishing anything.
 """
 
+import re
+
 from datetime import date, timedelta
 
 from pydantic import BaseModel
@@ -38,30 +40,33 @@ def run_import(owner_account_id: str, provider_account_id: str, db: Session) -> 
             continue
 
         excluded_reason = _classify_exclusion(transaction)
-        record = Transaction(
-            owner_account_id=owner_account_id,
-            provider=transaction.provider,
-            provider_account_id=transaction.provider_account_id,
-            provider_transaction_id=transaction.provider_transaction_id,
-            source_type=transaction.source_type,
-            raw_description=transaction.raw_description,
-            normalized_vendor=transaction.normalized_vendor,
-            amount_minor=transaction.amount_minor,
-            currency=transaction.currency,
-            direction=transaction.direction,
-            posted_at=transaction.posted_at,
-            status=transaction.status,
-            category=transaction.category,
-            memo=transaction.memo,
-            counterparty=transaction.counterparty,
-            raw_payload=transaction.raw_payload,
-            is_excluded=excluded_reason is not None,
-            excluded_reason=excluded_reason,
-        )
-        db.add(record)
-        counts.new += 1
-        if excluded_reason is not None:
-            counts.excluded += 1
+        try:
+            record = Transaction(
+                owner_account_id=owner_account_id,
+                provider=transaction.provider,
+                provider_account_id=transaction.provider_account_id,
+                provider_transaction_id=transaction.provider_transaction_id,
+                source_type=transaction.source_type,
+                raw_description=transaction.raw_description,
+                normalized_vendor=transaction.normalized_vendor,
+                amount_minor=transaction.amount_minor,
+                currency=transaction.currency,
+                direction=transaction.direction,
+                posted_at=transaction.posted_at,
+                status=transaction.status,
+                category=transaction.category,
+                memo=transaction.memo,
+                counterparty=transaction.counterparty,
+                raw_payload=transaction.raw_payload,
+                is_excluded=excluded_reason is not None,
+                excluded_reason=excluded_reason,
+            )
+            db.add(record)
+            counts.new += 1
+            if excluded_reason is not None:
+                counts.excluded += 1
+        except Exception:  # noqa: BLE001
+            counts.failed += 1
 
     db.commit()
     sync_service_expenses(owner_account_id, db)
@@ -88,6 +93,8 @@ def _classify_exclusion(transaction: NormalizedTransaction) -> str | None:
     # should not be blanket-excluded — they reduce net spend and must reconcile.
     if "transfer" in haystack:
         return "transfer"
-    if "tax" in haystack:
+    # Use a whole-word match to avoid false-positives on vendor names that contain
+    # "tax" as a substring (e.g. "Syntaxco", "Exacta Supplies").
+    if re.search(r"\btax\b", haystack):
         return "tax"
     return None

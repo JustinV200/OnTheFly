@@ -30,12 +30,13 @@ def publish_listing(
     expense = _get_owner_expense(expense_id, acting_account_id, db)
     listing = _get_listing_for_expense(expense_id, acting_account_id, db)
     scope = _get_scope(scope_version_id, expense.id, db)
-    projection = build_public_listing(listing, expense, scope, choices)
 
     if not expense.is_publishable:
         raise HTTPException(status_code=status.HTTP_400_BAD_REQUEST, detail="Expense is not publishable")
     if listing.visibility != ListingVisibility.scope_confirmed.value:
         raise HTTPException(status_code=status.HTTP_400_BAD_REQUEST, detail="Listing is not scope confirmed")
+
+    projection = build_public_listing(listing, expense, scope, choices)
     if build_payload_hash(projection) != previewed_payload_hash:
         raise HTTPException(status_code=status.HTTP_400_BAD_REQUEST, detail="Preview payload hash mismatch")
 
