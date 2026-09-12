@@ -29,14 +29,14 @@ A shopping assistant that helps people set a budget, build a shopping list (for 
 
 ---
 
-## Part 2: AR Physical-Store Shopping (Phone Camera / Web)
+## Part 2: AR Physical-Store Shopping (Phone Camera / Web) — Full Live Demo
 
 ### Core Idea
-Use the phone's camera through the browser (web-based AR, no native app required) to overlay useful information directly onto items seen in a physical store.
+Use the phone's camera through the browser (web-based AR, no native app required) to overlay useful information directly onto items seen in a physical store, live, in real time — not a barcode-scan or point-and-tap fallback.
 
 ### 1. Live Item Detection
-- Camera feed identifies items relevant to the user's active shopping list / budget.
-- Relevant items get a bounding box drawn over them in the camera view.
+- Camera feed continuously identifies items relevant to the user's active shopping list / budget as the phone is panned around the store.
+- Relevant items get a bounding box drawn over them in the camera view, tracked frame-to-frame as the camera moves.
 
 ### 2. Box Overlay Info
 - Each box shows/links to:
@@ -48,6 +48,15 @@ Use the phone's camera through the browser (web-based AR, no native app required
   - Budget realism check (does this fit what's left of the budget?)
   - Ask More (chat agent for deep-dive questions on this specific item)
   - Suggest Better Alternatives (cheaper/better-reviewed options, possibly available in the same store or nearby)
+
+### Technical Approach
+- **Camera access:** `getUserMedia` (rear camera) in a mobile browser page — no native app.
+- **Detection loop:** grab frames from the video stream at a fixed interval and run them through a vision model to detect/classify items and return bounding boxes + labels.
+  - Fastest path for a live demo: run a lightweight on-device model (e.g. a TensorFlow.js / ONNX Runtime Web object detector) directly in the browser for real-time box tracking, then use a more capable model (multimodal LLM / vision API call) only to identify *what* a boxed item specifically is and pull matching product data — keeps the frame-rate-critical part fast and the accuracy-critical part async.
+  - Alternative: send frames straight to a backend vision model on an interval (e.g. every 500ms–1s) if on-device detection proves too slow/complex to set up in the hackathon window; boxes are interpolated/held between server responses so the overlay still feels live.
+- **Overlay rendering:** `<canvas>` positioned over the `<video>` element, redrawn each frame with current box positions; tap/click hit-testing against the current box list opens the detail panel.
+- **Matching to product data:** detected label/crop → product data layer (same one Part 1 uses) for price, reviews, and price-match lookup.
+- **Demo constraints to plan around:** a curated, known set of product categories/items (the demo store shelf) will detect far more reliably live than fully open-vocabulary detection — worth deciding the demo item set early so the model/prompt can be tuned to it.
 
 ---
 
@@ -64,17 +73,54 @@ Both parts likely share:
 
 ---
 
+## Tech Stack
+
+### Chrome Extension (Part 1)
+- **Manifest V3** extension — popup UI + content script (to read/annotate the page being browsed) + background service worker.
+- **UI:** React + TypeScript, bundled with Vite (fast rebuilds, good extension-dev support).
+- **Storage:** `chrome.storage.local`/`sync` for lists/budgets on-device, synced to the backend when online.
+
+### AR Web Demo (Part 2)
+- **Delivery:** plain mobile web page (works in Chrome/Safari on a phone) — no native app, no app store friction.
+- **Camera:** `getUserMedia` + `<video>` element.
+- **On-device detection:** TensorFlow.js (`coco-ssd` or a custom-trained lightweight model) or ONNX Runtime Web, for fast frame-to-frame bounding boxes.
+- **Overlay:** `<canvas>` layered over the video, redrawn each frame.
+- **Framework:** React (or vanilla TS) — kept light so it doesn't compete with the detection loop for main-thread time.
+
+### Backend / API
+- **Runtime:** Node.js + TypeScript, Express or Fastify — simple REST (or tRPC) API shared by both frontends.
+- **Hosting:** whatever is fastest to stand up for the hackathon (e.g. Render/Fly.io/Vercel serverless functions).
+
+### AI Layer
+- **Claude API (Anthropic)** for the reasoning-heavy pieces:
+  - Budget realism assessment (reasoning over list + pricing data)
+  - Ask More agent (product-scoped conversational research, with web search/tool use for specs and comparisons)
+  - Alternative-item suggestions
+  - Item identification from a camera crop (Claude's vision input) when the on-device model needs a second opinion on *what* an object is, not just that something is there.
+
+### Data
+- **Database:** Postgres (e.g. via Supabase, which also gives auth for free) for users, budgets, shopping lists, and cached product/review data.
+- **Product/review data:** a shopping/product-data API if available (e.g. SerpApi, Rainforest API, or similar), otherwise a mocked/curated dataset scoped to the demo's item set.
+
+### Dev/Deploy
+- **Version control:** Git/GitHub (this repo).
+- **Package management:** npm/pnpm workspaces if the extension, AR frontend, and backend live in one monorepo.
+
+---
+
 ## Suggested Build Order (Hackathon Scope)
 
-Given typical hackathon time constraints, Part 2 (real-time AR item detection) is the highest-risk/highest-effort piece. Suggested phasing:
+Part 2's live detection loop is the highest-risk/highest-effort piece and the thing most likely to eat the clock, so it should be spiked first — everything else is more straightforward to build once the core is proven.
 
-1. **MVP core (shared):** budget + shopping list data model, basic product/review lookup, budget realism check.
-2. **Part 1 extension:** Chrome extension UI wired to the MVP core — suggested items popup, reviews display, budget realism, Ask More chat.
-3. **Part 2 demo:** even a limited AR demo (e.g. detecting 1-2 known object types, or QR/barcode-based lookup instead of full live object detection) would demonstrate the concept without requiring a production-grade vision pipeline.
+1. **Spike the live detection loop first:** camera → detection → bounding box overlay on a couple of real objects, before building anything else. This is the riskiest technical unknown; de-risk it early rather than discovering problems late.
+2. **MVP core (shared):** budget + shopping list data model, basic product/review lookup, budget realism check.
+3. **Part 2 AR demo:** wire the proven detection loop to the shared product data layer — box → tap → detail panel with reviews, price match, budget realism, Ask More, alternatives.
+4. **Part 1 extension:** Chrome extension UI wired to the same MVP core — suggested items popup, reviews display, budget realism, Ask More chat. Lower technical risk than Part 2, so it's fine for this to come after.
 
 ---
 
 ## Open Questions
 - What product/review data source(s) are available (API access, scraping, or a mocked dataset for the demo)?
-- For Part 2, is real-time object detection in scope, or is a simpler trigger (barcode scan, manual point-and-tap) acceptable for a hackathon demo?
+- On-device detection model (TensorFlow.js/ONNX) vs. periodic backend vision calls — which is more reliable to get working live within the hackathon window?
+- What's the demo item set (the specific products/shelf we'll point the camera at)? Deciding this early lets detection be tuned/curated for it instead of aiming for open-vocabulary recognition.
 - Single-user or shared/family budgets and lists?
