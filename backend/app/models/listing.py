@@ -66,6 +66,13 @@ class PublicListingRecord(Base):
     show_incumbent_vendor: Mapped[bool] = mapped_column(Boolean, nullable=False, default=False)
     incumbent_vendor_name: Mapped[str | None] = mapped_column(String(255), nullable=True)
     show_exact_address: Mapped[bool] = mapped_column(Boolean, nullable=False, default=False)
+    # The scored scope requirements, snapshotted like the fields above so a challenger can match
+    # them exactly. Tasks are a JSON array string, as on ScopeVersion; None means none recorded.
+    required_tasks: Mapped[str | None] = mapped_column(Text, nullable=True)
+    visit_frequency: Mapped[str | None] = mapped_column(String(64), nullable=True)
+    supplies_included: Mapped[bool | None] = mapped_column(Boolean, nullable=True)
+    equipment_included: Mapped[bool | None] = mapped_column(Boolean, nullable=True)
+    taxes_included: Mapped[bool | None] = mapped_column(Boolean, nullable=True)
     visibility: Mapped[str] = mapped_column(
         String(32),
         nullable=False,

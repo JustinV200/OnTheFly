@@ -3,6 +3,7 @@ All transitions are explicit here so private-by-default stays enforceable.
 """
 
 from datetime import datetime, timezone
+import json
 
 from fastapi import HTTPException, status
 from sqlalchemy import select
@@ -74,6 +75,11 @@ def unpublish_listing(listing_id: str, acting_account_id: str, db: Session) -> P
         expense_id=listing.expense_id,
         category=listing.category,
         scope_summary=listing.scope_summary,
+        required_tasks=json.loads(listing.required_tasks) if listing.required_tasks else [],
+        visit_frequency=listing.visit_frequency,
+        supplies_included=listing.supplies_included,
+        equipment_included=listing.equipment_included,
+        taxes_included=listing.taxes_included,
         price_minor=listing.price_minor,
         price_currency=listing.price_currency,
         billing_cadence=listing.billing_cadence,
@@ -97,6 +103,11 @@ def unpublish_listing(listing_id: str, acting_account_id: str, db: Session) -> P
 def _persist_projection(listing: PublicListingRecord, projection: PublicListingProjection) -> None:
     listing.category = projection.category
     listing.scope_summary = projection.scope_summary
+    listing.required_tasks = json.dumps(projection.required_tasks)
+    listing.visit_frequency = projection.visit_frequency
+    listing.supplies_included = projection.supplies_included
+    listing.equipment_included = projection.equipment_included
+    listing.taxes_included = projection.taxes_included
     listing.price_minor = projection.price_minor
     listing.price_currency = projection.price_currency
     listing.billing_cadence = projection.billing_cadence

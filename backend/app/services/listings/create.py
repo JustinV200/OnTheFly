@@ -2,6 +2,7 @@
 Draft creation does not publish anything; it only prepares the later preview flow.
 """
 
+import json
 import uuid
 
 from fastapi import HTTPException, status
@@ -52,6 +53,11 @@ def create_listing_draft(
     projection = build_public_listing(listing, expense, scope, choices)
     listing.category = projection.category
     listing.scope_summary = projection.scope_summary
+    listing.required_tasks = json.dumps(projection.required_tasks)
+    listing.visit_frequency = projection.visit_frequency
+    listing.supplies_included = projection.supplies_included
+    listing.equipment_included = projection.equipment_included
+    listing.taxes_included = projection.taxes_included
     listing.price_minor = projection.price_minor
     listing.price_currency = projection.price_currency
     listing.billing_cadence = projection.billing_cadence

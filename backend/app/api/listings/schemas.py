@@ -32,6 +32,15 @@ class ScopeVersionInput(BaseModel):
     challenge_deadline: datetime | None = None
     incumbent_vendor_name: str | None = None
 
+    @field_validator("required_tasks")
+    @classmethod
+    def _tasks_are_named(cls, value: list[str] | None) -> list[str] | None:
+        # Tasks are published verbatim and every one is scored, so a blank entry would become an
+        # unnamed requirement no challenger could see or meet. Surrounding spaces carry no meaning.
+        if value is None:
+            return None
+        return [task.strip() for task in value if task.strip()]
+
     @field_validator("current_price_currency")
     @classmethod
     def _currency_is_a_code(cls, value: str) -> str:
