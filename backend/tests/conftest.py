@@ -21,6 +21,19 @@ TEST_DB_PATH = Path("test_backend.db")
 TEST_DATABASE_URL = f"sqlite:///{TEST_DB_PATH}"
 
 
+def _release_engine() -> None:
+    """Dispose the cached app engine before clearing its cache entry.
+
+    Clearing the lru_cache alone only drops the reference; the pooled SQLite
+    connection stays open until garbage collection, which on Windows holds a
+    file lock and makes the test database undeletable (WinError 32).
+    """
+
+    get_engine().dispose()
+    get_settings.cache_clear()
+    get_engine.cache_clear()
+
+
 @pytest.fixture(autouse=True)
 def reset_settings_cache(monkeypatch: pytest.MonkeyPatch) -> None:
     """Point settings at a fresh local test database for each test."""
@@ -31,8 +44,7 @@ def reset_settings_cache(monkeypatch: pytest.MonkeyPatch) -> None:
     get_settings.cache_clear()
     get_engine.cache_clear()
     yield
-    get_settings.cache_clear()
-    get_engine.cache_clear()
+    _release_engine()
     if TEST_DB_PATH.exists():
         TEST_DB_PATH.unlink()
 
