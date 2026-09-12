@@ -1,63 +1,70 @@
-# Plan 1: Spend-Driven Bidding Marketplace
+# Plan 1: Public Spend Profiles and Open Challenges
 
 ## Product
 
-> Connect your business account and let competitors bid to beat what you already pay.
+> List what you pay. Let anyone offer to beat it.
 
-A B2B procurement marketplace that turns existing company spend into competitive requests for quotes and reverse auctions. Connected financial data identifies the opportunity; web discovery finds competing providers; public records help the buyer evaluate them; real vendors submit offers for the same service.
+A B2B marketplace where a business connects its financial account, sees every expense in a dashboard, and chooses which ones to make public. Public expenses appear on the business's profile, where any other business on the platform can see them and post a counteroffer.
 
-The product sits at the intersection of fintech, procurement, and marketplaces. Its starting point is a payment the company already makes.
+The product sits at the intersection of fintech, procurement, and marketplaces. Its starting point is a payment the company already makes; its engine is voluntary price transparency.
 
-**Core interaction:** “You're paying $2,400/month for cleaning. Want to see if someone can beat it?”
+**Core interaction:** a business publishes *"we pay $2,400/month for commercial cleaning, 8,000 sq ft, 3× weekly."* A cleaning company browsing the platform sees it and replies *"we'll do it for $1,875."*
 
-Working name is undecided. This plan supersedes the equipment-shopping and camera-audit concept. The fruit-fly theme, neural models, and camera features are outside this build.
+Working name is undecided.
+
+This plan supersedes two earlier concepts: an equipment-shopping and camera-audit product, and an outbound RFQ product in which the platform found vendors and emailed them invitations. The fruit-fly theme, neural models, and camera features are outside this build. Outbound discovery and invitation survive only as a **secondary path** for seeding the marketplace's supply side (§8).
+
+## Why inbound
+
+The outbound version required the platform to find vendors, qualify them, and email them before anything could happen — a lot of machinery standing between a user and their first result, and a lot of unsolicited email.
+
+Publishing inverts it. The buyer does one cheap action (make an expense public) and competitors come to them. It scales without outreach infrastructure, it produces a browsable marketplace rather than a series of private auctions, and every published expense is a standing invitation rather than a one-time request.
+
+The cost of that inversion is a cold-start problem: inbound only works if someone is browsing. §8 is the answer to that, and it is why outbound isn't deleted outright.
 
 ## Target Customer and Initial Category
 
-The buyer is a small-business owner, operations lead, or finance manager responsible for recurring service expenses.
+One account type. Every account is a business with a profile: it can publish its own expenses and challenge anyone else's. A cleaning company that undercuts someone's janitorial contract also pays for waste hauling and software — the symmetry is real, not cosmetic.
 
-Start with **commercial cleaning in one city or service area**. A quote request can be structured around location, square footage, frequency, bathrooms, included supplies, and service expectations. Confirm these details with the buyer before contacting providers.
+Start with **commercial cleaning in one city or service area**, where scope can be described in a handful of fields: location, square footage, frequency, bathrooms, included supplies, service expectations.
 
-Later categories could include landscaping, pest control, waste hauling, office coffee/water, copier servicing, managed IT, and security services. Each needs its own scope template and qualification criteria.
+Later categories could include landscaping, pest control, waste hauling, office coffee/water, copier servicing, managed IT, and security services. Each needs its own scope template.
 
 ## The Product Loop
 
 ```text
 Connect business account
           ↓
-Group vendor payments and detect recurring spend
+Every expense appears in a private dashboard
           ↓
-Rank services worth putting out to bid
+Owner toggles individual expenses public
           ↓
-Buyer selects “Challenge this price”
+Public expenses appear on the business's profile
           ↓
-Confirm service scope and publish a quote request
+Any platform user browses profiles and the marketplace feed
           ↓
-Find competitors and collect public evidence
+A viewer clicks "Challenge" and submits a counteroffer
           ↓
-Invite qualified vendors
+Owner reviews counteroffers against the current price
           ↓
-Vendors submit or revise bids
+Compare equivalent offers, challenger evidence, potential savings
           ↓
-Compare equivalent offers, evidence, and potential savings
-          ↓
-Buyer shortlists a provider and requests a follow-up
+Owner shortlists a challenger and requests follow-up
 ```
 
-The hackathon demo ends with a real competing quote. Accepting a binding contract, paying for the service, and having it performed are outside the MVP.
+The hackathon demo ends with a real counteroffer from a real business. Binding contracts, payment, and service delivery are outside the MVP.
 
 ## 1. Connect Financial Data
 
 ### Connection strategy
 
-- **Rho first:** build the first real financial adapter for the hackathon.
-- **Mercury next:** support another business account through the same normalized interface when time permits.
-- **Other accounts later:** add connectors or a structured transaction import.
-- **Demo source:** provide clearly labeled fixtures for recurring service payments missing from the available sandbox.
+- **Rho first:** the first real financial adapter.
+- **Mercury next:** another business account through the same normalized interface when time permits.
+- **Demo source:** clearly labeled fixtures for recurring service payments missing from the available sandbox.
 
-Validate authentication, transaction access, pagination, available fields, and sandbox contents against provider documentation during implementation. Earlier plan notes about sandbox access and specific transaction counts must be rechecked before being treated as dependencies.
+Validate authentication, transaction access, pagination, available fields, and sandbox contents against provider documentation during implementation. Earlier notes about sandbox contents must be rechecked before being treated as dependencies.
 
-The MVP only needs read access to transaction history. Keep provider credentials server-side.
+The MVP needs read access to transaction history only. Provider credentials stay server-side.
 
 ### Shared data model
 
@@ -68,56 +75,89 @@ A `TransactionSource` adapter returns normalized records:
 - Amount in integer minor units, currency, date, and status
 - Available category, memo, counterparty, and supporting attachment references
 
-Deduplicate imports and preserve links back to the original records. Exclude transfers and reconcile reversals/refunds so spend is not inflated. Keep different currencies separate unless an explicit conversion basis is supplied.
+Deduplicate imports and preserve links back to the original records. Exclude transfers and reconcile reversals/refunds so spend is not inflated. Keep currencies separate unless an explicit conversion basis is supplied.
 
 Display whether evidence came from a connected production account, sandbox, imported record, or demo fixture.
 
-## 2. Find Expenses Worth Challenging
+**Everything imports private.** Visibility is never a default, an inference, or a side effect of import (§3).
 
-Group payments by vendor, identify recurrence, and estimate the current cost of each service. Show the observation period and the transactions supporting the estimate.
+## 2. The Expense Dashboard
 
-A large expense is not automatically a good opportunity. Rank candidates using an explainable heuristic:
+The dashboard shows **every** expense, not a filtered set of opportunities. It is the user's private view of their own spend, and it is the screen they spend the most time on.
+
+Group payments by vendor, detect recurrence, and estimate the current cost of each service. Show the observation period and the supporting transactions behind every figure.
+
+Each row shows: vendor, category, amount per period, cadence, annualized cost, recurrence confidence, and **visibility state**.
+
+Transactions reveal payment patterns, not contract terms or service scope. Let the user correct vendor, category, and cadence; corrections persist across future imports.
+
+### Suggested listings
+
+Not every expense is worth publishing. The dashboard suggests candidates using an explainable heuristic:
 
 ```text
-opportunity priority =
-annualized spend × replaceability × recurrence confidence × ease of quoting
+listing priority =
+weighted( annualized spend, replaceability, recurrence confidence, ease of describing scope )
 ```
 
-The factors are normalized heuristics; this ranks opportunities and does not predict guaranteed savings. Show the reasons alongside the rank.
+A weighted sum rather than a product, so each factor's contribution can be shown. These are normalized heuristics that rank suggestions; they do not predict savings. Show the reasons alongside the rank.
 
 | Expense | Initial treatment |
 |---|---|
 | Commercial cleaning | Strong candidate when scope and location can be confirmed |
 | Landscaping, pest control, waste hauling | Candidates for later category templates |
-| Managed IT or security | Requires more detail about service levels and switching constraints |
-| Cloud infrastructure | Often complex to substitute; deprioritize for this MVP |
-| Rent | Usually constrained by an existing lease; deprioritize |
-| Payroll, taxes, internal transfers | Exclude from vendor bidding |
+| Managed IT or security | Requires service-level detail; deprioritize |
+| Cloud infrastructure | Often complex to substitute; deprioritize |
+| Rent | Usually lease-constrained; deprioritize |
+| Payroll, taxes, internal transfers | Never suggested, never publishable |
 
-Transactions reveal payment patterns, but often do not reveal contract terms or service scope. Let the user correct the vendor/category and confirm that the expense is eligible to be challenged.
+Suggestion is advice. The owner decides what goes public, and may publish something the heuristic ranked low.
 
-### Opportunity screen
+### Dashboard sketch
 
-Example figures throughout this plan are illustrative until replaced with actual evidence.
+Example figures throughout this plan are illustrative.
 
 ```text
-$87,400/year in potentially contestable spend
+Your expenses                          $184,200/year tracked
 
-ABC Cleaning
-$2,400/month · $28,800/year
-Recurring payments detected
-Scope confirmation needed
-
-[ Challenge this price ]
+ABC Cleaning          $2,400/mo   $28,800/yr   monthly · high confidence   [ Public  ●—]
+Regional Waste Co     $   680/mo  $ 8,160/yr   monthly · high confidence   [—● Private]
+Copier Service Ltd    $   310/mo  $ 3,720/yr   monthly · med confidence    [—● Private]
+Payroll                    —           —       not eligible                 ⊘
 ```
 
-“Contestable spend” is the value of eligible expenses, not the amount the platform will save.
+## 3. Visibility and Public Profiles
 
-## 3. Turn Spend Into a Comparable Quote Request
+The toggle is the product's central mechanic and its central risk.
 
-Clicking **Challenge this price** opens a short request-for-quote (RFQ) draft.
+### Rules
 
-For the cleaning demo:
+- **Private is the default and the fallback.** Imported expenses are private. An expense whose state is ambiguous for any reason is private.
+- **Publishing is explicit and per-expense.** No bulk publish without a confirmation listing every affected item individually.
+- **Publishing requires a scope.** A price with no scope is not a listing anyone can meaningfully counter, so the publish flow includes scope confirmation (§4).
+- **The owner previews the exact public payload before publishing** and can unpublish at any time, immediately.
+- **The public projection is constructed explicitly, never filtered down from the private record.** A public listing is its own shape, built field by field. Deriving it by omitting fields from a rich object means the next field someone adds is public by accident.
+
+### What a public listing contains
+
+| Published | Never published |
+|---|---|
+| Category and scope summary | Raw transaction history |
+| Price and billing cadence | Account or connection details |
+| Service area (approximate) | Other expenses, public or private |
+| Whether challenges are open, and any deadline | Exact street address, unless opted in |
+| Count of challenges received | Challenger identities |
+| Bidding mode, and offer amounts if open | Offer amounts while bidding is sealed |
+
+**The incumbent vendor's name is a separate opt-in, hidden by default.** Publishing "we pay ABC Cleaning $2,400/month" discloses a third party's pricing, which may be commercially sensitive or restricted by the contract itself. The owner is warned about this at publish time and must opt in deliberately.
+
+### The profile
+
+Each business has a public profile: name, service area, and its public expense listings. The profile is the business's presence on the platform — the thing a challenger looks at to decide whether to bother, and the thing §7's evidence attaches to.
+
+## 4. Scope, So a Counteroffer Means Something
+
+Publishing an expense opens a short scope confirmation. For the cleaning demo:
 
 - Service area and approximate location
 - Office size: 8,000 square feet
@@ -125,98 +165,70 @@ For the cleaning demo:
 - Bathrooms: four
 - Required tasks and quality expectations
 - Whether supplies, equipment, and taxes are included
-- Required insurance or other buyer requirements
-- Desired start date, minimum term, and known cancellation constraints
-- Current price: $2,400/month, subject to buyer confirmation
-- Bid deadline and quote validity requirements
+- Required insurance or other requirements
+- Desired start date, minimum term, known cancellation constraints
+- Current price: $2,400/month, subject to owner confirmation
+- Whether challenges have a deadline, and whether bidding is open or sealed
 
-AI drafts the RFQ from transaction evidence plus buyer-provided details. Missing details remain explicit questions; the model must not invent them from a merchant name.
+AI drafts the scope from transaction evidence plus owner-provided details. **Missing details remain explicit questions; the model must not invent them from a merchant name.** A field can be explicitly unanswered, which is different from empty — "bathrooms: not specified" is real information to a challenger, "bathrooms: 0" is a lie.
 
-The buyer reviews the scope, recipients, and information to be shared before publishing or sending invitations. Current price may be disclosed as the price to beat if the buyer chooses; raw transaction history and account details are never part of the vendor-facing request.
+Scope is **versioned**. Counteroffers attach to the version they were made against, so editing scope later cannot retroactively reframe an existing offer.
 
-## 4. Find Competing Providers
+## 5. The Marketplace and the Challenge
 
-Use Tavily for vendor discovery and extraction of relevant public business pages. Search by category, service area, and the confirmed requirements.
+### Browsing
 
-For each candidate, collect:
+Any platform user can browse a feed of public listings, filtered by category and service area, and can view any business's profile. The feed is how a cleaning company finds work; the profile is how it evaluates a specific counterparty.
 
-- Business and, where available, legal entity name
-- Website and source URLs
-- Service coverage and category fit
-- Business contact details published for inquiries
-- Relevant capabilities and evidence of scope fit
+### Challenging
 
-Deduplicate directory listings and distinguish an actual provider from an aggregator. Save source links and retrieval times. Extract service claims from provider pages, but do not treat marketing text as independent verification.
+A viewer clicks **Challenge** on a listing and submits a counteroffer against that scope version:
 
-The initial target is a short list of roughly 5–10 relevant providers. Broad discovery counts matter less than whether a provider can quote the actual job.
-
-## 5. Evaluate Providers With Public Evidence
-
-Show verifiable facts and gaps next to each bid. Avoid an opaque “trustworthiness” score.
-
-The following are candidate sources to validate during implementation; access requirements and coverage may vary.
-
-| Signal | Candidate source | What the UI should communicate |
-|---|---|---|
-| Entity registration | Relevant state business registry, such as New York's | Matched legal entity, status, formation date, and source |
-| Reputation | Google Places or accessible review sources | Rating, review count, source, and recency; reviews are user-generated |
-| Government exclusions | SAM.gov exclusion records | Match, possible match, or no match within the source checked |
-| Relevant regulatory history | OSHA for applicable businesses | Relevant matched records and their dates/context |
-| Insurance or required license | Vendor documents and applicable issuer/registry | Supplied, checked, expired, or still unverified |
-
-Match records using legal name plus location and identifiers where available. Similar names require review before attaching an adverse record to a provider.
-
-Each check records its source, timestamp, match confidence, result, and limitations. An unavailable source means **not checked**. A search with no result means **no match found in this source**, never “proven safe.”
-
-Use evidence labels such as **checks complete for selected sources**, **needs review**, and **information missing**. Do not apply a blanket “verified vendor” badge when only some facts have been checked.
-
-For a tight MVP, prioritize entity matching and reputation evidence; add SAM and relevant regulatory checks as source access permits. Show unimplemented or unavailable checks honestly.
-
-## 6. Publish the Opportunity and Invite Bids
-
-Each approved RFQ becomes a listing with a vendor response link. The initial marketplace is invitation-based: providers can participate without first creating a full account.
-
-- Buyer sees the RFQ, invited providers, outreach status, and incoming bids.
-- Vendor sees the confirmed service scope and can submit a quote through its invitation link.
-- The link is scoped to that RFQ and provider, with an expiration.
-- Email is the first outreach channel.
-- SMS and ElevenLabs voice outreach are stretch integrations.
-
-Invitations identify the requesting business and explain the job and response deadline. A job queue tracks deliveries, failures, retries, and responses; repeated processing must not send duplicate invitations.
-
-For the hackathon, arrange a willing real business early and obtain a genuine quote for a concrete scope. Sending external messages is a separate implementation/demo action requiring the buyer's approval; rewriting this plan does not initiate outreach.
-
-## 7. Bidding Mechanics
-
-The MVP uses **private competitive quotes**:
-
-- Invited providers submit offers for the same version of the scope.
-- They can revise their own offers until the deadline; retain revision history.
-- Competitors' identities and individual quotes stay private.
-- The buyer sees the full comparison and selects whom to follow up with.
-
-A later live reverse-auction mode can show an anonymous best eligible price and let providers bid lower. The MVP proves the competitive procurement loop without depending on simultaneous vendor attendance.
-
-A bid contains:
-
-- Vendor identity and contact
 - Price, currency, and billing frequency
 - Included service scope, exclusions, and optional extras
-- Setup fees, taxes, supplies, minimum term, and other price conditions
-- Availability, quote expiry, and whether a site visit is required
-- Supporting documents and submission timestamp
-- Provenance: vendor-submitted, captured from a vendor response, or demo data
+- Setup fees, taxes, supplies, minimum term, other price conditions
+- Availability, offer expiry, and whether a site visit is required
+- Supporting documents and a message to the owner
+- Their platform identity, which carries their profile and evidence
 
-AI can extract a quote from a response, but the displayed amount must retain its original evidence. An AI estimate is not a vendor bid.
+A challenger may revise their own offer until the deadline; revision history is retained.
 
-## 8. Compare Cost, Scope, and Evidence
+### Counteroffer visibility — the owner chooses
 
-Normalize offers to a common period and highlight differences before ranking them. A lower price for fewer visits does not satisfy the original scope.
+Open bidding is **a per-listing toggle, default off**, set by the owner at publish time and changeable afterward:
 
-For equivalent monthly service:
+| Toggle | Other challengers see | Owner sees |
+|---|---|---|
+| **Off — sealed** (default) | How many offers exist, nothing more | Everything |
+| **On — open bidding** | Every offer's price and scope, anonymized | Everything, including identities |
+
+Like expense visibility, the safe state is the default and the fallback: a listing whose mode is unset, ambiguous, or errored is sealed.
+
+**Open bidding is what turns this into an auction.** Challengers see where they stand, can revise downward before the deadline, and get told when they're outbid. It's the mode that makes a listing competitive rather than a set of independent guesses, and it's why an owner would choose it.
+
+**Identity stays anonymous to other challengers in both modes.** Prices go public in open bidding; who offered them does not. A cleaning company that can watch competitors' rates accumulate across every listing learns its rivals' entire pricing structure, which is a real commercial harm and the fastest way to make providers stop participating. The owner always sees identities — evaluation is unaffected.
+
+Two rules make the mode safe:
+
+- **The mode is shown on the listing and in the challenge form before anyone submits.** A challenger must never discover after the fact that their price became public.
+- **A mode change never applies retroactively.** Offers submitted under sealed terms stay sealed even if the owner later opens bidding. The challenger may opt in to publish theirs; otherwise it remains private and still counts. The mode in force at submission is recorded on the offer.
+
+Open bidding has a known failure mode: a bare price leaderboard rewards under-scoping, because the cheapest way to bid lower is to quietly offer less. **The public leaderboard therefore shows scope completeness beside price**, never price alone (§6).
+
+An owner cannot bid on their own listing.
+
+### Provenance
+
+Every counteroffer carries its origin: `challenger-submitted`, `captured from an off-platform response`, or `demo data`. AI can extract an offer from an email, but the displayed amount retains its original evidence. **An AI estimate is not a counteroffer.**
+
+## 6. Compare Cost, Scope, and Evidence
+
+Normalize offers to a common period and surface scope differences **before** ranking on price. A lower price for fewer visits does not satisfy the scope.
+
+This applies to the public leaderboard in open bidding as much as to the owner's private comparison. A leaderboard ordered on price alone teaches challengers that the way to win is to quietly offer less, so every public rank shows scope completeness beside the number.
 
 ```text
-annual recurring savings = (current monthly cost − bid monthly cost) × 12
+annual recurring savings = (current monthly cost − offer monthly cost) × 12
 
 first-year net savings =
 annual recurring savings − switching costs − setup fees − cancellation fees
@@ -224,115 +236,165 @@ annual recurring savings − switching costs − setup fees − cancellation fee
 
 Include known recurring extras on the same basis. If material costs or conditions are unknown, label the result provisional and show the assumptions.
 
-Example comparison, assuming equivalent scope and no additional fees:
+Example, assuming equivalent scope and no additional fees:
 
-| Provider | Monthly price | Potential annual recurring savings | Evidence status |
+| Challenger | Monthly price | Potential annual recurring savings | Evidence status |
 |---|---:|---:|---|
 | Current provider | $2,400 | Baseline | Existing expense confirmed |
 | Company A | $2,200 | $2,400 | Selected checks complete |
 | Company B | $1,875 | $6,300 | Stronger evidence; insurance pending |
 | Company C | $1,500 | $10,800 | Legal entity match unresolved |
 
-The recommendation explains price and scope tradeoffs and points to specific evidence. Company B may be the better shortlist candidate even though Company C is cheaper.
+The recommendation explains price and scope tradeoffs against specific evidence. Company B may be the better shortlist candidate even though Company C is cheaper.
 
-Actions are **View evidence**, **Request clarification**, and **Shortlist / Request follow-up**. Quotes remain potential savings until a switch actually happens.
+Actions: **View evidence**, **Request clarification**, **Shortlist / Request follow-up**. Savings remain potential until a switch actually happens.
+
+## 7. Evaluate Challengers With Public Evidence
+
+A stranger has just offered to undercut your cleaner by 40%. Who are they?
+
+Show verifiable facts and gaps next to each counteroffer. Avoid an opaque "trustworthiness" score.
+
+| Signal | Candidate source | What the UI should communicate |
+|---|---|---|
+| Entity registration | Relevant state business registry | Matched legal entity, status, formation date, source |
+| Reputation | Google Places or accessible review sources | Rating, review count, source, recency; reviews are user-generated |
+| Government exclusions | SAM.gov exclusion records | Match, possible match, or no match within the source checked |
+| Relevant regulatory history | OSHA for applicable businesses | Matched records with dates and context |
+| Insurance or required license | Supplied documents and applicable issuer | Supplied, checked, expired, or unverified |
+| Platform history | Internal | Account age, listings published, counteroffers made |
+
+Match records using legal name plus location and identifiers where available.
+
+**Adverse records require an identifier-level match.** Name plus city is never sufficient to attach an exclusion or violation to a business. At lower confidence, the UI reports that a possible match needs review — never the record's contents as though they belong to this challenger.
+
+Each check records source, timestamp, match confidence, result, and limitations. An unavailable source means **not checked**. A search with no result means **no match found in this source**, never "proven safe."
+
+Use labels such as **checks complete for selected sources**, **needs review**, and **information missing**. No blanket "verified" badge when only some facts have been checked.
+
+Prioritize entity matching and reputation; add other sources as access permits. Show unimplemented checks honestly.
+
+## 8. Seeding Supply: Outbound as a Secondary Path
+
+Inbound has a cold-start problem. A published listing with nobody browsing is a tree falling in an empty forest.
+
+The outbound machinery from the previous plan is retained for exactly this job:
+
+- **Discovery:** Tavily search and extraction finds real providers in the category and service area, deduplicated and filtered to actual providers rather than directories.
+- **Invitation:** the owner may invite specific providers to come and challenge a listing. Email first; SMS and ElevenLabs voice are stretch.
+
+This is a **secondary path**, subordinate to the public loop:
+
+- Invitations require explicit owner approval of recipients and message contents.
+- A job queue tracks deliveries, failures, retries, and responses; reprocessing never sends duplicates.
+- Commercial email carries accurate headers, a physical postal address, and a working opt-out.
+- An invited challenger lands on the same public listing every other user sees. There is no separate private RFQ flow and no token-scoped parallel universe.
+
+For the hackathon, arrange a willing real business early and get a genuine counteroffer. Sending external messages is a separate action requiring owner approval; rewriting this plan does not initiate outreach.
 
 ## Core Screens
 
-1. **Connections and opportunities:** connect an account, view import status, and browse ranked recurring expenses.
-2. **Challenge builder:** confirm service scope, price baseline, requirements, and disclosure settings.
-3. **Vendor discovery and evidence:** review provider fit, public-record findings, and invitation recipients.
-4. **Vendor bid page:** read the scope and submit or revise a quote.
-5. **Bid comparison:** compare normalized costs, scope gaps, evidence, and projected savings.
+1. **Expense dashboard:** connect an account, view import status, browse every expense, toggle visibility.
+2. **Publish flow:** confirm scope, choose disclosure, preview the exact public payload, publish.
+3. **Public profile:** a business and its public listings, as any user sees it.
+4. **Marketplace feed and listing detail:** browse public listings; challenge one.
+5. **Challenge inbox and comparison:** review counteroffers, normalized costs, scope gaps, evidence, savings.
 
 ## Technical Architecture
 
-Preserve the existing general stack choices:
-
-- **Frontend:** React + TypeScript with Vite; responsive buyer and vendor pages.
+- **Frontend:** React + TypeScript with Vite; responsive, since a challenger will browse on a phone.
 - **Backend:** Python + FastAPI with Pydantic request/response models.
 - **Database:** Postgres via Supabase.
-- **Jobs:** a small background worker for imports, discovery, evidence lookups, and outreach.
+- **Identity:** one account type. For the hackathon, seeded demo accounts with an in-app switcher — no signup, no password reset. Real auth is post-MVP.
+- **Jobs:** a small background worker for imports, evidence lookups, notifications, and outbound invitations.
 - **Financial adapters:** Rho first, labeled demo fixtures, then Mercury or imports.
-- **Discovery:** Tavily search/extraction behind a provider interface.
-- **Reasoning:** Claude for categorization suggestions, scope drafting, quote extraction, and evidence summaries; choose an available model during implementation.
-- **Outreach:** one email provider first; ElevenLabs voice as stretch.
-- **Updates:** polling is sufficient for incoming bids in the MVP.
-- **Hosting:** deploy an HTTPS app and API with a publicly reachable vendor form.
+- **Discovery:** Tavily behind a provider interface (secondary path).
+- **Reasoning:** Claude for categorization suggestions, scope drafting, offer extraction, and evidence summaries; confirm the model ID during implementation.
+- **Updates:** polling is sufficient for incoming challenges.
+- **Hosting:** an HTTPS app and API with publicly reachable profile and listing pages.
 
-Use deterministic code for monetary calculations, deduplication, deadlines, and bid versions. Use structured model outputs for the fields the application consumes. Store supporting evidence for recommendations and extracted claims.
-
-A single demo buyer workspace is sufficient; a full organization/role system can wait. Keep its financial screens private and restrict public access to the intended vendor invitation pages.
+Use deterministic code for monetary calculations, deduplication, deadlines, visibility state, and offer versions. Use structured model outputs for every field the application consumes.
 
 ### Main entities
 
 | Entity | Purpose |
 |---|---|
+| Account / BusinessProfile | Platform identity, public presence |
 | Connection / Transaction | Source account and original spend evidence |
 | Vendor / ServiceExpense | Normalized payee and recurring service baseline |
-| Opportunity | Challenge candidate, ranking reasons, and confidence |
-| RFQ / ScopeVersion | Buyer-confirmed requirements, disclosure choices, deadline |
-| VendorEvidence | Source-backed checks and identity-match status |
-| Invitation | Provider, authorized message, delivery state, and response link |
-| Bid / BidRevision | Vendor offer, conditions, provenance, and revision history |
-| Comparison | Normalized costs, scope differences, and savings assumptions |
+| Visibility | Per-expense public/private state, disclosure options, audit trail |
+| Listing / ScopeVersion | The public projection, its versioned scope, and its bidding mode |
+| Challenge / ChallengeRevision | A counteroffer, its conditions, provenance, revision history, and the bidding mode in force when it was submitted |
+| ChallengerEvidence | Source-backed checks and identity-match status |
+| Invitation | Secondary path: provider, approved message, delivery state |
+| Comparison | Normalized costs, scope differences, savings assumptions |
 
-RFQ states: draft → scope confirmed → open for bids → closed → shortlisted. A cancelled RFQ stays recorded with its bids and outreach history.
+Listing states: `private → scope confirmed → public → closed → shortlisted`. Unpublishing returns a listing to private and retains its received challenges.
 
 ## End-to-End Demo
 
-All names, prices, and counts below are a script template, not claims of existing integrations or received bids.
+All names, prices, and counts are a script template, not claims of existing integrations or received offers.
 
 1. Show a working Rho connection and the actual transaction data available.
-2. Show a confirmed recurring cleaning expense of **$2,400/month**. If this is absent from the sandbox, switch visibly to a labeled fixture or use a consenting business's imported records.
-3. Click **Challenge this price** and confirm the cleaning scope.
-4. Find relevant local providers and open the evidence behind one candidate.
-5. Publish the RFQ and show approved invitation delivery.
-6. Open the vendor response page and demonstrate the bid submission flow.
-7. Display a genuine provider quote, ideally **$1,875/month** if that is the actual price offered; otherwise use its real amount.
-8. Show the scope comparison, outstanding evidence checks, and potential annual savings. At $1,875/month, that is **$6,300/year** before additional costs.
-9. Shortlist the provider and show that the original expense, RFQ, evidence, and quote are linked.
+2. Show the expense dashboard with every expense private by default.
+3. Toggle **commercial cleaning, $2,400/month** to public; confirm the scope; preview exactly what becomes public; publish.
+4. Show the public profile with the listing on it.
+5. Switch accounts. Browse the marketplace feed as a different business, open the listing, submit a counteroffer.
+6. Switch back. Show the challenge notification and the challenger's evidence.
+7. Turn on **open bidding**, switch to a third account, and underbid the standing offer — showing the anonymized leaderboard with scope completeness beside each price.
+8. Display a genuine counteroffer from a real business, ideally **$1,875/month** if that is the actual price offered; otherwise its real amount.
+9. Show the scope comparison, outstanding evidence checks, and potential annual savings — at $1,875/month, **$6,300/year** before additional costs.
+10. Shortlist the challenger; show the expense, listing, scope version, and offer all linked.
+11. Unpublish the listing to show the owner stays in control.
 
-**Minimum target: one genuine quote.** Additional comparison bids may be labeled demo examples. Obtain the real response before judging when possible and display its actual timestamp; a live response is a bonus. If none arrives, show the working invitation/submission loop and label all sample bids as simulated.
+**Minimum target: one genuine counteroffer from a real business.** Additional offers may be labeled demo examples. If none arrives, show the working publish-and-challenge loop and label all sample offers as simulated, in the UI and not only aloud.
 
 ## Build Order
 
-1. **Validate the real-bid path early:** identify one concrete cleaning need and a willing provider; prepare the scope and request a quote once the buyer approves.
-2. **Financial ingestion:** implement Rho, the normalized transaction model, and labeled recurring-spend fixtures.
-3. **Opportunity detection:** vendor grouping, recurrence, annualized baseline, and explainable prioritization.
-4. **RFQ and bid loop:** scope confirmation, invitation links, vendor form, bid persistence, and comparison arithmetic.
-5. **Vendor discovery:** Tavily search/extraction, service-area fit, source links, and deduplication.
-6. **Evidence checks:** entity matching and reputation first; other applicable sources as access permits.
-7. **Approved email outreach:** delivery tracking, idempotent retries, and connection to the vendor response form.
-8. **Demo polish:** real quote provenance, source labels, complete example, and failure states.
-9. **Stretch:** Mercury, email-reply extraction, voice outreach, anonymous live underbidding, and more service categories.
+Detailed step-by-step breakdown lives in [../roadmap/](../roadmap/).
 
-The priority is completing the account → opportunity → RFQ → real quote → comparison loop.
+1. **Foundations:** deploy early, since public profiles must be publicly reachable. Money and provenance primitives, seeded accounts, account switcher.
+2. **Validate the real counteroffer path:** identify a concrete need and a willing real provider; get them onto the platform, or capture their quote with provenance.
+3. **Financial ingestion:** Rho, the normalized transaction model, labeled fixtures — everything private.
+4. **Expense dashboard:** vendor grouping, recurrence, annualized baseline, corrections, listing suggestions.
+5. **Visibility and profiles:** the toggle, the explicit public projection, scope confirmation, the publish preview, the profile page.
+6. **Marketplace and challenges:** feed, listing detail, challenge submission and revision, notifications.
+7. **Comparison:** normalization, scope gaps, savings arithmetic, the challenge inbox.
+8. **Challenger evidence:** identity matching first, then entity registration and reputation.
+9. **Outbound secondary path:** Tavily discovery, approved invitations, delivery tracking.
+10. **Demo polish:** provenance labels, failure states, the full script, rehearsal on deployed infrastructure.
+11. **Stretch:** Mercury, real auth, off-platform reply extraction, voice outreach, anonymous live underbidding, more categories.
+
+The priority is completing the account → dashboard → publish → challenge → compare loop.
 
 ## Success Criteria
 
 - A real financial adapter works and exposes traceable transaction evidence.
 - Recurring expenses are identified without counting transfers or duplicate imports.
-- The user can confirm the service scope before publication.
-- Discovery returns relevant providers with source evidence.
+- Every expense imports private, and publishing is always an explicit owner action.
+- The owner sees exactly what will become public before it does, and can unpublish instantly.
+- A public listing carries enough scope for a counteroffer to be meaningful.
+- A second account can browse, find the listing, and submit a counteroffer.
+- Counteroffers are sealed by default, and go public only when the owner turns open bidding on.
+- Turning open bidding on never retroactively publishes an offer submitted while it was off.
+- Challenger identities stay hidden from other challengers in both modes.
 - Public checks distinguish matched facts, uncertain matches, and missing information.
-- A provider can submit and revise a bid for the same scope.
-- At least one actual business supplies a quote for the demo target.
+- At least one actual business supplies a genuine counteroffer.
 - Savings calculations use comparable prices and make unknown costs visible.
-- The buyer can explain why a shortlisted provider is attractive beyond its price.
+- The owner can explain why a shortlisted challenger is attractive beyond price.
 
 ## Scope Boundaries
 
-**MVP:** one category, one service area, one financial integration, approved email invitations, private competitive bidding, evidence-backed comparison, and a genuine vendor quote.
+**MVP:** one category, one service area, one financial integration, seeded accounts, per-expense visibility, public profiles, a marketplace feed, sealed counteroffers with an owner-controlled open-bidding toggle, evidence-backed comparison, and a genuine offer from a real business.
 
-**Later:** more banks and categories, a public marketplace, live reverse auctions, payment routing, contract execution, subscription or success-fee pricing, and savings tracking after switching.
+**Later:** real authentication, more banks and categories, fully identified public bidding, payment routing, contract execution, subscription or success-fee pricing, savings tracking after switching, and reputation built from completed switches.
 
-**Removed from the prior plan:** equipment shopping lists, product-camera overlays, visual inventory audits, fly attention models, FlyHash, and asset management.
+**Removed from prior plans:** equipment shopping lists, product-camera overlays, visual inventory audits, fly attention models, FlyHash, asset management, and the token-scoped private RFQ flow.
 
 ## Questions to Resolve During the Build
 
-- Which actual business, service area, and cleaning scope will anchor the real quote?
+- Which actual business and cleaning scope anchors the real counteroffer, and will that provider create an account or respond off-platform?
 - What account or sandbox access is available, and does it contain relevant recurring spend?
 - Which public-data sources can be accessed reliably within the build window?
-- Who can approve provider invitations and which email identity will send them?
+- What is the wall-clock cutoff after which the demo runs on labeled-simulated offers?
 - How much time and how many builders are available?

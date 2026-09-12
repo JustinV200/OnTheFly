@@ -1,44 +1,86 @@
-# On the Fly
+# rho_hackathon
 
-<img src="assets/fruit-fly.svg" alt="On the Fly fruit fly mascot" width="200" />
-<img src="assets/mascot.jpeg" alt="On the Fly mascot" width="200" />
+**List what you pay. Let anyone offer to beat it.**
 
-Procurement that keeps up with you. On the Fly helps a team lead set a budget, build an equipment list, and make smarter purchase decisions against real card spend — as a web app for buying online, and a live augmented-reality view for buying in a physical store.
+A B2B marketplace built on voluntary price transparency. Connect your business account, see every expense in a private dashboard, and flip the ones you want public. Public expenses land on your profile, where any other business on the platform can see them — and counter.
 
-It's built on the nervous system of *Drosophila melanogaster* (the fruit fly) as both inspiration and vocabulary: a tiny brain with fast, well-understood reflexes. One piece of that — the Mushroom Body catalog matcher below — is a real published fly-brain algorithm, not just a theme.
+> A business publishes: *"we pay $2,400/month for commercial cleaning, 8,000 sq ft, 3× weekly."*
+> A cleaning company browsing the marketplace replies: *"we'll do it for $1,875."*
 
-Full design details live in [plan/plan1.md](plan/plan1.md).
+Working name is undecided. Full design: [plan/plan1.md](plan/plan1.md). Build order: [roadmap/](roadmap/).
+
+## The loop
+
+```
+Connect business account
+  → every expense appears in a private dashboard
+  → toggle individual expenses public
+  → public expenses appear on your profile
+  → anyone on the platform browses and finds them
+  → they click "Challenge" and submit a counteroffer
+  → sealed by default, or open bidding if you flip it on
+  → you compare offers, scope, and evidence against what you pay now
+  → shortlist someone
+```
+
+Everything imports **private**. Nothing is ever published without you choosing it, previewing exactly what goes public, and clicking.
+
+## Why inbound
+
+The obvious version of this product is outbound: pick an expense, and the platform finds vendors and emails them a request for quotes. That needs discovery, qualification, and outreach infrastructure standing between a user and their first result — plus a lot of unsolicited email.
+
+Publishing inverts it. One cheap action from the buyer, and competitors come to them. It produces a browsable marketplace instead of a series of private auctions, and every listing is a standing invitation rather than a one-time request.
+
+The tradeoff is a cold-start problem, which is why outbound discovery survives as a way to seed the supply side rather than as the main path.
 
 ## What it does
 
-- **Set a budget and build a list** for a defined job — equipping two new hires, an office refresh, supplies for a team offsite.
-- **Get suggested items and reviews** surfaced as you shop, so you don't leave the page to vet a product.
-- **Check budget realism** — is $4,000 actually enough for what's on the list, and which line items are the risk?
-- **Ask more about any product** and get researched answers, not just a spec sheet.
-- **Track real spend automatically** — card transactions sync in and reconcile against the budget as they post, with no manual logging.
-- **Point your phone at a shelf** and see relevant items boxed live in the camera view, with reviews, price match, and an "already bought" flag pulled straight from spend history.
+- **Reads real transaction history** through a normalized adapter, starting with [Rho](https://docs.rho.co), with clearly labeled fixtures for spend the sandbox doesn't contain.
+- **Shows every expense** grouped by vendor, with detected cadence, recurrence confidence, annualized cost, and the individual payments behind each figure.
+- **Suggests what's worth listing** on an explainable heuristic — but the owner decides, and can publish something the heuristic ranked low.
+- **Confirms scope before publishing**, because a price with no scope isn't something anyone can meaningfully counter. AI drafts it from transaction evidence; unknown fields stay explicit questions rather than being invented from a merchant name.
+- **Publishes to a public profile** with a preview of the exact payload, and unpublishes instantly.
+- **Takes counteroffers from any platform user**, revisable until the deadline, with full revision history.
+- **Opens the bidding, if you want it.** Offers are sealed by default — you see them, nobody else does. Flip open bidding on and challengers see each other's prices and scope and can underbid, while their identities stay yours alone. Flipping it on never exposes an offer someone already made in confidence.
+- **Checks who's offering** — entity registration, reputation, exclusion lists, regulatory history — reporting each check's source, timestamp, and limits.
+- **Compares on normalized cost and scope**, not price alone.
 
-## The nervous system
+## The two rules everything else follows from
 
-| Part | Real fly anatomy | What it does here |
-|---|---|---|
-| **Compound Eye** | Wide-field, fast-motion vision | The live AR camera view — detects and boxes relevant items in real time as you move through a store |
-| **Mushroom Body** | Kenyon cells — sparse coding for scent recognition | Fast catalog matching (FlyHash) that shortlists candidate products before an AI makes the final call |
-| **Halteres** | Balance organs used for flight stability | Budget realism checks — is your budget balanced against what's on the list? |
-| **Proboscis** | Feeding tube used to sample and taste | The "Ask More" agent — digs into reviews, specs, and comparisons for a specific product |
-| **Metabolism** | Consumption and energy use | Transaction sync — tracks what's actually been spent and reconciles it against the budget |
+**Private is the default and the fallback.** Every expense imports private. An expense whose visibility state is ambiguous, unset, or errored is private. The public projection is built explicitly field by field, never by filtering the private record — a serializer that starts rich and removes fields leaks the next field someone adds.
 
-Compound Eye and Mushroom Body are real technical components; Halteres, Proboscis, and Metabolism are names layered on top of already-planned features. Nothing here sits between a user and the AI reasoning that actually needs to be fast and correct.
+**Not checked is not the same as clean.** An unavailable source means *not checked*. A search that returns nothing means *no match found in this source* — never "proven safe." Adverse records never attach to a business on a name match alone. There is no blanket "verified" badge.
 
-## Transactions
+Savings are **potential** until a switch actually happens, and the UI says so.
 
-Spend data comes through a `TransactionSource` interface with two implementations behind it:
+## Stack
 
-- **`RhoSource`** — the live [Rho API](https://docs.rho.co) sandbox, which is open and needs no account.
-- **`MockSource`** — a seeded fixture plus an inject endpoint, emitting the identical Rho response shape.
+| Layer | Choice |
+|---|---|
+| Frontend | React + TypeScript, Vite |
+| Backend | Python + FastAPI, Pydantic |
+| Database | Postgres via Supabase |
+| Identity | One account type; seeded demo accounts with an in-app switcher |
+| Jobs | Background worker for imports, evidence, notifications |
+| Financial data | `TransactionSource` adapter — Rho first, labeled fixtures, Mercury later |
+| Discovery | Tavily, behind a provider interface (secondary path) |
+| Reasoning | Claude for scope drafting, offer extraction, evidence summaries |
 
-Selected by one env var, so nothing downstream knows which is active. The mock unblocks development with no network dependency and can post a transaction on cue; the Rho path stays a real integration.
+Monetary math, deduplication, deadlines, visibility state, and offer versioning are deterministic code. The model drafts and extracts; it doesn't calculate, and it doesn't decide what's public.
 
 ## Status
 
-Planning. [plan/plan1.md](plan/plan1.md) has the full breakdown — features, tech stack, build order, and open questions — plus a record of the scope decisions already made and why, so they don't get relitigated mid-build.
+Planning → early build. [plan/plan1.md](plan/plan1.md) has the full design and the record of scope decisions; [roadmap/](roadmap/) breaks it into ordered phases with done-when criteria.
+
+Two earlier concepts are out of scope: an equipment-shopping and camera-audit product with fruit-fly neural models, and an outbound RFQ product with token-scoped vendor invitations. The images in [assets/](assets/) are left over from the first of those.
+
+## Repo layout
+
+```
+frontend/   React + TS app (not yet created)
+backend/    FastAPI app (not yet created)
+plan/       Design docs — plan1.md is the plan of record
+roadmap/    Phase-by-phase build order
+assets/     Brand assets (stale, from a prior concept)
+.claude/    Claude Code config and coding rules
+```

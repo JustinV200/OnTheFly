@@ -1,0 +1,105 @@
+# Phase 09 — Demo polish
+
+**Goal:** the full loop runs end to end, in front of people, without a rescue — and every number on screen traces to its source.
+
+**Depends on:** everything. **Size:** M. **Critical path:** yes.
+
+Polish here means *provenance, privacy proof, failure states, and rehearsal*, not visual refinement. A judge's first instinct is to ask where a number came from. Their second is to click something you didn't plan for. Their third, for this product specifically, is to ask what stops a business publishing something by accident.
+
+## Steps
+
+### 1. Provenance audit — every screen, every number
+
+Walk every screen and confirm each figure and claim shows its origin: `production | sandbox | imported | fixture` for financial data, `challenger-submitted | captured from an off-platform response | demo data` for offers, source plus timestamp for evidence.
+
+Anything unlabeled is a bug. This is the highest-value hour in the phase, because it's exactly what a skeptical judge probes.
+
+### 2. The privacy proof
+
+Rehearse the answer to *"what stops someone publishing their whole account by accident?"* as a **demonstration**, not a sentence:
+
+- Show the dashboard with everything private by default.
+- Show the preview rendering the actual public payload.
+- Open the public profile in a logged-out window, side by side, showing only the one published listing.
+- Unpublish, and refresh the public window to show it gone.
+
+That sequence takes forty seconds and answers the product's hardest question better than any slide. Practice it as a unit.
+
+### 3. Demo reset command
+
+`backend/app/cli/seed_demo.py` — one command that drops to a known state and reseeds accounts, transactions, and any demo listings. You will run this more than once, and a half-mutated database between attempts is how a working product looks broken.
+
+Reset must **not** destroy the genuine counteroffer from phase 01. Seed it back with its real provenance and timestamp.
+
+### 4. Failure and empty states
+
+Every screen needs its unhappy paths, because someone will hit one:
+
+- No connection yet / import running / import failed
+- Dashboard with no expenses
+- A listing with no challenges yet — the most common state in a young marketplace, so make it look intentional
+- Marketplace feed with nothing in the chosen category
+- Expired deadline, closed listing, unpublished listing
+- An open-bidding listing with one offer, where there's no competition to display yet
+- Evidence check unavailable or still pending
+- A challenger viewing a listing that was unpublished, or whose bidding mode changed, while they were writing
+
+An unstyled error is survivable. A blank white screen is not — nobody can tell whether it's broken or loading.
+
+### 5. Honest labeling of the demo's seams
+
+Two things get said on screen, not just aloud:
+
+- **If the Rho sandbox has no recurring service spend**, the demo runs on fixtures. Label it, and volunteer it in the pitch. Offering it reads as rigor; being caught at it reads as the opposite.
+- **If no genuine counteroffer arrived before the cutoff**, every sample offer is labeled simulated in the UI. The working publish-and-challenge loop is still the real accomplishment.
+
+### 6. The account switch as a demo instrument
+
+The strongest minute you have is switching accounts mid-demo: publish as one business, become another, find the listing in the feed, counter it, switch back, see it arrive. Then flip on open bidding, become a third business, and underbid — the leaderboard moving in front of the audience is the moment the product reads as a marketplace rather than a form.
+
+Rehearse it until the switching is invisible and the *bidding* is what people notice. Make sure the switcher is legible on a projector — the current account must be unmistakable at a glance, or the audience loses the thread of who's doing what.
+
+Seed the accounts so this works: one owner with spend, and at least two plausible challengers.
+
+### 7. The real counteroffer, front and centre
+
+If phase 01 delivered: show the actual amount, actual terms, actual timestamp, and say whether it came through the platform or was captured off it. One genuine offer from one real business is worth more than a screen of plausible fakes, and most teams won't have one.
+
+### 8. Walk the plan's demo script on deployed infrastructure
+
+The ten-step script in [../plan/plan1.md](../plan/plan1.md). Rehearse it **deployed**, not on localhost. Then rehearse again on hotel wifi or tethered — conference networks are hostile, and a demo that needs a fast connection often doesn't get one.
+
+### 9. Trace one number all the way down
+
+Pick the headline savings figure and click from it through the offer, the scope version, the listing, the expense, the annualized baseline, and finally the individual transactions. Any missing link gets fixed — that chain *is* the product's claim to credibility.
+
+### 10. Pre-demo checklist
+
+Write it down here and run it before presenting:
+
+- [ ] Deployed API healthy
+- [ ] Deployed frontend reaching it
+- [ ] Demo data reseeded
+- [ ] Public profile opened in a logged-out window, on a phone, on cell data
+- [ ] Genuine counteroffer present with correct provenance
+- [ ] Account switcher visible and legible on the projector
+- [ ] Every screen loads from a cold session
+- [ ] A backup recording exists, in case the network dies entirely
+
+## Done when
+
+- [ ] The full script runs deployed, cold, without intervention.
+- [ ] Every figure on screen shows its provenance.
+- [ ] The privacy proof runs in under a minute and is rehearsed.
+- [ ] Every screen has a defined empty and error state.
+- [ ] One command resets to a clean demo state without losing the real counteroffer.
+- [ ] The headline number traces back to individual transactions in the UI.
+- [ ] The pre-demo checklist is written and has been run end to end once.
+
+## Watch out for
+
+- **Don't start new features here.** Anything not already working goes to [10](10-stretch.md). Adding one more evidence source the hour before presenting has ended more demos than it has improved.
+- Don't rehearse only the happy path. Rehearse the questions: "where did that number come from," "what stops an accidental publish," "is that real data," "what if nobody challenges."
+- Don't demo from localhost. Public reachability is a feature — show a stranger's view of the profile.
+- Don't remove the simulated labels. If a judge finds one thing overstated, they discount everything else you said.
+- Don't let the account switcher look like an admin tool. Framed right, it's "here's the other side of the marketplace."
