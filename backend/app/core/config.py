@@ -1,0 +1,32 @@
+"""Loads environment configuration once for the backend.
+This module owns env parsing so other modules receive typed settings only.
+"""
+
+from functools import lru_cache
+
+from pydantic_settings import BaseSettings, SettingsConfigDict
+
+
+class Settings(BaseSettings):
+    """Typed application settings loaded from environment variables."""
+
+    database_url: str = "sqlite:///./dev.db"
+    transaction_source: str = "fixture"
+    rho_api_key: str = ""
+    rho_base_url: str = "https://api.rho.co"
+    claude_api_key: str = ""
+    claude_model: str = "claude-3-5-sonnet-20241022"
+    app_version: str = "0.1.0"
+
+    model_config = SettingsConfigDict(
+        env_file=".env",
+        env_prefix="",
+        case_sensitive=False,
+    )
+
+
+@lru_cache(maxsize=1)
+def get_settings() -> Settings:
+    """Return the singleton settings object for the current process."""
+
+    return Settings()
