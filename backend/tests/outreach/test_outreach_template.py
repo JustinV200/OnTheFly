@@ -5,6 +5,7 @@ import pytest
 from app.core.config import get_settings
 from app.models.outreach import ProviderCandidate
 from app.services.challenges.submit import submit_challenge
+from app.services.outreach.templates import OPT_OUT_TOKEN_PLACEHOLDER
 from tests.outreach.support import (
     INCUMBENT_NAME,
     PRIVATE_CANCELLATION_TERMS,
@@ -39,11 +40,13 @@ def test_invitation_is_compliant_public_only_and_names_no_one_else(client, db_se
 
     # The compliance footer and headers are part of every render.
     assert "On the Fly · Postal address: not configured — real sending is blocked until OUTREACH_POSTAL_ADDRESS is set" in body
+    # The owner's preview marks the opt-out link's place but never carries the recipient's token.
     stored = db_session.get(ProviderCandidate, bay_clean["id"])
     assert stored is not None
-    opt_out = f"http://localhost:5173/opt-out/{stored.opt_out_token}"
-    assert f"Don't want invitations? Opt out: {opt_out}" in body
-    assert headers["List-Unsubscribe"] == f"<{opt_out}>"
+    redacted_opt_out = f"http://localhost:5173/opt-out/{OPT_OUT_TOKEN_PLACEHOLDER}"
+    assert f"Don't want invitations? Opt out: {redacted_opt_out}" in body
+    assert headers["List-Unsubscribe"] == f"<{redacted_opt_out}>"
+    assert stored.opt_out_token not in body
     assert headers["From"] == "On the Fly <invitations@onthefly.example>"
     assert headers["To"] == "Bay Clean Professional Services <bids@bayclean.example>"
     assert headers["Subject"] == message["subject"]

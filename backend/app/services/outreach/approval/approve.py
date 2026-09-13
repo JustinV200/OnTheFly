@@ -15,7 +15,7 @@ from app.core.invitation_state import InvitationState
 from app.models.outreach.invitation import Invitation
 from app.models.outreach.invitation_approval import InvitationApproval
 from app.services.listings.owned_listing import get_owned_listing, require_public_listing
-from app.services.outreach.approval.preview import InvitationPreview, build_invitation_preview
+from app.services.outreach.approval.preview import InvitationPreview, render_unredacted_preview
 from app.services.outreach.senders.base import OutreachSender
 
 
@@ -49,7 +49,8 @@ def approve_invitations(
     if earlier is not None:
         return _replay(earlier, db)
 
-    preview = build_invitation_preview(listing.id, candidate_ids, acting_account_id, db, settings, sender)
+    # The unredacted render: invitations store the recipient's real opt-out link. Only the preview shown to the owner hides it.
+    preview = render_unredacted_preview(listing.id, candidate_ids, acting_account_id, db, settings, sender)
     if preview.message_hash != previewed_message_hash:
         raise HTTPException(
             status_code=status.HTTP_409_CONFLICT,

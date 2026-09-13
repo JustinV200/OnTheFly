@@ -1,4 +1,6 @@
-"""The owner-facing shape of an invitation: its stored delivery state plus the attributed "challenged" display state."""
+"""The owner-facing shape of an invitation: its stored delivery state plus the attributed "challenged" display state.
+The stored message keeps the recipient's opt-out token; this view redacts it (templates/redact.py).
+"""
 
 from datetime import datetime
 import json
@@ -10,6 +12,7 @@ from sqlalchemy.orm import Session
 from app.core.timestamps import as_utc
 from app.models.outreach.invitation import Invitation
 from app.services.outreach.status.attribution import find_challenged_at
+from app.services.outreach.templates.redact import redact_header_tokens, redact_opt_out_tokens
 
 CHALLENGED_DISPLAY_STATE = "challenged"
 
@@ -65,8 +68,8 @@ def _view(invitation: Invitation, challenged_at: datetime | None) -> InvitationV
         recipient_name=invitation.recipient_name,
         recipient_email=invitation.recipient_email,
         subject=invitation.subject,
-        body_text=invitation.body_text,
-        headers=json.loads(invitation.headers_json),
+        body_text=redact_opt_out_tokens(invitation.body_text),
+        headers=redact_header_tokens(json.loads(invitation.headers_json)),
         channel=invitation.channel,
         state=invitation.state,
         display_state=CHALLENGED_DISPLAY_STATE if challenged_at is not None else invitation.state,

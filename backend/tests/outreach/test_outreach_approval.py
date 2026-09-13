@@ -8,6 +8,7 @@ from sqlalchemy import select
 from app.core.config import get_settings
 from app.models.outreach import Invitation, SandboxOutboxMessage
 from app.services.listings.visibility import unpublish_listing
+from app.services.outreach.templates import OPT_OUT_TOKEN_PLACEHOLDER, redact_header_tokens, redact_opt_out_tokens
 from tests.outreach.support import (
     OWNER_HEADERS,
     OWNER_ID,
@@ -45,8 +46,10 @@ def test_approval_sends_exactly_the_previewed_messages_once_each(client, db_sess
     for message in previewed["messages"]:
         stored = outbox[message["to_email"]]
         assert stored.subject == message["subject"]
-        assert stored.body_text == message["body_text"]
-        assert json.loads(stored.headers_json) == message["headers"]
+        # The sent copy is the previewed one word for word, except the recipient's opt-out token the owner never sees.
+        assert redact_opt_out_tokens(stored.body_text) == message["body_text"]
+        assert redact_header_tokens(json.loads(stored.headers_json)) == message["headers"]
+        assert OPT_OUT_TOKEN_PLACEHOLDER not in stored.body_text
 
 
 def test_double_approval_and_double_processing_deliver_once_per_recipient(client, db_session) -> None:
