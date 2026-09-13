@@ -21,6 +21,11 @@ const REASON_TEXT: Record<NoveltyReason, string> = {
 
 /** Render one row per charge with its status and, for unusual charges, the reasons. */
 export function ChargeReviewList({ charges }: ChargeReviewListProps): JSX.Element {
+  // Only an expense with no posted charges has none to score; say so rather than render an empty list.
+  if (charges.length === 0) {
+    return <p style={{ color: '#475569' }}>Charges not checked: no charge has posted, so there is nothing to compare.</p>;
+  }
+
   // The backend returns oldest first (the order it learned them); owners scan newest first.
   const newestFirst = [...charges].reverse();
 

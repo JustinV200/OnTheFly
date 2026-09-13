@@ -11,7 +11,7 @@ from alembic import op
 import sqlalchemy as sa
 
 revision: str = "0011_public_scope_requirements"
-down_revision: str | None = "0009_add_vendor_alias_dismissals"
+down_revision: str | None = "0010_eligibility_exact_alias"
 branch_labels: Sequence[str] | None = None
 depends_on: Sequence[str] | None = None
 

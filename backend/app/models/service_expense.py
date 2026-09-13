@@ -5,7 +5,7 @@ This model stays private until a later phase constructs an explicit public proje
 from datetime import datetime
 import uuid
 
-from sqlalchemy import Boolean, DateTime, Float, ForeignKey, Integer, String, UniqueConstraint
+from sqlalchemy import Boolean, DateTime, Float, ForeignKey, Integer, String, UniqueConstraint, false
 from sqlalchemy.orm import Mapped, mapped_column
 
 from app.core.visibility import ListingVisibility
@@ -46,3 +46,11 @@ class ServiceExpense(Base):
     )
     owner_corrected_vendor: Mapped[str | None] = mapped_column(String(255), nullable=True)
     owner_corrected_category: Mapped[str | None] = mapped_column(String(64), nullable=True)
+    # The owner's explicit "not publishable" mark. Sync recomputes is_publishable on every dashboard
+    # load, so the mark lives in its own column that sync reads and never clears; only the owner does.
+    owner_marked_ineligible: Mapped[bool] = mapped_column(
+        Boolean,
+        nullable=False,
+        default=False,
+        server_default=false(),
+    )

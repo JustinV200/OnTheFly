@@ -11,49 +11,80 @@ from app.core.visibility import ListingVisibility
 from app.models.service_expense import ServiceExpense
 from app.models.transaction import Transaction
 from app.services.expenses.baseline import compute_baseline
-from app.services.expenses.eligibility import classify_eligibility
+from app.services.expenses.baseline_charges import baseline_charges
+from app.services.expenses.corrections import (
+    OwnerOverrides,
+    RegroupedMarks,
+    build_unposted_marked_expense,
+    classify_owner_eligibility,
+)
 from app.services.expenses.listing_references import listed_expense_ids
 from app.services.expenses.recurrence import detect_recurrence
+from app.services.expenses.vendor_group_key import vendor_group_key
 from app.services.expenses.vendor_normalize import VendorCorrectionStore, normalize_vendor_description
 
 
 
-def sync_service_expenses(owner_account_id: str, db: Session) -> list[ServiceExpense]:
-    """Upsert grouped service expenses for one owner from imported transactions."""
+def sync_service_expenses(owner_account_id: str, db: Session, commit: bool = True) -> list[ServiceExpense]:
+    """Upsert grouped service expenses for one owner from imported transactions.
+
+    With commit=False the regroup is only flushed, so a caller (the alias merge) can
+    inspect the result and then commit or roll back the whole operation as one unit.
+    Eligibility honours the owner's stored corrections and not-publishable mark on every
+    branch. Sync never clears the mark, and charges regrouped out of a marked row (a vendor
+    rename or alias merge) mark the group they land in, whether its row is new or existing.
+    """
 
     transactions = db.scalars(
         select(Transaction).where(Transaction.owner_account_id == owner_account_id)
     ).all()
+    stored_by_key = {
+        expense.normalized_vendor: expense
+        for expense in db.scalars(
+            select(ServiceExpense).where(ServiceExpense.owner_account_id == owner_account_id)
+        ).all()
+    }
+    # Read before grouping rewrites each transaction's key: it is how a regrouped charge finds the row it left.
+    regrouped_marks = RegroupedMarks.before_regroup(transactions, stored_by_key.values())
     grouped = _group_transactions(owner_account_id, transactions, db)
     results: list[ServiceExpense] = []
 
     for vendor_key, vendor_transactions in grouped.items():
-        # Keep all rows for audit; unsettled Stripe payments are not baseline spend.
-        stripe_group = any(t.provider == "stripe" for t in vendor_transactions)
-        charge_transactions = [t for t in vendor_transactions if t.status == "posted" and t.direction == "debit"] if stripe_group else vendor_transactions
+        existing = stored_by_key.get(vendor_key)
+        is_mark_inherited = regrouped_marks.is_inherited_by(vendor_key, vendor_transactions)
+        if existing is not None and is_mark_inherited:
+            # Charges folded in from a row the owner marked: a rename onto this name or a merged alias.
+            # The column is set, not just this sync's result, because once every charge sits under this
+            # key no later sync can tell where they came from.
+            existing.owner_marked_ineligible = True
+        # Keep all rows for audit; unsettled Stripe payments are not baseline spend. The
+        # spend-signals report selects with the same helper so it explains these exact charges.
+        charge_transactions = baseline_charges(vendor_transactions)
         if not charge_transactions:
-            existing = db.scalar(select(ServiceExpense).where(
-                ServiceExpense.owner_account_id == owner_account_id,
-                ServiceExpense.normalized_vendor == vendor_key))
-            if existing:
+            if existing is None and is_mark_inherited:
+                category = _choose_category(vendor_transactions)
+                db.add(build_unposted_marked_expense(owner_account_id, vendor_key, category, vendor_transactions))
+            elif existing:
+                eligibility = classify_owner_eligibility(
+                    vendor_key, existing.category, OwnerOverrides.of(existing), has_posted_charges=False
+                )
                 existing.amount_minor_per_period = 0
                 existing.annualized_amount_minor = 0
                 existing.period_count = 0
-                existing.is_publishable = False
-                existing.is_eligible = False
-                existing.eligibility_reason = "no_posted_debits"
+                existing.is_publishable = eligibility.publishable
+                existing.is_eligible = eligibility.eligible
+                existing.eligibility_reason = eligibility.reason
             continue
         recurrence = detect_recurrence(charge_transactions)
         baseline = compute_baseline(charge_transactions, recurrence)
         display_vendor = vendor_transactions[0].normalized_vendor or vendor_key
         category = _choose_category(vendor_transactions)
-        eligibility = classify_eligibility(display_vendor, category, vendor_transactions[0].direction)
-        existing = db.scalar(
-            select(ServiceExpense).where(
-                ServiceExpense.owner_account_id == owner_account_id,
-                ServiceExpense.normalized_vendor == vendor_key,
-            )
-        )
+        if existing is not None:
+            overrides = OwnerOverrides.of(existing)
+        else:
+            # A new row has no vendor or category correction of its own: the rules that formed it apply those.
+            overrides = OwnerOverrides(marked_ineligible=is_mark_inherited)
+        eligibility = classify_owner_eligibility(display_vendor, category, overrides)
         cadence = recurrence.cadence if recurrence.cadence != "insufficient_data" else "irregular"
 
         if existing is None:
@@ -73,6 +104,7 @@ def sync_service_expenses(owner_account_id: str, db: Session) -> list[ServiceExp
                 eligibility_reason=eligibility.reason,
                 is_publishable=eligibility.publishable,
                 visibility=ListingVisibility.private.value,
+                owner_marked_ineligible=overrides.marked_ineligible,
             )
             db.add(expense)
             results.append(expense)
@@ -93,7 +125,10 @@ def sync_service_expenses(owner_account_id: str, db: Session) -> list[ServiceExp
         results.append(existing)
 
     _remove_orphaned_expenses(owner_account_id, set(grouped), db)
-    db.commit()
+    if commit:
+        db.commit()
+    else:
+        db.flush()
     return results
 
 
@@ -121,20 +156,20 @@ def _group_transactions(
         fallback_vendor = (None if transaction.provider == "stripe" else transaction.normalized_vendor) or normalize_vendor_description(
             transaction.raw_description
         )
-        vendor, category = correction_store.resolve(
+        vendor_name, category = correction_store.resolve(
             owner_account_id=owner_account_id,
             raw_description=transaction.raw_description,
             fallback_vendor=fallback_vendor,
             fallback_category=transaction.category,
             db=db,
         )
-        transaction.normalized_vendor = vendor
         transaction.category = category
-        # Separate Stripe currencies without changing existing fixture grouping keys.
-        if transaction.provider == "stripe":
-            vendor = f"{vendor} [{transaction.currency}]"
-            transaction.normalized_vendor = vendor
-        grouped[vendor].append(transaction)
+        # Rules store currency-free names, but the key is built idempotently anyway: a rule
+        # saved from a suffixed key before that fix must not stack a second " [USD]".
+        group_key = vendor_group_key(vendor_name, transaction.provider, transaction.currency)
+        # Expense detail, spend signals and traces find a group's rows by this key.
+        transaction.normalized_vendor = group_key
+        grouped[group_key].append(transaction)
     return dict(grouped)
 
 

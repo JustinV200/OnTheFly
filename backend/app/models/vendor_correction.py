@@ -2,10 +2,26 @@
 Corrections are explicit overrides, not inferred renames across all accounts.
 """
 
+from enum import StrEnum
+
 from sqlalchemy import ForeignKey, String, UniqueConstraint
 from sqlalchemy.orm import Mapped, mapped_column
 
 from app.db.base import Base
+
+
+class CorrectionMatchMode(StrEnum):
+    """How a correction rule's pattern is compared with a transaction's raw description.
+
+    word: the pattern appears as whole words anywhere in the description (name-pattern renames,
+    including every rule stored before match modes existed).
+    exact: the whole description equals the pattern, ignoring case. Alias merges and dashboard
+    vendor/category corrections write one exact rule per descriptor of the expense, because they
+    must never claim a longer descriptor such as "SPARKLE WINDOWS" for "SPARKLE".
+    """
+
+    word = "word"
+    exact = "exact"
 
 
 class VendorCorrection(Base):
@@ -25,3 +41,10 @@ class VendorCorrection(Base):
     raw_description_pattern: Mapped[str] = mapped_column(String(255), nullable=False)
     corrected_vendor: Mapped[str | None] = mapped_column(String(255), nullable=True)
     corrected_category: Mapped[str | None] = mapped_column(String(64), nullable=True)
+    # Rules stored before match modes existed were all owner renames, so the server default is "word".
+    match_mode: Mapped[str] = mapped_column(
+        String(16),
+        nullable=False,
+        default=CorrectionMatchMode.word.value,
+        server_default=CorrectionMatchMode.word.value,
+    )

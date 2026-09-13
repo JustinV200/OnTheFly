@@ -54,6 +54,9 @@ class NotAssessedReason(StrEnum):
     too_few_charges = "too_few_charges"
     mixed_currency = "mixed_currency"
     amounts_too_variable = "amounts_too_variable"
+    # Set by the spend-signals report, never by analyze_price_levels: every stored row in
+    # a Stripe group is pending, void, or a credit, so there is no charge to segment.
+    no_posted_charges = "no_posted_charges"
 
 
 class PriceLevelShift(BaseModel):
@@ -124,12 +127,12 @@ def analyze_price_levels(transactions: list[Transaction], cadence: str) -> Price
         key=lambda transaction: (transaction.posted_at, transaction.id or ""),
     )
     if cadence not in RECURRING_CADENCES:
-        return _not_assessed(NotAssessedReason.cadence_not_recurring)
+        return not_assessed_price_levels(NotAssessedReason.cadence_not_recurring)
     if len(charges) < MIN_CHARGES:
-        return _not_assessed(NotAssessedReason.too_few_charges)
+        return not_assessed_price_levels(NotAssessedReason.too_few_charges)
     currencies = {charge.currency for charge in charges}
     if len(currencies) != 1:
-        return _not_assessed(NotAssessedReason.mixed_currency)
+        return not_assessed_price_levels(NotAssessedReason.mixed_currency)
 
     trace = PRICE_LEVEL_DETECTOR.run([float(charge.amount_minor) for charge in charges])
     level_starts = [0] + [shift.index for shift in trace.shifts]
@@ -151,7 +154,7 @@ def analyze_price_levels(transactions: list[Transaction], cadence: str) -> Price
         or in_level_count / len(charges) <= MIN_SHARE_IN_LEVELS
         or _largest_similar_amount_group(off_level_amounts) >= MIN_CURRENT_LEVEL_CHARGES
     ):
-        return _not_assessed(NotAssessedReason.amounts_too_variable)
+        return not_assessed_price_levels(NotAssessedReason.amounts_too_variable)
 
     shifts: list[PriceLevelShift] = []
     for level_number, shift in enumerate(trace.shifts):
@@ -257,7 +260,9 @@ def _pending_change(
     )
 
 
-def _not_assessed(reason: NotAssessedReason) -> PriceLevelAnalysis:
+def not_assessed_price_levels(reason: NotAssessedReason) -> PriceLevelAnalysis:
+    """Build the analysis for a reading that could not run: no levels, no shifts, the reason stated."""
+
     return PriceLevelAnalysis(
         is_assessed=False,
         not_assessed_reason=reason,

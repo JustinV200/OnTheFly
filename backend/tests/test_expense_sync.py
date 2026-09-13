@@ -4,6 +4,7 @@ from sqlalchemy import select
 
 from app.models.listing import ScopeVersion
 from app.models.service_expense import ServiceExpense
+from app.models.vendor_correction import CorrectionMatchMode
 from app.services.expenses.sync import sync_service_expenses
 from app.services.expenses.vendor_normalize import VendorCorrectionStore
 from app.services.transactions.import_run import run_import
@@ -58,6 +59,22 @@ def test_correction_rules_match_whole_words_and_prefer_the_most_specific(db_sess
     assert specific[0] == "Orkin Pest Control"
     assert broad[0] == "Orkin (broad rule)"
     assert unrelated[0] == "Porkington Bbq"
+
+
+def test_exact_rules_match_only_their_whole_descriptor(db_session) -> None:
+    store = VendorCorrectionStore()
+    store.upsert("acc_owner_1", "SPARKLE", "Sparkle Clean", None, db_session, match_mode=CorrectionMatchMode.exact)
+    store.upsert("acc_owner_1", "orkin", "Orkin", None, db_session)
+    db_session.commit()
+    resolver = VendorCorrectionStore()
+
+    exact = resolver.resolve("acc_owner_1", "sparkle", "Sparkle", None, db_session)
+    longer = resolver.resolve("acc_owner_1", "SPARKLE WINDOWS", "Sparkle Windows", None, db_session)
+    word = resolver.resolve("acc_owner_1", "SQ *ORKIN 1234", "fallback", None, db_session)
+
+    assert exact[0] == "Sparkle Clean"
+    assert longer[0] == "Sparkle Windows"
+    assert word[0] == "Orkin"
 
 
 def test_long_descriptor_rules_fit_the_correction_key(db_session) -> None:

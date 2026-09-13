@@ -2,8 +2,6 @@
 It deduplicates source records and marks excluded spend without publishing anything.
 """
 
-import re
-
 from datetime import date, timedelta
 
 from pydantic import BaseModel
@@ -11,6 +9,7 @@ from sqlalchemy import select
 from sqlalchemy.orm import Session
 
 from app.models.transaction import Transaction
+from app.services.expenses.exclusions import classify_spend_exclusion
 from app.services.expenses.sync import sync_service_expenses
 from app.services.transactions.factory import get_transaction_source
 from app.services.transactions.source import NormalizedTransaction, TransactionSource
@@ -103,19 +102,12 @@ def _find_duplicate(db: Session, transaction: NormalizedTransaction) -> Transact
 def _classify_exclusion(transaction: NormalizedTransaction) -> str | None:
     if transaction.provider == "stripe" and transaction.status != "posted":
         return transaction.status
-    haystack = " ".join(
-        value.lower()
-        for value in [transaction.raw_description, transaction.category or "", transaction.memo or ""]
+    # The same classifier decides group eligibility in sync, so a row's exclusion flag and the
+    # dashboard's publishability follow one rule set. It ignores direction on purpose: Stripe
+    # reports every outbound transfer or tax payment as a debit.
+    return classify_spend_exclusion(
+        transaction.raw_description,
+        transaction.category,
+        transaction.memo,
+        transaction.counterparty,
     )
-    if "payroll" in haystack:
-        return "payroll"
-    # Exclude only credits that are also identified as transfers.  A debit transaction
-    # whose vendor name contains "transfer" (e.g. "Transfer Pro Cleaning") is legitimate
-    # spend and must not be excluded — checking direction prevents false positives.
-    if transaction.direction == "credit" and "transfer" in haystack:
-        return "transfer"
-    # Use a whole-word match to avoid false-positives on vendor names that contain
-    # "tax" as a substring (e.g. "Syntaxco", "Exacta Supplies").
-    if re.search(r"\btax\b", haystack):
-        return "tax"
-    return None

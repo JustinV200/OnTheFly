@@ -15,6 +15,7 @@ const NOT_ASSESSED_TEXT: Record<NotAssessedReason, string> = {
   too_few_charges: 'Price changes not checked: fewer than 3 charges.',
   mixed_currency: 'Price changes not checked: charges are in more than one currency.',
   amounts_too_variable: 'No stable price to track: amounts differ from charge to charge.',
+  no_posted_charges: 'Price changes not checked: no charge has posted, only pending, void, or credit rows.',
 };
 
 /** Render price changes, an unestablished earlier price, a pending change, or the reason price levels were not assessed. */
