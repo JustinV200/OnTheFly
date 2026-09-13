@@ -1,10 +1,10 @@
 /* The part of Spend shown once a business has imported transactions: loading, failure, and empty states, then the
-   portfolio headline, the expense list, the selected expense's detail drawer, and duplicate-vendor suggestions. */
+   portfolio headline, the duplicate-vendor notice, the expense list, and the selected expense's detail drawer. */
 import { EmptyState } from '../../shared/components/EmptyState';
 import { ErrorState } from '../../shared/components/ErrorState';
 import { LoadingSpinner } from '../../shared/components/LoadingSpinner';
 import { Stack } from '../../shared/ui';
-import { VendorAliasPanel } from './aliases/VendorAliasPanel';
+import { DuplicateVendors } from './aliases/DuplicateVendors';
 import type { ImportedSource } from './connection/types';
 import { ExpenseDrawer } from './detail/ExpenseDrawer';
 import { ExpenseList } from './expenses/ExpenseList';
@@ -42,6 +42,13 @@ export function ImportedSpend({ businessName, dashboard, sources }: ImportedSpen
       {dashboard.list.error ? (
         <ErrorState error={dashboard.list.error} onRetry={dashboard.list.reload} title="Showing the last loaded expenses; a refresh failed" />
       ) : null}
+      <DuplicateVendors
+        onMerged={() => {
+          // A merge deletes the alias expense row, so drop a selection that would now 404.
+          dashboard.selectExpense(null);
+          dashboard.reload();
+        }}
+      />
       <ExpenseList
         expenses={expenses}
         onOpen={dashboard.selectExpense}
@@ -54,13 +61,6 @@ export function ImportedSpend({ businessName, dashboard, sources }: ImportedSpen
         expense={expenses.find((expense) => expense.id === selectedExpenseId) ?? null}
         onClose={() => dashboard.selectExpense(null)}
         onVisibilityChanged={dashboard.reload}
-      />
-      <VendorAliasPanel
-        onMerged={() => {
-          // A merge deletes the alias expense row, so drop a selection that would now 404.
-          dashboard.selectExpense(null);
-          dashboard.reload();
-        }}
       />
     </Stack>
   );
