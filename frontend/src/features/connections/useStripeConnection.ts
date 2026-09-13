@@ -10,8 +10,9 @@ interface ConnectionState {
   status: string;
 }
 
-/** Connect one sandbox checking account and persist imported transactions through the API. */
-export function useStripeConnection(onImported: () => void) {
+/** Connect one sandbox checking account and persist imported transactions through the API.
+    onConnected runs once consent is stored, before any import, so sibling panels re-read the same link. */
+export function useStripeConnection(onImported: () => void, onConnected: () => void) {
   const [connection, setConnection] = useState<ConnectionState | null>(null);
   const [busy, setBusy] = useState(false);
   const [transactions, setTransactions] = useState<ExpenseTransaction[]>([]);
@@ -80,6 +81,9 @@ export function useStripeConnection(onImported: () => void) {
           return;
         }
         setConnection(await post<ConnectionState>(`${base}/complete`, { session_id: session.id }));
+        // Stripe's refresh can stay pending for minutes, so don't wait for the import to tell the dashboard
+        // this business is now connected.
+        onConnected();
       }
       await sync(!connect);
     } catch (error: unknown) {
