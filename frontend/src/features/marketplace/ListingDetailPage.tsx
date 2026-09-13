@@ -3,18 +3,19 @@
    page, not a spinner. The leaderboard is fetched once here and shared by everything that shows offers. */
 import { useParams } from 'react-router-dom';
 
+import { useActingAccount } from '../../shared/account/ActingAccountContext';
 import { useApiQuery } from '../../shared/api/useApiQuery';
 import { ErrorState } from '../../shared/components/ErrorState';
 import { LoadingSpinner } from '../../shared/components/LoadingSpinner';
-import { describeDeadline } from '../../shared/format/describeDeadline';
 import { describeClosesIn } from '../../shared/market';
 import { Stack } from '../../shared/ui';
 import { OfferActivity } from './detail/activity/OfferActivity';
-import { ChallengePanel } from './detail/ChallengePanel';
 import { MarketHeader } from './detail/header/MarketHeader';
 import { PriceHeadline } from './detail/header/PriceHeadline';
 import { ListingNotPublic } from './detail/ListingNotPublic';
 import { MarketTabs } from './detail/tabs/MarketTabs';
+import { BidTicket } from './detail/ticket/BidTicket';
+import { useListingOwnership } from './detail/ticket/useListingOwnership';
 import { useLeaderboard } from './leaderboard/useLeaderboard';
 import { SimilarListings } from './similar/SimilarListings';
 import type { MarketplaceListing } from './types';
@@ -25,10 +26,12 @@ const POLL_INTERVAL_MS = 10000;
 /** Render one market page fetched by listing ID. */
 export function ListingDetailPage(): JSX.Element {
   const { id = '' } = useParams();
+  const { account } = useActingAccount();
   const query = useApiQuery<MarketplaceListing>(`/api/marketplace/${id}`, { pollIntervalMs: POLL_INTERVAL_MS });
   const isNotPublic = query.error?.status === 404;
   // Stops polling offers once the listing is known to be private: its prices went dark with it.
   const board = useLeaderboard(isNotPublic ? null : id);
+  const ownership = useListingOwnership(id, account !== null);
 
   if (isNotPublic) {
     return <ListingNotPublic />;
@@ -53,7 +56,7 @@ export function ListingDetailPage(): JSX.Element {
         <MarketHeader className="market-page__header" closes={closes} listing={listing} offerCount={offerCount} />
         <PriceHeadline className="market-page__price" listing={listing} />
         <aside aria-label="Bid on this task" className="market-page__ticket">
-          <ChallengePanel deadline={describeDeadline(listing.challenge_deadline)} listing={listing} />
+          <BidTicket closes={closes} listing={listing} ownership={ownership} />
         </aside>
         <OfferActivity board={board} className="market-page__activity" listing={listing} offerCount={offerCount} />
         <MarketTabs board={board} className="market-page__tabs" closes={closes} listing={listing} />

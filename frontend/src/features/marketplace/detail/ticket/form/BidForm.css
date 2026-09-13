@@ -1,0 +1,43 @@
+/* Bid form: price beside billing period (price wider), the full-width primary button, and a quiet note. The "$" sits
+   inside the input's left padding and never takes pointer events, so clicking it still focuses the field. */
+.bid-form {
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-3);
+}
+
+.bid-form__fields {
+  display: grid;
+  gap: var(--space-3);
+  grid-template-columns: minmax(0, 3fr) minmax(0, 2fr);
+}
+
+.bid-form__note {
+  color: var(--color-text-muted);
+  font-size: var(--text-xs);
+  margin: 0;
+  text-align: center;
+}
+
+.dollar-input {
+  display: block;
+  position: relative;
+}
+
+.dollar-input__prefix {
+  color: var(--color-text-muted);
+  font-size: var(--text-md);
+  font-weight: var(--weight-semibold);
+  left: var(--space-3);
+  pointer-events: none;
+  position: absolute;
+  top: 50%;
+  transform: translateY(-50%);
+}
+
+/* Two classes, so the left padding beats the Input primitive's own whatever order the CSS loads in. */
+.dollar-input .dollar-input__control {
+  font-variant-numeric: tabular-nums;
+  font-weight: var(--weight-semibold);
+  padding-left: var(--space-6);
+}
