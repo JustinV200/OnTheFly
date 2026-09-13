@@ -5,6 +5,7 @@ import { Link } from 'react-router-dom';
 import { MoneyDisplay } from '../../../shared/components/MoneyDisplay';
 import { Badge } from '../../../shared/ui';
 import type { SavingsResponse } from '../types';
+import { describeAssumption } from './describeAssumption';
 import './SavingsCell.css';
 
 interface SavingsCellProps {
@@ -27,7 +28,7 @@ export function SavingsCell({ savings, currency, challengeId }: SavingsCellProps
       </div>
       {savings.assumptions.length > 0 ? (
         <ul className="savings-cell__assumptions">
-          {savings.assumptions.map((assumption) => <li key={assumption}>{assumption}</li>)}
+          {savings.assumptions.map((assumption) => <li key={assumption}>{describeAssumption(assumption)}</li>)}
         </ul>
       ) : null}
       {challengeId ? <Link className="savings-cell__trace" to={`/offers/${challengeId}/trace`}>Where does this number come from?</Link> : null}

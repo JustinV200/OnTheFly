@@ -3,6 +3,8 @@
 import { MoneyDisplay } from '../../../../shared/components/MoneyDisplay';
 import { ProvenanceBadge } from '../../../../shared/provenance/ProvenanceBadge';
 import { Badge, Stack, Stat } from '../../../../shared/ui';
+// Shared with the inbox so an assumption reads the same under the figure there and here.
+import { describeAssumption } from '../../../inbox/savings/describeAssumption';
 import { TraceStep } from '../../chain/TraceStep';
 import type { OfferTrace } from '../../types';
 import './SavingsStep.css';
@@ -57,7 +59,7 @@ export function SavingsStep({ savings, unrankedReason, earlierScopeVersion, offe
         {savings.assumptions.length > 0 ? (
           <div>
             {savings.is_provisional ? <p className="trace-savings__because">Provisional, because:</p> : null}
-            <ul className="trace-savings__assumptions">{savings.assumptions.map((item) => <li key={item}>{item}</li>)}</ul>
+            <ul className="trace-savings__assumptions">{savings.assumptions.map((item) => <li key={item}>{describeAssumption(item)}</li>)}</ul>
           </div>
         ) : null}
       </Stack>
