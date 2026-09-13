@@ -9,7 +9,7 @@ import { BiddingModePill } from '../../../shared/components/BiddingModePill';
 import { Button, ButtonLink, Callout, Card, Cluster, Stack } from '../../../shared/ui';
 import type { PublicListingProjection } from '../../publish/types';
 import { UnpublishButton } from '../../publish/UnpublishButton';
-import { ListingVisibilityBadge } from './ListingVisibilityBadge';
+import { ListingVisibilityBadge } from '../header/ListingVisibilityBadge';
 import './ListingControls.css';
 
 interface ListingControlsProps {

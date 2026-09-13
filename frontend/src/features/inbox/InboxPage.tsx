@@ -1,24 +1,21 @@
-/* The owner's Offers page for one listing: status and controls, any genuine offer first, then one ranked list with
-   "What you pay now" pinned on top. A row opens the offer drawer. It polls, so an offer made by another business shows
-   up after switching back without a refresh. */
+/* The owner's Offers page for one listing, read like a market from the owner's side: the header, a summary strip with
+   the listing's controls, any genuine offer, then one ranked list with "What you pay now" pinned on top. A row opens the
+   offer drawer. It polls, so an offer made by another business shows up after switching back without a refresh. */
 import { ReactNode, useState } from 'react';
 import { useParams } from 'react-router-dom';
 
 import { useActingAccount } from '../../shared/account/ActingAccountContext';
-import { BiddingModePill } from '../../shared/components/BiddingModePill';
 import { EmptyState } from '../../shared/components/EmptyState';
 import { ErrorState } from '../../shared/components/ErrorState';
 import { LoadingSpinner } from '../../shared/components/LoadingSpinner';
-import { categoryLabel } from '../../shared/format/categoryLabel';
-import { ButtonLink, Callout, Grid, PageHeader, Stack } from '../../shared/ui';
+import { ButtonLink, Callout, Stack } from '../../shared/ui';
 import { ListingControls } from './controls/ListingControls';
-import { ListingVisibilityBadge } from './controls/ListingVisibilityBadge';
-import { CurrentPriceCard } from './CurrentPriceCard';
 import { OfferDrawer } from './detail/OfferDrawer';
 import { GenuineOfferCallout } from './genuine/GenuineOfferCallout';
+import { InboxHeader } from './header/InboxHeader';
 import { RankedOffersSection } from './offers/RankedOffersSection';
+import { SummaryStrip } from './summary/SummaryStrip';
 import { useInbox } from './useInbox';
-import './InboxPage.css';
 
 /** Render the owner's Offers page for one listing. */
 export function InboxPage(): JSX.Element {
@@ -55,16 +52,7 @@ export function InboxPage(): JSX.Element {
 
   return (
     <Stack gap={6}>
-      <PageHeader
-        meta={(
-          <>
-            <ListingVisibilityBadge visibility={listing.visibility} />
-            <BiddingModePill mode={listing.bidding_mode} />
-          </>
-        )}
-        subtitle={listing.scope_summary}
-        title={`Offers on your ${categoryLabel(listing.category).toLowerCase()} listing`}
-      />
+      <InboxHeader listing={listing} />
       {listing.visibility !== 'public' ? (
         <Callout role="status" title="This listing is private now" tone="private">
           <p>Nobody else can see it. The offers below arrived while it was public and are kept for you.</p>
@@ -72,10 +60,12 @@ export function InboxPage(): JSX.Element {
       ) : null}
       {inbox.error ? <ErrorState error={inbox.error} onRetry={reload} title="Showing the last loaded offers; a refresh failed" /> : null}
 
-      <Grid className="inbox-page__overview" minItemWidth="20rem">
-        <CurrentPriceCard listing={listing} offerCount={challenges.length} />
-        <ListingControls listing={listing} onChanged={reload} />
-      </Grid>
+      <SummaryStrip
+        controls={<ListingControls listing={listing} onChanged={reload} />}
+        listing={listing}
+        offers={challenges}
+        onOpenOffer={setOpenOfferId}
+      />
       <GenuineOfferCallout offers={ownerOffers} />
 
       {challenges.length === 0 ? (
@@ -105,7 +95,7 @@ export function InboxPage(): JSX.Element {
 function InboxPageFrame({ children }: { children: ReactNode }): JSX.Element {
   return (
     <Stack gap={6}>
-      <PageHeader title="Offers on your listing" />
+      <InboxHeader listing={null} />
       {children}
     </Stack>
   );
