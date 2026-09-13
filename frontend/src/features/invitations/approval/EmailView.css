@@ -1,0 +1,42 @@
+/* Email view: a letter-like panel with a header block and a monospace body that wraps instead of scrolling sideways. */
+.email-view {
+  background-color: var(--color-surface-subtle);
+  border: var(--border-width) solid var(--color-border);
+  border-radius: var(--radius-md);
+  overflow: hidden;
+}
+
+.email-view__headers {
+  border-bottom: var(--border-width) solid var(--color-border);
+  display: grid;
+  gap: var(--space-1);
+  margin: 0;
+  padding: var(--space-3) var(--space-4);
+}
+
+.email-view__header {
+  display: grid;
+  font-size: var(--text-sm);
+  gap: var(--space-2);
+  grid-template-columns: 7.5rem minmax(0, 1fr);
+}
+
+.email-view__header dt {
+  color: var(--color-text-muted);
+  font-weight: var(--weight-semibold);
+}
+
+.email-view__header dd {
+  margin: 0;
+  overflow-wrap: anywhere;
+}
+
+.email-view__body {
+  color: var(--color-text);
+  font-size: var(--text-sm);
+  line-height: var(--leading-normal);
+  margin: 0;
+  padding: var(--space-4);
+  white-space: pre-wrap;
+  overflow-wrap: anywhere;
+}

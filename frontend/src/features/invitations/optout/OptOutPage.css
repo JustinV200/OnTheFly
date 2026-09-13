@@ -1,0 +1,5 @@
+/* Opt-out page: a narrow, centred column; it is a single decision. */
+.opt-out-page {
+  margin: 0 auto;
+  max-width: 560px;
+}

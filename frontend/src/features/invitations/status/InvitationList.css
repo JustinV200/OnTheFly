@@ -1,0 +1,49 @@
+/* Invitation rows: who, state and timing, and a view action; they stack on a phone. */
+.invitation-list {
+  border-top: var(--border-width) solid var(--color-border);
+  list-style: none;
+  margin: var(--space-4) 0 0;
+  padding: 0;
+}
+
+.invitation-list__row {
+  align-items: center;
+  border-top: var(--border-width) solid var(--color-border-subtle);
+  display: grid;
+  gap: var(--space-2) var(--space-4);
+  grid-template-columns: minmax(0, 1fr);
+  padding: var(--space-3) var(--space-4);
+}
+
+.invitation-list__row:first-child {
+  border-top: 0;
+}
+
+@media (min-width: 768px) {
+  .invitation-list__row {
+    grid-template-columns: minmax(0, 1.2fr) minmax(0, 1fr) auto;
+  }
+}
+
+.invitation-list__name {
+  font-weight: var(--weight-semibold);
+  margin: 0;
+}
+
+.invitation-list__email,
+.invitation-list__when {
+  color: var(--color-text-muted);
+  font-size: var(--text-sm);
+  margin: 0;
+  overflow-wrap: anywhere;
+}
+
+.invitation-list__when {
+  margin-top: var(--space-1);
+}
+
+.invitation-list__failure {
+  color: var(--color-danger-text);
+  font-size: var(--text-sm);
+  margin: var(--space-1) 0 0;
+}

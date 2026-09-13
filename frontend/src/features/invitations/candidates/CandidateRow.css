@@ -1,0 +1,87 @@
+/* Candidate row: checkbox column, details, and a quiet remove action; the selected row takes the selection tint. */
+.candidate-row {
+  align-items: flex-start;
+  border-top: var(--border-width) solid var(--color-border-subtle);
+  display: grid;
+  gap: var(--space-3);
+  grid-template-columns: auto minmax(0, 1fr) auto;
+  padding: var(--space-4);
+}
+
+.candidate-row:first-child {
+  border-top: 0;
+}
+
+.candidate-row--selected {
+  background-color: var(--color-surface-selected);
+}
+
+.candidate-row__check:where(input) {
+  height: 1.125rem;
+  margin: 0.2rem 0 0;
+  width: 1.125rem;
+}
+
+.candidate-row__body {
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-1);
+  min-width: 0;
+}
+
+.candidate-row__top {
+  align-items: center;
+  display: flex;
+  flex-wrap: wrap;
+  gap: var(--space-2);
+}
+
+.candidate-row__name {
+  color: var(--color-text);
+  cursor: pointer;
+  font-weight: var(--weight-semibold);
+}
+
+.candidate-row__contact {
+  color: var(--color-text-secondary);
+  display: flex;
+  flex-wrap: wrap;
+  font-size: var(--text-sm);
+  gap: var(--space-1) var(--space-4);
+  margin: 0;
+  overflow-wrap: anywhere;
+}
+
+.candidate-row__contact span,
+.candidate-row__contact a {
+  align-items: center;
+  display: inline-flex;
+  gap: var(--space-1);
+}
+
+.candidate-row__missing,
+.candidate-row__summary {
+  color: var(--color-text-muted);
+}
+
+.candidate-row__summary {
+  -webkit-box-orient: vertical;
+  display: -webkit-box;
+  font-size: var(--text-sm);
+  -webkit-line-clamp: 2;
+  margin: 0;
+  overflow: hidden;
+}
+
+.candidate-row__reason {
+  color: var(--color-warning-text);
+  font-size: var(--text-sm);
+  font-weight: var(--weight-medium);
+  margin: 0;
+}
+
+.candidate-row__sources {
+  font-size: var(--text-xs);
+  margin: 0;
+  overflow-wrap: anywhere;
+}
