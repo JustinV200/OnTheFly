@@ -1,0 +1,49 @@
+/* Checkbox and radio rows: the input aligned to the first line of the label, hint underneath. */
+.ui-choice {
+  align-items: flex-start;
+  color: var(--color-text);
+  cursor: pointer;
+  display: flex;
+  gap: var(--space-2);
+  line-height: var(--leading-snug);
+  min-width: 0;
+  /* Comfortable tap target without inflating the visual size of the box. */
+  padding: var(--space-1) 0;
+}
+
+.ui-choice__input {
+  accent-color: var(--color-brand);
+  cursor: pointer;
+  flex: none;
+  height: 1.05rem;
+  margin: 0.1rem 0 0;
+  width: 1.05rem;
+}
+
+.ui-choice__text {
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-0_5);
+  min-width: 0;
+}
+
+.ui-choice__label {
+  font-size: var(--text-md);
+}
+
+.ui-choice__hint {
+  color: var(--color-text-muted);
+  font-size: var(--text-sm);
+}
+
+.ui-choice--disabled {
+  cursor: not-allowed;
+}
+
+.ui-choice--disabled .ui-choice__input {
+  cursor: not-allowed;
+}
+
+.ui-choice--disabled .ui-choice__label {
+  color: var(--color-text-subtle);
+}

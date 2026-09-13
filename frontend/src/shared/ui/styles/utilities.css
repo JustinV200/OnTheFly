@@ -1,0 +1,56 @@
+/* A deliberately short list of single-purpose utility classes the primitives don't cover.
+   Anything used for layout belongs in Stack / Cluster / Grid instead; add a utility here only when two screens need it. */
+
+/* Tabular numerals: digits share one width, so columns of figures line up and live numbers don't jitter. */
+.ui-num {
+  font-variant-numeric: tabular-nums;
+  font-feature-settings: "tnum" 1;
+}
+
+/* Money: tabular, never broken across lines ("$2,400.00" must not wrap after the comma). */
+.ui-money {
+  font-variant-numeric: tabular-nums;
+  font-feature-settings: "tnum" 1;
+  white-space: nowrap;
+}
+
+.ui-text-muted {
+  color: var(--color-text-muted);
+}
+
+.ui-text-sm {
+  font-size: var(--text-sm);
+}
+
+.ui-text-xs {
+  font-size: var(--text-xs);
+}
+
+/* Small uppercase label above a title or figure. */
+.ui-eyebrow {
+  color: var(--color-text-muted);
+  font-size: var(--text-xs);
+  font-weight: var(--weight-semibold);
+  letter-spacing: var(--tracking-wide);
+  line-height: var(--leading-tight);
+  text-transform: uppercase;
+}
+
+/* Readable to screen readers, invisible on screen. */
+.ui-visually-hidden {
+  border: 0;
+  clip: rect(0 0 0 0);
+  height: 1px;
+  margin: -1px;
+  overflow: hidden;
+  padding: 0;
+  position: absolute;
+  white-space: nowrap;
+  width: 1px;
+}
+
+.ui-truncate {
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}

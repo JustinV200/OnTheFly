@@ -1,0 +1,21 @@
+/* Spinner sizes and rotation. Under reduced motion the ring holds still (base.css zeroes the animation). */
+.ui-spinner {
+  animation: ui-spin 0.8s linear infinite;
+  flex: none;
+}
+
+.ui-spinner--sm {
+  height: 14px;
+  width: 14px;
+}
+
+.ui-spinner--md {
+  height: 20px;
+  width: 20px;
+}
+
+@keyframes ui-spin {
+  to {
+    transform: rotate(360deg);
+  }
+}

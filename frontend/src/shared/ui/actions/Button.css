@@ -1,0 +1,143 @@
+/* Button variants and sizes, shared by <Button> and <ButtonLink>. */
+.ui-button {
+  align-items: center;
+  border: var(--border-width) solid transparent;
+  border-radius: var(--radius-md);
+  box-shadow: none;
+  cursor: pointer;
+  display: inline-flex;
+  font: inherit;
+  font-weight: var(--weight-semibold);
+  gap: var(--space-2);
+  justify-content: center;
+  line-height: var(--leading-tight);
+  text-align: center;
+  text-decoration: none;
+  /* Long labels wrap rather than push the page sideways on a phone. */
+  text-wrap: balance;
+  transition:
+    background-color var(--duration-fast) var(--ease-standard),
+    border-color var(--duration-fast) var(--ease-standard),
+    box-shadow var(--duration-fast) var(--ease-standard),
+    color var(--duration-fast) var(--ease-standard);
+  -webkit-tap-highlight-color: transparent;
+  user-select: none;
+}
+
+.ui-button:focus-visible {
+  outline: 2px solid var(--color-focus-ring);
+  outline-offset: 2px;
+}
+
+.ui-button__label {
+  min-width: 0;
+}
+
+/* ---- Sizes ---- */
+.ui-button--sm {
+  font-size: var(--text-sm);
+  min-height: 30px;
+  padding: var(--space-1) var(--space-3);
+}
+
+.ui-button--md {
+  font-size: var(--text-md);
+  min-height: var(--control-height);
+  padding: var(--space-1) var(--space-4);
+}
+
+.ui-button--lg {
+  font-size: var(--text-lg);
+  min-height: 46px;
+  padding: var(--space-2) var(--space-6);
+  border-radius: var(--radius-lg);
+}
+
+.ui-button--full {
+  width: 100%;
+}
+
+/* ---- Variants ---- */
+.ui-button--primary {
+  background-color: var(--color-brand);
+  border-color: var(--color-brand);
+  box-shadow: var(--shadow-sm);
+  color: var(--color-text-inverse);
+}
+
+.ui-button--primary:hover:not(:disabled) {
+  background-color: var(--color-brand-hover);
+  border-color: var(--color-brand-hover);
+  color: var(--color-text-inverse);
+}
+
+.ui-button--primary:active:not(:disabled) {
+  background-color: var(--color-brand-active);
+}
+
+.ui-button--secondary {
+  background-color: var(--color-surface);
+  border-color: var(--color-border-control);
+  box-shadow: var(--shadow-xs);
+  color: var(--color-text);
+}
+
+.ui-button--secondary:hover:not(:disabled) {
+  background-color: var(--color-surface-hover);
+  border-color: var(--gray-400);
+  color: var(--color-text);
+}
+
+.ui-button--ghost {
+  background-color: transparent;
+  color: var(--color-text-secondary);
+}
+
+.ui-button--ghost:hover:not(:disabled) {
+  background-color: var(--color-surface-hover);
+  color: var(--color-text);
+}
+
+.ui-button--danger {
+  background-color: var(--color-danger-solid);
+  border-color: var(--color-danger-solid);
+  box-shadow: var(--shadow-sm);
+  color: var(--color-text-inverse);
+}
+
+.ui-button--danger:hover:not(:disabled) {
+  background-color: var(--color-danger-solid-hover);
+  border-color: var(--color-danger-solid-hover);
+  color: var(--color-text-inverse);
+}
+
+/* Link-styled: an inline text action that still behaves as a button (keyboard, disabled, busy). */
+.ui-button--link {
+  background: none;
+  border: 0;
+  border-radius: var(--radius-sm);
+  color: var(--color-text-link);
+  font-weight: var(--weight-medium);
+  min-height: 0;
+  padding: 0;
+  text-decoration-line: underline;
+  text-decoration-thickness: 1px;
+  text-underline-offset: 0.18em;
+}
+
+.ui-button--link:hover:not(:disabled) {
+  color: var(--color-text-link-hover);
+}
+
+/* ---- Disabled and busy ---- */
+.ui-button:disabled {
+  box-shadow: none;
+  cursor: not-allowed;
+  opacity: 0.5;
+}
+
+/* Busy is disabled too, but it's progress, not unavailability, so it keeps full strength. */
+.ui-button[aria-busy="true"] {
+  cursor: progress;
+  opacity: 0.85;
+}
