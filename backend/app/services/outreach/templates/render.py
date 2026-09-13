@@ -53,8 +53,9 @@ def render_invitation(
     unsubscribe_link = opt_out_url(settings.public_app_base_url, candidate.opt_out_token)
 
     label = category_label(projection.category)
-    area = _single_line(projection.service_area_approximate)
-    subject = f"{safe_business} is inviting offers: {label} in {area}" if area else f"{safe_business} is inviting offers: {label}"
+    area = projection.service_area_approximate
+    # The whole subject is flattened, since it becomes a header whatever its parts came from.
+    subject = _single_line(f"{safe_business} is inviting offers: {label} in {area}" if area.strip() else f"{safe_business} is inviting offers: {label}")
     body = build_invitation_body(
         projection=projection,
         business_name=safe_business,
