@@ -1,16 +1,20 @@
 /* Unpublishes a listing immediately, with no confirmation step.
-   Unpublishing is the safe direction, so it must stay one click (CLAUDE.md: "can unpublish instantly"). */
+   Unpublishing is the safe direction, so it must stay one click (CLAUDE.md: "can unpublish instantly") and is never styled as danger. */
 import { useState } from 'react';
 
 import { ApiError, post } from '../../shared/api/client';
+import { Button, ButtonSize, Icon } from '../../shared/ui';
+import './UnpublishButton.css';
 
 interface UnpublishButtonProps {
   listingId: string;
   onUnpublished: () => void;
+  // Dense rows (the dashboard table) can ask for "sm"; the default matches every other secondary button.
+  size?: ButtonSize;
 }
 
 /** Render an unpublish button that reports failure inline and calls onUnpublished on success. */
-export function UnpublishButton({ listingId, onUnpublished }: UnpublishButtonProps): JSX.Element {
+export function UnpublishButton({ listingId, onUnpublished, size = 'md' }: UnpublishButtonProps): JSX.Element {
   const [isWorking, setIsWorking] = useState(false);
   const [errorMessage, setErrorMessage] = useState<string | null>(null);
 
@@ -32,19 +36,20 @@ export function UnpublishButton({ listingId, onUnpublished }: UnpublishButtonPro
   };
 
   return (
-    <span style={{ display: 'inline-flex', flexDirection: 'column', gap: '0.25rem' }}>
-      <button
-        disabled={isWorking}
+    <span className="unpublish-button">
+      <Button
+        iconStart={<Icon name="lock" />}
+        isBusy={isWorking}
         onClick={(event) => {
           // Rows that contain this button are clickable; unpublishing must not also select the row.
           event.stopPropagation();
           void unpublish();
         }}
-        type="button"
+        size={size}
       >
         {isWorking ? 'Unpublishing…' : 'Unpublish now'}
-      </button>
-      {errorMessage ? <span role="alert" style={{ color: '#991b1b', fontSize: '0.85rem' }}>{errorMessage}</span> : null}
+      </Button>
+      {errorMessage ? <span className="unpublish-button__error" role="alert">{errorMessage}</span> : null}
     </span>
   );
 }
