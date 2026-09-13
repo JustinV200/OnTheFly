@@ -35,7 +35,11 @@ export async function apiFetch<T>(path: string, options: RequestInit = {}): Prom
   try {
     response = await fetch(`${API_BASE_URL}${path}`, { ...options, headers });
   } catch (cause) {
-    console.error('API request failed before a response arrived', cause);
+    // An abort the caller asked for (unmount cleanup, StrictMode's dev double-mount, its own timeout) isn't a failure,
+    // so it isn't logged. It still throws the same ApiError: callers tell the two apart by checking their own signal.
+    if (!options.signal?.aborted) {
+      console.error('API request failed before a response arrived', cause);
+    }
     throw new ApiError(NETWORK_FAILURE_STATUS, {
       error: 'network_error',
       detail: `Could not reach the API at ${API_BASE_URL}. It may be down, or this network may be blocking it.`,
