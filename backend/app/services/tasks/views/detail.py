@@ -13,13 +13,14 @@ from app.models.tasks import Task
 from app.services.listings.current_price import resolve_stated_price
 from app.services.scope.templates import template_for
 from app.services.splitting.ledger import PieceCommitment, TaskLedger, build_ledger
-from app.services.splitting.requirements_in_play import requirements_still_with_task, splittable_scope_version
+from app.services.splitting.requirements_in_play import splittable_scope_version
 from app.services.splitting.suggested_count import active_suggested_pieces
 from app.services.tasks.access import get_participant_task, listing_for_task
 from app.services.tasks.listing.subcontract import is_subcontract
 from app.services.tasks.money import buyer_money_view, owner_money_view
 from app.services.tasks.money.pieces import piece_lines, pre_acceptance_splits
 from app.services.tasks.views.events_view import visible_events
+from app.services.tasks.views.parent_ref import visible_parent
 from app.services.tasks.views.requirements_view import constraint_rows, requirement_rows
 from app.services.tasks.views.types import ListingSummary, TaskDetail
 
@@ -34,7 +35,7 @@ def build_task_detail(task_id: str, account_id: str, db: Session) -> TaskDetail:
     ledger = build_ledger(task, db) if is_owner else None
     # The owner sees the pieces that count against its remainder; a client sees only pieces it split off itself.
     commitments = ledger.pieces if ledger is not None else _poster_piece_commitments(task, db)
-    can_split, block_reason = _split_permission(task, relationship, ledger, db)
+    can_split, block_reason = _split_permission(relationship, ledger)
     return TaskDetail(
         id=task.id,
         origin=task.origin,
@@ -50,6 +51,7 @@ def build_task_detail(task_id: str, account_id: str, db: Session) -> TaskDetail:
         is_owned_by_you=is_owner,
         is_subcontract=is_subcontract(task, db),
         parent_scope_changed_at=task.parent_scope_changed_at if is_poster else None,
+        parent=visible_parent(task, account_id, db),
         expense_id=task.expense_id if is_poster else None,
         listing=_listing_summary(task, db) if is_poster else None,
         scope_version_number=scope.version_number if scope is not None else None,
@@ -107,16 +109,14 @@ def _listing_summary(task: Task, db: Session) -> ListingSummary | None:
     )
 
 
-def _split_permission(
-    task: Task, relationship: TaskRelationship, ledger: TaskLedger | None, db: Session
-) -> tuple[bool, str | None]:
+def _split_permission(relationship: TaskRelationship, ledger: TaskLedger | None) -> tuple[bool, str | None]:
     # Mirrors the checks split_off_piece enforces, so the screen explains a refusal before the owner tries.
     if relationship == TaskRelationship.poster:
         return False, "You accepted an offer on this task, so the bidder owns it now. Only the current task owner can split it."
     if ledger is None or ledger.starting_price_minor is None:
         return False, "Set a budget before splitting: a piece's cut comes out of the task's starting price."
-    if not requirements_still_with_task(task, db):
-        return False, "Every requirement already went to a piece."
+    # No check for requirements left with the task: the owner can add a piece's own requirements in the split drawer,
+    # so a task with no rows (such as a listing backfilled by migration 0013) or with every row in a piece can still split.
     if ledger.remainder_minor is not None and ledger.remainder_minor <= 0:
         return False, "Your remainder is zero, so there is nothing left to cut."
     return True, None

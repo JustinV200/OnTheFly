@@ -1,11 +1,13 @@
-/* Everything about one offer without leaving the ranked list: scope covered, the monthly price, potential savings and
-   why they are provisional, every evidence record, the challenger's message, terms as offered, and history.
-   Owner-only, like the page; the footer leads to the trace of the savings figure. Scope comes before price here too. */
+/* Everything about one offer without leaving the ranked list: scope covered, the price as offered and compared per month,
+   potential savings and why they are provisional, every evidence record, the challenger's message, terms as offered, and
+   history. Owner-only, like the page; the footer leads to the trace of the savings figure. Scope comes before price here
+   too. */
 import type { ApiQueryState } from '../../../shared/api/useApiQuery';
 import { ErrorState } from '../../../shared/components/ErrorState';
 import { MoneyDisplay } from '../../../shared/components/MoneyDisplay';
+import { cadenceSuffix } from '../../../shared/market';
 import { ProvenanceBadge } from '../../../shared/provenance/ProvenanceBadge';
-import { ButtonLink, Drawer, Icon, Skeleton, Stat } from '../../../shared/ui';
+import { ButtonLink, Drawer, Grid, Icon, Skeleton, Stat } from '../../../shared/ui';
 import { EvidenceRecords } from '../evidence/EvidenceRecords';
 import { SavingsBreakdown } from '../savings/SavingsBreakdown';
 import { ScopeCoverage } from '../scope/ScopeCoverage';
@@ -78,13 +80,24 @@ export function OfferDrawer({ offer, ownerOffers, onClose, task, hasExpense, onA
         </DrawerSection>
 
         <DrawerSection title="Price">
-          <Stat
-            caption="Restated per month by the server, so offers billed on different schedules compare fairly"
-            label="Monthly"
-            size="md"
-            unit="/ month"
-            value={<MoneyDisplay amountMinor={offer.normalized_price_minor} currency={offer.price_currency} />}
-          />
+          <Grid gap={4} minItemWidth="9rem">
+            {/* The submitted price in its own period first; the ranking's per-month figure is labelled as a comparison. */}
+            {terms ? (
+              <Stat
+                label="As offered"
+                size="md"
+                unit={cadenceSuffix(terms.billing_frequency)}
+                value={<MoneyDisplay amountMinor={terms.price_minor} currency={terms.price_currency} />}
+              />
+            ) : null}
+            <Stat
+              caption="Restated per month by the server, so offers billed on different schedules compare fairly"
+              label="Compared per month"
+              size="md"
+              unit="/ month"
+              value={<MoneyDisplay amountMinor={offer.normalized_price_minor} currency={offer.price_currency} />}
+            />
+          </Grid>
         </DrawerSection>
 
         <DrawerSection title="Potential savings">

@@ -20,7 +20,7 @@ interface BrainViewerProps {
   run: QueuedBrainRun;
   waitingCount: number;
   isExpanded: boolean;
-  // Hidden keeps the run playing behind the dock's chip; the panel just isn't shown.
+  // Hidden (minimized) keeps the run playing behind the dock's labelled pill; the panel just isn't shown.
   isHidden: boolean;
   onToggleExpanded: () => void;
   onHide: () => void;
@@ -50,7 +50,7 @@ export function BrainViewer({ run, waitingCount, isExpanded, isHidden, onToggleE
           <button aria-label={isExpanded ? 'Show a smaller panel' : 'Show a larger panel'} className="brain-viewer__icon-button" onClick={onToggleExpanded} type="button">
             <Icon name={isExpanded ? 'minimize' : 'maximize'} size={18} />
           </button>
-          <button aria-label="Hide the panel and keep the simulation running" className="brain-viewer__icon-button" onClick={onHide} type="button">
+          <button aria-label="Minimize to the fly brain pill and keep the simulation running" className="brain-viewer__icon-button" onClick={onHide} type="button">
             <Icon name="chevron-down" size={18} />
           </button>
           <button aria-label="Close the fly brain view" className="brain-viewer__icon-button" onClick={onClose} type="button">

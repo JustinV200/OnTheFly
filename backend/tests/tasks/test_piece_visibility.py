@@ -20,6 +20,8 @@ from tests.tasks.support import (
     GOVCON,
     PRIME_A,
     SUB_B,
+    accept,
+    active_offer_id,
     headers,
     listing_of,
     offer,
@@ -116,6 +118,40 @@ def test_subcontractor_api_returns_nothing_about_the_client(client: TestClient, 
             assert two_steps_away not in body, two_steps_away
     assert "Prime A Federal Systems" in bodies[1]
     assert client.get(f"/api/tasks/{chain.rebid_task_id}", headers=sub).status_code == 404
+    # The winner of a piece posted and owns nothing above it, so the parent link is withheld, not just unnamed.
+    assert json.loads(bodies[1])["parent"] is None
+    assert all(item["parent"] is None for item in json.loads(bodies[0])["owned"])
+
+
+def test_task_owner_sees_the_parent_of_the_piece_it_split_off(client: TestClient, db_session: Session) -> None:
+    chain = stage(db_session, "sub_owns")
+    prime = headers(PRIME_A)
+
+    detail = client.get(f"/api/tasks/{chain.piece_task_id}", headers=prime).json()
+    work = client.get("/api/work", headers=prime).json()
+
+    assert detail["parent"] == {"task_id": chain.rebid_task_id, "title": task_of(db_session, chain.rebid_task_id).title}
+    piece_item = next(item for item in work["posted"] if item["task_id"] == chain.piece_task_id)
+    assert piece_item["parent"]["task_id"] == chain.rebid_task_id
+    parent_item = next(item for item in work["owned"] if item["task_id"] == chain.rebid_task_id)
+    assert parent_item["parent"] is None
+
+
+def test_buyer_still_sees_the_parent_of_its_own_piece_after_accepting_the_parent(client: TestClient, db_session: Session) -> None:
+    chain = stage(db_session, "rebid_published")
+    keys = requirement_keys(db_session, chain.rebid_task_id)
+    piece_id = split(client, chain.rebid_task_id, GOVCON, [keys[4]], 11_520_000)["body"]["child_task_id"]
+    assert offer(client, db_session, chain.rebid_task_id, PRIME_A, 120_000_000)["status"] == 200
+    accepted = accept(client, chain.rebid_task_id, GOVCON, active_offer_id(db_session, chain.rebid_task_id, PRIME_A))
+    assert accepted["status"] == 200, accepted["body"]
+
+    detail = client.get(f"/api/tasks/{piece_id}", headers=headers(GOVCON)).json()
+    piece_item = next(item for item in client.get("/api/work", headers=headers(GOVCON)).json()["posted"] if item["task_id"] == piece_id)
+
+    assert detail["parent"]["task_id"] == chain.rebid_task_id
+    assert piece_item["parent"]["task_id"] == chain.rebid_task_id
+    # Prime A won the parent, not the buyer's earlier piece: it can't open the piece at all.
+    assert client.get(f"/api/tasks/{piece_id}", headers=headers(PRIME_A)).status_code == 404
 
 
 def test_new_owner_sees_its_own_split_button(client: TestClient, db_session: Session) -> None:

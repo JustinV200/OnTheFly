@@ -10,13 +10,16 @@ import { LoadingSpinner } from '../../shared/components/LoadingSpinner';
 import { MoneyDisplay } from '../../shared/components/MoneyDisplay';
 import { Badge, Button, Callout, Card, Icon, Stack, Table } from '../../shared/ui';
 import { AddRateForm } from './AddRateForm';
+import { missingRateCategories } from './missingRateCategories';
 import type { RateKind, RateListResponse } from './types';
 import './RatesPanel.css';
 
 interface RatesPanelProps {
+  taskId: string;
+  currency: string;
   // The kind of rate this task is priced with for the viewer; the add form defaults to it.
   kind: RateKind;
-  // Labor categories on the task, offered as suggestions in the add form.
+  // Labor categories of the requirements still with the task: the ones keep cost needs a rate for.
   laborCategories: string[];
   onChanged: () => void;
 }
@@ -26,10 +29,12 @@ const KIND_WORDS: Record<string, string> = {
   current_contract_rate: 'Contract rate',
 };
 
-/** Render the rate table and the add form. */
-export function RatesPanel({ kind, laborCategories, onChanged }: RatesPanelProps): JSX.Element {
+/** Render the rate table, which categories still need a rate, and the add form. */
+export function RatesPanel({ taskId, currency, kind, laborCategories, onChanged }: RatesPanelProps): JSX.Element {
   const rates = useApiQuery<RateListResponse>('/api/rates');
   const [error, setError] = useState<string | null>(null);
+  // "Add a rate" on a missing category preselects it: the form below is keyed by it, so it remounts on that category.
+  const [chosenCategory, setChosenCategory] = useState<string | null>(null);
 
   const remove = async (rateId: string): Promise<void> => {
     setError(null);
@@ -45,7 +50,7 @@ export function RatesPanel({ kind, laborCategories, onChanged }: RatesPanelProps
     }
   };
 
-  const missing = laborCategories.filter((category) => !rates.data?.rates.some((rate) => rate.kind === kind && rate.labor_category === category));
+  const missing = rates.data ? missingRateCategories(rates.data.rates, { taskId, currency, kind, laborCategories }) : [];
 
   return (
     <Stack gap={5}>
@@ -70,7 +75,7 @@ export function RatesPanel({ kind, laborCategories, onChanged }: RatesPanelProps
               {rates.data.rates.map((rate) => (
                 <tr key={rate.id}>
                   <td data-label="Labor category">{rate.labor_category}</td>
-                  <td data-label="Kind">{KIND_WORDS[rate.kind] ?? rate.kind}{rate.task_id ? ' · this task only' : ''}</td>
+                  <td data-label="Kind">{KIND_WORDS[rate.kind] ?? rate.kind}{rate.task_id ? ' · one task only' : ''}</td>
                   <td className="ui-num" data-label="Rate"><MoneyDisplay amountMinor={rate.rate_minor_per_hour} currency={rate.currency} /> /h</td>
                   <td data-label="Source">
                     {rate.provenance === 'fixture'
@@ -87,12 +92,39 @@ export function RatesPanel({ kind, laborCategories, onChanged }: RatesPanelProps
         )}
       </Card>
       {error ? <Callout role="alert" title="Couldn’t remove that rate" tone="danger"><p>{error}</p></Callout> : null}
-      {missing.length > 0 && rates.data ? (
-        <Callout role="note" title="Missing rates for this task" tone="warning">
-          <p>No {KIND_WORDS[kind]?.toLowerCase()} for: {missing.join(', ')}. Those segments show “Add your rates” instead of a suggestion.</p>
+      {missing.length > 0 ? (
+        <Callout
+          role="note"
+          title={missing.length === 1 ? `Add a rate for ${missing[0]}` : `Add rates for ${missing.length} labor categories`}
+          tone="warning"
+        >
+          <p>
+            Keep cost needs your {(KIND_WORDS[kind] ?? kind).toLowerCase()} in {currency} for each labor category still with this
+            task. Until then, those groups show “Needs your rate” in Ways to save instead of a suggestion:
+          </p>
+          <ul className="rates-panel__missing">
+            {missing.map((category) => (
+              <li key={category}>
+                <strong>{category}</strong>{' '}
+                <Button onClick={() => setChosenCategory(category)} size="sm" variant="link">Add a rate</Button>
+              </li>
+            ))}
+          </ul>
         </Callout>
       ) : null}
-      <AddRateForm defaultKind={kind} laborCategories={laborCategories} onAdded={() => { rates.reload(); onChanged(); }} />
+      <AddRateForm
+        defaultKind={kind}
+        initialCategory={chosenCategory ?? missing[0] ?? laborCategories[0] ?? ''}
+        isRateFocusedOnMount={chosenCategory !== null}
+        // Also remounts once when rates first load, so the form starts on the first missing category rather than a guess.
+        key={chosenCategory ?? (rates.data ? 'loaded' : 'loading')}
+        laborCategories={laborCategories}
+        onAdded={() => {
+          setChosenCategory(null);
+          rates.reload();
+          onChanged();
+        }}
+      />
     </Stack>
   );
 }

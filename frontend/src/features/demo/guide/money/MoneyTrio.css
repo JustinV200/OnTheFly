@@ -1,0 +1,79 @@
+/* Money trio: three columns that wrap on narrow screens, labelled figures, the "other tasks" line, and the checks. */
+.demo-trio {
+  display: grid;
+  gap: var(--space-4);
+  grid-template-columns: repeat(auto-fit, minmax(min(100%, 15rem), 1fr));
+}
+
+.demo-trio__column {
+  background-color: var(--color-surface-subtle);
+  border: var(--border-width) solid var(--color-border-subtle);
+  border-radius: var(--radius-lg);
+  display: grid;
+  align-content: start;
+  gap: var(--space-3);
+  padding: var(--space-3);
+}
+
+.demo-trio__name {
+  font-size: var(--text-md);
+  margin: 0;
+}
+
+.demo-trio__item {
+  display: grid;
+  gap: var(--space-2);
+}
+
+.demo-trio__title {
+  font-size: var(--text-sm);
+  font-weight: var(--weight-semibold);
+  margin: 0;
+}
+
+.demo-trio__figures {
+  display: grid;
+  gap: var(--space-1);
+  margin: 0;
+}
+
+.demo-trio__figure {
+  border-radius: var(--radius-sm);
+  display: flex;
+  font-size: var(--text-sm);
+  gap: var(--space-2);
+  justify-content: space-between;
+  margin: 0 calc(var(--space-1) * -1);
+  padding: 0 var(--space-1);
+  transition: background-color var(--duration-slow) var(--ease-standard);
+}
+
+/* A figure a poll just changed. Colour plus the fade draws the eye; the value itself is what carries the meaning. */
+.demo-trio__figure--changed {
+  background-color: var(--color-brand-soft);
+}
+
+.demo-trio__figure dt {
+  color: var(--color-text-muted);
+}
+
+.demo-trio__figure dd {
+  font-weight: var(--weight-semibold);
+  margin: 0;
+  text-align: right;
+}
+
+.demo-trio__other {
+  color: var(--color-text-muted);
+  font-size: var(--text-xs);
+  margin: 0;
+}
+
+.demo-trio__checks {
+  display: grid;
+  font-size: var(--text-sm);
+  gap: var(--space-2);
+  list-style: none;
+  margin: var(--space-4) 0 0;
+  padding: 0;
+}

@@ -19,6 +19,11 @@ class Settings(BaseSettings):
     # Current default Claude model as of 2026-09-12. Nothing calls the API yet, so re-confirm
     # the ID when the first AI feature lands (CLAUDE.md: confirm during implementation).
     claude_model: str = "claude-opus-5"
+    # OpenAI drafts requirement rows (text, tags, hours) for the owner to confirm (plan2, "Model and code boundaries").
+    # Without a key, drafting reports "not run" and every form stays manual; it never invents rows.
+    openai_api_key: str = ""
+    # Confirmed available to the configured key on 2026-09-13; fast enough (about 2s) for a click-to-draft button.
+    openai_model: str = "gpt-5.4-mini"
     app_version: str = "0.1.0"
     # Comma-separated allowed CORS origins; defaults to local dev frontend
     cors_allow_origins: str = "http://localhost:5173,http://127.0.0.1:5173"

@@ -1,4 +1,5 @@
-/* Requirement answers: one bordered row per requirement, text above its controls on a phone, beside them from tablet up. */
+/* Requirement answers: one bordered row per requirement, text above its controls on a phone, beside them from tablet up.
+   An opened note spans the whole row under both. */
 .bid-requirements__match {
   align-items: center;
   display: flex;
@@ -47,18 +48,22 @@
   align-items: center;
   display: flex;
   flex-wrap: wrap;
-  gap: var(--space-2);
+  gap: var(--space-2) var(--space-3);
 }
 
 .bid-requirements__note {
-  flex: 1 1 14rem;
+  grid-column: 1 / -1;
   min-width: 0;
 }
 
 @media (min-width: 768px) {
   .bid-requirements__row {
     align-items: center;
-    grid-template-columns: minmax(0, 1fr) minmax(0, 1.1fr);
+    grid-template-columns: minmax(0, 1fr) auto;
     column-gap: var(--space-4);
+  }
+
+  .bid-requirements__controls {
+    justify-content: flex-end;
   }
 }

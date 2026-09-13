@@ -1,5 +1,6 @@
-/* The order ticket's "Your offer" card: the price and frequency exactly as typed, the requested-vs-offered checklist,
-   what the bidding mode means for this offer, and the submit button with its mode label. Display only: it normalizes,
+/* The order ticket's "Your offer" card: the price as typed with its billing period's short suffix, a one-line count of
+   what the offer includes (the full requested-vs-offered table folds open), the one explanation of the bidding mode, and
+   the submit button with its mode label. Kept short so the button is in view on a laptop. Display only: it normalizes,
    converts, and scores nothing, so it can never disagree with how the server scores the offer. */
 import type { ReactNode } from 'react';
 
@@ -10,8 +11,7 @@ import { Button, Callout, Card, Stack } from '../../../shared/ui';
 import type { PublicListingProjection } from '../../publish/types';
 import type { ChallengeFormFields } from '../buildChallengePayload';
 import type { BiddingModeValue } from '../types';
-import { CoverageChecklist } from './CoverageChecklist';
-import { listCoverageRows } from './listCoverageRows';
+import { CoverageSummary } from './checklist/CoverageSummary';
 import { ModeMeaning } from './ModeMeaning';
 import { submitLabel } from './submitLabel';
 import './OfferSummary.css';
@@ -33,7 +33,7 @@ interface OfferSummaryProps {
 /** Render the summary card; its submit button submits the form identified by formId. */
 export function OfferSummary(props: OfferSummaryProps): JSX.Element {
   const { formId, fields, listing, acknowledgedMode, currentMode, onConfirmMode, isRevision, isSubmitting, validationError, submitProblem } = props;
-  // Display formatting only: a leading "$" the challenger typed isn't doubled. The text is otherwise shown as typed.
+  // Display formatting only: a leading "$" the bidder typed isn't doubled. The text is otherwise shown as typed.
   const typedPrice = fields.price.trim().replace(/^\$/, '');
   const typedSetupFee = fields.setupFee.trim().replace(/^\$/, '');
   const symbol = listing.price_currency === 'USD' ? '$' : `${listing.price_currency} `;
@@ -46,7 +46,8 @@ export function OfferSummary(props: OfferSummaryProps): JSX.Element {
           {typedPrice ? (
             <p className="bid-summary__figure">
               <span className="bid-summary__amount ui-money">{symbol}{typedPrice}</span>
-              <span className="bid-summary__period">/ {fields.billingFrequency}</span>
+              {/* The period the bidder picked, as its short suffix; the amount is never restated in another period. */}
+              <span className="bid-summary__period">{cadenceSuffix(fields.billingFrequency)}</span>
             </p>
           ) : (
             <p className="bid-summary__empty">No price entered yet</p>
@@ -59,19 +60,10 @@ export function OfferSummary(props: OfferSummaryProps): JSX.Element {
           </p>
         </div>
 
-        <section aria-labelledby={`${formId}-coverage`} className="bid-summary__section">
-          <h3 className="bid-summary__heading" id={`${formId}-coverage`}>Requested vs your offer</h3>
-          <CoverageChecklist
-            exclusions={fields.exclusions}
-            labelId={`${formId}-coverage`}
-            otherInclusions={fields.otherInclusions}
-            rows={listCoverageRows(listing, fields)}
-          />
-        </section>
-
-        <ModeMeaning acknowledgedMode={acknowledgedMode} currentMode={currentMode} onConfirmMode={onConfirmMode} />
+        <CoverageSummary fields={fields} idPrefix={formId} listing={listing} />
 
         <Stack gap={3}>
+          <ModeMeaning acknowledgedMode={acknowledgedMode} currentMode={currentMode} onConfirmMode={onConfirmMode} />
           {validationError ? <Callout role="alert" title="Not submitted yet" tone="danger"><p>{validationError}</p></Callout> : null}
           {submitProblem}
           <Button disabled={acknowledgedMode === null} form={formId} isBusy={isSubmitting} isFullWidth size="lg" type="submit" variant="primary">

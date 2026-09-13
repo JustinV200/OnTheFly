@@ -1,15 +1,17 @@
 /* The acting identity in the top bar, and the switcher behind it. Visible on every screen at every width, so who is acting
    is never scrolled away. The name stays at least 18px on desktop for projector legibility (roadmap 09, "The account
    switch as a demo instrument"). One tap switches business, or to the public visitor, who is listed apart at the bottom.
+   Businesses are grouped: the task chain's three first, under their own heading, then the rest.
    The panel also links to the business's public profile and holds the full theme choice, including Match system. */
 import { useCallback, useEffect, useId, useRef, useState } from 'react';
 import { Link } from 'react-router-dom';
 
+import { AccountAvatar } from '../../../shared/account/AccountAvatar';
 import { useActingAccount } from '../../../shared/account/ActingAccountContext';
 import { ThemeToggle } from '../../../shared/theme';
 import { Icon } from '../../../shared/ui';
-import { AccountAvatar } from '../AccountAvatar';
-import { accountOptions } from '../accountOptions';
+import { AccountOption, accountGroups, publicVisitorOption } from '../accountOptions';
+import { AccountOptionButton } from './AccountOptionButton';
 import { useMenuDismiss } from './useMenuDismiss';
 import './AccountMenu.css';
 
@@ -21,6 +23,7 @@ export function AccountMenu(): JSX.Element {
   const triggerRef = useRef<HTMLButtonElement>(null);
   const activeOptionRef = useRef<HTMLButtonElement>(null);
   const panelId = useId();
+  const headingIdPrefix = useId();
 
   const close = useCallback((returnFocus: boolean): void => {
     setIsOpen(false);
@@ -36,6 +39,12 @@ export function AccountMenu(): JSX.Element {
       activeOptionRef.current?.focus();
     }
   }, [isOpen]);
+
+  const choose = (option: AccountOption): void => {
+    setAccountId(option.id);
+    close(true);
+  };
+  const isActive = (option: AccountOption): boolean => option.id === (account?.id ?? null);
 
   return (
     <div className="account-menu" ref={rootRef}>
@@ -63,33 +72,30 @@ export function AccountMenu(): JSX.Element {
       {isOpen ? (
         <div className="account-menu__panel" id={panelId}>
           <p className="account-menu__prompt">Every business can publish and challenge. See it as:</p>
-          <ul className="account-menu__list">
-            {accountOptions.map((option) => {
-              const isActive = option.id === (account?.id ?? null);
-              return (
-                // The visitor row starts a separate group: it is the logged-out view, not another business.
-                <li className={option.account ? undefined : 'account-menu__visitor'} key={option.id ?? 'public-visitor'}>
-                  <button
-                    aria-pressed={isActive}
-                    className="account-menu__option"
-                    onClick={() => {
-                      setAccountId(option.id);
-                      close(true);
-                    }}
-                    ref={isActive ? activeOptionRef : undefined}
-                    type="button"
-                  >
-                    <AccountAvatar account={option.account} size="md" />
-                    <span className="account-menu__option-text">
-                      {option.label}
-                      {option.account ? null : <span className="account-menu__option-hint">Sees only what is public</span>}
-                    </span>
-                    {isActive ? <Icon name="check" size={18} /> : null}
-                  </button>
-                </li>
-              );
-            })}
-          </ul>
+          {accountGroups.map((group, index) => {
+            const headingId = `${headingIdPrefix}-group-${index}`;
+            return (
+              <div className="account-menu__group" key={group.heading}>
+                <p className="account-menu__group-heading" id={headingId}>{group.heading}</p>
+                <ul aria-labelledby={headingId} className="account-menu__list">
+                  {group.options.map((option) => (
+                    <li key={option.id ?? 'public-visitor'}>
+                      <AccountOptionButton isActive={isActive(option)} onChoose={choose} option={option} ref={isActive(option) ? activeOptionRef : undefined} />
+                    </li>
+                  ))}
+                </ul>
+              </div>
+            );
+          })}
+          {/* The visitor row stands apart: it is the logged-out view, not another business. */}
+          <div className="account-menu__visitor">
+            <AccountOptionButton
+              isActive={isActive(publicVisitorOption)}
+              onChoose={choose}
+              option={publicVisitorOption}
+              ref={isActive(publicVisitorOption) ? activeOptionRef : undefined}
+            />
+          </div>
           <div className="account-menu__footer">
             {account ? (
               <Link className="account-menu__profile-link" onClick={() => close(false)} to={`/p/${account.handle}`}>

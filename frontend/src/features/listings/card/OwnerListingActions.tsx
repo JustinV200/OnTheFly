@@ -1,7 +1,9 @@
 /* The owner's actions on one listing. Public: Offers (primary), Invite suppliers, View as a stranger, and a visible
-   one-click Unpublish that reuses the publish feature's button. Private: the retained offers, or finishing a draft through
-   the review flow. Nothing here publishes; that only happens in the publish flow (CLAUDE.md, visibility). */
+   one-click Unpublish that reuses the publish feature's button. Private: the retained offers, or finishing a draft: on its
+   task page when REBID covers the category, else through the older publish wizard (publish/path). Nothing here publishes;
+   that only happens after an exact preview (CLAUDE.md, visibility). */
 import { ButtonLink, Icon } from '../../../shared/ui';
+import { usesPublishWizard } from '../../publish/path/usesPublishWizard';
 import { UnpublishButton } from '../../publish/UnpublishButton';
 import type { OwnerListing } from '../useOwnerListings';
 import type { ListingStatus } from './listingStatus';
@@ -26,6 +28,16 @@ export function OwnerListingActions({ listing, status, onUnpublished }: OwnerLis
         <span className="owner-listing__unpublish">
           <UnpublishButton listingId={listingId} onUnpublished={onUnpublished} size="sm" />
         </span>
+      </div>
+    );
+  }
+  const taskId = listing.inbox.phase === 'loaded' ? listing.inbox.inbox.task?.id ?? null : null;
+  const category = status.record?.category ?? expense.category;
+  if (status.isDraft && taskId && !usesPublishWizard(category)) {
+    // The task page previews and publishes the draft, and holds its requirements and Ways to save.
+    return (
+      <div className="owner-listing__actions">
+        <ButtonLink size="sm" to={`/tasks/${taskId}`} variant="primary">Open task</ButtonLink>
       </div>
     );
   }

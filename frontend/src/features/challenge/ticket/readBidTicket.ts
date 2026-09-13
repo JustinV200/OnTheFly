@@ -1,7 +1,7 @@
 /* Reads the bid ticket the market page hands over in the URL (?price=1900&billing=monthly), validated at this boundary.
    A value that can't be read is dropped and flagged, never guessed: the field stays empty and the form says so. */
 import { parseDollarsToMinor } from '../../../shared/format/parseDollarsToMinor';
-import { BILLING_FREQUENCIES } from '../form/billingFrequencies';
+import { BILLING_OPTIONS } from '../../../shared/market';
 
 export interface BidTicket {
   // The price as the ticket typed it (dollars text, e.g. "1900"), or null when absent or unreadable.
@@ -21,7 +21,7 @@ export function readBidTicket(searchParams: URLSearchParams): BidTicket {
   const priceMinor = trimmedPrice ? parseDollarsToMinor(trimmedPrice) : null;
   // Zero is unreadable too: the server rejects a zero price, so prefilling one would only set up a failed submit.
   const isPriceUsable = priceMinor !== null && priceMinor > 0;
-  const isBillingUsable = rawBilling !== null && BILLING_FREQUENCIES.includes(rawBilling);
+  const isBillingUsable = rawBilling !== null && BILLING_OPTIONS.some((option) => option.value === rawBilling);
 
   return {
     price: isPriceUsable ? trimmedPrice : null,

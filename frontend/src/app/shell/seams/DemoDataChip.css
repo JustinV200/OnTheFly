@@ -29,11 +29,20 @@
   }
 }
 
-.demo-chip__trigger--simulated,
-.demo-chip__trigger--simulated:hover:not(:disabled) {
-  background-color: var(--color-simulated-bg);
-  border-color: var(--color-simulated-border);
-  color: var(--color-simulated-text);
+/* The normal demo state: a label to read, so info-toned rather than alarming. */
+.demo-chip__trigger--info,
+.demo-chip__trigger--info:hover:not(:disabled) {
+  background-color: var(--color-info-bg);
+  border-color: var(--color-info-border);
+  color: var(--color-info-text);
+}
+
+/* Real data beside demo data: the one state where a figure could be mistaken for the other kind. */
+.demo-chip__trigger--warning,
+.demo-chip__trigger--warning:hover:not(:disabled) {
+  background-color: var(--color-warning-bg);
+  border-color: var(--color-warning-border);
+  color: var(--color-warning-text);
 }
 
 .demo-chip__trigger--neutral,

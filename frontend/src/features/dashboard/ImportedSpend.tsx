@@ -1,5 +1,6 @@
 /* The part of Spend shown once a business has imported transactions: loading, failure, and empty states, then the
-   portfolio headline, the duplicate-vendor notice, the expense list, and the selected expense's detail drawer. */
+   portfolio headline, the duplicate-vendor notice, the expense list, and the selected expense's detail drawer.
+   It also looks up the task behind each listing once, so rows and the drawer can open a REBID's task. */
 import { EmptyState } from '../../shared/components/EmptyState';
 import { ErrorState } from '../../shared/components/ErrorState';
 import { LoadingSpinner } from '../../shared/components/LoadingSpinner';
@@ -8,6 +9,7 @@ import { DuplicateVendors } from './aliases/DuplicateVendors';
 import type { ImportedSource } from './connection/types';
 import { ExpenseDrawer } from './detail/ExpenseDrawer';
 import { ExpenseList } from './expenses/ExpenseList';
+import { useListingTaskIds } from './expenses/useListingTaskIds';
 import { SpendOverview } from './overview/SpendOverview';
 import { useDashboard } from './useDashboard';
 
@@ -20,6 +22,8 @@ interface ImportedSpendProps {
 
 /** Render the headline and expense list, or the state that stands in for them. */
 export function ImportedSpend({ businessName, dashboard, sources }: ImportedSpendProps): JSX.Element {
+  // Called before the early returns below: hooks must run in the same order on every render.
+  const taskIdByListingId = useListingTaskIds();
   if (!dashboard.list.data) {
     return dashboard.list.error
       ? <ErrorState error={dashboard.list.error} onRetry={dashboard.list.reload} title="Couldn’t load expenses" />
@@ -36,6 +40,7 @@ export function ImportedSpend({ businessName, dashboard, sources }: ImportedSpen
   }
 
   const { selectedExpenseId } = dashboard;
+  const selectedExpense = expenses.find((expense) => expense.id === selectedExpenseId) ?? null;
   return (
     <Stack gap={6}>
       <SpendOverview expenses={expenses} sources={sources} />
@@ -54,13 +59,15 @@ export function ImportedSpend({ businessName, dashboard, sources }: ImportedSpen
         onOpen={dashboard.selectExpense}
         onVisibilityChanged={dashboard.reload}
         selectedExpenseId={selectedExpenseId}
+        taskIdByListingId={taskIdByListingId}
       />
       <ExpenseDrawer
         detail={dashboard.detail}
         // Looked up in the loaded list, so a row a merge removed simply closes the drawer.
-        expense={expenses.find((expense) => expense.id === selectedExpenseId) ?? null}
+        expense={selectedExpense}
         onClose={() => dashboard.selectExpense(null)}
         onVisibilityChanged={dashboard.reload}
+        taskId={selectedExpense?.listing_id ? taskIdByListingId.get(selectedExpense.listing_id) ?? null : null}
       />
     </Stack>
   );

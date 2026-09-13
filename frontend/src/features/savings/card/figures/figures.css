@@ -1,0 +1,102 @@
+/* Card figures: the savings equation (terms separated by operators, wrapping on a phone) and the threshold pass line. */
+.savings-equation {
+  align-items: flex-end;
+  display: flex;
+  flex-wrap: wrap;
+  gap: var(--space-2) var(--space-3);
+}
+
+.savings-equation__term {
+  display: grid;
+  gap: var(--space-1);
+  min-width: 0;
+}
+
+.savings-equation__label {
+  color: var(--color-text-secondary);
+  font-size: var(--text-sm);
+}
+
+.savings-equation__value {
+  font-weight: var(--weight-semibold);
+  white-space: nowrap;
+}
+
+.savings-equation--lg .savings-equation__value {
+  font-size: var(--text-xl);
+}
+
+.savings-equation--lg .savings-equation__term--positive .savings-equation__value,
+.savings-equation--lg .savings-equation__term--negative .savings-equation__value {
+  font-size: var(--text-3xl);
+  letter-spacing: var(--tracking-tight);
+}
+
+.savings-equation--sm .savings-equation__value {
+  font-size: var(--text-md);
+}
+
+.savings-equation__term--positive .savings-equation__value {
+  color: var(--color-success-text);
+}
+
+.savings-equation__term--negative .savings-equation__value {
+  color: var(--color-danger-text);
+}
+
+.savings-equation__unit {
+  color: var(--color-text-muted);
+  font-size: var(--text-sm);
+  font-weight: var(--weight-medium);
+  margin-left: var(--space-1);
+}
+
+.savings-equation__missing {
+  color: var(--color-text-muted);
+  font-size: var(--text-sm);
+  font-weight: var(--weight-regular);
+}
+
+.savings-equation__caption {
+  color: var(--color-text-muted);
+  font-size: var(--text-sm);
+}
+
+.savings-equation__operator {
+  color: var(--color-text-muted);
+  font-size: var(--text-xl);
+  line-height: 1.6;
+}
+
+.savings-pass-line {
+  display: flex;
+  flex-wrap: wrap;
+  font-size: var(--text-sm);
+  gap: var(--space-1) var(--space-4);
+  list-style: none;
+  margin: 0;
+  padding: 0;
+}
+
+.savings-pass-line__check {
+  align-items: center;
+  display: inline-flex;
+  gap: var(--space-1);
+}
+
+.savings-pass-line__check--met {
+  color: var(--color-success-text);
+}
+
+.savings-pass-line__check--not_met {
+  color: var(--color-danger-text);
+}
+
+.savings-pass-line__check--not_checked,
+.savings-pass-line__check--not_computed {
+  color: var(--color-text-muted);
+}
+
+.savings-pass-line__detail {
+  color: var(--color-text-muted);
+}

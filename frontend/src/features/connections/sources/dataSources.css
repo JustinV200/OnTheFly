@@ -1,5 +1,19 @@
-/* Data sources card: one compact row per source below a hairline. A row stacks on a phone; from a tablet up its
-   actions sit at the end, centred against the name and facts line. */
+/* Data sources card: a summary line, then (behind "Manage data sources") the totals sentence and one compact row per
+   source below a hairline. A row stacks on a phone; from a tablet up its actions sit at the end, centred against the name
+   and facts line. */
+.data-sources__summary {
+  font-size: var(--text-sm);
+  min-width: 0;
+}
+
+.data-sources__totals {
+  color: var(--color-text-muted);
+  font-size: var(--text-sm);
+  margin: 0 0 var(--space-2);
+  max-width: 80ch;
+  overflow-wrap: anywhere;
+}
+
 .data-source {
   border-top: var(--border-width) solid var(--color-border-subtle);
   padding-block: var(--space-3);

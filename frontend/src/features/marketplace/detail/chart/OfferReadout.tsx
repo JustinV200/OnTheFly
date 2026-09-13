@@ -1,5 +1,6 @@
 /* The line under the offer chart that spells out the dot being pointed at, tapped or focused, so the details are
-   reachable by keyboard and touch, not only through a hover tooltip. Provenance stays beside the price. */
+   reachable by keyboard and touch, not only through a hover tooltip. Provenance stays beside the price. The price is the
+   server's per-month figure and says so ("compared per month"), since the listing itself may be priced per year. */
 import { MoneyDisplay } from '../../../../shared/components/MoneyDisplay';
 import { formatTimestamp } from '../../../../shared/format/formatTimestamp';
 import { answeredScopeLabel } from '../../../../shared/offers/answeredScopeLabel';
@@ -20,7 +21,7 @@ export function OfferReadout({ entry, currentScopeVersion }: OfferReadoutProps):
       {entry ? (
         <>
           <strong className="offer-chart__readout-price">
-            <MoneyDisplay amountMinor={entry.normalized_price_minor} currency={entry.price_currency} /> /mo
+            <MoneyDisplay amountMinor={entry.normalized_price_minor} currency={entry.price_currency} /> compared per month
           </strong>
           <span>{Math.round(entry.scope_completeness * 100)}% of scope</span>
           {entry.is_current_scope_version ? null : (

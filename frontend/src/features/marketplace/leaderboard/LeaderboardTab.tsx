@@ -36,13 +36,14 @@ export function LeaderboardTab({ board, isClosed }: LeaderboardTabProps): JSX.El
       {isOpen ? (
         <>
           <div>
-            <p className="ui-text-sm">Ranked by scope covered, then monthly price. Bidders are anonymous to each other.</p>
+            <p className="ui-text-sm">Ranked by scope covered, then by price, compared per month. Bidders are anonymous to each other.</p>
+            {/* The per-month wording mirrors the backend's ranking (services/comparison/normalize.py), whatever the listing's period. */}
             <Disclosure summary="How ranking works">
               <p>
                 Offers that cover more of the requested scope rank above cheaper offers that cover less, so quietly doing less
-                never wins. Prices are converted to a monthly figure by the server before ranking, whatever period each
-                offer is billed on. Offers that answered an earlier scope version, or that are priced in another currency,
-                are listed in their own groups and aren’t ranked against the rest.
+                never wins. To compare prices billed on different periods, the server restates each one per month before
+                ranking; the listing’s own period doesn’t change. Offers that answered an earlier scope version, or that are
+                priced in another currency, are listed in their own groups and aren’t ranked against the rest.
               </p>
             </Disclosure>
           </div>

@@ -4,6 +4,8 @@
 /** The stored listing record the inbox returns; visibility reads "private" once unpublished, while offers are kept. */
 export interface OwnerListingRecord {
   id: string;
+  // The task's title for a listing scoped as requirement rows; null or absent for an older listing without one.
+  title?: string | null;
   category: string;
   service_area_approximate: string;
   price_minor: number;
@@ -20,4 +22,6 @@ export interface OwnerListingInbox {
   challenges: Array<{ challenge_id: string }>;
   bidding_mode: string;
   listing: OwnerListingRecord;
+  // The task behind the listing, read for its id alone (backend api/inbox InboxTaskSummary); absent on older payloads.
+  task?: { id: string } | null;
 }

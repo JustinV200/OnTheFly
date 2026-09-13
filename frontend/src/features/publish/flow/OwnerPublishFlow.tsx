@@ -1,5 +1,6 @@
 /* Runs the publish flow for a signed-in business: loading, nothing-to-publish, the Scope → Preview → Publish wizard,
-   and the published screen. It owns the two hooks (API calls and the draft) so the draft outlives every step change. */
+   and the published screen. It owns the two hooks (API calls and the draft) so the draft outlives every step change.
+   The wizard only offers the categories it has questions for; every other expense is REBID from Spend (publish/path). */
 import { useEffect, useMemo } from 'react';
 import { useNavigate, useSearchParams } from 'react-router-dom';
 
@@ -9,6 +10,7 @@ import { ErrorState } from '../../../shared/components/ErrorState';
 import { LoadingSpinner } from '../../../shared/components/LoadingSpinner';
 import { ButtonLink, Stack } from '../../../shared/ui';
 import { useScopeDraft } from '../form/state/useScopeDraft';
+import { usesPublishWizard } from '../path/usesPublishWizard';
 import { PublishedScreen } from '../published/PublishedScreen';
 import { PublishStepper } from '../stepper/PublishStepper';
 import { usePublish } from '../usePublish';
@@ -26,9 +28,12 @@ export function OwnerPublishFlow({ account }: OwnerPublishFlowProps): JSX.Elemen
   const publishFlow = usePublish();
   const { expenses, preview, step, invalidatePreview } = publishFlow;
 
-  // Already-public expenses are managed from the dashboard; re-drafting one would take it off the profile.
+  // Already-public expenses are managed from the dashboard; re-drafting one would take it off the profile. Expenses REBID
+  // covers are left out, so this form never writes a scope without requirement rows onto a REBID's task.
   const publishable = useMemo(
-    () => (expenses.data?.expenses ?? []).filter((expense) => expense.is_publishable && expense.visibility !== 'public'),
+    () => (expenses.data?.expenses ?? []).filter(
+      (expense) => expense.is_publishable && expense.visibility !== 'public' && usesPublishWizard(expense.category),
+    ),
     [expenses.data],
   );
   const draft = useScopeDraft(publishable, searchParams.get('expense'), invalidatePreview);
@@ -71,7 +76,8 @@ export function OwnerPublishFlow({ account }: OwnerPublishFlowProps): JSX.Elemen
       <Stack gap={6}>
         <PublishHeader />
         <EmptyState action={<ButtonLink to="/">Back to Spend</ButtonLink>} title="Nothing available to publish">
-          Payroll, taxes, and transfers can never be published, and anything already public is managed from Spend.
+          Payroll, taxes, and transfers can never be published, and anything already public is managed from Spend. Everything
+          else is REBID from its row on Spend.
           {expenses.data.expenses.length === 0 ? ' Import transactions first.' : ''}
         </EmptyState>
       </Stack>

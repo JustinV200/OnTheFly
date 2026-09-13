@@ -10,13 +10,17 @@ import type { RateKind } from './types';
 interface AddRateFormProps {
   defaultKind: RateKind;
   laborCategories: string[];
+  // The category the form starts on, e.g. one the rates panel named as missing.
+  initialCategory: string;
+  // True when the owner chose a missing category above: the cursor goes straight to the dollars field.
+  isRateFocusedOnMount: boolean;
   onAdded: () => void;
 }
 
 /** Render the add-rate form. */
-export function AddRateForm({ defaultKind, laborCategories, onAdded }: AddRateFormProps): JSX.Element {
+export function AddRateForm({ defaultKind, laborCategories, initialCategory, isRateFocusedOnMount, onAdded }: AddRateFormProps): JSX.Element {
   const listId = useId();
-  const [category, setCategory] = useState(laborCategories[0] ?? '');
+  const [category, setCategory] = useState(initialCategory);
   const [kind, setKind] = useState<RateKind>(defaultKind);
   const [rateText, setRateText] = useState('');
   const [effectiveDate, setEffectiveDate] = useState(() => new Date().toISOString().slice(0, 10));
@@ -65,7 +69,7 @@ export function AddRateForm({ defaultKind, laborCategories, onAdded }: AddRateFo
               </Select>
             </Field>
             <Field label="Dollars per hour">
-              <Input inputMode="decimal" onChange={(event) => setRateText(event.target.value)} placeholder="e.g. 135" value={rateText} />
+              <Input autoFocus={isRateFocusedOnMount} inputMode="decimal" onChange={(event) => setRateText(event.target.value)} placeholder="e.g. 135" value={rateText} />
             </Field>
             <Field label="Effective from">
               <Input onChange={(event) => setEffectiveDate(event.target.value)} type="date" value={effectiveDate} />

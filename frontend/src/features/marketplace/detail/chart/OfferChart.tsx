@@ -113,7 +113,7 @@ export function OfferChart({ entries, currentScopeVersion, currency, referencePr
       <OfferReadout currentScopeVersion={currentScopeVersion} entry={activeEntry} />
 
       <figcaption className="offer-chart__caption" id={captionId}>
-        {entries.length} public offers over time, each shown as a monthly price worked out by the server
+        {entries.length} public offers over time, each price compared per month by the server, whatever period it is billed on
         {referencePriceMinor !== null ? (
           <>, against the current price of <MoneyDisplay amountMinor={referencePriceMinor} currency={currency} /> a month</>
         ) : null}

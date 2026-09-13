@@ -1,5 +1,5 @@
 /* Step 2, "Choose who to invite": every candidate, discovered or added by hand, with a select-all for the eligible
-   ones and a sticky bar that leads to the exact email preview. Selecting never sends anything. */
+   ones and a sticky bar that leads to step 3, the exact email preview. Selecting never sends anything. */
 import { Button, Card, Checkbox, Icon } from '../../../shared/ui';
 import type { Candidate, ChannelInfo, Invitation } from '../types';
 import { CandidateRow } from './CandidateRow';
@@ -63,7 +63,7 @@ export function CandidateList(props: CandidateListProps): JSX.Element {
             <strong>{selectedCount}</strong> {selectedCount === 1 ? 'supplier' : 'suppliers'} selected
           </span>
           <Button iconEnd={<Icon name="arrow-right" size={16} />} isBusy={isPreviewing} onClick={onPreview} variant="primary">
-            {isPreviewing ? 'Rendering…' : 'Preview the email'}
+            {isPreviewing ? 'Rendering…' : '3. Preview and approve'}
           </Button>
         </div>
       ) : null}

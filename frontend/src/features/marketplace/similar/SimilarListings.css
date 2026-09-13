@@ -1,0 +1,19 @@
+/* The folded "Similar listings" row: the title in body text, its fly-brain badges and the count beside it, wrapping on a
+   phone. The disclosure's own summary style is muted and small, so the title is lifted back to a section label. */
+.similar-listings__summary {
+  align-items: center;
+  display: inline-flex;
+  flex-wrap: wrap;
+  gap: var(--space-1) var(--space-2);
+}
+
+.similar-listings__title {
+  color: var(--color-text);
+  font-size: var(--text-md);
+  font-weight: var(--weight-semibold);
+}
+
+.similar-listings__count {
+  color: var(--color-text-muted);
+  font-weight: var(--weight-medium);
+}

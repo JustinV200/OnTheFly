@@ -41,7 +41,7 @@ export function ApprovalDrawer({ preview, isApproving, approveError, onApprove, 
       ) : undefined}
       isOpen={preview !== null}
       onClose={onClose}
-      title="Review and approve"
+      title="3. Preview and approve"
       width="lg"
     >
       {preview ? (

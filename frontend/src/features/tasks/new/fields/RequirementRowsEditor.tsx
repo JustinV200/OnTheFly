@@ -1,65 +1,83 @@
-/* Requirement rows: what the work is, must or nice to have, its labor category, PSC and NAICS tags, and hours per billing
-   period, each with "confirmed" switches. Only confirmed tags form Ways to save segments; unconfirmed hours stay an estimate
-   and blank hours stay unanswered (plan2, "Model and code boundaries"). */
-import { Button, Checkbox, Field, Grid, Icon, Input, Select, Stack } from '../../../../shared/ui';
+/* Requirement rows as a compact list: a row with its work typed in folds to one line with Edit, and a blank or edited row
+   stays open with every field. Filling from a template, an AI draft or a saved scope therefore shows a short, readable
+   list instead of dozens of inputs. With two or more typed rows, one switch confirms them all after review. Used by the
+   task scope form and the split drawer. Only confirmed tags form Ways to save segments (plan2, "Model and code boundaries"). */
+import { useState } from 'react';
+
+import { Button, Icon, Stack } from '../../../../shared/ui';
 import { emptyRequirement, RequirementDraft } from '../draft/draftTypes';
+import { ConfirmAllRows } from './requirementRow/ConfirmAllRows';
+import { RequirementRowFields } from './requirementRow/RequirementRowFields';
+import { RequirementRowSummary } from './requirementRow/RequirementRowSummary';
 import './TaskFields.css';
 
 interface RequirementRowsEditorProps {
   rows: RequirementDraft[];
   billingPeriod: string;
   onChange: (rows: RequirementDraft[]) => void;
+  // The fewest rows the owner can remove down to: 1 on a task form, which needs a requirement; 0 in the split drawer,
+  // where added rows are optional next to the requirements picked from the task.
+  minRows?: number;
+  addLabel?: string;
 }
 
-/** Render one editable card per requirement, and add/remove controls. */
-export function RequirementRowsEditor({ rows, billingPeriod, onChange }: RequirementRowsEditorProps): JSX.Element {
+/** Render the rows, folded or open, with the confirm-all switch and the add control. */
+export function RequirementRowsEditor({ rows, billingPeriod, onChange, minRows = 1, addLabel = 'Add requirement' }: RequirementRowsEditorProps): JSX.Element {
+  // Rows the owner opened or typed into. A blank row is always open, so the first keystroke must add it here, or the
+  // row would fold away mid-word once its text stops being blank.
+  const [openRowIds, setOpenRowIds] = useState<ReadonlySet<string>>(() => new Set());
+  const typedCount = rows.filter((row) => row.text.trim() !== '').length;
+  const canRemove = rows.length > minRows;
+
+  const setOpen = (rowId: string, isOpen: boolean): void => {
+    setOpenRowIds((current) => {
+      if (current.has(rowId) === isOpen) {
+        return current;
+      }
+      const next = new Set(current);
+      if (isOpen) {
+        next.add(rowId);
+      } else {
+        next.delete(rowId);
+      }
+      return next;
+    });
+  };
   const update = (rowId: string, patch: Partial<RequirementDraft>): void => {
+    setOpen(rowId, true);
     onChange(rows.map((row) => (row.rowId === rowId ? { ...row, ...patch } : row)));
   };
+  const remove = (rowId: string): void => onChange(rows.filter((item) => item.rowId !== rowId));
 
   return (
     <Stack gap={3}>
+      {typedCount >= 2 ? <ConfirmAllRows onChange={onChange} rows={rows} /> : null}
       {rows.map((row, index) => (
-        <fieldset className="task-fields__requirement" key={row.rowId}>
-          <legend className="task-fields__legend">Requirement {index + 1}</legend>
-          <Stack gap={3}>
-            <Field label="What the work is">
-              <Input onChange={(event) => update(row.rowId, { text: event.target.value })} placeholder="e.g. Prepare and maintain the ATO package" value={row.text} />
-            </Field>
-            <Grid minItemWidth="9rem">
-              <Field label="Priority">
-                <Select onChange={(event) => update(row.rowId, { priority: event.target.value === 'should' ? 'should' : 'must' })} value={row.priority}>
-                  <option value="must">Must</option>
-                  <option value="should">Nice to have</option>
-                </Select>
-              </Field>
-              <Field label="Labor category">
-                <Input onChange={(event) => update(row.rowId, { laborCategory: event.target.value })} placeholder="e.g. Security Compliance Analyst" value={row.laborCategory} />
-              </Field>
-              <Field hint="e.g. DJ01" label="PSC">
-                <Input onChange={(event) => update(row.rowId, { psc: event.target.value })} value={row.psc} />
-              </Field>
-              <Field hint="e.g. 541512" label="NAICS">
-                <Input inputMode="numeric" onChange={(event) => update(row.rowId, { naics: event.target.value })} value={row.naics} />
-              </Field>
-              <Field hint={`Per ${billingPeriod} period; blank is unanswered`} label="Hours">
-                <Input inputMode="numeric" onChange={(event) => update(row.rowId, { hours: event.target.value })} value={row.hours} />
-              </Field>
-            </Grid>
-            <div className="task-fields__switches">
-              <Checkbox checked={row.isTagsConfirmed} label="Tags confirmed" onChange={(event) => update(row.rowId, { isTagsConfirmed: event.target.checked })} />
-              <Checkbox checked={row.isHoursConfirmed} disabled={row.hours.trim() === ''} label="Hours confirmed" onChange={(event) => update(row.rowId, { isHoursConfirmed: event.target.checked })} />
-              {rows.length > 1 ? (
-                <Button iconStart={<Icon name="x" />} onClick={() => onChange(rows.filter((item) => item.rowId !== row.rowId))} size="sm" variant="ghost">
-                  Remove
-                </Button>
-              ) : null}
-            </div>
-          </Stack>
-        </fieldset>
+        openRowIds.has(row.rowId) || row.text.trim() === '' ? (
+          <RequirementRowFields
+            billingPeriod={billingPeriod}
+            canRemove={canRemove}
+            index={index}
+            key={row.rowId}
+            onChange={(patch) => update(row.rowId, patch)}
+            onDone={() => setOpen(row.rowId, false)}
+            onRemove={() => remove(row.rowId)}
+            row={row}
+          />
+        ) : (
+          <RequirementRowSummary
+            billingPeriod={billingPeriod}
+            canRemove={canRemove}
+            index={index}
+            key={row.rowId}
+            onEdit={() => setOpen(row.rowId, true)}
+            onRemove={() => remove(row.rowId)}
+            row={row}
+          />
+        )
       ))}
       <div>
-        <Button iconStart={<Icon name="plus" />} onClick={() => onChange([...rows, emptyRequirement()])} size="sm">Add requirement</Button>
+        <Button iconStart={<Icon name="plus" />} onClick={() => onChange([...rows, emptyRequirement()])} size="sm">{addLabel}</Button>
       </div>
     </Stack>
   );

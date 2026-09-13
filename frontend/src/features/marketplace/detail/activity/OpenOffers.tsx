@@ -3,6 +3,7 @@
    sealed, and why the current-price line is missing when the listing isn't billed monthly. */
 import type { ApiQueryState } from '../../../../shared/api/useApiQuery';
 import { ErrorState } from '../../../../shared/components/ErrorState';
+import { describeBilling } from '../../../../shared/market';
 import { Callout, Skeleton, Stack } from '../../../../shared/ui';
 import type { PublicListingProjection } from '../../../publish/types';
 import { sealedOfferNote } from '../../leaderboard/sealedOfferNote';
@@ -52,7 +53,7 @@ export function OpenOffers({ listing, board, isClosed }: OpenOffersProps): JSX.E
           referencePriceMinor={isReferenceDrawn ? listing.price_minor : null}
         />
       ) : null}
-      {plotted.length === 1 ? <SingleOffer currentScopeVersion={currentVersion} entry={plotted[0]} /> : null}
+      {plotted.length === 1 ? <SingleOffer currentScopeVersion={currentVersion} entry={plotted[0]} listingCadence={listing.billing_cadence} /> : null}
       {plotted.length === 0 ? (
         <div className="open-offers__empty">
           <p className="open-offers__empty-title">No public offer prices yet</p>
@@ -66,8 +67,8 @@ export function OpenOffers({ listing, board, isClosed }: OpenOffersProps): JSX.E
 
       {plotted.length >= 2 && !isReferenceDrawn ? (
         <p className="ui-text-muted ui-text-sm">
-          The current price is billed {listing.billing_cadence}, so it isn’t drawn: offers are shown per month and this page
-          doesn’t convert between periods.
+          The current price is {describeBilling(listing.billing_cadence)}, so it isn’t drawn: offers are compared per month
+          and this page doesn’t convert between periods.
         </p>
       ) : null}
       {notPlottedCount > 0 ? (

@@ -36,7 +36,7 @@ export function PriceHeadline({ listing, className }: PriceHeadlineProps): JSX.E
         </span>
         {/* The short suffix ("/mo") is for the eye; the spoken form names the full cadence. */}
         <span aria-hidden="true" className="price-headline__period">{cadenceSuffix(listing.billing_cadence)}</span>
-        <span className="ui-visually-hidden"> billed {listing.billing_cadence}</span>
+        <span className="ui-visually-hidden"> {describeBilling(listing.billing_cadence)}</span>
       </p>
       <p className="price-headline__caption">
         {listing.expense_id ? 'Current price' : 'Listed price'}, published by the business{published}

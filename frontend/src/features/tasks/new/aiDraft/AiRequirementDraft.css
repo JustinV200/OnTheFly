@@ -1,0 +1,13 @@
+/* AI requirement draft panel: an icon beside the disclosure summary, and a compact open-questions list. */
+.ai-draft__summary {
+  align-items: center;
+  display: inline-flex;
+  gap: var(--space-2);
+}
+
+.ai-draft__questions {
+  display: grid;
+  gap: var(--space-1);
+  margin: var(--space-1) 0 0;
+  padding-left: var(--space-5);
+}

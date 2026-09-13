@@ -15,12 +15,14 @@ interface ExpenseDrawerProps {
   expense: Expense | null;
   // The open row's detail request (supporting transactions).
   detail: ApiQueryState<ExpenseDetail>;
+  // The task behind the open expense's listing, if known; the footer action then opens it.
+  taskId: string | null;
   onClose: () => void;
   onVisibilityChanged: () => void;
 }
 
 /** Render the drawer for the selected expense, or nothing while no row is open. */
-export function ExpenseDrawer({ expense, detail, onClose, onVisibilityChanged }: ExpenseDrawerProps): JSX.Element | null {
+export function ExpenseDrawer({ expense, detail, taskId, onClose, onVisibilityChanged }: ExpenseDrawerProps): JSX.Element | null {
   if (!expense) {
     return null;
   }
@@ -29,7 +31,7 @@ export function ExpenseDrawer({ expense, detail, onClose, onVisibilityChanged }:
   return (
     <Drawer
       description={categoryLabel(expense.category)}
-      footer={<ExpenseRowActions expense={expense} onVisibilityChanged={onVisibilityChanged} />}
+      footer={<ExpenseRowActions expense={expense} onVisibilityChanged={onVisibilityChanged} taskId={taskId} />}
       isOpen
       onClose={onClose}
       title={expense.vendor}

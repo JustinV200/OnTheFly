@@ -27,7 +27,7 @@ export function PublishStep({ vendorName, preview, isPublishing, errorMessage, o
   const isOpen = projection.bidding_mode === 'open';
 
   return (
-    <Card description="Nothing is public until you click the button below." title="Publish">
+    <Card title="Publish">
       <Stack gap={5}>
         <ul className="publish-confirm__facts">
           <li>

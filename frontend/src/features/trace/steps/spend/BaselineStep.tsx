@@ -1,6 +1,7 @@
 /* Step 5 of the offer trace: the price baseline the offer is measured against, and where that baseline came from.
    A re-scope never reframes an offer, so an older offer keeps the price of the version it answered. */
 import { MoneyDisplay } from '../../../../shared/components/MoneyDisplay';
+import { cadenceSuffix } from '../../../../shared/market';
 import { Grid, Stack, Stat } from '../../../../shared/ui';
 import { TraceStep } from '../../chain/TraceStep';
 import type { OfferTrace } from '../../types';
@@ -21,7 +22,7 @@ export function BaselineStep({ baseline, scope }: BaselineStepProps): JSX.Elemen
     >
       <Stack gap={4}>
         <Grid gap={5} minItemWidth="8rem">
-          <Stat label="Baseline price" size="md" unit={`/ ${baseline.cadence}`} value={money(baseline.amount_minor)} />
+          <Stat label="Baseline price" size="md" unit={cadenceSuffix(baseline.cadence)} value={money(baseline.amount_minor)} />
           <Stat label="Restated per month" size="md" unit="/ month" value={money(baseline.monthly_minor)} />
         </Grid>
         <p>

@@ -1,0 +1,5 @@
+/* Suggested pieces region: a focus target that scrolls clear of the sticky top bar when brought into view. */
+.suggested-pieces {
+  border-radius: var(--radius-lg);
+  scroll-margin-top: calc(var(--topbar-height) + var(--space-4));
+}

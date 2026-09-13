@@ -13,6 +13,8 @@ export interface RequirementDraft {
   isTagsConfirmed: boolean;
   hours: string;
   isHoursConfirmed: boolean;
+  // Where an existing row came from ("flowed-down" on a piece), kept when its scope is edited; null for a typed row.
+  source: string | null;
 }
 
 export interface ConstraintDraft {
@@ -75,7 +77,7 @@ export function newRowId(): string {
 
 /** Return an empty requirement row. */
 export function emptyRequirement(): RequirementDraft {
-  return { rowId: newRowId(), key: null, text: '', priority: 'must', laborCategory: '', psc: '', naics: '', isTagsConfirmed: false, hours: '', isHoursConfirmed: false };
+  return { rowId: newRowId(), key: null, text: '', priority: 'must', laborCategory: '', psc: '', naics: '', isTagsConfirmed: false, hours: '', isHoursConfirmed: false, source: null };
 }
 
 /** Return an empty form with one requirement row, ready to type into. */

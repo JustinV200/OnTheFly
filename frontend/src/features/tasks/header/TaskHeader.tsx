@@ -1,5 +1,6 @@
-/* The top of a task page: back to My work, the task's title and category, and the facts a participant reads first:
-   its origin and state, the viewer's own relationship to it, a Subcontract label, and its one direct counterparty. */
+/* The top of a task page: back to My work, the task's title and category, the facts a participant reads first (its
+   origin and state, the viewer's own relationship to it, a Subcontract label), and the ownership line saying who owns it
+   now and who its one direct counterparty is. */
 import { Link } from 'react-router-dom';
 
 import { categoryLabel } from '../../../shared/format/categoryLabel';
@@ -7,6 +8,7 @@ import { CategoryTile } from '../../../shared/market';
 import { Badge, Icon, PageHeader } from '../../../shared/ui';
 import { originLabel, relationshipLabel, stateLabel } from '../labels/taskLabels';
 import type { TaskDetail } from '../types';
+import { OwnershipLine } from './OwnershipLine';
 import './TaskHeader.css';
 
 interface TaskHeaderProps {
@@ -18,7 +20,6 @@ export function TaskHeader({ task }: TaskHeaderProps): JSX.Element {
   const origin = originLabel(task.origin);
   const state = stateLabel(task.state);
   const relationship = relationshipLabel(task.relationship);
-  const counterparty = task.owner_money?.client ?? task.buyer_money?.accepted_bidder ?? null;
 
   return (
     <div className="task-header">
@@ -45,19 +46,12 @@ export function TaskHeader({ task }: TaskHeaderProps): JSX.Element {
           subtitle={(
             <span className="task-header__subtitle">
               {categoryLabel(task.category)} · priced per {task.billing_period} period in {task.currency}
-              {counterparty ? (
-                <>
-                  {' · '}
-                  {counterparty.role === 'client' ? 'Client: ' : 'Owned by '}
-                  <Link to={`/p/${counterparty.handle}`}>{counterparty.business_name}</Link>
-                  {counterparty.role === 'client' ? '' : ' (accepted offer)'}
-                </>
-              ) : null}
             </span>
           )}
           title={task.title ?? categoryLabel(task.category)}
         />
       </div>
+      <OwnershipLine task={task} />
     </div>
   );
 }

@@ -1,4 +1,5 @@
-/* Step 1, "Find suppliers": run the configured discovery source once, or add a supplier by hand.
+/* Step 1, "Find suppliers": run the configured discovery source once (the page's first action, so it is primary), or add a
+   supplier by hand.
    An unavailable source says "not run" with its reason; a run that found nothing says "no match in this source",
    never "no suppliers exist" (CLAUDE.md, "Evidence and claims"). Discovery never invites anyone. */
 import { formatRelativeTime } from '../../../shared/format/formatRelativeTime';
@@ -34,7 +35,7 @@ export function DiscoveryCard({ discovery, isListingPublic, isRunning, onRun, on
         )}
         {lastRun ? <LastRun run={lastRun} /> : null}
         <Cluster gap={2}>
-          <Button disabled={!canRun} iconStart={<Icon name="search" size={16} />} isBusy={isRunning} onClick={onRun}>
+          <Button disabled={!canRun} iconStart={<Icon name="search" size={16} />} isBusy={isRunning} onClick={onRun} variant="primary">
             {isRunning ? 'Searching…' : lastRun ? 'Search again' : 'Search for suppliers'}
           </Button>
           <Button disabled={!isListingPublic} iconStart={<Icon name="plus" size={16} />} onClick={onAddManually} variant="ghost">

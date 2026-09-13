@@ -16,6 +16,13 @@ class PieceRef(BaseModel):
     title: str | None
 
 
+class ParentTaskRef(BaseModel):
+    """The task a piece was split from. Only built for an account that posted or owns that parent (views/parent_ref.py)."""
+
+    task_id: str
+    title: str | None
+
+
 class RequirementRow(BaseModel):
     """One requirement on the task's current (or accepted) scope, with where it went if the viewer split it off."""
 
@@ -81,6 +88,8 @@ class TaskDetail(BaseModel):
     is_owned_by_you: bool
     is_subcontract: bool
     parent_scope_changed_at: datetime | None
+    # The task this piece was split from; null for a top-level task and for a viewer that neither posted nor owns it.
+    parent: ParentTaskRef | None
     expense_id: str | None
     listing: ListingSummary | None
     scope_version_number: int | None
@@ -110,6 +119,8 @@ class WorkItem(BaseModel):
     billing_period: str
     relationship: str
     is_subcontract: bool
+    # Same rule as TaskDetail.parent, so My work can list a piece under the task it came from.
+    parent: ParentTaskRef | None
     listing_id: str | None
     listing_visibility: str | None
     offer_count: int

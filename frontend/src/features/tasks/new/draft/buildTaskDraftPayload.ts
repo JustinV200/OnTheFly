@@ -1,6 +1,7 @@
 /* Turns the task scope form into the API draft, or the first problem as a sentence. Money is parsed to integer minor
    units without floating point; hours must be whole numbers. Blank stays unanswered, never zero (CLAUDE.md, AI boundaries). */
 import { parseDollarsToMinor } from '../../../../shared/format/parseDollarsToMinor';
+import { buildRequirementRows } from './buildRequirementRows';
 import type { TaskDraftForm, TaskScopeDraftPayload } from './draftTypes';
 
 export type DraftBuildResult = { payload: TaskScopeDraftPayload } | { error: string };
@@ -20,13 +21,12 @@ export function buildTaskDraftPayload(form: TaskDraftForm, isPriceRequired: bool
   if (isPriceRequired && priceMinor === null) {
     return { error: 'Confirm what you pay now: a REBID’s starting price is your observed spend.' };
   }
-  const rows = form.requirements.filter((row) => row.text.trim() !== '');
-  if (rows.length === 0) {
-    return { error: 'Add at least one requirement.' };
+  const requirements = buildRequirementRows(form.requirements);
+  if ('error' in requirements) {
+    return requirements;
   }
-  const badHours = rows.find((row) => row.hours.trim() !== '' && !/^\d+$/.test(row.hours.trim()));
-  if (badHours) {
-    return { error: `Hours for “${badHours.text.trim()}” must be a whole number, or blank if unanswered.` };
+  if (requirements.rows.length === 0) {
+    return { error: 'Add at least one requirement.' };
   }
   const days = form.deadlineDays.trim();
   if (days !== '' && !/^\d+$/.test(days)) {
@@ -43,21 +43,7 @@ export function buildTaskDraftPayload(form: TaskDraftForm, isPriceRequired: bool
       billing_period: form.billingPeriod,
       challenge_deadline: days === '' ? null : new Date(Date.now() + Number(days) * DAY_MS).toISOString(),
       category_fields: form.category === 'devsecops' ? devSecOpsFields(form) : null,
-      requirements: rows.map((row) => {
-        const hours = row.hours.trim() === '' ? null : Number(row.hours.trim());
-        return {
-          key: row.key,
-          text: row.text.trim(),
-          priority: row.priority,
-          labor_category: row.laborCategory.trim() || null,
-          psc: row.psc.trim().toUpperCase() || null,
-          naics: row.naics.trim() || null,
-          tags_status: row.isTagsConfirmed ? 'confirmed' : 'draft',
-          hours_estimate: hours,
-          hours_status: hours === null ? 'unanswered' : row.isHoursConfirmed ? 'confirmed' : 'draft',
-          source: 'owner',
-        };
-      }),
+      requirements: requirements.rows,
       constraints: form.constraints.filter((row) => row.value.trim() !== '').map((row) => ({ kind: row.kind, value: row.value.trim() })),
     },
   };

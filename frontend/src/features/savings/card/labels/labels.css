@@ -1,0 +1,24 @@
+/* Card labels: the honesty label as a tinted plate (simulated tone for demo data) and the provisional note in warning text. */
+.savings-label {
+  background-color: var(--color-neutral-bg);
+  border: var(--border-width) solid var(--color-neutral-border);
+  border-radius: var(--radius-md);
+  color: var(--color-neutral-text);
+  font-size: var(--text-sm);
+  font-weight: var(--weight-semibold);
+  margin: 0;
+  padding: var(--space-2) var(--space-3);
+}
+
+.savings-label--demo {
+  background-color: var(--color-simulated-bg);
+  border-color: var(--color-simulated-border);
+  color: var(--color-simulated-text);
+}
+
+.savings-provisional {
+  color: var(--color-warning-text);
+  font-size: var(--text-sm);
+  font-weight: var(--weight-medium);
+  margin: 0;
+}

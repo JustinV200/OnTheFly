@@ -1,8 +1,7 @@
 /* Step 2, Preview: the draft rendered with the marketplace's own MarketCard, so the preview is literally what a stranger
-   sees, beside the "Never public" list, with the exact JSON and payload hash one click away (open by default on desktop
-   for the privacy proof, roadmap 09). Everything shown comes from the server's preview payload, never from the form. */
-import { useState } from 'react';
-
+   sees, beside the "Never public" list, with the exact JSON and payload hash one click away (the privacy proof, roadmap
+   09). The JSON starts collapsed on every width so the rendered listing reads first; it is always one click away.
+   Everything shown comes from the server's preview payload, never from the form. */
 import { MarketCard } from '../../../shared/market';
 import { Button, Card, Disclosure, Icon, Stack } from '../../../shared/ui';
 import { StepNavigation } from '../stepper/StepNavigation';
@@ -12,9 +11,6 @@ import { NeverPublicList } from './NeverPublicList';
 import { PayloadJson } from './PayloadJson';
 import './PreviewStep.css';
 
-// Laptop and up, where there is room to show the payload without burying the card (shared/ui/styles/tokens.css breakpoints).
-const DESKTOP_QUERY = '(min-width: 1024px)';
-
 interface PreviewStepProps {
   preview: ListingPreviewResponse;
   onBack: () => void;
@@ -23,11 +19,8 @@ interface PreviewStepProps {
 
 /** Render the rendered preview, the never-public list, the payload disclosure, and Back / Next. */
 export function PreviewStep({ preview, onBack, onNext }: PreviewStepProps): JSX.Element {
-  // Read once at mount: resizing later shouldn't snap a disclosure the owner opened or closed.
-  const [isPayloadOpenByDefault] = useState(() => window.matchMedia(DESKTOP_QUERY).matches);
-
   return (
-    <Card description="This is exactly what a stranger will see. Nothing is public yet." title="Preview">
+    <Card description="This is exactly what a stranger will see." title="Preview">
       <Stack gap={6}>
         <div className="publish-preview__grid">
           <Stack gap={5}>
@@ -44,7 +37,7 @@ export function PreviewStep({ preview, onBack, onNext }: PreviewStepProps): JSX.
           <NeverPublicList />
         </div>
 
-        <Disclosure isDefaultOpen={isPayloadOpenByDefault} summary="Show the exact payload the public API will serve" variant="card">
+        <Disclosure summary="Show the exact payload the public API will serve" variant="card">
           <PayloadJson listing={preview.projection} mode="preview" payloadHash={preview.payload_hash} />
         </Disclosure>
 

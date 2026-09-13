@@ -1,6 +1,6 @@
-/* One listing in My listings, read like a position in a portfolio: category and vendor, the price the business published
-   as the big number, then visibility, bidding mode, offers, and time left, and the owner's actions. Owner-only: the
-   vendor name is private and appears here because only the acting business sees this page. */
+/* One listing in My listings, read like a position in a portfolio: its title (the task's, else the category) and vendor,
+   the price the business published as the big number, then visibility, bidding mode, offers, and time left, and the
+   owner's actions. Owner-only: the vendor name is private and appears here because only the acting business sees this page. */
 import { BiddingModePill } from '../../../shared/components/BiddingModePill';
 import { ErrorState } from '../../../shared/components/ErrorState';
 import { MoneyDisplay } from '../../../shared/components/MoneyDisplay';
@@ -26,14 +26,17 @@ export function OwnerListingCard({ listing, onUnpublished, onRetry }: OwnerListi
   const { record } = status;
   const category = record?.category ?? expense.category;
   const area = record?.service_area_approximate;
+  // A titled listing names its category under the title instead, so the category is never lost.
+  const title = record?.title?.trim() || null;
+  const subtitle = [title ? categoryLabel(category) : null, expense.vendor, area || null].filter(Boolean).join(' · ');
 
   return (
     <article className="owner-listing">
       <header className="owner-listing__heading">
         <CategoryTile category={category} />
         <div className="owner-listing__names">
-          <h2 className="owner-listing__title">{categoryLabel(category)}</h2>
-          <p className="owner-listing__subtitle">{expense.vendor}{area ? ` · ${area}` : ''}</p>
+          <h2 className="owner-listing__title">{title ?? categoryLabel(category)}</h2>
+          <p className="owner-listing__subtitle">{subtitle}</p>
         </div>
       </header>
 

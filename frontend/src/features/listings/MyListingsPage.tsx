@@ -1,6 +1,9 @@
-/* My listings: a portfolio of everything the acting business has put up for bids, live or unpublished, with each
-   listing's price, bidding mode, time left, offers, and actions. A public visitor has no listings, so the page says
-   how to pick a business instead of making a request. Nothing becomes public from here; Unpublish is one click. */
+/* My listings: a portfolio of everything the acting business has put up for bids from its expenses, live or unpublished,
+   with each listing's price, bidding mode, time left, offers, and actions. New work and split-off pieces have no expense,
+   so they live in My work, and one quiet line says so. A public visitor has no listings, so the page says how to pick a
+   business instead of making a request. Nothing becomes public from here; Unpublish is one click. */
+import { Link } from 'react-router-dom';
+
 import { useActingAccount } from '../../shared/account/ActingAccountContext';
 import { EmptyState } from '../../shared/components/EmptyState';
 import { ErrorState } from '../../shared/components/ErrorState';
@@ -53,6 +56,9 @@ function OwnerListings({ businessName }: { businessName: string }): JSX.Element 
         subtitle="What this business has put up for bids, with the offers each one received."
         title="My listings"
       />
+      <p className="my-listings__work-note ui-text-sm ui-text-muted">
+        New work and pieces you split off are in <Link to="/work">My work</Link>
+      </p>
       <OwnerListingsBody expenses={expenses} listings={listings} onRetry={retryListing} onUnpublished={reload} />
     </section>
   );
@@ -74,7 +80,7 @@ function OwnerListingsBody({ expenses, listings, onUnpublished, onRetry }: Owner
   if (listings.length === 0) {
     return (
       <EmptyState action={<ButtonLink to="/" variant="primary">Go to Spend</ButtonLink>} title="Nothing listed yet">
-        <p>Publish an expense from Spend and it shows up here with its offers. Everything stays private until you do.</p>
+        <p>REBID or publish an expense from Spend and it shows up here with its offers. Everything stays private until you publish.</p>
       </EmptyState>
     );
   }

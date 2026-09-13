@@ -48,3 +48,8 @@ const GENERIC: CategoryFieldSet = {
 export function categoryFieldSet(category: string | null): CategoryFieldSet {
   return (category ? FIELD_SETS[category] : undefined) ?? GENERIC;
 }
+
+/** True when the category has its own field set here, rather than falling back to the generic one. */
+export function hasCategoryFieldSet(category: string | null): boolean {
+  return category !== null && Object.prototype.hasOwnProperty.call(FIELD_SETS, category);
+}

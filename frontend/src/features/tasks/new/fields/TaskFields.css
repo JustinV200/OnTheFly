@@ -1,4 +1,32 @@
-/* Task scope form: bordered requirement fieldsets, a wrapping switch row, and a constraint row that stacks on a phone. */
+/* Task scope form: bordered requirement fieldsets, folded requirement lines, a wrapping switch row, and a constraint row
+   that stacks on a phone. */
+.task-fields__summary {
+  align-items: flex-start;
+  border: var(--border-width) solid var(--color-border);
+  border-radius: var(--radius-lg);
+  display: flex;
+  flex-wrap: wrap;
+  gap: var(--space-3);
+  justify-content: space-between;
+  padding: var(--space-3) var(--space-4);
+}
+
+.task-fields__summary-text {
+  display: grid;
+  flex: 1 1 20rem;
+  gap: var(--space-1);
+  min-width: 0;
+}
+
+.task-fields__summary-title {
+  font-weight: var(--weight-semibold);
+  overflow-wrap: anywhere;
+}
+
+.task-fields__summary-actions {
+  flex: none;
+}
+
 .task-fields__requirement {
   border: var(--border-width) solid var(--color-border);
   border-radius: var(--radius-lg);

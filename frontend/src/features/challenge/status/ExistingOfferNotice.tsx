@@ -4,6 +4,7 @@
 import { BiddingModePill } from '../../../shared/components/BiddingModePill';
 import { MoneyDisplay } from '../../../shared/components/MoneyDisplay';
 import { formatTimestamp } from '../../../shared/format/formatTimestamp';
+import { cadenceSuffix } from '../../../shared/market';
 import { ProvenanceBadge } from '../../../shared/provenance/ProvenanceBadge';
 import { Callout, Card, Icon, Stack, Stat } from '../../../shared/ui';
 import type { BiddingModeValue, StoredOffer } from '../types';
@@ -37,7 +38,7 @@ export function ExistingOfferNotice({ offer, isOnCurrentScope, revisionMode }: E
             )}
             label="Current offer"
             size="md"
-            unit={`/ ${offer.billing_frequency}`}
+            unit={cadenceSuffix(offer.billing_frequency)}
             value={<MoneyDisplay amountMinor={offer.price_minor} currency={offer.price_currency} />}
           />
           <div className="existing-offer__modes">

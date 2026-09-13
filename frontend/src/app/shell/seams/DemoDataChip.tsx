@@ -1,14 +1,24 @@
 /* States the demo's seams in the top bar on every screen: what the financial data is and whether any offer is genuine.
    The chip itself names both facts ("Fixture spend · 2 simulated offers"); pressing it opens the full sentences.
-   When the status can't load it turns danger-toned and says so, never hidden (roadmap 11, "Demo-data chip"). */
+   The normal all-demo state is an info label, not a warning; a warning triangle is kept for real data mixed with demo
+   data. When the status can't load it turns danger-toned and says so, never hidden (roadmap 11, "Demo-data chip"). */
 import { useCallback, useId, useRef, useState } from 'react';
 
 import { useApiQuery } from '../../../shared/api/useApiQuery';
-import { Icon, Spinner } from '../../../shared/ui';
+import { Icon, IconName, Spinner } from '../../../shared/ui';
 import { useMenuDismiss } from '../../account/menu/useMenuDismiss';
-import { describeFinancial, describeOffers, describeOutreach, describeSeamsShort, isSimulated } from './describeSeams';
+import { describeFinancial, describeOffers, describeOutreach, describeSeamsShort, SeamTone, seamTone } from './describeSeams';
 import type { DemoStatus } from './demoStatusTypes';
 import './DemoDataChip.css';
+
+type ChipTone = SeamTone | 'danger' | 'loading';
+
+const TONE_ICONS: Record<Exclude<ChipTone, 'loading'>, IconName> = {
+  info: 'info',
+  neutral: 'info',
+  warning: 'alert-triangle',
+  danger: 'alert-circle',
+};
 
 // The endpoint is a few counts, so a short poll is cheap and keeps the label current right after an offer lands.
 const POLL_INTERVAL_MS = 5000;
@@ -29,7 +39,7 @@ export function DemoDataChip(): JSX.Element {
   }, []);
   useMenuDismiss(rootRef, isOpen, close);
 
-  const tone = !data ? (error ? 'danger' : 'loading') : isSimulated(data) ? 'simulated' : 'neutral';
+  const tone: ChipTone = !data ? (error ? 'danger' : 'loading') : seamTone(data);
   const label = !data ? (error ? 'Data labels unavailable' : 'Checking data sources…') : describeSeamsShort(data);
 
   return (
@@ -42,7 +52,7 @@ export function DemoDataChip(): JSX.Element {
         ref={triggerRef}
         type="button"
       >
-        {tone === 'loading' ? <Spinner size="sm" /> : <Icon name={tone === 'danger' ? 'alert-circle' : 'alert-triangle'} size={14} />}
+        {tone === 'loading' ? <Spinner size="sm" /> : <Icon name={TONE_ICONS[tone]} size={14} />}
         <span className="demo-chip__label">{label}</span>
       </button>
 

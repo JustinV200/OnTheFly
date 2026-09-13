@@ -1,5 +1,6 @@
-"""Splits a piece off a task: the owner picks requirements and a cut, and the piece becomes its own private task.
-Only the current task owner can split. Splitting never publishes; the piece goes through confirm, preview and publish.
+"""Splits a piece off a task: the owner picks requirements (or adds the piece's own) and a cut, and the piece becomes
+its own private task. Only the current task owner can split. Splitting never publishes; the piece goes through confirm,
+preview and publish.
 """
 
 from typing import Literal
@@ -11,14 +12,14 @@ from sqlalchemy.orm import Session
 from app.core.config import get_settings
 from app.core.task_lifecycle import SplitEntryPoint, TaskOrigin, TaskState
 from app.models.savings import SavingsCard
-from app.models.scope import Requirement
 from app.models.tasks import RequirementAssignment, Task, TaskSplit
 from app.services.savings.cards import mark_task_cards_stale
-from app.services.scope.requirements import RequirementInput, load_constraints, new_requirement_key, requirement_to_input
+from app.services.scope.requirements import RequirementInput, load_constraints
 from app.services.splitting.flow_down import ConstraintRef, UnacknowledgedRemovalError, flow_down_constraints
 from app.services.splitting.ledger import CutProblem, build_ledger, check_new_cut
 from app.services.splitting.parent_rewrite import write_parent_without
-from app.services.splitting.requirements_in_play import requirements_still_with_task, splittable_scope_version
+from app.services.splitting.piece_requirements import build_piece_requirements
+from app.services.splitting.requirements_in_play import splittable_scope_version
 from app.services.splitting.suggested_count import active_suggested_pieces
 from app.services.tasks.access import listing_for_task, require_task_owner
 from app.services.tasks.events import write_task_event
@@ -30,7 +31,10 @@ class SplitRequest(BaseModel):
     """What the owner chose in the split drawer."""
 
     title: str = Field(min_length=1, max_length=255)
-    requirement_keys: list[str] = Field(min_length=1)
+    # Requirements that move from the task to the piece. May be empty when the owner adds the piece's rows instead.
+    requirement_keys: list[str] = Field(default_factory=list)
+    # Rows the owner typed for the piece alone; the parent's scope never gains or loses them.
+    new_requirements: list[RequirementInput] = Field(default_factory=list)
     cut_minor: int = Field(gt=0)
     # Sent explicitly so a cut typed in another currency or period is refused, never silently reinterpreted.
     currency: str
@@ -45,8 +49,8 @@ def split_off_piece(parent_task_id: str, acting_account_id: str, request: SplitR
     """Create the piece and its split record, and return the split.
 
     Raises 404 for anyone but the parent's poster or owner, 403 for a poster whose task was accepted, and 400 for
-    a broken rule: an unknown or already assigned requirement, a cut outside the ledger, the suggestion cap, or an
-    unacknowledged constraint removal. Nothing is written unless every check passes.
+    a broken rule: no requirements at all, an unknown or already assigned requirement, a cut outside the ledger, the
+    suggestion cap, or an unacknowledged constraint removal. Nothing is written unless every check passes.
     """
 
     parent = db.get(Task, parent_task_id)
@@ -59,7 +63,7 @@ def split_off_piece(parent_task_id: str, acting_account_id: str, request: SplitR
     if listing is None or scope is None:
         raise HTTPException(status_code=status.HTTP_400_BAD_REQUEST, detail="Confirm this task's scope before splitting it")
 
-    chosen = _chosen_requirements(parent, request.requirement_keys, db)
+    piece_requirements = build_piece_requirements(parent, request.requirement_keys, request.new_requirements, db)
     card = _card_for(request, parent, acting_account_id, db)
     _check_cut(parent, request, is_before_acceptance, db)
     try:
@@ -83,18 +87,11 @@ def split_off_piece(parent_task_id: str, acting_account_id: str, request: SplitR
     )
     db.add(child)
     db.flush()
-    # Fresh keys for the piece's copies: a public key must never link the piece's listing to the parent's.
-    key_pairs = [(row.requirement_key, new_requirement_key()) for row in chosen]
-    child_requirements: list[RequirementInput] = []
-    for row, (_, child_key) in zip(chosen, key_pairs, strict=True):
-        copied = requirement_to_input(row)
-        copied.key = child_key
-        copied.source = "flowed-down"
-        child_requirements.append(copied)
+    key_pairs = piece_requirements.assigned_key_pairs
     child_scope = write_task_scope_version(
         child,
         ScopeVersionContent(
-            requirements=child_requirements,
+            requirements=piece_requirements.rows,
             constraints=flow.inherited,
             price_minor=request.cut_minor,
             # Template fields such as a mission summary can describe the client, so they stay with the parent.
@@ -135,31 +132,10 @@ def split_off_piece(parent_task_id: str, acting_account_id: str, request: SplitR
     if card is not None:
         card.status = "split"
 
-    _audit(parent, child, split, flow.removed, [key for key, _ in key_pairs], acting_account_id, db)
+    _audit(parent, child, split, flow.removed, [key for key, _ in key_pairs], len(request.new_requirements), acting_account_id, db)
     db.commit()
     db.refresh(split)
     return split
-
-
-def _chosen_requirements(parent: Task, keys: list[str], db: Session) -> list[Requirement]:
-    if len(set(keys)) != len(keys):
-        raise HTTPException(status_code=status.HTTP_400_BAD_REQUEST, detail="A requirement can only be picked once")
-    available = {row.requirement_key: row for row in requirements_still_with_task(parent, db)}
-    missing = [key for key in keys if key not in available]
-    if missing:
-        raise HTTPException(
-            status_code=status.HTTP_400_BAD_REQUEST,
-            detail=(
-                f"{len(missing)} picked requirement(s) aren't with this task any more: each one stays with the task or "
-                "goes to exactly one active piece."
-            ),
-        )
-    if len(keys) == len(available) and parent.accepted_challenge_id is None:
-        raise HTTPException(
-            status_code=status.HTTP_400_BAD_REQUEST,
-            detail="Leave at least one requirement on your own listing, or unpublish it instead of splitting all of it.",
-        )
-    return [available[key] for key in keys]
 
 
 def _check_cut(parent: Task, request: SplitRequest, is_before_acceptance: bool, db: Session) -> None:
@@ -185,6 +161,12 @@ def _check_cut(parent: Task, request: SplitRequest, is_before_acceptance: bool, 
 
 
 def _card_for(request: SplitRequest, parent: Task, acting_account_id: str, db: Session) -> SavingsCard | None:
+    if request.entry_point == SplitEntryPoint.suggested.value and request.new_requirements:
+        # A suggestion is priced on exactly its card's requirements; extra rows make it the owner's own manual split.
+        raise HTTPException(
+            status_code=status.HTTP_400_BAD_REQUEST,
+            detail="A suggested piece covers only its card's requirements. Split it off manually to add requirements.",
+        )
     if request.savings_card_id is None:
         if request.entry_point == SplitEntryPoint.suggested.value:
             raise HTTPException(status_code=status.HTTP_400_BAD_REQUEST, detail="A suggested split names its Ways to save card")
@@ -209,6 +191,7 @@ def _audit(
     split: TaskSplit,
     removed: list[ConstraintRef],
     parent_keys: list[str],
+    added_requirement_count: int,
     acting_account_id: str,
     db: Session,
 ) -> None:
@@ -223,6 +206,7 @@ def _audit(
             "entry_point": split.entry_point,
             "split_before_acceptance": split.split_before_acceptance,
             "requirement_keys": parent_keys,
+            "added_requirement_count": added_requirement_count,
         },
         db,
     )

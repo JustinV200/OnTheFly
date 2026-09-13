@@ -1,7 +1,7 @@
 /* Decides the bid form's starting fields: the stored offer when the challenger has one (a revision replaces every term,
    so a blank form would silently drop them), otherwise an empty form; then the bid ticket's price and billing, when
    usable, replace just those two fields. It also reports what came from where, so the form can say so. */
-import { initialBilling } from '../../marketplace/detail/ticket/form/billingOptions';
+import { initialBilling } from '../../../shared/market';
 import type { ChallengeFormFields } from '../buildChallengePayload';
 import { offerToFormFields } from '../offerToFormFields';
 import type { StoredOffer } from '../types';

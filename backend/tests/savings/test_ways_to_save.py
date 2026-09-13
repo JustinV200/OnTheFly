@@ -99,6 +99,21 @@ def test_prime_a_gets_exactly_one_suggestion_from_its_own_rates(client: TestClie
     assert all(card["thresholds"] == body["thresholds"] for card in body["cards"])
 
 
+def test_after_a_split_the_remaining_segments_are_priced_again_on_the_next_load(client: TestClient, db_session: Session) -> None:
+    # The staged chain splits the suggested Security Compliance Analyst piece off, which marks every other card stale.
+    chain = stage(db_session, "sub_owns")
+
+    body = client.get(f"/api/tasks/{chain.rebid_task_id}/ways-to-save", headers=headers(PRIME_A)).json()
+
+    statuses = {card["labor_category"]: card["status"] for card in body["cards"]}
+    assert statuses == {
+        "Security Compliance Analyst": "split",
+        "DevSecOps Engineer": "suggested",
+        "Cloud Engineer": "suggested",
+        "Technical Writer": "suggested",
+    }
+
+
 def test_a_segment_without_rates_never_reaches_the_suggestions(client: TestClient, db_session: Session) -> None:
     chain = stage(db_session, "prime_owns")
     db_session.execute(delete(CostBasisRate).where(CostBasisRate.account_id == PRIME_A, CostBasisRate.labor_category == "Security Compliance Analyst"))

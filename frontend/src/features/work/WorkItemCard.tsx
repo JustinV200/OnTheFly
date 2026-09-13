@@ -1,5 +1,6 @@
 /* One task on My work, read like a position: title and badges, the one figure that matters for this business's side (its
-   remainder on a task it won, the accepted or listed amount on one it posted), and the next step. */
+   remainder on a task it won, the accepted or listed amount on one it posted), and the next step, worded like the task
+   page's next-step callout. */
 import { MoneyDisplay } from '../../shared/components/MoneyDisplay';
 import { categoryLabel } from '../../shared/format/categoryLabel';
 import { formatMoneyText } from '../../shared/format/formatMoneyText';
@@ -7,6 +8,7 @@ import { cadenceSuffix, CategoryTile } from '../../shared/market';
 import { Badge, ButtonLink, Icon } from '../../shared/ui';
 import { originLabel, relationshipLabel, stateLabel } from '../tasks/labels/taskLabels';
 import type { WorkItem } from '../tasks/types';
+import { workNextStep } from './workNextStep';
 
 /** Render one work item card. */
 export function WorkItemCard({ item }: { item: WorkItem }): JSX.Element {
@@ -15,6 +17,7 @@ export function WorkItemCard({ item }: { item: WorkItem }): JSX.Element {
   const relationship = relationshipLabel(item.relationship);
   const unit = cadenceSuffix(item.billing_period);
   const figure = headline(item);
+  const next = workNextStep(item);
 
   return (
     <article className="work-item">
@@ -43,7 +46,7 @@ export function WorkItemCard({ item }: { item: WorkItem }): JSX.Element {
         {item.offer_count > 0 ? <Badge icon={<Icon name="users" />} tone="neutral">{item.offer_count === 1 ? '1 offer' : `${item.offer_count} offers`}</Badge> : null}
       </div>
       <footer className="work-item__footer">
-        {item.next_step ? <span className="work-item__next"><Icon name="arrow-right" size={14} /> {item.next_step}</span> : <span />}
+        {next ? <span className="work-item__next"><Icon name="arrow-right" size={14} /> {next}</span> : <span />}
         <ButtonLink size="sm" to={`/tasks/${item.task_id}`} variant="primary">Open task</ButtonLink>
       </footer>
     </article>

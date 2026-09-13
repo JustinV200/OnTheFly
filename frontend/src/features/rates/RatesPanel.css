@@ -1,2 +1,9 @@
-/* Rates panel: padding for the empty line inside an unpadded card. */
+/* Rates panel: padding for the empty line inside an unpadded card, and the list of categories that still need a rate. */
 .rates-panel__empty { margin: 0; padding: var(--space-4); }
+
+.rates-panel__missing {
+  display: grid;
+  gap: var(--space-1);
+  margin: var(--space-2) 0 0;
+  padding-left: var(--space-5);
+}

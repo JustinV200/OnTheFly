@@ -41,7 +41,7 @@ export function ScopeForm({ draft, errors, serverError, isSubmitting, isPublishi
   };
 
   return (
-    <Card description="What you buy, where, and what you pay. Only you see this form." title="Scope">
+    <Card description="What you buy, where, and what you pay." title="Scope">
       <form noValidate onSubmit={submit}>
         <Stack gap={6}>
           {isPreviewStale ? (

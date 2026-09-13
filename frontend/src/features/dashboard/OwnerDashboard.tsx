@@ -1,12 +1,14 @@
 /* Composes one business's Spend page: the header, then (once imported) the headline and expense list, then Data sources.
    The answer comes first and where it came from follows (roadmap 11, step 4). Before anything is imported, Data sources
-   is the only content, so the import button and its result are still the first thing on the page. */
+   is the only content and opens its rows, so the import button and its result are still the first thing on the page.
+   Privacy is stated once, in the header badge; each row's Visibility column says the rest. */
 import type { DemoAccount } from '../../shared/account/demoAccounts';
 import { Badge, Icon, PageHeader, Stack } from '../../shared/ui';
 import { DataSourcesCard } from '../connections/sources/DataSourcesCard';
 import { StripeConnection } from '../connections/StripeConnection';
 import { ConnectionPanel } from './connection/ConnectionPanel';
 import { describeImportTotals } from './connection/describe/describeImportTotals';
+import { SourcesSummary } from './connection/SourcesSummary';
 import { useConnection } from './connection/useConnection';
 import { ImportedSpend } from './ImportedSpend';
 import { useDashboard } from './useDashboard';
@@ -19,7 +21,12 @@ interface OwnerDashboardProps {
 export function OwnerDashboard({ account }: OwnerDashboardProps): JSX.Element {
   const dashboard = useDashboard();
   const connection = useConnection(dashboard.reload);
-  const hasImported = connection.status.data?.status === 'imported';
+  const status = connection.status.data;
+  const hasImported = status?.status === 'imported';
+  // The rows open when they hold the next step or a result: a failed status, nothing imported yet, or an import that ran.
+  const shouldOpenSources = status === null
+    ? connection.status.error !== null
+    : !hasImported || connection.importState.phase !== 'idle';
 
   return (
     // A section root rather than one Stack: PageHeader brings its own bottom margin, and a gap on top of it doubles the space.
@@ -30,13 +37,17 @@ export function OwnerDashboard({ account }: OwnerDashboardProps): JSX.Element {
             Only {account.businessName} can see this page
           </Badge>
         }
-        subtitle="Everything imports private. Nothing goes public unless you publish that one expense."
+        subtitle="What this business pays for, grouped from its imported transactions."
         title="Spend"
       />
 
       <Stack gap={8}>
-        {hasImported ? <ImportedSpend businessName={account.businessName} dashboard={dashboard} sources={connection.status.data?.sources ?? []} /> : null}
-        <DataSourcesCard summary={connection.status.data ? describeImportTotals(connection.status.data) : null}>
+        {hasImported ? <ImportedSpend businessName={account.businessName} dashboard={dashboard} sources={status?.sources ?? []} /> : null}
+        <DataSourcesCard
+          shouldOpen={shouldOpenSources}
+          summary={status && hasImported ? <SourcesSummary connection={status} /> : null}
+          totals={status ? describeImportTotals(status) : null}
+        >
           <ConnectionPanel
             businessName={account.businessName}
             importState={connection.importState}

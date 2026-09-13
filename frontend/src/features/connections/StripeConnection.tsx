@@ -38,7 +38,7 @@ export function StripeConnection({ onImported, onConnected }: StripeConnectionPr
           ) : null}
         </>
       }
-      details={<p>One simulated checking account from Stripe’s sandbox, not a live bank account. Imported transactions stay private.</p>}
+      details={<p>One simulated checking account from Stripe’s sandbox, not a live bank account.</p>}
       facts={
         connection?.last_synced_at
           ? `Last imported ${formatTimestamp(connection.last_synced_at)}`

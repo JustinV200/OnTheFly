@@ -2,6 +2,7 @@
    "Not stated" stays visibly different from "Not included": the owner not answering is information too (plan1.md §4). */
 import type { ReactNode } from 'react';
 
+import { billingLabel } from '../../../../shared/market';
 import { Badge } from '../../../../shared/ui';
 import type { PublicListingProjection } from '../../../publish/types';
 import { RequirementScope } from './RequirementScope';
@@ -45,7 +46,7 @@ export function ScopeRequirements({ listing }: ScopeRequirementsProps): JSX.Elem
         <Requirement label="Service area">
           {listing.service_area_approximate ? `${listing.service_area_approximate} (approximate)` : <NotStated />}
         </Requirement>
-        <Requirement label="Billed">{listing.billing_cadence}</Requirement>
+        <Requirement label="Billed">{billingLabel(listing.billing_cadence)}</Requirement>
         {/* The incumbent vendor is a separate owner opt-in; the projection only carries it when the owner disclosed it. */}
         {listing.incumbent_vendor_name ? <Requirement label="Current vendor">{listing.incumbent_vendor_name}</Requirement> : null}
       </dl>

@@ -1,0 +1,67 @@
+/* Demo guide step checklist: a numbered mark (a check once done), the step's text, and its "Act as" button. */
+.demo-steps {
+  list-style: none;
+  margin: 0;
+  padding: 0;
+}
+
+.demo-steps__item {
+  align-items: start;
+  border-bottom: var(--border-width) solid var(--color-border-subtle);
+  display: grid;
+  gap: var(--space-3);
+  grid-template-columns: auto minmax(0, 1fr);
+  padding: var(--space-3) 0;
+}
+
+.demo-steps__item:last-child {
+  border-bottom: 0;
+}
+
+.demo-steps__item--next {
+  background-color: var(--color-brand-soft);
+  border-radius: var(--radius-md);
+  margin: 0 calc(var(--space-2) * -1);
+  padding: var(--space-3) var(--space-2);
+}
+
+.demo-steps__item > :last-child:is(button) {
+  grid-column: 2;
+  justify-self: start;
+}
+
+.demo-steps__mark {
+  align-items: center;
+  background-color: var(--color-surface-sunken);
+  border-radius: 50%;
+  color: var(--color-text-secondary);
+  display: inline-flex;
+  font-size: var(--text-sm);
+  font-weight: var(--weight-semibold);
+  height: 28px;
+  justify-content: center;
+  width: 28px;
+}
+
+.demo-steps__mark--done {
+  background-color: var(--color-success-bg);
+  color: var(--color-success-text);
+}
+
+.demo-steps__body {
+  display: grid;
+  gap: var(--space-1);
+  min-width: 0;
+}
+
+.demo-steps__title {
+  font-weight: var(--weight-semibold);
+  margin: 0;
+}
+
+.demo-steps__actor,
+.demo-steps__detail {
+  color: var(--color-text-secondary);
+  font-size: var(--text-sm);
+  margin: 0;
+}

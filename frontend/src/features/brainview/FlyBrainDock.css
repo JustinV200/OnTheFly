@@ -1,4 +1,5 @@
-/* The dock's own pieces: the chip shown while the panel is hidden, and the line shown while the panel code loads. */
+/* The dock's own pieces: the labelled pill shown while the panel is minimized, and the line shown while the panel code
+   loads. Both sit in the bottom corner and stay small, so a run labels itself without covering a table's last column. */
 .fly-brain-dock__chip,
 .fly-brain-dock__loading {
   align-items: center;
@@ -20,13 +21,30 @@
 
 .fly-brain-dock__chip {
   cursor: pointer;
+  flex-wrap: wrap;
+  row-gap: 0;
   font: inherit;
   font-size: var(--text-sm);
+  max-width: calc(100vw - 2 * var(--space-3));
+}
+
+.fly-brain-dock__chip:hover {
+  border-color: var(--color-flybrain-solid);
 }
 
 .fly-brain-dock__chip:focus-visible {
   box-shadow: var(--focus-ring);
   outline: none;
+}
+
+.fly-brain-dock__label {
+  font-weight: var(--weight-semibold);
+  white-space: nowrap;
+}
+
+/* The run's state is secondary to the label, and the first thing to wrap on a narrow phone. */
+.fly-brain-dock__state {
+  white-space: nowrap;
 }
 
 @media (min-width: 768px) {

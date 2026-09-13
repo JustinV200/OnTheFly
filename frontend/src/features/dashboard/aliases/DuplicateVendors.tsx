@@ -26,7 +26,6 @@ export function DuplicateVendors({ onMerged }: DuplicateVendorsProps): JSX.Eleme
         <div className="duplicate-vendors">
           <span className="duplicate-vendors__text">
             <strong>{count} possible duplicate {count === 1 ? 'vendor' : 'vendors'}</strong>
-            <span className="ui-text-muted"> · merging never publishes anything</span>
           </span>
           {attributions.map((attribution) => <PlainFlyBrainBadge attribution={attribution} key={attribution.component} />)}
           <Button aria-haspopup="dialog" className="duplicate-vendors__review" onClick={() => setIsOpen(true)} size="sm">

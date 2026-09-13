@@ -28,10 +28,10 @@ export function SavingsBreakdown({ offer }: { offer: InboxChallenge }): JSX.Elem
       </Grid>
       <p className="savings-breakdown__text">
         {/* A savings figure exists only with a baseline, so the null branch reads as a plain fact rather than a zero. */}
-        Measured against {offer.baseline_monthly_minor === null ? 'no stated price' : money(offer.baseline_monthly_minor)} / month,{' '}
+        Measured against {offer.baseline_monthly_minor === null ? 'no stated price' : money(offer.baseline_monthly_minor)} / month:{' '}
         {offer.is_current_scope_version
-          ? 'the price on this listing.'
-          : `the price you confirmed on scope v${offer.answered_scope_version_number}, the version this offer answered.`}{' '}
+          ? 'this listing’s price, restated per month.'
+          : `the price you confirmed on scope v${offer.answered_scope_version_number}, the version this offer answered, restated per month.`}{' '}
         Savings are potential until you actually switch.
       </p>
       {savings.assumptions.length > 0 ? (

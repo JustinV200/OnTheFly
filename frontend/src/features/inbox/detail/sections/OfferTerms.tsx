@@ -2,6 +2,7 @@
    excludes, and conditions. Unknown terms read "Not stated" rather than disappearing (CLAUDE.md, AI boundaries). */
 import { MoneyDisplay } from '../../../../shared/components/MoneyDisplay';
 import { formatTimestamp } from '../../../../shared/format/formatTimestamp';
+import { cadenceSuffix } from '../../../../shared/market';
 import type { OwnerChallenge } from '../../types';
 import { Term, TermList } from '../TermList';
 
@@ -11,7 +12,7 @@ const NOT_STATED = 'Not stated';
 export function OfferTerms({ offer }: { offer: OwnerChallenge }): JSX.Element {
   const money = (amountMinor: number): JSX.Element => <MoneyDisplay amountMinor={amountMinor} currency={offer.price_currency} />;
   const terms: Term[] = [
-    { label: 'Price as offered', value: <>{money(offer.price_minor)} / {offer.billing_frequency}</> },
+    { label: 'Price as offered', value: <>{money(offer.price_minor)} {cadenceSuffix(offer.billing_frequency)}</> },
     { label: 'Setup fee', value: offer.setup_fee_minor ? money(offer.setup_fee_minor) : 'None stated' },
     { label: 'Includes', value: offer.scope_included.join(', ') || NOT_STATED },
     { label: 'Excludes', value: offer.scope_excluded.join(', ') || NOT_STATED },

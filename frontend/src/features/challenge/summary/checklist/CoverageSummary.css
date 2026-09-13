@@ -1,0 +1,18 @@
+/* Coverage section of the summary card: a small heading, the count line in body text, the disclosure under it. */
+.bid-coverage-summary {
+  display: grid;
+  gap: var(--space-1);
+  min-width: 0;
+}
+
+.bid-coverage-summary__heading {
+  font-size: var(--text-sm);
+  font-weight: var(--weight-semibold);
+  letter-spacing: normal;
+  margin: 0;
+}
+
+.bid-coverage-summary__counts {
+  font-size: var(--text-sm);
+  margin: 0;
+}

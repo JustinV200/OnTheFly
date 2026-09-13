@@ -68,7 +68,8 @@ export function InboxPage(): JSX.Element {
         >
           <p>Bidding is closed and {acceptedName} owns this task now. You stay its client; what they split off is theirs to manage.</p>
         </Callout>
-      ) : task ? (
+      ) : task && challenges.length > 0 ? (
+        // Only with offers to pick from; before the first one, the controls and the no-offers state carry the next step.
         <Callout actions={<ButtonLink to={`/tasks/${task.id}`}>Open the task</ButtonLink>} role="note" title="Pick an offer to accept" tone="info">
           <p>Open an offer to review accepting it. Accepting closes bidding and makes that bidder the task owner.</p>
         </Callout>
@@ -81,7 +82,7 @@ export function InboxPage(): JSX.Element {
       {inbox.error ? <ErrorState error={inbox.error} onRetry={reload} title="Showing the last loaded offers; a refresh failed" /> : null}
 
       <SummaryStrip
-        controls={<ListingControls listing={listing} onChanged={reload} />}
+        controls={<ListingControls listing={listing} onChanged={reload} task={task} />}
         listing={listing}
         offers={challenges}
         onOpenOffer={setOpenOfferId}
@@ -89,13 +90,14 @@ export function InboxPage(): JSX.Element {
       <GenuineOfferCallout offers={ownerOffers} onOpenOffer={setOpenOfferId} />
 
       {challenges.length === 0 ? (
-        <NoOffersState listing={listing} />
+        <NoOffersState listing={listing} task={task} />
       ) : (
         <RankedOffersSection
           comparisonError={comparison.data ? null : comparison.error}
           currentScopeVersionNumber={currentScopeVersionNumber}
           incumbent={incumbent}
           listing={listing}
+          offerTerms={ownerOffers.data?.challenges ?? []}
           offers={challenges}
           onOpenOffer={setOpenOfferId}
           onRetry={reload}

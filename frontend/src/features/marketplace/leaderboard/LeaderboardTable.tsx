@@ -1,5 +1,6 @@
-/* The open-bidding leaderboard table: rank, monthly price, and scope covered side by side, then time and origin.
-   There is no identity column and none may be added: challengers are anonymous to each other in every mode.
+/* The open-bidding leaderboard table: rank, the server's per-month price, and scope covered side by side, then time and
+   origin. The price column says "compared per month" because the listing itself may be priced on another period.
+   There is no identity column and none may be added: bidders are anonymous to each other in every mode.
    Offers on an earlier scope version, or in another currency, sit in their own labelled groups and get no rank number. */
 import { Fragment } from 'react';
 
@@ -29,7 +30,7 @@ export function LeaderboardTable({ entries, currentScopeVersion }: LeaderboardTa
       <thead>
         <tr>
           <th scope="col">Rank</th>
-          <th className="ui-num" scope="col">Monthly price</th>
+          <th className="ui-num" scope="col">Price, compared per month</th>
           <th scope="col">Scope covered</th>
           <th scope="col">Submitted</th>
           <th scope="col">Origin</th>
@@ -52,7 +53,7 @@ export function LeaderboardTable({ entries, currentScopeVersion }: LeaderboardTa
                     </>
                   )}
                 </td>
-                <td className="ui-num leaderboard-table__price" data-label="Monthly price">
+                <td className="ui-num leaderboard-table__price" data-label="Price, compared per month">
                   <MoneyDisplay amountMinor={entry.normalized_price_minor} currency={entry.price_currency} />
                 </td>
                 <td data-label="Scope covered">

@@ -1,4 +1,10 @@
-/* My listings page: the listing cards stack as a plain list with no bullets or indent. */
+/* My listings page: the pointer to My work sits just under the header, then the listing cards stack as a plain list with
+   no bullets or indent. */
+.my-listings__work-note {
+  /* Pulled up into the header's bottom space, so the line reads as part of the header rather than a section. */
+  margin: calc(-1 * var(--space-4)) 0 var(--space-6);
+}
+
 .my-listings__list {
   list-style: none;
   margin: 0;

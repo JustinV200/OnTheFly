@@ -1,0 +1,9 @@
+/* Actor dot: the business's colour arrives as --actor-color; without one it falls back to a neutral border tone. */
+.demo-actor-dot {
+  background-color: var(--actor-color, var(--color-border-strong));
+  border-radius: 50%;
+  display: inline-block;
+  height: 10px;
+  vertical-align: middle;
+  width: 10px;
+}

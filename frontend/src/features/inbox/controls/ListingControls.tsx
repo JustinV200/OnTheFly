@@ -1,22 +1,27 @@
 /* The owner's controls for one listing, as a band under the summary tiles: bidding mode as Sealed / Open, visibility with
-   a one-click Unpublish, and sharing (copy link, invite suppliers, view as a stranger). Side by side from laptop width.
-   A mode change is never retroactive; the hint says so before the change and the result says so after it. */
+   a one-click Unpublish (or, while private, the way back to publishing), and sharing (copy link, invite suppliers, view as
+   a stranger). Side by side from laptop width. A mode change is never retroactive; the hint says so before the change and
+   the result says so after it. These are the page's only share buttons, so the no-offers state doesn't repeat them. */
 import { Link } from 'react-router-dom';
 
 import { ButtonLink, Card, CopyButton, Icon } from '../../../shared/ui';
 import type { PublicListingProjection } from '../../publish/types';
 import { UnpublishButton } from '../../publish/UnpublishButton';
 import { ListingVisibilityBadge } from '../header/ListingVisibilityBadge';
+import type { InboxTaskSummary } from '../types';
 import { BiddingModeControl } from './BiddingModeControl';
+import { RepublishLink } from './RepublishLink';
 import './ListingControls.css';
 
 interface ListingControlsProps {
   listing: PublicListingProjection;
+  // The listing's task, whose page a private listing opens to publish again; null for a listing without one.
+  task: InboxTaskSummary | null;
   onChanged: () => void;
 }
 
 /** Render the bidding, visibility, and share controls for an owned listing. */
-export function ListingControls({ listing, onChanged }: ListingControlsProps): JSX.Element {
+export function ListingControls({ listing, task, onChanged }: ListingControlsProps): JSX.Element {
   const isPublic = listing.visibility === 'public';
   const publicPath = `/listings/${listing.id}`;
 
@@ -34,7 +39,7 @@ export function ListingControls({ listing, onChanged }: ListingControlsProps): J
             // Unpublishing is the safe direction: one visible click, never hidden in a menu (roadmap 11, principle 5).
             <UnpublishButton listingId={listing.id} onUnpublished={onChanged} size="sm" />
           ) : (
-            <ButtonLink size="sm" to={`/publish?expense=${listing.expense_id}`}>Publish again…</ButtonLink>
+            <RepublishLink listing={listing} size="sm" task={task} />
           )}
         </div>
 

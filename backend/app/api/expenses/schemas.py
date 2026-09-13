@@ -44,6 +44,8 @@ class ExpenseResponse(BaseModel):
     # The owner's listing for this expense, if one was ever drafted. It survives unpublishing
     # so the owner can still reach challenges received while it was public.
     listing_id: str | None
+    # The owner's REBID task for this expense, if one was created, so Spend can open the task page directly.
+    task_id: str | None
     # Distinct source_type values of the transactions behind this row (production | sandbox |
     # imported | fixture). A list, because one vendor's history can span sources.
     provenance: list[str]

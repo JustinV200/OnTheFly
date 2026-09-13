@@ -1,0 +1,114 @@
+/* Demo steps rail: one slim row under the top bar (about 44px), aligned to the page container. It scrolls away with the
+   page rather than sticking, so it never takes height from the content below. On narrow screens it wraps onto more rows
+   instead of truncating what to do next. */
+.demo-rail {
+  background-color: var(--color-surface-subtle);
+  border-bottom: var(--border-width) solid var(--color-border-subtle);
+}
+
+.demo-rail__inner {
+  align-items: center;
+  display: flex;
+  flex-wrap: wrap;
+  font-size: var(--text-sm);
+  gap: var(--space-1) var(--space-3);
+  margin: 0 auto;
+  max-width: var(--layout-max-width);
+  min-height: 44px;
+  padding: var(--space-1) var(--layout-gutter);
+}
+
+.demo-rail__body {
+  align-items: center;
+  display: flex;
+  flex: 1 1 18rem;
+  flex-wrap: wrap;
+  gap: var(--space-1) var(--space-3);
+  min-width: 0;
+}
+
+.demo-rail__status,
+.demo-rail__detail {
+  color: var(--color-text-secondary);
+  margin: 0;
+}
+
+.demo-rail__status {
+  align-items: center;
+  display: inline-flex;
+  gap: var(--space-1);
+}
+
+.demo-rail__status--failed {
+  color: var(--color-danger-text);
+}
+
+.demo-rail__count {
+  color: var(--color-text-muted);
+  font-variant-numeric: tabular-nums;
+  font-weight: var(--weight-semibold);
+  white-space: nowrap;
+}
+
+.demo-rail__actor {
+  align-items: center;
+  display: inline-flex;
+  font-weight: var(--weight-semibold);
+  gap: var(--space-1);
+  white-space: nowrap;
+}
+
+/* The step title takes the spare width; it wraps rather than ellipsizes, since it is the instruction. */
+.demo-rail__title {
+  color: var(--color-text);
+  flex: 1 1 12rem;
+  min-width: 0;
+}
+
+.demo-rail__detail {
+  flex: 1 1 100%;
+}
+
+@media (min-width: 1024px) {
+  .demo-rail__detail {
+    flex-basis: 20rem;
+  }
+}
+
+.demo-rail__end {
+  align-items: center;
+  display: flex;
+  gap: var(--space-1);
+  margin-left: auto;
+}
+
+.demo-rail__guide-link {
+  border-radius: var(--radius-sm);
+  font-weight: var(--weight-medium);
+  padding: var(--space-1) var(--space-2);
+  white-space: nowrap;
+}
+
+.demo-rail__hide {
+  align-items: center;
+  background: none;
+  border: 0;
+  border-radius: var(--radius-sm);
+  box-shadow: none;
+  color: var(--color-text-muted);
+  cursor: pointer;
+  display: inline-flex;
+  height: 32px;
+  justify-content: center;
+  width: 32px;
+}
+
+.demo-rail__hide:hover {
+  background-color: var(--color-surface-hover);
+  color: var(--color-text);
+}
+
+.demo-rail__hide:focus-visible {
+  box-shadow: var(--focus-ring);
+  outline: none;
+}

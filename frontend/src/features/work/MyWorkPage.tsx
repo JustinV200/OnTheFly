@@ -1,5 +1,6 @@
 /* My work (roadmap 12, step 10): the tasks this business won through accepted offers, and the tasks it posted, each with its
-   own money view and next step. Only the acting business's own figures and direct counterparties appear here. */
+   own money view and next step. A piece it split off sits under the task it came from. Only the acting business's own
+   figures and direct counterparties appear here. */
 import { useActingAccount } from '../../shared/account/ActingAccountContext';
 import { useApiQuery } from '../../shared/api/useApiQuery';
 import { EmptyState } from '../../shared/components/EmptyState';
@@ -7,7 +8,8 @@ import { ErrorState } from '../../shared/components/ErrorState';
 import { LoadingSpinner } from '../../shared/components/LoadingSpinner';
 import { Badge, ButtonLink, Icon, PageHeader, Stack } from '../../shared/ui';
 import type { WorkResponse } from '../tasks/types';
-import { WorkItemCard } from './WorkItemCard';
+import { nestWorkPieces } from './nestWorkPieces';
+import { WorkList } from './WorkList';
 import './MyWorkPage.css';
 
 const POLL_INTERVAL_MS = 5000;
@@ -39,29 +41,36 @@ export function MyWorkPage(): JSX.Element {
       {!work.data ? (
         work.error ? <ErrorState error={work.error} onRetry={work.reload} title="Couldn’t load your work" /> : <LoadingSpinner label="Loading your work…" />
       ) : (
-        <>
-          <section aria-labelledby="work-owned" className="my-work__section">
-            <h2 className="my-work__heading" id="work-owned">Tasks you won ({work.data.owned.length})</h2>
-            {work.data.owned.length === 0 ? (
-              <p className="ui-text-muted">None yet. Win a task by bidding on the market board; when its poster accepts your offer, it lands here and you can split it.</p>
-            ) : (
-              <ul className="my-work__list">
-                {work.data.owned.map((item) => <li key={item.task_id}><WorkItemCard item={item} /></li>)}
-              </ul>
-            )}
-          </section>
-          <section aria-labelledby="work-posted" className="my-work__section">
-            <h2 className="my-work__heading" id="work-posted">Tasks you posted ({work.data.posted.length})</h2>
-            {work.data.posted.length === 0 ? (
-              <p className="ui-text-muted">Nothing posted yet. REBID an expense from Spend, post new work, or split a piece off a task you won.</p>
-            ) : (
-              <ul className="my-work__list">
-                {work.data.posted.map((item) => <li key={item.task_id}><WorkItemCard item={item} /></li>)}
-              </ul>
-            )}
-          </section>
-        </>
+        <WorkSections work={work.data} />
       )}
     </Stack>
+  );
+}
+
+function WorkSections({ work }: { work: WorkResponse }): JSX.Element {
+  const nested = nestWorkPieces(work);
+  return (
+    <>
+      <section aria-labelledby="work-owned" className="my-work__section">
+        <h2 className="my-work__heading" id="work-owned">Tasks you won ({nested.owned.length})</h2>
+        {nested.owned.length === 0 ? (
+          <p className="ui-text-muted">None yet. Win a task by bidding on the market board; when its poster accepts your offer, it lands here and you can split it.</p>
+        ) : (
+          <WorkList nodes={nested.owned} />
+        )}
+      </section>
+      <section aria-labelledby="work-posted" className="my-work__section">
+        <h2 className="my-work__heading" id="work-posted">Tasks you posted ({nested.posted.length})</h2>
+        {nested.posted.length === 0 ? (
+          <p className="ui-text-muted">
+            {work.posted.length > 0
+              ? 'Every task you posted is a piece, listed under the task it was split from.'
+              : 'Nothing posted yet. REBID an expense from Spend, post new work, or split a piece off a task you won.'}
+          </p>
+        ) : (
+          <WorkList nodes={nested.posted} />
+        )}
+      </section>
+    </>
   );
 }

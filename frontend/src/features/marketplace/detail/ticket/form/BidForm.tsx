@@ -6,8 +6,8 @@ import { useNavigate } from 'react-router-dom';
 
 import { formatMinorForInput } from '../../../../../shared/format/formatMinorForInput';
 import { parseDollarsToMinor } from '../../../../../shared/format/parseDollarsToMinor';
+import { BILLING_OPTIONS, initialBilling } from '../../../../../shared/market';
 import { Button, Field, Select } from '../../../../../shared/ui';
-import { BILLING_OPTIONS, initialBilling } from './billingOptions';
 import { DollarInput } from './DollarInput';
 import './BidForm.css';
 
@@ -55,7 +55,8 @@ export function BidForm({ listingId, listingCadence }: BidFormProps): JSX.Elemen
             inputMode="decimal"
             onBlur={() => setIsErrorShown(trimmed !== '')}
             onChange={(event) => setPriceText(event.target.value)}
-            placeholder="e.g. 1,875"
+            // No example figure: a made-up number anchors bids on a listing whose scale it knows nothing about.
+            placeholder="Amount in USD"
             ref={priceRef}
             value={priceText}
           />

@@ -1,7 +1,7 @@
-/* The bid form as an order ticket: Price, What's covered, Terms and Message on the left, and a sticky "Your offer"
-   summary with the submit button on the right (after the form on a phone). The draft lives here, so the page keeps this
-   form mounted while a bidding-mode change awaits re-confirmation. Each section is its own component; this file owns the
-   draft, validation, and the layout. */
+/* The bid form as an order ticket: the required parts first (Price, then what the price includes), optional details folded
+   under one disclosure, and a sticky "Your offer" summary with the submit button on the right (after the form on a phone).
+   The draft lives here, so the page keeps this form mounted while a bidding-mode change awaits re-confirmation. Each
+   section is its own component; this file owns the draft, validation, and the layout. */
 import { FormEvent, ReactNode, useId, useState } from 'react';
 
 import { Stack } from '../../../shared/ui';
@@ -13,12 +13,11 @@ import { BidTicketNote } from '../ticket/BidTicketNote';
 import type { BidTicket } from '../ticket/readBidTicket';
 import { seedOfferFields } from '../ticket/seedOfferFields';
 import type { BiddingModeValue, ChallengePayload, StoredOffer } from '../types';
-import { BiddingTermsCallout } from './BiddingTermsCallout';
-import { CoverageFields } from './scope/CoverageFields';
+import { OfferDetailsFields } from './details/OfferDetailsFields';
+import { ModeChangeAlert } from './ModeChangeAlert';
 import { PriceFields } from './price/PriceFields';
 import { RequirementAnswersFields } from './requirements/RequirementAnswersFields';
-import { MessageField } from './terms/MessageField';
-import { TermsFields } from './terms/TermsFields';
+import { CoverageFields } from './scope/CoverageFields';
 import './ChallengeForm.css';
 
 // The demo scope template's tasks (plan1.md §4). Offered only when a listing names no tasks of its own,
@@ -26,12 +25,12 @@ import './ChallengeForm.css';
 const TEMPLATE_TASKS = ['vacuum', 'trash', 'restrooms'];
 
 interface ChallengeFormProps {
-  // null while the owner has changed the mode and the challenger hasn't re-confirmed: the draft stays, submitting doesn't.
+  // null while the business has changed the mode and the bidder hasn't re-confirmed: the draft stays, submitting doesn't.
   acknowledgedMode: BiddingModeValue | null;
-  // The listing's mode now, and how the challenger re-confirms it; the terms callout and the summary need both.
+  // The listing's mode now, and how the bidder re-confirms it; the mode-change alert and the summary need both.
   currentMode: BiddingModeValue;
   onConfirmMode: () => void;
-  // The challenger's stored offer, when it has one. The form starts from its terms, because submitting replaces all of them.
+  // The bidder's stored offer, when it has one. The form starts from its terms, because submitting replaces all of them.
   initialOffer: StoredOffer | null;
   // The market page's bid ticket (price and billing), applied over the starting fields; null once this page stored a version.
   ticket: BidTicket | null;
@@ -44,7 +43,7 @@ interface ChallengeFormProps {
   intro?: ReactNode;
 }
 
-/** Render the bid form and its summary. acknowledgedMode must be the mode currently shown to the challenger, or null to
+/** Render the bid form and its summary. acknowledgedMode must be the mode currently shown to the bidder, or null to
     block submitting. initialOffer and ticket are read once on mount; the page keys this form by stored version so a new
     version re-seeds it. */
 export function ChallengeForm(props: ChallengeFormProps): JSX.Element {
@@ -61,9 +60,9 @@ export function ChallengeForm(props: ChallengeFormProps): JSX.Element {
   const [validationError, setValidationError] = useState<string | null>(null);
   const update = (patch: Partial<ChallengeFormFields>): void => setFields((current) => ({ ...current, ...patch }));
 
-  // An explicit action, not a default: claiming the full scope is the challenger's decision to make.
+  // An explicit action, not a default: claiming the full scope is the bidder's decision to make.
   // It copies the listing's own requirements, so the offer is scored against exactly what it claims.
-  // With no tasks requested there are none to copy, so any template tasks the challenger ticked stay ticked.
+  // With no tasks requested there are none to copy, so any template tasks the bidder ticked stay ticked.
   const matchRequestedScope = (): void => update(isTemplateTasks ? { ...requested, tasks: fields.tasks } : requested);
 
   const submit = (event: FormEvent<HTMLFormElement>): void => {
@@ -86,13 +85,15 @@ export function ChallengeForm(props: ChallengeFormProps): JSX.Element {
       <form aria-label="Your bid" className="bid-offer-form bid-form-layout__form" id={formId} noValidate onSubmit={submit}>
         <Stack gap={5}>
           {intro}
+          {/* Only after a mode change, and before the price field: a bidder must never find out afterwards that their
+              price went public. The steady-state mode is in the page header and beside the submit button. */}
+          <ModeChangeAlert acknowledgedMode={acknowledgedMode} currentMode={currentMode} isRevision={initialOffer !== null} onConfirmMode={onConfirmMode} />
           <PriceFields
             currency={listing.price_currency}
             fields={fields}
+            listingCadence={listing.billing_cadence}
             onChange={update}
             origin={<BidTicketNote origin={seeded.origin} />}
-            // Shown before the price field: a challenger must never find out afterwards that their price went public.
-            terms={<BiddingTermsCallout acknowledgedMode={acknowledgedMode} currentMode={currentMode} isRevision={initialOffer !== null} onConfirmMode={onConfirmMode} />}
           />
           {requirements.length > 0 ? (
             <RequirementAnswersFields
@@ -110,8 +111,7 @@ export function ChallengeForm(props: ChallengeFormProps): JSX.Element {
               taskChoices={taskChoices}
             />
           )}
-          <TermsFields fields={fields} onChange={update} />
-          <MessageField message={fields.message} onChange={(message) => update({ message })} />
+          <OfferDetailsFields currency={listing.price_currency} fields={fields} isRequirementListing={requirements.length > 0} onChange={update} />
         </Stack>
       </form>
       <div className="bid-form-layout__summary">

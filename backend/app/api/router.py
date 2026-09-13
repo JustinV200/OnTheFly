@@ -16,6 +16,7 @@ from app.api.listings.router import router as listings_router
 from app.api.marketplace.router import router as marketplace_router
 from app.api.profiles.router import router as profiles_router
 from app.api.rates.router import router as rates_router
+from app.api.requirement_drafts.router import router as requirement_drafts_router
 from app.api.savings.router import router as savings_router
 from app.api.signals.router import router as signals_router
 from app.api.splits.router import router as splits_router
@@ -37,6 +38,7 @@ api_router.include_router(listings_router)
 api_router.include_router(marketplace_router)
 api_router.include_router(profiles_router)
 api_router.include_router(rates_router)
+api_router.include_router(requirement_drafts_router)
 api_router.include_router(savings_router)
 api_router.include_router(signals_router)
 api_router.include_router(splits_router)

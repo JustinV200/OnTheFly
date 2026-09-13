@@ -1,4 +1,9 @@
-/* Offers to accept: one hairline-separated item per offer, rank and name, price, and the accept toggle in a row. */
+/* Offers to accept: a focusable region, one hairline-separated item per offer, rank and name, price, and the accept toggle. */
+.offers-to-accept__region {
+  border-radius: var(--radius-lg);
+  scroll-margin-top: calc(var(--topbar-height) + var(--space-4));
+}
+
 .offers-to-accept {
   list-style: none;
   margin: 0;
@@ -45,6 +50,12 @@
 .offers-to-accept__price {
   font-size: var(--text-lg);
   font-weight: var(--weight-semibold);
+}
+
+.offers-to-accept__normalized {
+  color: var(--color-text-muted);
+  font-size: var(--text-sm);
+  font-weight: var(--weight-regular);
 }
 
 .offers-to-accept__gaps {

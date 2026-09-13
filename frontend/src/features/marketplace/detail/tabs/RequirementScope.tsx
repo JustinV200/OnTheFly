@@ -1,6 +1,8 @@
 /* The Scope tab for a listing scoped as requirement rows (roadmap 12): each requirement with its priority, labor
    category and hours, then the constraints every bidder must meet, then the category template's fields. Offers answer
-   each requirement by name, so this is exactly the list the bid form asks about. Public fields only. */
+   each requirement by name, so this is exactly the list the bid form asks about, in the bid form's priority words.
+   Public fields only. */
+import { perPeriodWords, requirementPriorityLabel } from '../../../../shared/market';
 import { Badge, Stack, Table } from '../../../../shared/ui';
 import type { PublicListingProjection } from '../../../publish/types';
 import { constraintLabel } from './constraintLabel';
@@ -22,8 +24,8 @@ export function RequirementScope({ listing }: RequirementScopeProps): JSX.Elemen
   return (
     <Stack gap={5}>
       <p className="requirement-scope__intro">
-        Every offer says, requirement by requirement, what its price includes. Hours are the business’s estimate per
-        {` ${listing.billing_cadence}`} period{totalHours !== null ? `, ${totalHours.toLocaleString('en-US')} in total` : ''}.
+        Every offer says, requirement by requirement, what its price includes. Hours are the business’s estimate{' '}
+        {perPeriodWords(listing.billing_cadence)}{totalHours !== null ? `, ${totalHours.toLocaleString('en-US')} in total` : ''}.
       </p>
       <Table density="compact" label="Requirements" layout="stack" minWidth="560px">
         <thead>
@@ -38,7 +40,7 @@ export function RequirementScope({ listing }: RequirementScopeProps): JSX.Elemen
             <tr key={row.key}>
               <td data-label="Requirement">
                 <span className="requirement-scope__text">{row.text}</span>{' '}
-                {row.priority === 'should' ? <Badge tone="neutral">Nice to have</Badge> : <Badge tone="info">Must</Badge>}
+                <Badge tone={row.priority === 'should' ? 'neutral' : 'info'}>{requirementPriorityLabel(row.priority)}</Badge>
               </td>
               <td data-label="Labor category">{row.labor_category ?? <span className="requirement-scope__muted">Not stated</span>}</td>
               <td className="ui-num" data-label="Hours">

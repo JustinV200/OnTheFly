@@ -21,7 +21,7 @@ export function BuyerMoney({ money }: BuyerMoneyProps): JSX.Element {
   const segments: MoneyBarSegment[] = [
     ...money.own_pieces.map((piece) => ({
       key: piece.task_id,
-      label: `${piece.title ?? 'Your piece'} (${piece.accepted_price_minor === null ? 'cut, pending' : 'accepted'})`,
+      label: `${piece.title ?? 'Your piece'} (${piece.accepted_price_minor === null ? 'cut, no offer accepted yet' : 'accepted price'})`,
       amountMinor: piece.committed_minor,
       tone: piece.accepted_price_minor === null ? ('pending' as const) : ('piece' as const),
     })),

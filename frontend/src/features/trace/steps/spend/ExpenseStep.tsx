@@ -2,6 +2,7 @@
    Not every transaction listed in step 7 is behind these figures, so the link down says how many were counted. */
 import { MoneyDisplay } from '../../../../shared/components/MoneyDisplay';
 import { formatTimestamp } from '../../../../shared/format/formatTimestamp';
+import { perPeriodWords } from '../../../../shared/market';
 import { ProvenanceBadge } from '../../../../shared/provenance/ProvenanceBadge';
 import { Grid, Stat } from '../../../../shared/ui';
 import { TraceStep } from '../../chain/TraceStep';
@@ -23,7 +24,7 @@ export function ExpenseStep({ expense, transactions }: ExpenseStepProps): JSX.El
       title={`Private expense: ${expense.vendor}`}
     >
       <Grid gap={5} minItemWidth="8rem">
-        <Stat label={`Per ${expense.cadence} period`} size="md" value={money(expense.amount_minor_per_period)} />
+        <Stat label={`Paid ${perPeriodWords(expense.cadence)}`} size="md" value={money(expense.amount_minor_per_period)} />
         <Stat label="Annualized" size="md" value={money(expense.annualized_amount_minor)} />
         <Stat
           caption={`${formatTimestamp(expense.first_seen, { dateOnly: true })} to ${formatTimestamp(expense.last_seen, { dateOnly: true })}`}

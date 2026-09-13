@@ -18,12 +18,14 @@ interface ExpenseRowProps {
   isSelected: boolean;
   // False when the list header already states the one provenance every row shares.
   shouldShowProvenance: boolean;
+  // The task behind this expense's listing, if known; its action then opens the task.
+  taskId: string | null;
   onOpen: (expenseId: string) => void;
   onVisibilityChanged: () => void;
 }
 
 /** Render one expense row; payroll, tax, and transfer rows render dimmed with their reason in place of an action. */
-export function ExpenseRow({ expense, isSelected, shouldShowProvenance, onOpen, onVisibilityChanged }: ExpenseRowProps): JSX.Element {
+export function ExpenseRow({ expense, isSelected, shouldShowProvenance, taskId, onOpen, onVisibilityChanged }: ExpenseRowProps): JSX.Element {
   const pattern = describePattern(expense);
 
   return (
@@ -76,7 +78,7 @@ export function ExpenseRow({ expense, isSelected, shouldShowProvenance, onOpen, 
 
       {/* Actions navigate or unpublish; they must not also open the row. */}
       <div className="expense-row__actions" onClick={(event) => event.stopPropagation()}>
-        <ExpenseRowActions expense={expense} onVisibilityChanged={onVisibilityChanged} />
+        <ExpenseRowActions expense={expense} onVisibilityChanged={onVisibilityChanged} taskId={taskId} />
       </div>
     </li>
   );

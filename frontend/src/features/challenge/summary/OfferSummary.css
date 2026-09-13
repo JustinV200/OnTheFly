@@ -1,4 +1,5 @@
-/* Summary card: the typed price as the biggest text, the current price under it for reference, then the checklist. */
+/* Summary card: the typed price as the biggest text, the current price under it for reference, then the coverage count
+   (styled in checklist/CoverageSummary.css), the mode note and the submit button. */
 .bid-summary__price {
   display: grid;
   gap: var(--space-1);
@@ -44,19 +45,6 @@
 .bid-summary__current {
   color: var(--color-text-muted);
   font-size: var(--text-sm);
-}
-
-.bid-summary__section {
-  display: grid;
-  gap: var(--space-1);
-  min-width: 0;
-}
-
-.bid-summary__heading {
-  font-size: var(--text-sm);
-  font-weight: var(--weight-semibold);
-  letter-spacing: normal;
-  margin: 0;
 }
 
 .bid-summary__fineprint {

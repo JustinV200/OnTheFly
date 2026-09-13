@@ -8,7 +8,8 @@ export function matchesCategory(item: MarketplaceListing, category: string): boo
   return category === '' || categoryLabel(item.listing.category) === categoryLabel(category);
 }
 
-/** Return listings in the category whose category label, service area or scope summary contains the search text. */
+/** Return listings in the category whose title, category label, service area or scope summary contains the search text.
+    Older listings have no title; they are still found by their category, which is what their card is titled by. */
 export function filterListings(listings: MarketplaceListing[], category: string, searchText: string): MarketplaceListing[] {
   const needle = searchText.trim().toLowerCase();
   return listings.filter((item) => {
@@ -19,7 +20,7 @@ export function filterListings(listings: MarketplaceListing[], category: string,
       return true;
     }
     const { listing } = item;
-    return [categoryLabel(listing.category), listing.service_area_approximate, listing.scope_summary].some((field) =>
+    return [listing.title, categoryLabel(listing.category), listing.service_area_approximate, listing.scope_summary].some((field) =>
       (field ?? '').toLowerCase().includes(needle),
     );
   });

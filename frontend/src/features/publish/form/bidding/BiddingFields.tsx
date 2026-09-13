@@ -17,7 +17,7 @@ interface BiddingFieldsProps {
 /** Render the deadline, the sealed/open choice as two described tiles, and the vendor-name disclosure. */
 export function BiddingFields({ values, choices, onChange, onChoicesChange }: BiddingFieldsProps): JSX.Element {
   return (
-    <FormSection description="Every choice starts at its private default." title="Bidding">
+    <FormSection description="Each choice starts at its default: no deadline, sealed bidding, vendor name hidden." title="Bidding">
       <Stack gap={5}>
         <Field hint="Offers close at the end of this day. Blank means no deadline." label="Offer deadline (optional)">
           <Input className="publish-bidding__date" onChange={(event) => onChange({ deadlineDate: event.target.value })} type="date" value={values.deadlineDate} />

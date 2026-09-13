@@ -39,8 +39,8 @@ export function BiddingRules({ biddingMode, closes }: BiddingRulesProps): JSX.El
           A business can’t make an offer on a task it published itself.
         </Rule>
         <Rule icon="check-circle" title="Scope before price">
-          Offers are ranked by how much of the requested scope they cover, then by monthly price. Each offer stays attached
-          to the scope version it answered.
+          Offers are ranked by how much of the requested scope they cover, then by price, compared per month whatever period
+          each is billed on. Each offer stays attached to the scope version it answered.
         </Rule>
       </ul>
     </div>

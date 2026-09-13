@@ -1,6 +1,7 @@
-/* The choices every account switcher offers: each seeded business, then the public visitor.
+/* The choices every account switcher offers: the three task-chain businesses first (the ones a presenter reaches for),
+   then the other seeded businesses, then the public visitor on its own.
    One list, so the desktop band and the phone menu can never offer different sets. */
-import { DemoAccount, demoAccounts } from '../../shared/account/demoAccounts';
+import { DEMO_CHAIN_ACCOUNT_IDS, DemoAccount, demoAccounts } from '../../shared/account/demoAccounts';
 
 export interface AccountOption {
   // null is the signed-out public visitor.
@@ -9,10 +10,22 @@ export interface AccountOption {
   account: DemoAccount | null;
 }
 
-// Slate, not a business colour: the visitor must never look like one of the seeded businesses.
-export const PUBLIC_VISITOR_COLOR = '#475569';
+export interface AccountOptionGroup {
+  heading: string;
+  options: AccountOption[];
+}
 
-export const accountOptions: AccountOption[] = [
-  ...demoAccounts.map((account) => ({ id: account.id, label: account.businessName, account })),
-  { id: null, label: 'Public visitor', account: null },
+function toOption(account: DemoAccount): AccountOption {
+  return { id: account.id, label: account.businessName, account };
+}
+
+// Chain businesses follow story order (GovCon, Prime A, Sub B), not seed order.
+const chainAccounts = DEMO_CHAIN_ACCOUNT_IDS.flatMap((id) => demoAccounts.filter((account) => account.id === id));
+
+export const accountGroups: AccountOptionGroup[] = [
+  { heading: 'Demo chain', options: chainAccounts.map(toOption) },
+  { heading: 'Other demo businesses', options: demoAccounts.filter((account) => !DEMO_CHAIN_ACCOUNT_IDS.includes(account.id)).map(toOption) },
 ];
+
+// Kept apart from the groups: it is the logged-out view, not another business.
+export const publicVisitorOption: AccountOption = { id: null, label: 'Public visitor', account: null };

@@ -49,7 +49,7 @@ export function SpendOverview({ expenses, sources }: SpendOverviewProps): JSX.El
 
       <div className="spend-overview__tiles">
         <Tile>
-          <Stat caption="Only you can see these" label={<IconLabel icon="lock">Private</IconLabel>} size="md" value={expenses.length - publicCount} />
+          <Stat caption="Not published" label={<IconLabel icon="lock">Private</IconLabel>} size="md" value={expenses.length - publicCount} />
         </Tile>
         <Tile>
           <Stat caption="Live listings" label={<IconLabel icon="globe">Public</IconLabel>} size="md" value={publicCount} />

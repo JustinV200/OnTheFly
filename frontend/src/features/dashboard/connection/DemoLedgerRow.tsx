@@ -35,7 +35,7 @@ export function DemoLedgerRow({ connection, ledger, importState, onImport }: Dem
       actions={
         // The first import is the one next step on an empty page, so it is primary; a later refresh is secondary.
         <Button isBusy={isRunning} onClick={onImport} variant={hasImported ? 'secondary' : 'primary'}>
-          {isRunning ? 'Importing… (everything lands private)' : hasImported ? 'Refresh import' : 'Import transactions'}
+          {isRunning ? 'Importing…' : hasImported ? 'Refresh import' : 'Import transactions'}
         </Button>
       }
       details={

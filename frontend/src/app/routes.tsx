@@ -13,6 +13,7 @@ import { ListingDetailPage } from '../features/marketplace/ListingDetailPage';
 import { MarketplacePage } from '../features/marketplace/MarketplacePage';
 import { ProfilePage } from '../features/profile/ProfilePage';
 import { PublishFlow } from '../features/publish/PublishFlow';
+import { EditTaskScopePage } from '../features/tasks/edit/EditTaskScopePage';
 import { NewTaskPage } from '../features/tasks/new/NewTaskPage';
 import { TaskPage } from '../features/tasks/TaskPage';
 import { TracePage } from '../features/trace/TracePage';
@@ -23,10 +24,12 @@ export const routes: RouteObject[] = [
   { path: '/', element: <DashboardPage /> },
   { path: '/publish', element: <PublishFlow /> },
   { path: '/my-listings', element: <MyListingsPage /> },
-  // Roadmap 12: tasks a business won or posted, a task's own page, posting new work or a REBID, and the presenter's guide.
+  // Roadmap 12: tasks a business won or posted, a task's own page, posting new work or a REBID, editing a task's saved
+  // scope, and the presenter's guide.
   { path: '/work', element: <MyWorkPage /> },
   { path: '/tasks/new', element: <NewTaskPage /> },
   { path: '/tasks/:id', element: <TaskPage /> },
+  { path: '/tasks/:id/edit', element: <EditTaskScopePage /> },
   { path: '/demo', element: <DemoGuidePage /> },
   { path: '/marketplace', element: <MarketplacePage /> },
   { path: '/listings/:id', element: <ListingDetailPage /> },

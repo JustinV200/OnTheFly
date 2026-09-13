@@ -1,4 +1,4 @@
-"""Task endpoints: read a task, post new work, confirm a REBID's scope, edit scope, and relationships.
+"""Task endpoints: read a task, post new work, confirm a REBID's scope, read and edit scope, and relationships.
 Handlers parse input, call a service and shape the response; every rule lives in services/tasks.
 """
 
@@ -21,6 +21,7 @@ from app.services.listings.types import PublishChoices
 from app.services.tasks.access import get_participant_task, require_task_poster
 from app.services.tasks.events import write_task_event
 from app.services.tasks.scope.create_new import create_new_task
+from app.services.tasks.scope.current_draft import EditableScopeDraft, current_scope_draft
 from app.services.tasks.scope.edit_scope import edit_task_scope
 from app.services.tasks.scope.rebid_scope import confirm_rebid_scope
 from app.services.tasks.scope.types import TaskScopeDraft
@@ -62,6 +63,19 @@ def rebid_expense(payload: RebidRequest, request: Request, db: Session = Depends
         expense, owner_constraints(payload.draft), PublishChoices(**payload.choices.model_dump()), db
     )
     return build_task_detail(task.id, account_id, db)
+
+
+@router.get("/api/tasks/{task_id}/scope-draft", response_model=EditableScopeDraft)
+def get_scope_draft(task_id: str, request: Request, db: Session = Depends(get_db)) -> EditableScopeDraft:
+    """Return the task's current scope as a draft for its poster to edit; nothing changes until the edit is saved."""
+
+    account_id = require_acting_account_id(request)
+    task, _ = get_participant_task(task_id, account_id, db)
+    require_task_poster(task, account_id, "editing scope")
+    draft = current_scope_draft(task, db)
+    if draft is None:
+        raise HTTPException(status_code=status.HTTP_404_NOT_FOUND, detail="Task listing not found")
+    return draft
 
 
 @router.put("/api/tasks/{task_id}/scope", response_model=TaskDetail)

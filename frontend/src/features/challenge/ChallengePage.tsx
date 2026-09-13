@@ -20,7 +20,7 @@ import { useOwnListingCheck } from './owner/useOwnListingCheck';
 import { BidPageFrame } from './page/BidPageFrame';
 import { BidPageHeader } from './page/BidPageHeader';
 import { ExistingOfferNotice } from './status/ExistingOfferNotice';
-import { SubmittedOffer } from './status/SubmittedOffer';
+import { SubmittedOffer } from './status/submitted/SubmittedOffer';
 import { readBidTicket } from './ticket/readBidTicket';
 import type { BiddingModeValue, ChallengePayload, ChallengeResponse, OwnOfferResponse, StoredOffer } from './types';
 import { useChallenge } from './useChallenge';
@@ -164,7 +164,9 @@ export function ChallengePage(): JSX.Element {
     <Stack gap={6}>
       <BidPageHeader listing={listing} />
       {isFormShown ? null : submitProblem}
-      {submitted && isConfirmationShown ? <SubmittedOffer offer={submitted} onReviseAgain={() => setIsConfirmationShown(false)} /> : null}
+      {submitted && isConfirmationShown ? (
+        <SubmittedOffer offer={submitted} onReviseAgain={() => setIsConfirmationShown(false)} requirements={listing.requirements ?? []} />
+      ) : null}
       {!isConfirmationShown && deadline.isClosed ? (
         <EmptyState action={<ButtonLink to="/marketplace">Back to Markets</ButtonLink>} title="Closed to new offers">
           {deadline.text}. Offers and revisions are no longer accepted; offers already made still count.

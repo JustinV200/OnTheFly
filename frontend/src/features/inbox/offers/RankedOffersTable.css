@@ -15,11 +15,12 @@
 
 /* Column shares at desktop width: the challenger's badges wrap, while scope badges, the savings qualifier, and the
    evidence chips each get room for a typical label on one line. */
-.ranked-offers .ranked-offers__col-challenger { width: 24%; }
-.ranked-offers .ranked-offers__col-scope { width: 19%; }
-.ranked-offers .ranked-offers__col-monthly { width: 11%; }
-.ranked-offers .ranked-offers__col-savings { width: 19%; }
-.ranked-offers .ranked-offers__col-evidence { width: 17%; }
+.ranked-offers .ranked-offers__col-challenger { width: 23%; }
+.ranked-offers .ranked-offers__col-scope { width: 18%; }
+/* Wide enough for an annual price with its period ("$1,416,000.00 /yr"). */
+.ranked-offers .ranked-offers__col-price { width: 14%; }
+.ranked-offers .ranked-offers__col-savings { width: 18%; }
+.ranked-offers .ranked-offers__col-evidence { width: 16%; }
 
 .ranked-offers__who {
   align-items: center;
@@ -84,6 +85,13 @@
 .ranked-offers__muted {
   color: var(--color-text-muted);
   font-size: var(--text-sm);
+}
+
+/* The per-month figure the ranking used, on its own line under a price billed on another period. */
+.ranked-offers__compared {
+  color: var(--color-text-muted);
+  display: block;
+  font-size: var(--text-xs);
 }
 
 .ranked-offers .ranked-offers__action {

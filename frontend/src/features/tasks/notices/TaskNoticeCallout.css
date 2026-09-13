@@ -1,0 +1,9 @@
+/* Task notice: a focusable wrapper around a success callout, sized up so a transfer or a split reads as the moment it is. */
+.task-notice {
+  border-radius: var(--radius-lg);
+  scroll-margin-top: calc(var(--topbar-height) + var(--space-4));
+}
+
+.task-notice .ui-callout__title {
+  font-size: var(--text-lg);
+}

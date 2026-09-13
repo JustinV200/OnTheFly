@@ -1,0 +1,62 @@
+/* Term hint: a dotted-underline term and a raised tooltip below it, shown on hover or keyboard focus. Theme roles only.
+   The hidden tooltip is display:none, not just invisible, so a term near the right edge never widens the page on a
+   phone; aria-describedby still reads text that isn't displayed. */
+.ui-term-hint {
+  display: inline;
+  position: relative;
+}
+
+.ui-term-hint__term {
+  border-radius: var(--radius-sm);
+  cursor: help;
+  text-decoration-color: var(--color-text-muted);
+  text-decoration-line: underline;
+  text-decoration-style: dotted;
+  text-decoration-thickness: 1px;
+  text-underline-offset: 0.2em;
+}
+
+.ui-term-hint__tip {
+  background-color: var(--color-surface-raised);
+  border: var(--border-width) solid var(--color-border);
+  border-radius: var(--radius-md);
+  box-shadow: var(--shadow-lg);
+  color: var(--color-text);
+  display: none;
+  font-size: var(--text-sm);
+  font-weight: var(--weight-regular);
+  left: 0;
+  letter-spacing: normal;
+  line-height: var(--leading-normal);
+  margin-top: var(--space-1);
+  max-width: min(18rem, calc(100vw - 2 * var(--layout-gutter)));
+  padding: var(--space-2) var(--space-3);
+  position: absolute;
+  text-align: left;
+  text-transform: none;
+  top: 100%;
+  white-space: normal;
+  width: max-content;
+  z-index: var(--z-popover);
+}
+
+/* Bridges the gap above the tooltip, so the pointer can move onto it without the tooltip closing (WCAG 1.4.13). */
+.ui-term-hint__tip::before {
+  content: "";
+  height: var(--space-1);
+  left: 0;
+  position: absolute;
+  right: 0;
+  top: calc(-1 * var(--space-1));
+}
+
+.ui-term-hint:hover .ui-term-hint__tip,
+.ui-term-hint:focus-within .ui-term-hint__tip {
+  display: block;
+}
+
+.ui-term-hint--dismissed .ui-term-hint__tip,
+.ui-term-hint--dismissed:hover .ui-term-hint__tip,
+.ui-term-hint--dismissed:focus-within .ui-term-hint__tip {
+  display: none;
+}

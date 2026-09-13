@@ -26,12 +26,13 @@ export function submittedTime(entry: LeaderboardEntry): number {
   return parseApiTimestamp(entry.submitted_at).getTime();
 }
 
-/** Describe one plotted offer in a sentence: price per month, scope covered, when, and where it came from. No identity. */
+/** Describe one plotted offer in a sentence: the server's per-month price, scope covered, when, and where it came from.
+    No identity. */
 export function describeOffer(entry: LeaderboardEntry, currentScopeVersion: number): string {
   const scope = `${Math.round(entry.scope_completeness * 100)}% of scope`;
   const version = entry.is_current_scope_version ? '' : ` (answered scope v${entry.answered_scope_version_number}, current is v${currentScopeVersion})`;
   return [
-    `${moneyText(entry.normalized_price_minor, entry.price_currency)} per month`,
+    `${moneyText(entry.normalized_price_minor, entry.price_currency)} compared per month`,
     `${scope}${version}`,
     `submitted ${formatTimestamp(entry.submitted_at)}`,
     `offer: ${provenanceLabel('offer', entry.provenance).text}`,

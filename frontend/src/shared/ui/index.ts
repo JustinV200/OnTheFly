@@ -20,6 +20,9 @@ export type { SegmentedOption } from './forms/segmented/SegmentedControl';
 
 export { Disclosure } from './disclosure/Disclosure';
 
+export { useFocusOnRequest } from './focus/useFocusOnRequest';
+export { TermHint } from './hints/TermHint';
+
 export { Icon } from './icons/Icon';
 export type { IconName } from './icons/Icon';
 

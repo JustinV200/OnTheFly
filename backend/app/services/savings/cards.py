@@ -28,14 +28,19 @@ _LIVE_STATUSES = ("suggested", "dismissed", "split")
 
 
 def current_cards(task: Task, account_id: str, db: Session) -> list[SavingsCard]:
-    """Return the owner's live cards for the task's current scope, computing them first if there are none."""
+    """Return the owner's live cards for the task's current scope, computing them first if any segment still with the
+    task has no open card."""
 
     require_task_owner(task, account_id, "see Ways to save")
     scope = splittable_scope_version(task, db)
     if scope is None:
         return []
     cards = _live_cards(task.id, account_id, scope.id, db)
-    if cards:
+    # A split card is live but closed. A split marks every other card stale, so "any live card" alone would leave the
+    # remaining segments uncomputed and the panel claiming every requirement went to a piece.
+    open_segment_keys = {card.segment_key for card in cards if card.status in ("suggested", "dismissed")}
+    remaining_segment_keys = {segment.key for segment in build_segments(requirements_still_with_task(task, db)).segments}
+    if cards and remaining_segment_keys <= open_segment_keys:
         return cards
     return refresh_cards(task, account_id, db)
 

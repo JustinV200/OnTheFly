@@ -1,0 +1,14 @@
+/* Ownership line: avatars and names in one wrapping row, with the connecting words muted. */
+.ownership-line {
+  align-items: center;
+  display: flex;
+  flex-wrap: wrap;
+  font-size: var(--text-md);
+  gap: var(--space-2);
+  margin: 0;
+}
+
+.ownership-line__muted,
+.ownership-line__arrow {
+  color: var(--color-text-muted);
+}

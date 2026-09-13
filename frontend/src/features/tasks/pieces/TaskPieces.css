@@ -1,4 +1,5 @@
-/* Piece rows: names and badges, figures, and actions stacked on a phone, side by side from tablet up. */
+/* Piece rows: names and badges, figures, and actions stacked on a phone, side by side from tablet up. A just-split piece
+   gets a brand edge so the row a success message mentions is easy to spot. */
 .task-pieces {
   display: grid;
   gap: var(--space-3);
@@ -36,6 +37,18 @@
 .task-pieces__figures {
   color: var(--color-text-secondary);
   font-size: var(--text-sm);
+}
+
+.task-pieces__status {
+  color: var(--color-text-secondary);
+  font-size: var(--text-sm);
+  font-weight: var(--weight-medium);
+}
+
+.task-pieces__card--new {
+  background-color: var(--color-brand-soft);
+  border-color: var(--color-brand-soft-border);
+  border-left: 4px solid var(--color-brand);
 }
 
 @media (min-width: 768px) {

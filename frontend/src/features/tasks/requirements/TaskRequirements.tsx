@@ -1,9 +1,10 @@
 /* The task's requirements as its participant sees them: each with its tags, hours and their status, and, for a
    requirement the viewer split off, the piece it went to. Constraints follow, marked when they flowed down from the task
-   this one was split from. Tags and hours marked "draft" are estimates until the owner confirms them (plan2). */
+   this one was split from. Tags and hours marked "draft" are estimates until the owner confirms them (plan2). The poster
+   gets a link to edit the scope by hand, and a scope with no rows says so instead of showing an empty table. */
 import { Link } from 'react-router-dom';
 
-import { Badge, Card, Stack, Table } from '../../../shared/ui';
+import { Badge, ButtonLink, Callout, Card, Stack, Table } from '../../../shared/ui';
 import { constraintLabel } from '../../marketplace/detail/tabs/constraintLabel';
 import type { TaskDetail } from '../types';
 import './TaskRequirements.css';
@@ -15,10 +16,27 @@ interface TaskRequirementsProps {
 /** Render the requirement table and the constraint list. */
 export function TaskRequirements({ task }: TaskRequirementsProps): JSX.Element {
   const withTask = task.requirements.filter((row) => row.piece === null).length;
+  // Only the poster edits scope, and never once an offer was accepted (then the relationship is poster alone).
+  const canEditScope = task.is_posted_by_you && task.relationship !== 'poster';
 
   return (
     <Stack gap={5}>
+      {task.requirements.length === 0 ? (
+        <Callout
+          actions={canEditScope ? <ButtonLink to={`/tasks/${task.id}/edit`} variant="primary">Add requirements</ButtonLink> : undefined}
+          role="note"
+          title="No requirement rows yet"
+          tone="info"
+        >
+          <p>
+            {canEditScope
+              ? 'Offers answer each requirement row and Ways to save prices them, so add the work this task covers. You can also split off a piece and type its own requirements in the split drawer.'
+              : 'This scope has no requirement rows. You can still split off a piece and type its own requirements in the split drawer.'}
+          </p>
+        </Callout>
+      ) : null}
       <Card
+        actions={canEditScope && task.requirements.length > 0 ? <ButtonLink size="sm" to={`/tasks/${task.id}/edit`}>Edit scope</ButtonLink> : undefined}
         description={`Scope v${task.scope_version_number ?? '—'}${task.origin === 'rebid' || task.relationship !== 'owner' ? '' : ' (the version your accepted offer answered)'} · ${withTask} of ${task.requirements.length} still with this task`}
         padding="none"
         title="Requirements"

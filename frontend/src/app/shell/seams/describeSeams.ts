@@ -38,9 +38,20 @@ export function describeOutreach(outreach: NonNullable<DemoStatus['outreach']>):
     : `${outreach.channel_label}. Approved invitations are stored for review; no email leaves this machine.`;
 }
 
-/** Whether the chip should use the simulated (demo data) tone rather than neutral. */
-export function isSimulated(status: DemoStatus): boolean {
-  return status.offers.all_simulated || !status.financial.has_production_data;
+// info: the normal demo, where every figure is fixture, sandbox or simulated data and says so; a label, not a problem.
+// warning: real and demo data sit side by side, where one can be mistaken for the other.
+// neutral: production spend only and no simulated offers.
+export type SeamTone = 'info' | 'warning' | 'neutral';
+
+/** The chip's tone for a loaded status. Warning is kept for genuinely mixed states, so it still means something. */
+export function seamTone(status: DemoStatus): SeamTone {
+  const { has_production_data: hasProductionData, provenance } = status.financial;
+  const mixesRealAndDemoSpend = hasProductionData && provenance.some((value) => value !== 'production');
+  const mixesGenuineAndSimulatedOffers = status.offers.genuine > 0 && status.offers.demo > 0;
+  if (mixesRealAndDemoSpend || mixesGenuineAndSimulatedOffers) {
+    return 'warning';
+  }
+  return status.offers.all_simulated || !hasProductionData ? 'info' : 'neutral';
 }
 
 function describeFinancialShort(provenance: string[]): string {

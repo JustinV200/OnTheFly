@@ -1,5 +1,6 @@
 /* Loads the owner-side data for one listing's Offers page, polling so new offers arrive on their own:
-   the ranked offers (inbox), the comparison (for the server's monthly baseline row), and the full offer terms.
+   the ranked offers (inbox), the comparison (for the server's per-month baseline row, shown when the listing hides its
+   price), and the full offer terms (each offer's price in its own billing period).
    Fetch orchestration stays here so row components stay presentation-focused. */
 import { ApiQueryState, useApiQuery } from '../../shared/api/useApiQuery';
 import type { ComparisonResponse, InboxResponse, OwnerChallengeListResponse } from './types';
