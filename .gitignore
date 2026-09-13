@@ -17,6 +17,7 @@ npm-debug.log
 yarn-error.log
 pnpm-debug.log
 .claude/worktrees/
+.claude/
 # Local browser profiles from headless UI checks: cookies, history, and session data.
 .chrome-test-profile/
 .ruff_cache/

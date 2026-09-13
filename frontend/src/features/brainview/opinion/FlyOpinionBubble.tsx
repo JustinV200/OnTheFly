@@ -3,7 +3,7 @@
    is styled in the fly-brain violet rather than any status colour, and never gates or performs acceptance. */
 import { type BrainStimulus, publishBrainStimulus } from '../../../shared/flybrain/live';
 import { Button, Disclosure, Icon, Spinner } from '../../../shared/ui';
-import { RATING_STEPS } from './flyOpinion';
+import { OPINION_WINDOW_MS, RATING_STEPS } from './flyOpinion';
 import { RatingDots } from './RatingDots';
 import { useFlyOpinion } from './useFlyOpinion';
 import './FlyOpinionBubble.css';
@@ -51,14 +51,15 @@ export function FlyOpinionBubble({ stimulus, bidderName }: FlyOpinionBubbleProps
             </p>
             <p className="fly-opinion__line">
               {state.opinion.answer === 'yes'
-                ? `This offer stirred up fewer of its simulated neurons than what you pay now (${state.opinion.offerSpikes.toLocaleString()} spikes against ${state.opinion.nowSpikes.toLocaleString()}).`
-                : `This offer stirred up at least as many of its simulated neurons as what you pay now (${state.opinion.offerSpikes.toLocaleString()} spikes against ${state.opinion.nowSpikes.toLocaleString()}).`}
+                ? `This offer stirred up fewer of its simulated neurons than what you pay now: ${state.opinion.offerSpikes.toLocaleString()} spikes against ${state.opinion.nowSpikes.toLocaleString()} in the first ${OPINION_WINDOW_MS} ms of each sniff.`
+                : `This offer stirred up at least as many of its simulated neurons as what you pay now: ${state.opinion.offerSpikes.toLocaleString()} spikes against ${state.opinion.nowSpikes.toLocaleString()} in the first ${OPINION_WINDOW_MS} ms of each sniff.`}
             </p>
             <Disclosure summary="How the fly decided">
               <p>
                 It was given two smells, one after the other, from rest: what you pay now, then this offer. The offer smells fainter
                 the cheaper it is per month, stronger the dearer, with an extra whiff for every requirement it leaves out or doesn’t
-                mention. Each smell was played through a simulation of a whole fruit fly brain, and the spikes were counted.
+                mention. Each smell was played through a simulation of a whole fruit fly brain, and the spikes in its first
+                {' '}{OPINION_WINDOW_MS} ms were counted: after that the simulated brain runs away with itself whatever the smell.
               </p>
               <p>
                 Yes means the offer’s smell caused fewer spikes; a tie is a no. The rating steps up as the two counts drift apart:

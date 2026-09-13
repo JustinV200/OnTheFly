@@ -4,6 +4,11 @@ import type { BrainStimulus } from '../../../../shared/flybrain/live/brainStimul
 import { TIME_STEP_MS } from '../model/lifParameters';
 import type { SpikeBatch } from '../simulationRun';
 
+// Spikes are also binned over brain time (10 ms bins, 100 steps at 0.1 ms), so a reader can look at the early
+// response separately from the reverberation that follows it.
+export const TRIAL_BIN_STEPS = 100;
+export const TRIAL_BIN_MS = 10;
+
 export interface TrialActivity {
   // Captions of the pulses that start this trial, in stimulus order without repeats ("What you pay now").
   captions: string[];
@@ -12,6 +17,8 @@ export interface TrialActivity {
   spikeCount: number;
   // Distinct neurons that fired at least once during the trial.
   firedNeuronCount: number;
+  // Spikes per TRIAL_BIN_STEPS-step bin from the trial's start; sums to spikeCount.
+  spikesPerBin: number[];
 }
 
 export interface StimulusEvaluation {
@@ -20,7 +27,11 @@ export interface StimulusEvaluation {
   computeMs: number;
 }
 
-/** Split a run into trials at the same steps SimulationRun returns the brain to rest, each with zero counts so far. */
+/**
+ * Split a run into trials at the same steps SimulationRun returns the brain to rest, each with zero counts so far.
+ * Every trial is counted over the same window (the shortest gap between trial starts), because activity keeps
+ * reverberating after an input stops: the last trial's longer tail would otherwise count for more.
+ */
 export function emptyTrials(stimulus: BrainStimulus, totalSteps: number): TrialActivity[] {
   const captionsByStart = new Map<number, string[]>();
   for (const pulse of stimulus.pulses) {
@@ -33,13 +44,19 @@ export function emptyTrials(stimulus: BrainStimulus, totalSteps: number): TrialA
     captionsByStart.set(startStep, captions);
   }
   const starts = [...captionsByStart.keys()].sort((left, right) => left - right);
-  return starts.map((startStep, index) => ({
-    captions: captionsByStart.get(startStep) ?? [],
-    startStep,
-    endStep: index + 1 < starts.length ? starts[index + 1] : totalSteps,
-    spikeCount: 0,
-    firedNeuronCount: 0,
-  }));
+  const gaps = starts.slice(1).map((start, index) => start - starts[index]);
+  const windowSteps = gaps.length > 0 ? Math.min(...gaps) : totalSteps - (starts[0] ?? 0);
+  return starts.map((startStep) => {
+    const endStep = Math.min(totalSteps, startStep + windowSteps);
+    return {
+      captions: captionsByStart.get(startStep) ?? [],
+      startStep,
+      endStep,
+      spikeCount: 0,
+      firedNeuronCount: 0,
+      spikesPerBin: new Array<number>(Math.ceil((endStep - startStep) / TRIAL_BIN_STEPS)).fill(0),
+    };
+  });
 }
 
 export class TrialCounter {
@@ -60,17 +77,19 @@ export class TrialCounter {
   public append(batch: SpikeBatch): void {
     for (let index = 0; index < batch.spikeNeurons.length; index += 1) {
       const step = batch.spikeSteps[index];
-      // A spike lands in the trial whose window holds its step; moving on clears the bitmap for the next trial.
-      while (this.trialIndex + 1 < this.trials.length && step >= this.trials[this.trialIndex].endStep) {
+      // Move to the trial that has started by this step; entering one clears the fired bitmap for it.
+      while (this.trialIndex + 1 < this.trials.length && step >= this.trials[this.trialIndex + 1].startStep) {
         this.trialIndex += 1;
         this.hasFired.fill(0);
       }
       const trial = this.trials[this.trialIndex];
-      if (trial === undefined) {
-        return;
+      // Spikes after a trial's counting window but before the next trial (the tail) belong to no trial.
+      if (trial === undefined || step < trial.startStep || step >= trial.endStep) {
+        continue;
       }
       const neuron = batch.spikeNeurons[index];
       trial.spikeCount += 1;
+      trial.spikesPerBin[Math.floor((step - trial.startStep) / TRIAL_BIN_STEPS)] += 1;
       if (this.hasFired[neuron] === 0) {
         this.hasFired[neuron] = 1;
         trial.firedNeuronCount += 1;
@@ -80,6 +99,10 @@ export class TrialCounter {
 
   /** The totals so far, with how long the simulation took. */
   public result(computeMs: number): StimulusEvaluation {
-    return { totalSteps: this.totalSteps, trials: this.trials.map((trial) => ({ ...trial, captions: [...trial.captions] })), computeMs };
+    return {
+      totalSteps: this.totalSteps,
+      trials: this.trials.map((trial) => ({ ...trial, captions: [...trial.captions], spikesPerBin: [...trial.spikesPerBin] })),
+      computeMs,
+    };
   }
 }
