@@ -1,0 +1,10 @@
+/* The submit button spans the width on a phone, where it is the thumb's target, and sizes to its label from 480px. */
+.challenge-form .challenge-form__submit {
+  width: 100%;
+}
+
+@media (min-width: 480px) {
+  .challenge-form .challenge-form__submit {
+    width: auto;
+  }
+}

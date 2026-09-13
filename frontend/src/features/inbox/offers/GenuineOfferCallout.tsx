@@ -4,7 +4,9 @@ import { ApiQueryState } from '../../../shared/api/useApiQuery';
 import { MoneyDisplay } from '../../../shared/components/MoneyDisplay';
 import { formatTimestamp } from '../../../shared/format/formatTimestamp';
 import { ProvenanceBadge } from '../../../shared/provenance/ProvenanceBadge';
+import { Card, Icon, Stack, Stat } from '../../../shared/ui';
 import type { OwnerChallenge, OwnerChallengeListResponse } from '../types';
+import './GenuineOfferCallout.css';
 
 const CHANNEL = new Map<string, string>([
   ['challenger_submitted', 'Came through the platform: the business submitted it itself.'],
@@ -22,9 +24,9 @@ export function GenuineOfferCallout({ offers }: GenuineOfferCalloutProps): JSX.E
     return null;
   }
   return (
-    <section style={{ marginBottom: '1rem' }}>
+    <Stack gap={3}>
       {genuine.map((offer) => <GenuineOfferCard key={offer.id} offer={offer} />)}
-    </section>
+    </Stack>
   );
 }
 
@@ -40,21 +42,37 @@ function GenuineOfferCard({ offer }: { offer: OwnerChallenge }): JSX.Element {
   ].filter(Boolean);
 
   return (
-    <article style={{ backgroundColor: '#ecfdf5', border: '3px solid #047857', borderRadius: '12px', marginBottom: '0.75rem', padding: '1rem' }}>
-      <div style={{ color: '#065f46', fontSize: '0.8rem', fontWeight: 800, letterSpacing: '0.08em', textTransform: 'uppercase' }}>
-        Genuine counteroffer from a real business
-      </div>
-      <h3 style={{ margin: '0.25rem 0' }}>{offer.challenger_name ?? 'Unknown business'}</h3>
-      <p style={{ fontSize: '1.5rem', margin: '0 0 0.25rem' }}>
-        <MoneyDisplay amountMinor={offer.price_minor} currency={offer.price_currency} /> / {offer.billing_frequency}
-      </p>
-      <p style={{ margin: '0 0 0.25rem' }}>
-        Received {formatTimestamp(offer.submitted_at)}
-        {offer.revised_at ? `, revised ${formatTimestamp(offer.revised_at)}` : ''}. <ProvenanceBadge kind="offer" value={offer.provenance} />
-      </p>
-      <p style={{ margin: '0 0 0.25rem' }}>{CHANNEL.get(offer.provenance)}</p>
-      {terms.length ? <p style={{ margin: '0 0 0.25rem' }}>Terms as given: {terms.join('; ')}.</p> : null}
-      {offer.message_to_owner ? <blockquote style={{ borderLeft: '3px solid #047857', margin: '0.5rem 0 0', paddingLeft: '0.75rem' }}>{offer.message_to_owner}</blockquote> : null}
-    </article>
+    <Card
+      as="article"
+      className="genuine-offer"
+      title={(
+        <span className="genuine-offer__title">
+          <Icon name="check-circle" size={18} />
+          Genuine counteroffer from a real business
+        </span>
+      )}
+    >
+      <Stack gap={3}>
+        <p className="genuine-offer__business">{offer.challenger_name ?? 'Unknown business'}</p>
+        <Stat
+          caption={(
+            <>
+              <ProvenanceBadge kind="offer" value={offer.provenance} />
+              <span>
+                Received {formatTimestamp(offer.submitted_at)}
+                {offer.revised_at ? `, revised ${formatTimestamp(offer.revised_at)}` : ''}
+              </span>
+            </>
+          )}
+          label="Offered price"
+          size="lg"
+          unit={`/ ${offer.billing_frequency}`}
+          value={<MoneyDisplay amountMinor={offer.price_minor} currency={offer.price_currency} />}
+        />
+        <p>{CHANNEL.get(offer.provenance)}</p>
+        {terms.length ? <p>Terms as given: {terms.join('; ')}.</p> : null}
+        {offer.message_to_owner ? <blockquote className="genuine-offer__message">{offer.message_to_owner}</blockquote> : null}
+      </Stack>
+    </Card>
   );
 }

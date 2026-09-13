@@ -1,0 +1,5 @@
+/* Inbox overview: the price card and the controls card keep their own heights, so a status message in the controls
+   doesn't stretch the price card into an empty box. */
+.inbox-page__overview {
+  align-items: start;
+}

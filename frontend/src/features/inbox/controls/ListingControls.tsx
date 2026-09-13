@@ -6,18 +6,27 @@ import { Link } from 'react-router-dom';
 import { useActingAccount } from '../../../shared/account/ActingAccountContext';
 import { ApiError, post } from '../../../shared/api/client';
 import { BiddingModePill } from '../../../shared/components/BiddingModePill';
+import { Button, ButtonLink, Callout, Card, Cluster, Stack } from '../../../shared/ui';
 import type { PublicListingProjection } from '../../publish/types';
 import { UnpublishButton } from '../../publish/UnpublishButton';
+import { ListingVisibilityBadge } from './ListingVisibilityBadge';
+import './ListingControls.css';
 
 interface ListingControlsProps {
   listing: PublicListingProjection;
   onChanged: () => void;
 }
 
+// The last mode change's outcome, in words; a failure is announced as an alert, a success as a status.
+interface ModeChangeResult {
+  text: string;
+  isFailure: boolean;
+}
+
 /** Render mode toggle, unpublish or republish, and public links for an owned listing. */
 export function ListingControls({ listing, onChanged }: ListingControlsProps): JSX.Element {
   const { account } = useActingAccount();
-  const [message, setMessage] = useState<string | null>(null);
+  const [result, setResult] = useState<ModeChangeResult | null>(null);
   const [isWorking, setIsWorking] = useState(false);
   const isPublic = listing.visibility === 'public';
 
@@ -26,40 +35,62 @@ export function ListingControls({ listing, onChanged }: ListingControlsProps): J
     setIsWorking(true);
     try {
       await post(`/api/listings/${listing.id}/bidding-mode`, { mode: nextMode });
-      setMessage(
-        nextMode === 'open'
+      setResult({
+        isFailure: false,
+        text: nextMode === 'open'
           ? 'Bidding is now open. Only offers submitted from now on show their prices publicly. Offers received while sealed stay sealed.'
           : 'Bidding is now sealed. Future offers are private. Prices already published under open bidding stay as they were submitted.',
-      );
+      });
       onChanged();
     } catch (error) {
       if (!(error instanceof ApiError)) {
         throw error;
       }
-      setMessage(`Bidding mode unchanged: ${error.message}`);
+      setResult({ isFailure: true, text: `Bidding mode unchanged: ${error.message}` });
     } finally {
       setIsWorking(false);
     }
   };
 
   return (
-    <section style={{ border: '1px solid #e2e8f0', borderRadius: '12px', margin: '1rem 0', padding: '0.75rem 1rem' }}>
-      <div style={{ alignItems: 'center', display: 'flex', flexWrap: 'wrap', gap: '0.75rem' }}>
-        <BiddingModePill mode={listing.bidding_mode} />
-        <button disabled={isWorking} onClick={() => void toggleBiddingMode()} type="button">
-          {listing.bidding_mode === 'open' ? 'Switch to sealed bidding' : 'Open bidding to underbids'}
-        </button>
-        {isPublic ? (
-          <>
-            <UnpublishButton listingId={listing.id} onUnpublished={onChanged} />
-            <Link to={`/listings/${listing.id}`}>Public listing page</Link>
-            {account ? <Link to={`/p/${account.handle}`}>Public profile</Link> : null}
-          </>
-        ) : (
-          <Link to={`/publish?expense=${listing.expense_id}`}>Publish again…</Link>
-        )}
-      </div>
-      {message ? <p role="status" style={{ marginBottom: 0 }}>{message}</p> : null}
-    </section>
+    <Card title="Bidding and visibility">
+      <Stack gap={4}>
+        <div className="listing-controls__row">
+          <Cluster gap={2} justify="between">
+            <h3 className="listing-controls__heading">Bidding</h3>
+            <BiddingModePill mode={listing.bidding_mode} />
+          </Cluster>
+          <Cluster gap={3}>
+            <Button isBusy={isWorking} onClick={() => void toggleBiddingMode()}>
+              {listing.bidding_mode === 'open' ? 'Switch to sealed bidding' : 'Open bidding to underbids'}
+            </Button>
+          </Cluster>
+        </div>
+
+        <div className="listing-controls__row">
+          <Cluster gap={2} justify="between">
+            <h3 className="listing-controls__heading">Visibility</h3>
+            <ListingVisibilityBadge visibility={listing.visibility} />
+          </Cluster>
+          {isPublic ? (
+            <Cluster gap={4}>
+              <UnpublishButton listingId={listing.id} onUnpublished={onChanged} />
+              <Link to={`/listings/${listing.id}`}>Public listing page</Link>
+              {account ? <Link to={`/p/${account.handle}`}>Public profile</Link> : null}
+            </Cluster>
+          ) : (
+            <Cluster gap={3}>
+              <ButtonLink to={`/publish?expense=${listing.expense_id}`}>Publish again…</ButtonLink>
+            </Cluster>
+          )}
+        </div>
+
+        {result ? (
+          <Callout role={result.isFailure ? 'alert' : 'status'} tone={result.isFailure ? 'danger' : 'success'}>
+            <p>{result.text}</p>
+          </Callout>
+        ) : null}
+      </Stack>
+    </Card>
   );
 }

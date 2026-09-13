@@ -1,0 +1,12 @@
+/* Transaction rows: raw bank descriptions in monospace that may wrap, and uncounted rows set in muted text. */
+.trace-transaction__date {
+  white-space: nowrap;
+}
+
+.trace-transaction__description {
+  overflow-wrap: anywhere;
+}
+
+.trace-transaction--not-counted {
+  color: var(--color-text-muted);
+}
