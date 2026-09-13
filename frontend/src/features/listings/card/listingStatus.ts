@@ -1,8 +1,8 @@
 /* Derives the facts a My listings card needs from the expense and, once loaded, the listing's inbox.
    Visibility is read from both: if either says public, the card treats the listing as public, so the owner is never told
    a listing is private while strangers might still see it, and Unpublish stays on the card. */
-import type { OwnerListing } from '../useOwnerListings';
 import type { OwnerListingRecord } from '../types';
+import type { OwnerListing } from '../useOwnerListings';
 
 export interface ListingStatus {
   isPublic: boolean;
