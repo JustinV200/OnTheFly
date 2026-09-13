@@ -1,6 +1,6 @@
 /* Traces one potential-savings figure down to the transactions behind it, one linked step at a time.
    That chain is the product's claim to credibility (roadmap 09, "Trace one number all the way down"). Every figure comes from the server.
-   The steps render as one ordered list on a vertical rail; each step's own component says what it shows. */
+   The headline carries the number and a path to each step; the steps render as one ordered list on a vertical rail. */
 import type { ReactNode } from 'react';
 import { Link, useParams } from 'react-router-dom';
 
@@ -10,6 +10,7 @@ import { EmptyState } from '../../shared/components/EmptyState';
 import { ErrorState } from '../../shared/components/ErrorState';
 import { LoadingSpinner } from '../../shared/components/LoadingSpinner';
 import { Badge, Icon, PageHeader, Stack } from '../../shared/ui';
+import { TraceHeadline } from './headline/TraceHeadline';
 import { ListingStep } from './steps/offer/ListingStep';
 import { OfferStep } from './steps/offer/OfferStep';
 import { SavingsStep } from './steps/offer/SavingsStep';
@@ -51,13 +52,19 @@ export function TracePage(): JSX.Element {
   const { savings, offer, scope_version: scope, listing, baseline, expense, transactions, fly_brain: flyBrain } = trace.data;
 
   return (
-    <Stack gap={6}>
+    <Stack className="trace-page" gap={6}>
       <PageHeader
-        eyebrow={<Link to={`/listings/${listing.id}/inbox`}>← Back to offers</Link>}
+        eyebrow={(
+          <Link className="trace-page__back" to={`/listings/${listing.id}/inbox`}>
+            <Icon name="arrow-left" size={14} />
+            Offers on this listing
+          </Link>
+        )}
         meta={<Badge icon={<Icon name="lock" />} tone="private">Private: only you can open this trace</Badge>}
         subtitle="Each step is explained by the one after it, from the potential savings figure down to the private transactions behind it."
         title={TITLE}
       />
+      <TraceHeadline trace={trace.data} />
       <ol className="trace-chain">
         <SavingsStep
           earlierScopeVersion={scope.is_listing_current_version ? null : scope.version_number}
@@ -79,7 +86,7 @@ export function TracePage(): JSX.Element {
 // Gives the states shown before the trace loads the page's h1, so no message sits under a missing heading.
 function TracePageFrame({ children }: { children: ReactNode }): JSX.Element {
   return (
-    <Stack gap={6}>
+    <Stack className="trace-page" gap={6}>
       <PageHeader title={TITLE} />
       {children}
     </Stack>

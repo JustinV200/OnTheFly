@@ -1,0 +1,42 @@
+/* Trace headline: the big figure beside the two compared monthly prices, then the step path under a hairline. */
+.trace-headline__top {
+  align-items: flex-end;
+  display: flex;
+  flex-wrap: wrap;
+  gap: var(--space-4) var(--space-8);
+  justify-content: space-between;
+}
+
+.trace-headline__none {
+  color: var(--color-text-muted);
+}
+
+.trace-headline__compare {
+  display: flex;
+  flex-wrap: wrap;
+  gap: var(--space-3) var(--space-6);
+  margin: 0;
+}
+
+.trace-headline__compare > div {
+  min-width: 0;
+}
+
+.trace-headline__compare dt {
+  color: var(--color-text-muted);
+  font-size: var(--text-sm);
+  font-weight: var(--weight-medium);
+  overflow-wrap: anywhere;
+}
+
+.trace-headline__compare dd {
+  font-size: var(--text-xl);
+  font-weight: var(--weight-semibold);
+  margin: var(--space-1) 0 0;
+}
+
+.trace-headline__unit {
+  color: var(--color-text-muted);
+  font-size: var(--text-sm);
+  font-weight: var(--weight-medium);
+}
