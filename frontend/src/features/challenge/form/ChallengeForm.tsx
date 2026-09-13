@@ -14,7 +14,7 @@ import type { BidTicket } from '../ticket/readBidTicket';
 import { seedOfferFields } from '../ticket/seedOfferFields';
 import type { BiddingModeValue, ChallengePayload, StoredOffer } from '../types';
 import { BiddingTermsCallout } from './BiddingTermsCallout';
-import { CoverageFields } from './coverage/CoverageFields';
+import { CoverageFields } from './scope/CoverageFields';
 import { PriceFields } from './price/PriceFields';
 import { MessageField } from './terms/MessageField';
 import { TermsFields } from './terms/TermsFields';
