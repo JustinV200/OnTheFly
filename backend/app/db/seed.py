@@ -48,6 +48,15 @@ SEEDED_ACCOUNTS = [
         "service_area": "San Francisco Bay Area",
         "contact_email": None,
     },
+    # The hackathon buyer can import its synthetic ledger and independently link Stripe sandbox.
+    # Keeping both sources on one account exercises the same mixed-provenance dashboard path.
+    {
+        "id": "acc_govcon_1",
+        "handle": "govcon-industries",
+        "business_name": "GovCon Industries",
+        "service_area": "Northern Virginia",
+        "contact_email": None,
+    },
 ]
 
 
