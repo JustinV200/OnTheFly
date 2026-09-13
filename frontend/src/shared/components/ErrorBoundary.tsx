@@ -2,6 +2,9 @@
    The shell keys this boundary by acting account, so switching business also clears a caught error. */
 import { Component, ReactNode } from 'react';
 
+import { Button, Callout } from '../ui';
+import './pageStates.css';
+
 interface ErrorBoundaryProps {
   children: ReactNode;
 }
@@ -25,16 +28,17 @@ export class ErrorBoundary extends Component<ErrorBoundaryProps, ErrorBoundarySt
   public render(): ReactNode {
     if (this.state.errorMessage) {
       return (
-        <section
+        <Callout
+          actions={<Button onClick={() => this.setState({ errorMessage: null })} variant="primary">Try again</Button>}
+          as="section"
+          className="page-state"
           role="alert"
-          style={{ backgroundColor: '#fef2f2', border: '1px solid #fecaca', borderRadius: '12px', padding: '1rem 1.25rem' }}
+          title="This page failed to render"
+          titleLevel={2}
+          tone="danger"
         >
-          <h3 style={{ margin: '0 0 0.5rem' }}>This page failed to render</h3>
-          <p style={{ margin: 0 }}>{this.state.errorMessage}</p>
-          <button onClick={() => this.setState({ errorMessage: null })} style={{ marginTop: '0.75rem' }} type="button">
-            Try again
-          </button>
-        </section>
+          <p>{this.state.errorMessage}</p>
+        </Callout>
       );
     }
 

@@ -1,0 +1,5 @@
+/* Provenance badge detail: the kind prefix is regular weight so the origin value reads first. Same colour, so contrast holds. */
+.provenance-badge__kind {
+  font-weight: var(--weight-regular);
+  white-space: pre;
+}

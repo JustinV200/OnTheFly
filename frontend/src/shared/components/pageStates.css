@@ -1,0 +1,47 @@
+/* Spacing and layout shared by the page-state components: EmptyState, ErrorState, and LoadingSpinner.
+   They keep a vertical margin so screens that stack them without a layout helper still breathe; inside Stack the gap wins. */
+.page-state {
+  margin-block: var(--space-4);
+}
+
+.page-state__body {
+  color: var(--color-text-secondary);
+  max-width: 72ch;
+}
+
+.page-state__body > :last-child {
+  margin-bottom: 0;
+}
+
+.page-state__action {
+  align-items: center;
+  display: flex;
+  flex-wrap: wrap;
+  gap: var(--space-2) var(--space-4);
+  margin-top: var(--space-4);
+}
+
+.page-state-loading {
+  background-color: var(--color-surface);
+  border: var(--border-width) solid var(--color-border-subtle);
+  border-radius: var(--radius-lg);
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-4);
+  padding: var(--space-4) var(--space-5);
+}
+
+.page-state-loading__label {
+  align-items: center;
+  color: var(--color-text-muted);
+  display: flex;
+  font-size: var(--text-sm);
+  font-weight: var(--weight-medium);
+  gap: var(--space-2);
+}
+
+.page-state-loading__lines {
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-2);
+}
