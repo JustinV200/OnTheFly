@@ -28,7 +28,7 @@ export function BaselineRow({ listing, incumbent, isFailed, currentScopeVersionN
           Your current price: <MoneyDisplay amountMinor={listing.price_minor} currency={listing.price_currency} /> {cadenceSuffix(listing.billing_cadence)}
         </div>
       </td>
-      <td className="ranked-offers__block ranked-offers__scope" data-label="Scope covered">
+      <td className="ranked-offers__block" data-label="Scope covered">
         <span className="ranked-offers__muted">Your full scope, v{currentScopeVersionNumber}</span>
       </td>
       <td className="ui-num" data-label="Monthly">

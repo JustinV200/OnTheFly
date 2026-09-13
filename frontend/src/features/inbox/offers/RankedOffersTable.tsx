@@ -32,11 +32,11 @@ export function RankedOffersTable({ listing, offers, currentScopeVersionNumber, 
     <Table className="ranked-offers" label="Offers ranked against what you pay now" layout="stack" minWidth="960px">
       <thead>
         <tr>
-          <th>Challenger · only you see names</th>
-          <th>Scope covered</th>
-          <th className="ui-num">Monthly</th>
-          <th>Potential savings</th>
-          <th>Evidence</th>
+          <th className="ranked-offers__col-challenger">Challenger · only you see names</th>
+          <th className="ranked-offers__col-scope">Scope covered</th>
+          <th className="ranked-offers__col-monthly ui-num">Monthly</th>
+          <th className="ranked-offers__col-savings">Potential savings</th>
+          <th className="ranked-offers__col-evidence">Evidence</th>
           <th><span className="ui-visually-hidden">Details</span></th>
         </tr>
       </thead>

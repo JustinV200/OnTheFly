@@ -13,14 +13,13 @@
   background-color: var(--color-surface-hover);
 }
 
-.ranked-offers__challenger {
-  min-width: 14rem;
-}
-
-/* Wide enough for a typical "Missing: …" badge on one line at desktop width. */
-.ranked-offers__scope {
-  min-width: 12.5rem;
-}
+/* Column shares at desktop width: the challenger's badges wrap, while scope badges, the savings qualifier, and the
+   evidence chips each get room for a typical label on one line. */
+.ranked-offers .ranked-offers__col-challenger { width: 24%; }
+.ranked-offers .ranked-offers__col-scope { width: 19%; }
+.ranked-offers .ranked-offers__col-monthly { width: 11%; }
+.ranked-offers .ranked-offers__col-savings { width: 19%; }
+.ranked-offers .ranked-offers__col-evidence { width: 17%; }
 
 .ranked-offers__who {
   align-items: center;

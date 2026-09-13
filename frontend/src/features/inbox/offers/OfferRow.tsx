@@ -57,7 +57,7 @@ export function OfferRow({ offer, currentScopeVersionNumber, rank, onOpen }: Off
           ) : null}
         </div>
       </td>
-      <td className="ranked-offers__block ranked-offers__scope" data-label="Scope covered">
+      <td className="ranked-offers__block" data-label="Scope covered">
         <ScopeCoverage
           addedItems={offer.added_items}
           completeness={offer.scope_completeness}

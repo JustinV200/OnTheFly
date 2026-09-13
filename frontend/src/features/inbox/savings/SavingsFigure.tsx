@@ -35,7 +35,7 @@ export function SavingsFigure({ offer }: { offer: InboxChallenge }): JSX.Element
         {savings.label === PLAIN_LABEL ? null : <span className="savings-figure__note">{savings.label}</span>}
       </div>
       {offer.is_current_scope_version ? null : (
-        <span className="savings-figure__note">vs your price on scope v{offer.answered_scope_version_number}</span>
+        <span className="savings-figure__note">vs your scope v{offer.answered_scope_version_number} price</span>
       )}
     </div>
   );
