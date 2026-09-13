@@ -1,23 +1,26 @@
-/* Lists a public listing's structured scope requirements (the terms offers are scored against) as label/value pairs.
+/* Lists a public listing's structured scope requirements (the terms offers are scored against) as a definition list.
    "Not stated" stays visibly different from "Not included": the owner not answering is information too (plan1.md §4). */
 import type { ReactNode } from 'react';
 
-import { Badge } from '../../../shared/ui';
-import type { PublicListingProjection } from '../../publish/types';
+import { Badge } from '../../../../shared/ui';
+import type { PublicListingProjection } from '../../../publish/types';
 import './ScopeRequirements.css';
 
 interface ScopeRequirementsProps {
   listing: PublicListingProjection;
 }
 
-/** Render the listing's frequency, tasks, supplies/equipment/taxes expectations, area, and any disclosed vendor. */
+/** Render the listing's summary, tasks, frequency, supplies/equipment/taxes expectations, area, and any disclosed vendor. */
 export function ScopeRequirements({ listing }: ScopeRequirementsProps): JSX.Element {
   return (
-    <section aria-labelledby={`scope-${listing.id}`} className="scope-requirements">
-      <h2 className="scope-requirements__title" id={`scope-${listing.id}`}>Scope requirements</h2>
-      <p className="scope-requirements__summary">{listing.scope_summary}</p>
+    <div className="scope-requirements">
+      <p className="scope-requirements__intro">
+        Offers are scored against these requirements. <em>Not stated</em> means the business didn’t answer, which isn’t
+        the same as not included.
+      </p>
       <dl className="scope-requirements__list">
-        <Requirement isWide label="Tasks">
+        <Requirement label="Summary">{listing.scope_summary || <NotStated />}</Requirement>
+        <Requirement label="Tasks">
           {listing.required_tasks.length > 0 ? (
             <ul className="scope-requirements__tasks">
               {listing.required_tasks.map((task) => (
@@ -37,16 +40,17 @@ export function ScopeRequirements({ listing }: ScopeRequirementsProps): JSX.Elem
         <Requirement label="Service area">
           {listing.service_area_approximate ? `${listing.service_area_approximate} (approximate)` : <NotStated />}
         </Requirement>
+        <Requirement label="Billed">{listing.billing_cadence}</Requirement>
         {/* The incumbent vendor is a separate owner opt-in; the projection only carries it when the owner disclosed it. */}
         {listing.incumbent_vendor_name ? <Requirement label="Current vendor">{listing.incumbent_vendor_name}</Requirement> : null}
       </dl>
-    </section>
+    </div>
   );
 }
 
-function Requirement({ label, isWide = false, children }: { label: string; isWide?: boolean; children: ReactNode }): JSX.Element {
+function Requirement({ label, children }: { label: string; children: ReactNode }): JSX.Element {
   return (
-    <div className={isWide ? 'scope-requirements__item scope-requirements__item--wide' : 'scope-requirements__item'}>
+    <div className="scope-requirements__row">
       <dt className="scope-requirements__label">{label}</dt>
       <dd className="scope-requirements__value">{children}</dd>
     </div>
