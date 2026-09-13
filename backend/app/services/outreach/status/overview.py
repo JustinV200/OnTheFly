@@ -11,11 +11,21 @@ from app.core.invitation_state import InvitationState
 from app.models.outreach.discovery_run import DiscoveryRun
 from app.services.discovery import DiscoveryRunView, DiscoverySource, discovery_run_view
 from app.services.listings.owned_listing import get_owned_listing, listing_is_public
-from app.services.outreach.candidates.view import CandidateView, list_candidate_views
+from app.services.listings.projection import projection_from_record
+from app.services.outreach.candidates import (
+    CandidateView,
+    list_candidate_views,
+    recommended_candidate_ids,
+)
 from app.services.outreach.compliance.check import ComplianceReport, check_compliance
+from app.services.outreach.rate import ImpliedRate, implied_rate_from_projection
 from app.services.outreach.senders.base import OutreachSender
 from app.services.outreach.senders.channel import ChannelInfo, describe_channel
-from app.services.outreach.status.invitation_view import CHALLENGED_DISPLAY_STATE, InvitationView, list_invitation_views
+from app.services.outreach.status.invitation_view import (
+    CHALLENGED_DISPLAY_STATE,
+    InvitationView,
+    list_invitation_views,
+)
 from app.services.outreach.templates.links import public_listing_url
 
 
@@ -58,6 +68,8 @@ class OutreachOverview(BaseModel):
     channel: ChannelInfo
     compliance: ComplianceReport
     discovery: DiscoveryStatusView
+    implied_rate: ImpliedRate
+    recommended_candidate_ids: list[str]
     candidates: list[CandidateView]
     invitations: list[InvitationView]
     summary: OutreachSummary
@@ -84,6 +96,7 @@ def get_outreach_overview(
         select(DiscoveryRun).where(DiscoveryRun.listing_id == listing.id).order_by(DiscoveryRun.ran_at.desc()).limit(1)
     )
     unavailable_reason = discovery_source.unavailable_reason()
+    candidates = list_candidate_views(listing, sender, db)
 
     return OutreachOverview(
         listing_id=listing.id,
@@ -101,7 +114,9 @@ def get_outreach_overview(
             ),
             last_run=discovery_run_view(last_run) if last_run is not None else None,
         ),
-        candidates=list_candidate_views(listing, sender, db),
+        implied_rate=implied_rate_from_projection(projection_from_record(listing)),
+        recommended_candidate_ids=recommended_candidate_ids(candidates),
+        candidates=candidates,
         invitations=invitations,
         summary=_summarize(invitations, sender),
     )

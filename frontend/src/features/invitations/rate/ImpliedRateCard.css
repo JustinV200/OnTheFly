@@ -1,0 +1,11 @@
+/* Keeps the derived rate and its honesty label together while allowing them to wrap on a narrow screen. */
+.implied-rate__headline {
+  align-items: center;
+  display: flex;
+  flex-wrap: wrap;
+  gap: var(--space-3);
+}
+
+.implied-rate__headline strong {
+  font-size: var(--text-xl);
+}

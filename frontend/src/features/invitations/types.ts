@@ -142,6 +142,16 @@ export interface OutreachSummary {
   delivery_tracked: boolean;
 }
 
+export interface ImpliedRate {
+  status: 'available' | 'unavailable';
+  reason: string | null;
+  currency: string;
+  billing_cadence: string;
+  price_minor: number | null;
+  total_hours: number | null;
+  rate_minor_per_hour: number | null;
+}
+
 export interface OutreachOverview {
   listing_id: string;
   listing_visibility: string;
@@ -150,6 +160,8 @@ export interface OutreachOverview {
   channel: ChannelInfo;
   compliance: ComplianceReport;
   discovery: DiscoveryStatus;
+  implied_rate: ImpliedRate;
+  recommended_candidate_ids: string[];
   candidates: Candidate[];
   invitations: Invitation[];
   summary: OutreachSummary;
@@ -171,6 +183,7 @@ export interface InvitationPreview {
   template_version: string;
   channel: ChannelInfo;
   compliance: ComplianceReport;
+  implied_rate: ImpliedRate;
   messages: PreviewMessage[];
   blocked: Array<{ candidate_id: string; business_name: string; reason: string }>;
 }

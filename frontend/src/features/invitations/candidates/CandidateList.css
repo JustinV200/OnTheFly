@@ -14,6 +14,13 @@
   text-align: center;
 }
 
+.candidate-list__actions {
+  align-items: center;
+  display: flex;
+  flex-wrap: wrap;
+  gap: var(--space-3);
+}
+
 .candidate-list__bar {
   align-items: center;
   background-color: var(--color-surface-raised);
