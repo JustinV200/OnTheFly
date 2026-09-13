@@ -108,6 +108,16 @@ class PriceLevelAnalysis(BaseModel):
     unconfirmed_earlier_price: UnconfirmedEarlierPrice | None
 
 
+def is_price_level_charge(transaction: Transaction) -> bool:
+    """Return True for a row the Compound Eye reads: a debit with a positive amount.
+
+    Refunds and zero rows set no price. The brain stimulus uses this too, so it replays
+    only the amounts the detector actually read.
+    """
+
+    return transaction.direction == "debit" and transaction.amount_minor > 0
+
+
 def analyze_price_levels(transactions: list[Transaction], cadence: str) -> PriceLevelAnalysis:
     """Find price levels in a recurring vendor's debit charges.
 
@@ -123,7 +133,7 @@ def analyze_price_levels(transactions: list[Transaction], cadence: str) -> Price
     """
 
     charges = sorted(
-        (transaction for transaction in transactions if transaction.direction == "debit" and transaction.amount_minor > 0),
+        (transaction for transaction in transactions if is_price_level_charge(transaction)),
         key=lambda transaction: (transaction.posted_at, transaction.id or ""),
     )
     if cadence not in RECURRING_CADENCES:

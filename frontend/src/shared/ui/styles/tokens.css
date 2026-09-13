@@ -69,6 +69,8 @@
   --control-height: 38px;
   --z-sticky: 20;
   --z-drawer: 40;
+  /* The fly brain dock sits above drawers, so a run started from inside one (Spend signals) stays visible. */
+  --z-brain-dock: 45;
   --z-popover: 50;
 
   /* ---- Breakpoints (documentation only) ----

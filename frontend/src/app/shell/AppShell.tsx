@@ -4,6 +4,7 @@ import { Outlet } from 'react-router-dom';
 
 import { useActingAccount } from '../../shared/account/ActingAccountContext';
 import { ErrorBoundary } from '../../shared/components/ErrorBoundary';
+import { FlyBrainDock } from '../../features/brainview';
 import { TopBar } from './topbar/TopBar';
 import './AppShell.css';
 
@@ -23,6 +24,8 @@ export function AppShell(): JSX.Element {
           <Outlet />
         </ErrorBoundary>
       </main>
+      {/* Outside the page subtree, so a fly brain run keeps playing across navigation. Renders nothing until one starts. */}
+      <FlyBrainDock />
     </div>
   );
 }

@@ -1,0 +1,7 @@
+/* One wrapping row of playback controls. */
+.playback-controls {
+  align-items: center;
+  display: flex;
+  flex-wrap: wrap;
+  gap: var(--space-2);
+}

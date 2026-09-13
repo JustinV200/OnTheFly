@@ -16,6 +16,7 @@ from app.services.comparison.rank import RankedChallenge, rank_challenges
 from app.services.listings.current_price import resolve_current_price
 from app.services.trace.baseline_membership import find_baseline_membership
 from app.services.trace.compound_eye_attribution import compound_eye_attribution
+from app.services.trace.compound_eye_stimulus import compound_eye_stimulus
 from app.services.trace.types import (
     OfferTrace,
     TraceBaseline,
@@ -76,6 +77,8 @@ def build_offer_trace(challenge_id: str, acting_account_id: str, db: Session) ->
         ],
         # The Compound Eye chose which charges count, so the response labels it (or says why it didn't run).
         fly_brain=[compound_eye_attribution(membership)],
+        # Safe to include because the check above limits this trace to the listing's owner: it replays private charges.
+        brain_stimulus=compound_eye_stimulus(transactions, membership),
     )
 
 

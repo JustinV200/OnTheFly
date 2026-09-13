@@ -1,0 +1,38 @@
+/* The dock's own pieces: the chip shown while the panel is hidden, and the line shown while the panel code loads. */
+.fly-brain-dock__chip,
+.fly-brain-dock__loading {
+  align-items: center;
+  background-color: var(--color-flybrain-bg);
+  border: var(--border-width) solid var(--color-flybrain-border);
+  border-radius: var(--radius-pill);
+  bottom: var(--space-3);
+  box-shadow: var(--shadow-md);
+  color: var(--color-flybrain-text);
+  display: inline-flex;
+  font-size: var(--text-sm);
+  gap: var(--space-2);
+  margin: 0;
+  padding: var(--space-2) var(--space-3);
+  position: fixed;
+  right: var(--space-3);
+  z-index: var(--z-brain-dock);
+}
+
+.fly-brain-dock__chip {
+  cursor: pointer;
+  font: inherit;
+  font-size: var(--text-sm);
+}
+
+.fly-brain-dock__chip:focus-visible {
+  box-shadow: var(--focus-ring);
+  outline: none;
+}
+
+@media (min-width: 768px) {
+  .fly-brain-dock__chip,
+  .fly-brain-dock__loading {
+    bottom: var(--space-4);
+    right: var(--space-4);
+  }
+}

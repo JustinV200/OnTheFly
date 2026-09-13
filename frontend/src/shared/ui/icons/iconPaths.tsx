@@ -19,10 +19,15 @@ export type StrokeIconName =
   | 'info'
   | 'lock'
   | 'mail'
+  | 'maximize'
   | 'menu'
+  | 'minimize'
   | 'monitor'
   | 'moon'
+  | 'pause'
+  | 'play'
   | 'plus'
+  | 'replay'
   | 'search'
   | 'send'
   | 'sun'
@@ -97,7 +102,9 @@ export const STROKE_PATHS: Record<StrokeIconName, ReactElement> = {
       <path d="m3.5 6.5 8.5 6 8.5-6" />
     </>
   ),
+  maximize: <path d="M14 4h6v6M20 4l-6.5 6.5M10 20H4v-6M4 20l6.5-6.5" />,
   menu: <path d="M4 7h16M4 12h16M4 17h16" />,
+  minimize: <path d="M4 14h6v6M10 14l-6.5 6.5M20 10h-6V4M14 10l6.5-6.5" />,
   monitor: (
     <>
       <rect height="12" rx="2" width="18" x="3" y="4" />
@@ -105,7 +112,10 @@ export const STROKE_PATHS: Record<StrokeIconName, ReactElement> = {
     </>
   ),
   moon: <path d="M20 14.5A8 8 0 1 1 9.5 4a6.5 6.5 0 0 0 10.5 10.5Z" />,
+  pause: <path d="M9 5.5v13M15 5.5v13" />,
+  play: <path d="M7.5 5.2v13.6a.6.6 0 0 0 .9.5l10.6-6.8a.6.6 0 0 0 0-1L8.4 4.7a.6.6 0 0 0-.9.5Z" />,
   plus: <path d="M12 5v14M5 12h14" />,
+  replay: <path d="M4 12a8 8 0 1 0 2.4-5.7M4 4.5v4h4" />,
   search: (
     <>
       <circle cx="11" cy="11" r="6.5" />

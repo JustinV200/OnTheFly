@@ -86,6 +86,11 @@
   --color-flybrain-border: #4a3a86;
   --color-flybrain-solid: #9b72f7;
 
+  --color-brain-backdrop: #0c0a16;
+  --color-brain-neuron: #8a86a3;
+  --color-brain-spike: #c4b5fd;
+  --color-brain-input: #67e8f9;
+
   /* ---- Data visualisation ---- */
   --color-chart-line: #2fd18b;
   --color-chart-fill: rgb(47 209 139 / 0.12);

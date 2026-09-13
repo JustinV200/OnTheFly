@@ -140,8 +140,8 @@ def test_staged_scenario_gives_the_demo_listing_a_similar_neighbour(db_session) 
 
     assert neighbour.bidding_mode == "sealed" and neighbour.incumbent_vendor_name is None
     assert db_session.scalar(select(func.count()).select_from(Challenge).where(Challenge.listing_id == neighbour.id)) == 0
-    assert as_challenger is not None and [item.projection.id for item in as_challenger] == [neighbour.id]
-    assert as_neighbour_owner == []
+    assert as_challenger is not None and [item.projection.id for item in as_challenger.listings] == [neighbour.id]
+    assert as_neighbour_owner is not None and as_neighbour_owner.listings == []
 
 
 def test_live_scenario_imports_the_neighbour_privately(db_session) -> None:

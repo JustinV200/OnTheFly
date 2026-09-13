@@ -61,7 +61,7 @@ def test_same_trade_word_alone_is_never_suggested(db_session) -> None:
     ])
     db_session.commit()
 
-    assert suggest_vendor_aliases("acc_owner_1", db_session) == []
+    assert suggest_vendor_aliases("acc_owner_1", db_session).suggestions == []
 
 
 def test_contained_name_different_category_and_ineligible_groups(db_session) -> None:
@@ -75,7 +75,8 @@ def test_contained_name_different_category_and_ineligible_groups(db_session) -> 
     ])
     db_session.commit()
 
-    pairs = {(item.alias.vendor, item.canonical.vendor) for item in suggest_vendor_aliases("acc_owner_1", db_session)}
+    scan = suggest_vendor_aliases("acc_owner_1", db_session)
+    pairs = {(item.alias.vendor, item.canonical.vendor) for item in scan.suggestions}
 
     assert pairs == {("Orkin", "Orkin Pest Control")}
 

@@ -1,4 +1,5 @@
 /* Declares the owner-only spend-signals report returned by /api/spend-signals/:expenseId. */
+import type { BrainStimulus } from '../../../shared/flybrain/live';
 import type { FlyBrainAttribution } from '../../../shared/flybrain/types';
 
 export type BaselineBasis = 'current_price_level' | 'average_of_charges';
@@ -92,4 +93,6 @@ export interface SpendSignalsReport {
   unusual_charge_count: number;
   not_analyzed_transactions: NotAnalyzedTransaction[];
   fly_brain: FlyBrainAttribution[];
+  // What the simulated fly brain view plays alongside this report; null when neither circuit ran.
+  brain_stimulus: BrainStimulus | null;
 }

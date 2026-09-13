@@ -19,7 +19,7 @@ from app.models.challenge import Challenge
 from app.models.listing import PublicListingRecord
 from app.services.flybrain import FlyBrainComponent, attribute
 from app.services.listings.projection import projection_from_record
-from app.services.marketplace import find_similar_listings
+from app.services.marketplace import find_similar_listings, similar_listings_stimulus
 
 router = APIRouter(prefix="/api/marketplace", tags=["marketplace"])
 
@@ -107,7 +107,7 @@ def get_similar_listings(
     if similar is None:
         raise HTTPException(status_code=status.HTTP_404_NOT_FOUND, detail="Listing not found")
 
-    counts_by_listing = _active_challenge_counts([item.projection.id for item in similar], db)
+    counts_by_listing = _active_challenge_counts([item.projection.id for item in similar.listings], db)
     return SimilarListingsResponse(
         listings=[
             SimilarListingResponse(
@@ -116,15 +116,16 @@ def get_similar_listings(
                 scope_similarity=item.similarity,
                 shared_terms=item.shared_terms,
             )
-            for item in similar
+            for item in similar.listings
         ],
-        message=None if similar else "No other public listings with similar scope yet",
+        message=None if similar.listings else "No other public listings with similar scope yet",
         fly_brain=[
             attribute(
                 FlyBrainComponent.mushroom_body_flyhash,
                 "Found listings with similar scope from public listing fields only; price is not used to match.",
             )
         ],
+        brain_stimulus=similar_listings_stimulus(similar),
     )
 
 

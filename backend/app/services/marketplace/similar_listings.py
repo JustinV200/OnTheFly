@@ -30,11 +30,23 @@ class SimilarListing:
     shared_terms: list[str]
 
 
+@dataclass(frozen=True, slots=True)
+class SimilarListingsResult:
+    """The public listing the search started from and the listings found for it, best first.
+
+    anchor is the public projection the query was encoded from, kept so callers can
+    describe the search without querying or projecting the listing a second time.
+    """
+
+    anchor: PublicListingProjection
+    listings: list[SimilarListing]
+
+
 def find_similar_listings(
     listing_id: str,
     acting_account_id: str | None,
     db: Session,
-) -> list[SimilarListing] | None:
+) -> SimilarListingsResult | None:
     """Return listings similar to a public listing, best first; None when the listing isn't public.
 
     Excludes the listing itself and, when the viewer is known, the viewer's own
@@ -68,14 +80,17 @@ def find_similar_listings(
         min_similarity=MIN_SCOPE_SIMILARITY,
         exclude=excluded,
     )
-    return [
-        SimilarListing(
-            projection=projections[match.key],
-            similarity=round(match.similarity, 2),
-            shared_terms=_shared_terms(anchor_projection, projections[match.key]),
-        )
-        for match in matches
-    ]
+    return SimilarListingsResult(
+        anchor=anchor_projection,
+        listings=[
+            SimilarListing(
+                projection=projections[match.key],
+                similarity=round(match.similarity, 2),
+                shared_terms=_shared_terms(anchor_projection, projections[match.key]),
+            )
+            for match in matches
+        ],
+    )
 
 
 def _shared_terms(left: PublicListingProjection, right: PublicListingProjection) -> list[str]:

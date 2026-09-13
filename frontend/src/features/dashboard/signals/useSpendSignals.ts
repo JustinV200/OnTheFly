@@ -3,6 +3,7 @@
 import { useEffect, useState } from 'react';
 
 import { ApiError, get } from '../../../shared/api/client';
+import { publishBrainStimulus } from '../../../shared/flybrain/live';
 import type { SpendSignalsReport } from './types';
 
 interface UseSpendSignalsResult {
@@ -29,6 +30,8 @@ export function useSpendSignals(expenseId: string): UseSpendSignalsResult {
         const response = await get<SpendSignalsReport>(`/api/spend-signals/${expenseId}`);
         if (isCurrent) {
           setReport(response);
+          // Hands the charges' input to the fly brain view, which plays it separately; the report is already final.
+          publishBrainStimulus(response.brain_stimulus);
         }
       } catch (caught) {
         if (isCurrent) {
