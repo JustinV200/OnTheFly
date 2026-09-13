@@ -1,4 +1,4 @@
-"""One command that resets the demo to a known state without losing a genuine counteroffer (roadmap 09, step 3).
+"""One command that resets the demo to a known state without losing a genuine counteroffer (roadmap 09, "Demo reset command").
 
     python -m app.cli.seed_demo                      # live: everything private, perform the script
     python -m app.cli.seed_demo --scenario staged    # listing public with offers, rehearse or recover

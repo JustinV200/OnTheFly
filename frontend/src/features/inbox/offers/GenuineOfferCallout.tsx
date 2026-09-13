@@ -1,5 +1,5 @@
 /* Puts any genuine counteroffer front and centre: real amount, terms, timestamp, and how it arrived.
-   Shown only for offers whose stored provenance is genuine; simulated offers never appear here (roadmap 09, step 7). */
+   Shown only for offers whose stored provenance is genuine; simulated offers never appear here (roadmap 09, "The real counteroffer, front and centre"). */
 import { ApiQueryState } from '../../../shared/api/useApiQuery';
 import { MoneyDisplay } from '../../../shared/components/MoneyDisplay';
 import { formatTimestamp } from '../../../shared/format/formatTimestamp';

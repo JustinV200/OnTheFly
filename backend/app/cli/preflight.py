@@ -1,4 +1,4 @@
-"""Runs the automatable half of the pre-demo checklist against deployed URLs (roadmap 09, step 10).
+"""Runs the automatable half of the pre-demo checklist against deployed URLs (roadmap 09, "Pre-demo checklist").
 
     python -m app.cli.preflight --api https://api.example --frontend https://app.example
 

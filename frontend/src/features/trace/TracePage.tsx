@@ -1,5 +1,5 @@
 /* Traces one potential-savings figure down to the transactions behind it, one linked step at a time.
-   That chain is the product's claim to credibility (roadmap 09, step 9). Every figure comes from the server. */
+   That chain is the product's claim to credibility (roadmap 09, "Trace one number all the way down"). Every figure comes from the server. */
 import { Link, useParams } from 'react-router-dom';
 
 import { useActingAccount } from '../../shared/account/ActingAccountContext';

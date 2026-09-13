@@ -1,5 +1,5 @@
 /* Shows which business is acting, big enough to read on a projector, and switches between them.
-   Framed as "the other side of the marketplace", not an admin tool (roadmap 09, step 6). */
+   Framed as "the other side of the marketplace", not an admin tool (roadmap 09, "The account switch as a demo instrument"). */
 import { useActingAccount } from '../shared/account/ActingAccountContext';
 import { demoAccounts } from '../shared/account/demoAccounts';
 

@@ -1,4 +1,4 @@
-"""Serves the owner-only trace from a savings figure down to its transactions (roadmap 09, step 9).
+"""Serves the owner-only trace from a savings figure down to its transactions (roadmap 09, "Trace one number all the way down").
 The response model lives with the service, like listings' PublicListingProjection.
 """
 

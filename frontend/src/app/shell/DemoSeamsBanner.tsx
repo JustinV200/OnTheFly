@@ -1,5 +1,5 @@
 /* States the demo's seams on every screen: what the financial data is and whether any offer is genuine.
-   Driven by stored records, and shown as a warning when unavailable, never hidden (roadmap 09, step 5). */
+   Driven by stored records, and shown as a warning when unavailable, never hidden (roadmap 09, "Honest labeling of the demo's seams"). */
 import type { ReactNode } from 'react';
 
 import { useApiQuery } from '../../shared/api/useApiQuery';

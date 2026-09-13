@@ -1,5 +1,5 @@
 """Reports the demo's seams: where the financial data came from and whether any offer is genuine.
-Counts come from stored records, so a label can't drift from what is actually on screen (roadmap 09, step 5).
+Counts come from stored records, so a label can't drift from what is actually on screen (roadmap 09, "Honest labeling of the demo's seams").
 It returns counts only, never a challenger identity or an offer amount.
 """
 

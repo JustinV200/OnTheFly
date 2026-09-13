@@ -1,5 +1,5 @@
 /* Maps stored provenance values to the exact on-screen labels CLAUDE.md prescribes, with a tone and explanation.
-   Unknown values render as a visible "unlabeled" warning: an unlabeled figure is a bug (roadmap 09, step 1). */
+   Unknown values render as a visible "unlabeled" warning: an unlabeled figure is a bug (roadmap 09, "Provenance audit"). */
 import type { PillTone } from '../components/Pill';
 
 export type ProvenanceKind = 'financial' | 'offer';

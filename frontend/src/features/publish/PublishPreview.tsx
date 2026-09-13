@@ -1,5 +1,5 @@
 /* Shows the exact public payload the API returned for this draft, field for field, before anything is published.
-   It renders the backend's JSON verbatim beside a readable summary and invents no field (roadmap 09, step 2). */
+   It renders the backend's JSON verbatim beside a readable summary and invents no field (roadmap 09, "The privacy proof"). */
 import { MoneyDisplay } from '../../shared/components/MoneyDisplay';
 import { categoryLabel } from '../../shared/format/categoryLabel';
 import { describeScopeExpectations } from '../../shared/format/describeScopeExpectations';

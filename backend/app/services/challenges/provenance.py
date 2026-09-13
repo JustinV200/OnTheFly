@@ -13,7 +13,7 @@ def resolve_offer_provenance(challenger_account_id: str) -> str:
 
     captured_off_platform is never inferred here: it is set only by the operator path that
     restores a real quote with its original evidence (app/cli/demo_seed). Letting the challenge
-    form choose would let a simulated offer claim to be genuine (roadmap 09, step 5).
+    form choose would let a simulated offer claim to be genuine (roadmap 09, "Honest labeling of the demo's seams").
     """
 
     if challenger_account_id in SEEDED_ACCOUNT_IDS:
