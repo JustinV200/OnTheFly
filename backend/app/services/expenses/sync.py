@@ -12,7 +12,7 @@ from app.models.service_expense import ServiceExpense
 from app.models.transaction import Transaction
 from app.services.expenses.baseline import compute_baseline
 from app.services.expenses.baseline_charges import baseline_charges
-from app.services.expenses.eligibility import classify_eligibility
+from app.services.expenses.corrections import OwnerOverrides, classify_owner_eligibility
 from app.services.expenses.listing_references import listed_expense_ids
 from app.services.expenses.recurrence import detect_recurrence
 from app.services.expenses.vendor_group_key import vendor_group_key
@@ -25,41 +25,51 @@ def sync_service_expenses(owner_account_id: str, db: Session, commit: bool = Tru
 
     With commit=False the regroup is only flushed, so a caller (the alias merge) can
     inspect the result and then commit or roll back the whole operation as one unit.
+    Eligibility honours the owner's stored corrections and not-publishable mark on every
+    branch; sync never clears the mark, and a group regrouped under a new key inherits it.
     """
 
     transactions = db.scalars(
         select(Transaction).where(Transaction.owner_account_id == owner_account_id)
     ).all()
+    # Read before grouping rewrites each transaction's key: it is how a regrouped charge finds the row it left.
+    previous_keys = {transaction.id: transaction.normalized_vendor for transaction in transactions}
     grouped = _group_transactions(owner_account_id, transactions, db)
+    stored_by_key = {
+        expense.normalized_vendor: expense
+        for expense in db.scalars(
+            select(ServiceExpense).where(ServiceExpense.owner_account_id == owner_account_id)
+        ).all()
+    }
     results: list[ServiceExpense] = []
 
     for vendor_key, vendor_transactions in grouped.items():
+        existing = stored_by_key.get(vendor_key)
         # Keep all rows for audit; unsettled Stripe payments are not baseline spend. The
         # spend-signals report selects with the same helper so it explains these exact charges.
         charge_transactions = baseline_charges(vendor_transactions)
         if not charge_transactions:
-            existing = db.scalar(select(ServiceExpense).where(
-                ServiceExpense.owner_account_id == owner_account_id,
-                ServiceExpense.normalized_vendor == vendor_key))
             if existing:
+                eligibility = classify_owner_eligibility(
+                    vendor_key, existing.category, OwnerOverrides.of(existing), has_posted_charges=False
+                )
                 existing.amount_minor_per_period = 0
                 existing.annualized_amount_minor = 0
                 existing.period_count = 0
-                existing.is_publishable = False
-                existing.is_eligible = False
-                existing.eligibility_reason = "no_posted_debits"
+                existing.is_publishable = eligibility.publishable
+                existing.is_eligible = eligibility.eligible
+                existing.eligibility_reason = eligibility.reason
             continue
         recurrence = detect_recurrence(charge_transactions)
         baseline = compute_baseline(charge_transactions, recurrence)
         display_vendor = vendor_transactions[0].normalized_vendor or vendor_key
         category = _choose_category(vendor_transactions)
-        eligibility = classify_eligibility(display_vendor, category)
-        existing = db.scalar(
-            select(ServiceExpense).where(
-                ServiceExpense.owner_account_id == owner_account_id,
-                ServiceExpense.normalized_vendor == vendor_key,
-            )
-        )
+        if existing is not None:
+            overrides = OwnerOverrides.of(existing)
+        else:
+            previous = _previous_expenses(vendor_key, vendor_transactions, previous_keys, stored_by_key)
+            overrides = OwnerOverrides.carried_from(previous)
+        eligibility = classify_owner_eligibility(display_vendor, category, overrides)
         cadence = recurrence.cadence if recurrence.cadence != "insufficient_data" else "irregular"
 
         if existing is None:
@@ -79,6 +89,7 @@ def sync_service_expenses(owner_account_id: str, db: Session, commit: bool = Tru
                 eligibility_reason=eligibility.reason,
                 is_publishable=eligibility.publishable,
                 visibility=ListingVisibility.private.value,
+                owner_marked_ineligible=overrides.marked_ineligible,
             )
             db.add(expense)
             results.append(expense)
@@ -117,6 +128,22 @@ def _remove_orphaned_expenses(owner_account_id: str, current_vendor_keys: set[st
     for expense in orphaned:
         if expense.id not in referenced:
             db.delete(expense)
+
+
+def _previous_expenses(
+    vendor_key: str,
+    vendor_transactions: list[Transaction],
+    previous_keys: dict[str, str | None],
+    stored_by_key: dict[str, ServiceExpense],
+) -> list[ServiceExpense]:
+    # The stored rows this new group's charges were grouped under before this sync, e.g. the row
+    # a vendor rename re-keyed away from. A never-synced Stripe charge has no key and adds nothing.
+    keys = {previous_keys.get(transaction.id) for transaction in vendor_transactions}
+    return [
+        stored_by_key[key]
+        for key in keys
+        if key is not None and key != vendor_key and key in stored_by_key
+    ]
 
 
 def _group_transactions(

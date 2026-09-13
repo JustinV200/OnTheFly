@@ -18,9 +18,8 @@ from app.db.session import get_db
 from app.models.listing import PublicListingRecord
 from app.models.service_expense import ServiceExpense
 from app.models.transaction import Transaction
-from app.services.expenses.eligibility import classify_eligibility
+from app.services.expenses.corrections import ExpenseCorrectionError, OwnerExpenseUpdate, apply_owner_expense_update
 from app.services.expenses.sync import sync_service_expenses
-from app.services.expenses.vendor_normalize import VendorCorrectionStore
 
 router = APIRouter(prefix="/api/expenses", tags=["expenses"])
 
@@ -101,43 +100,20 @@ def update_expense(
     request: Request,
     db: Session = Depends(get_db),
 ) -> ExpenseResponse:
-    """Persist owner corrections without allowing hard exclusions to become publishable."""
+    """Persist owner corrections without allowing hard exclusions to become publishable.
+
+    Only fields present in the body change, so a later request never wipes an earlier correction.
+    """
 
     account_id = require_acting_account_id(request)
     expense = _get_owner_expense(expense_id, account_id, db)
-    correction_store = VendorCorrectionStore()
+    # exclude_unset keeps "not sent" distinct from an explicit null, which clears a correction.
+    correction = OwnerExpenseUpdate.model_validate(update.model_dump(exclude_unset=True))
+    try:
+        apply_owner_expense_update(expense, correction, db)
+    except ExpenseCorrectionError as error:
+        raise HTTPException(status_code=status.HTTP_400_BAD_REQUEST, detail=str(error)) from error
 
-    if update.owner_corrected_vendor or update.owner_corrected_category:
-        correction_store.upsert(
-            owner_account_id=account_id,
-            raw_description_pattern=expense.normalized_vendor,
-            corrected_vendor=update.owner_corrected_vendor,
-            corrected_category=update.owner_corrected_category,
-            db=db,
-        )
-
-    display_vendor = update.owner_corrected_vendor or expense.owner_corrected_vendor or expense.normalized_vendor
-    category = update.owner_corrected_category or expense.owner_corrected_category or expense.category
-    eligibility = classify_eligibility(display_vendor, category)
-
-    expense.owner_corrected_vendor = update.owner_corrected_vendor
-    expense.owner_corrected_category = update.owner_corrected_category
-    expense.category = category
-    expense.is_eligible = eligibility.eligible
-    expense.eligibility_reason = eligibility.reason
-    expense.is_publishable = eligibility.publishable
-
-    if update.is_publishable is False and expense.is_publishable:
-        expense.is_publishable = False
-        expense.is_eligible = False
-        expense.eligibility_reason = "owner_marked_ineligible"
-    elif update.is_publishable is True and not eligibility.publishable:
-        raise HTTPException(
-            status_code=status.HTTP_400_BAD_REQUEST,
-            detail="Hard exclusions cannot be made publishable",
-        )
-
-    db.commit()
     db.refresh(expense)
     provenance = _provenance_by_vendor(account_id, db).get(expense.normalized_vendor, [])
     return _serialize_expense(expense, _listing_ids_by_expense(account_id, db).get(expense.id), provenance)

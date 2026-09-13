@@ -51,22 +51,31 @@ class VendorCorrectionStore:
     ) -> tuple[str, str | None]:
         """Return corrected vendor/category values when a rule matches the raw text.
 
-        A "word" rule (owner rename) matches on whole words, so "orkin" never claims
-        "Porkington BBQ". An "exact" rule (alias merge) matches only the whole description,
-        so "SPARKLE" never claims "SPARKLE WINDOWS". Both ignore case. When several rules
-        match, the longest (most specific) pattern wins, so a merge rule for one exact
-        descriptor outranks a broad rename rule regardless of insert order.
+        A "word" rule (name-pattern rename) matches on whole words, so "orkin" never claims
+        "Porkington BBQ". An "exact" rule (alias merge or dashboard correction) matches only
+        the whole description, so "SPARKLE" never claims "SPARKLE WINDOWS". Both ignore case.
+        When several rules match, the longest (most specific) pattern wins, so a merge rule for
+        one exact descriptor outranks a broad rename rule regardless of insert order.
+        """
+
+        correction = self.matching_rule(owner_account_id, raw_description, db)
+        if correction is None:
+            return fallback_vendor, fallback_category
+        return (
+            correction.corrected_vendor or fallback_vendor,
+            correction.corrected_category or fallback_category,
+        )
+
+    def matching_rule(self, owner_account_id: str, raw_description: str, db: Session) -> VendorCorrection | None:
+        """Return the one rule resolve() applies to this raw description, or None when no rule matches.
+
+        Lets a caller writing a new rule for a descriptor start from the targets that currently
+        apply to it, so the new rule doesn't silently drop a vendor or category it shadows.
         """
 
         lowered = raw_description.casefold()
-        for matches, correction in self._rules_for(owner_account_id, db):
-            if not matches(lowered):
-                continue
-            return (
-                correction.corrected_vendor or fallback_vendor,
-                correction.corrected_category or fallback_category,
-            )
-        return fallback_vendor, fallback_category
+        rules = self._rules_for(owner_account_id, db)
+        return next((correction for matches, correction in rules if matches(lowered)), None)
 
     def upsert(
         self,
@@ -79,8 +88,9 @@ class VendorCorrectionStore:
     ) -> VendorCorrection:
         """Create or update one correction rule for future imports; patterns compare case-insensitively.
 
-        Owner renames use the default whole-word mode; alias merges pass exact. There is one
-        rule per pattern, so updating an existing rule replaces its targets and its mode.
+        Name-pattern renames use the default whole-word mode; alias merges and dashboard
+        corrections pass exact, one rule per descriptor. There is one rule per pattern, so
+        updating an existing rule replaces its targets and its mode.
         """
 
         self._rules_by_owner.pop(owner_account_id, None)

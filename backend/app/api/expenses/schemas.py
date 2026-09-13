@@ -63,7 +63,11 @@ class ExpenseListResponse(BaseModel):
 
 
 class ExpenseUpdateRequest(BaseModel):
-    """Captures owner corrections for vendor/category and explicit publishability."""
+    """Captures owner corrections for vendor/category and explicit publishability.
+
+    Omitted fields are left unchanged. A null vendor or category clears that correction;
+    is_publishable false marks the expense not publishable and true clears the mark.
+    """
 
     owner_corrected_vendor: str | None = None
     owner_corrected_category: str | None = None

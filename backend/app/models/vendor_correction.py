@@ -13,9 +13,11 @@ from app.db.base import Base
 class CorrectionMatchMode(StrEnum):
     """How a correction rule's pattern is compared with a transaction's raw description.
 
-    word: the pattern appears as whole words anywhere in the description (owner renames).
-    exact: the whole description equals the pattern, ignoring case (alias merges, which
-    must never claim a longer descriptor such as "SPARKLE WINDOWS" for "SPARKLE").
+    word: the pattern appears as whole words anywhere in the description (name-pattern renames,
+    including every rule stored before match modes existed).
+    exact: the whole description equals the pattern, ignoring case. Alias merges and dashboard
+    vendor/category corrections write one exact rule per descriptor of the expense, because they
+    must never claim a longer descriptor such as "SPARKLE WINDOWS" for "SPARKLE".
     """
 
     word = "word"
