@@ -1,0 +1,43 @@
+/* Evidence panel under an offer: a rollup line, then the checks side by side where there is room. */
+.evidence-checks {
+  background-color: var(--color-surface-subtle);
+  border: var(--border-width) solid var(--color-border-subtle);
+  border-radius: var(--radius-md);
+  display: grid;
+  gap: var(--space-2);
+  padding: var(--space-3);
+}
+
+.evidence-checks__summary {
+  align-items: center;
+  display: flex;
+  flex-wrap: wrap;
+  gap: var(--space-1) var(--space-2);
+}
+
+.evidence-checks__list {
+  display: grid;
+  gap: var(--space-2) var(--space-5);
+  grid-template-columns: repeat(auto-fit, minmax(min(14rem, 100%), 1fr));
+  list-style: none;
+  margin: 0;
+  padding: 0;
+}
+
+.evidence-checks__item {
+  display: grid;
+  gap: var(--space-0_5);
+  min-width: 0;
+}
+
+.evidence-checks__source {
+  align-items: center;
+  display: flex;
+  flex-wrap: wrap;
+  gap: var(--space-1) var(--space-2);
+}
+
+.evidence-checks__source-name {
+  font-size: var(--text-sm);
+  font-weight: var(--weight-semibold);
+}

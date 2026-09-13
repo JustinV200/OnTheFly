@@ -1,8 +1,9 @@
 /* Shows one offer's potential savings, or says plainly why it has none.
    For an offer on an earlier scope version it also names the price those savings were measured against. */
 import { MoneyDisplay } from '../../../shared/components/MoneyDisplay';
-import { SavingsCell } from '../SavingsCell';
+import { Stack } from '../../../shared/ui';
 import type { SavingsResponse } from '../types';
+import { SavingsCell } from './SavingsCell';
 
 // The fields shared by inbox and comparison rows that decide what this cell can honestly show.
 interface SavingsOffer {
@@ -22,14 +23,14 @@ export function OfferSavings({ offer }: { offer: SavingsOffer }): JSX.Element {
   }
 
   return (
-    <div>
+    <Stack gap={2}>
       <SavingsCell challengeId={offer.challenge_id ?? undefined} currency={offer.baseline_currency} savings={offer.savings} />
       {offer.is_current_scope_version ? null : (
-        <div style={{ color: '#475569', fontSize: '0.85rem' }}>
+        <div className="ui-text-sm ui-text-muted">
           Measured against <MoneyDisplay amountMinor={offer.baseline_monthly_minor} currency={offer.baseline_currency} /> / month, the
           price you confirmed on scope v{offer.answered_scope_version_number}.
         </div>
       )}
-    </div>
+    </Stack>
   );
 }

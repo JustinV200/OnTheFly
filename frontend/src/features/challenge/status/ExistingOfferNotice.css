@@ -1,0 +1,38 @@
+/* Existing-offer summary: the stored price beside the recorded and revision modes, stacked on a phone. */
+.existing-offer__summary {
+  display: grid;
+  gap: var(--space-4) var(--space-6);
+  grid-template-columns: minmax(0, 1fr);
+}
+
+@media (min-width: 768px) {
+  .existing-offer__summary {
+    align-items: start;
+    grid-template-columns: minmax(0, 1fr) minmax(0, 1fr);
+  }
+}
+
+.existing-offer__modes {
+  display: grid;
+  gap: var(--space-3);
+  margin: 0;
+}
+
+.existing-offer__mode {
+  display: grid;
+  gap: var(--space-1);
+}
+
+.existing-offer__mode dt {
+  color: var(--color-text-muted);
+  font-size: var(--text-sm);
+  font-weight: var(--weight-medium);
+}
+
+.existing-offer__mode dd {
+  margin: 0;
+}
+
+.existing-offer__consequence {
+  color: var(--color-text-secondary);
+}

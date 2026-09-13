@@ -1,0 +1,8 @@
+/* The trace chain: an ordered list of steps with no bullets; the rail and markers live with TraceStep. */
+.trace-chain {
+  display: grid;
+  gap: 0;
+  list-style: none;
+  margin: 0;
+  padding: 0;
+}

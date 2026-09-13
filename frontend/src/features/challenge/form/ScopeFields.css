@@ -1,0 +1,58 @@
+/* Scope card details: the requested-scope list and the task checkboxes drawn as tappable chips.
+   The checkbox itself stays visible inside each chip, so the checked state never rests on the tint alone. */
+.challenge-scope__requested {
+  display: grid;
+  gap: var(--space-1) var(--space-4);
+  grid-template-columns: minmax(0, 1fr);
+  margin: 0;
+}
+
+.challenge-scope__requested dt {
+  color: var(--color-text-muted);
+  font-size: var(--text-sm);
+  font-weight: var(--weight-medium);
+}
+
+.challenge-scope__requested dd {
+  margin: 0 0 var(--space-2);
+  overflow-wrap: anywhere;
+}
+
+@media (min-width: 480px) {
+  .challenge-scope__requested {
+    grid-template-columns: max-content minmax(0, 1fr);
+  }
+
+  .challenge-scope__requested dd {
+    margin-bottom: 0;
+  }
+}
+
+.challenge-scope__tasks {
+  border: 0;
+  margin: 0;
+  padding: 0;
+}
+
+.challenge-scope__legend {
+  color: var(--color-text);
+  font-size: var(--text-sm);
+  font-weight: var(--weight-medium);
+  padding: 0;
+}
+
+.challenge-scope__task-list {
+  margin-top: var(--space-2);
+}
+
+.challenge-scope__tasks .challenge-scope__task {
+  background-color: var(--color-surface);
+  border: var(--border-width) solid var(--color-border-control);
+  border-radius: var(--radius-md);
+  padding: var(--space-2) var(--space-3);
+}
+
+.challenge-scope__tasks .challenge-scope__task:has(input:checked) {
+  background-color: var(--color-brand-soft);
+  border-color: var(--color-brand-soft-border);
+}

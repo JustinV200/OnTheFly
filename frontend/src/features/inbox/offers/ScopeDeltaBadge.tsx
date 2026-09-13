@@ -1,6 +1,6 @@
 /* Renders one scope-delta chip for a missing, unstated, or added offer element. */
-import { Pill } from '../../shared/components/Pill';
-import { scopeItemLabel } from '../../shared/format/scopeItemLabel';
+import { Pill } from '../../../shared/components/Pill';
+import { scopeItemLabel } from '../../../shared/format/scopeItemLabel';
 
 interface ScopeDeltaBadgeProps {
   kind: 'missing' | 'unstated' | 'added';

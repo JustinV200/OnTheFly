@@ -1,0 +1,71 @@
+/* Trace step: a numbered marker on a vertical rail that runs down to the next step, beside the step's card. */
+.trace-step {
+  column-gap: var(--space-3);
+  display: grid;
+  grid-template-columns: 1.75rem minmax(0, 1fr);
+  position: relative;
+}
+
+@media (min-width: 768px) {
+  .trace-step {
+    column-gap: var(--space-4);
+    grid-template-columns: 2rem minmax(0, 1fr);
+  }
+}
+
+/* The rail: from under this marker to the bottom of the step, where the next marker picks it up. */
+.trace-step::before {
+  background-color: var(--color-border-strong);
+  bottom: 0;
+  content: "";
+  left: calc(0.875rem - 1px);
+  position: absolute;
+  top: var(--space-4);
+  width: 2px;
+}
+
+@media (min-width: 768px) {
+  .trace-step::before {
+    left: calc(1rem - 1px);
+  }
+}
+
+.trace-step:last-child::before {
+  display: none;
+}
+
+.trace-step__marker {
+  align-items: center;
+  aspect-ratio: 1;
+  background-color: var(--color-text);
+  border-radius: var(--radius-pill);
+  color: var(--color-text-inverse);
+  display: flex;
+  font-size: var(--text-sm);
+  font-variant-numeric: tabular-nums;
+  font-weight: var(--weight-semibold);
+  justify-content: center;
+  margin-top: var(--space-4);
+  position: relative;
+}
+
+@media (min-width: 768px) {
+  .trace-step__marker {
+    margin-top: var(--space-5);
+  }
+}
+
+.trace-step__body {
+  min-width: 0;
+}
+
+/* Vendor names and raw descriptions can be long unbroken strings; they wrap rather than widen the page. */
+.trace-step__title {
+  overflow-wrap: anywhere;
+}
+
+.trace-step__next {
+  font-size: var(--text-sm);
+  margin: 0;
+  padding: var(--space-2) 0 var(--space-3);
+}
