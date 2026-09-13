@@ -1,8 +1,8 @@
 /* Shows possible duplicate vendors found by the Mushroom Body FlyHash circuit, as an outlined suggestion card.
    Nothing merges without the owner's click, and a merge never publishes anything. */
-import { FlyBrainBadge } from '../../../shared/flybrain/FlyBrainBadge';
-import { FlyBrainNote } from '../../../shared/flybrain/FlyBrainNote';
 import { Callout, Card, Stack } from '../../../shared/ui';
+import { FlyBrainDisclosure } from '../flybrain/FlyBrainDisclosure';
+import { PlainFlyBrainBadge } from '../flybrain/PlainFlyBrainBadge';
 import { AliasSuggestionRow } from './AliasSuggestionRow';
 import { useVendorAliases } from './useVendorAliases';
 import './VendorAliasPanel.css';
@@ -22,7 +22,7 @@ export function VendorAliasPanel({ onMerged }: VendorAliasPanelProps): JSX.Eleme
 
   return (
     <Card
-      actions={attributions.map((attribution) => <FlyBrainBadge attribution={attribution} key={attribution.component} />)}
+      actions={attributions.map((attribution) => <PlainFlyBrainBadge attribution={attribution} key={attribution.component} />)}
       title="Possible duplicate vendors"
       tone="outlined"
     >
@@ -46,7 +46,7 @@ export function VendorAliasPanel({ onMerged }: VendorAliasPanelProps): JSX.Eleme
             ))}
           </ul>
         ) : null}
-        <FlyBrainNote attributions={attributions} />
+        <FlyBrainDisclosure attributions={attributions} />
       </Stack>
     </Card>
   );

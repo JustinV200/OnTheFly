@@ -1,13 +1,13 @@
 /* Shows the fly-brain spend signals for one private expense: baseline basis, price changes, unusual charges (all charges on request).
-   Each section carries the badge of the circuit that produced it, and the panel ends with FlyBrainNote.
+   Each section carries a plain-words fly-brain badge; circuit names and the no-AI-model note sit in one disclosure at the end.
    Owner-only data; this panel is never reused on public pages. */
 import { ReactNode, useId } from 'react';
 
 import { LoadingSpinner } from '../../../shared/components/LoadingSpinner';
-import { FlyBrainBadge } from '../../../shared/flybrain/FlyBrainBadge';
-import { FlyBrainNote } from '../../../shared/flybrain/FlyBrainNote';
 import type { FlyBrainAttribution, FlyBrainComponent } from '../../../shared/flybrain/types';
 import { Badge, Callout, Cluster, Icon, Stack } from '../../../shared/ui';
+import { FlyBrainDisclosure } from '../flybrain/FlyBrainDisclosure';
+import { PlainFlyBrainBadge } from '../flybrain/PlainFlyBrainBadge';
 import { ChargeSignals } from './charges/ChargeSignals';
 import { formatNotAnalyzedSummary } from './formatSignals';
 import { BaselineBasisSummary } from './price/BaselineBasisSummary';
@@ -71,7 +71,7 @@ function SpendSignalsReportBody({ report }: { report: SpendSignalsReport }): JSX
         <ChargeSignals charges={report.charges} />
       </SignalSection>
 
-      <FlyBrainNote attributions={report.fly_brain} />
+      <FlyBrainDisclosure attributions={report.fly_brain} />
     </Stack>
   );
 }
@@ -92,7 +92,7 @@ function SignalSection({ title, attribution, status, children }: SignalSectionPr
         <Cluster gap={2}>
           <h3 id={headingId}>{title}</h3>
           {status}
-          {attribution ? <FlyBrainBadge attribution={attribution} /> : null}
+          {attribution ? <PlainFlyBrainBadge attribution={attribution} /> : null}
         </Cluster>
         {children}
       </Stack>
