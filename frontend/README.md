@@ -13,6 +13,7 @@ cp .env.example .env
 ## Environment
 
 - `VITE_API_URL`: backend base URL, defaults to `http://127.0.0.1:8000`. The backend's `CORS_ALLOW_ORIGINS` must include this app's origin.
+- `VITE_STRIPE_PUBLISHABLE_KEY`: Stripe sandbox publishable key (`pk_test_` only), required only for the "Connect Stripe sandbox" panel. See `backend/app/services/transactions/stripe/NOTES.md`.
 
 ## Start dev server
 

@@ -10,6 +10,8 @@ python -m pip install -e '.[dev]'
 cp .env.example .env
 ```
 
+Settings rejects keys it doesn't define, so a stale non-empty line in `.env` stops startup with "Extra inputs are not permitted" instead of loading and doing nothing. Delete `STRIPE_BASE_URL` and `STRIPE_WEBHOOK_SECRET` from an older `.env`: the Stripe host is fixed to `api.stripe.com`, and the sandbox flow polls rather than taking webhooks.
+
 ## Database
 
 ```bash
