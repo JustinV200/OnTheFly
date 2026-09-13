@@ -1,6 +1,7 @@
 /* Turns stored category keys into readable labels for listings and expenses. */
 const KNOWN_CATEGORIES: Record<string, string> = {
   cleaning: 'Commercial cleaning',
+  // Older listings were stored under this key; the marketplace filter treats it as "cleaning".
   commercial_cleaning: 'Commercial cleaning',
   landscaping: 'Landscaping',
   office_supplies: 'Office supplies',
