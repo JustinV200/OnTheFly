@@ -12,11 +12,15 @@ from sqlalchemy.orm import Session
 
 from app.core.config import Settings
 from app.core.invitation_state import InvitationState
+from app.models.account import Account
+from app.models.listing import PublicListingRecord
 from app.models.outreach.invitation import Invitation
 from app.models.outreach.invitation_approval import InvitationApproval
 from app.services.listings.owned_listing import get_owned_listing, require_public_listing
 from app.services.outreach.approval.preview import InvitationPreview, render_unredacted_preview
+from app.services.listings.projection import projection_from_record
 from app.services.outreach.senders.base import OutreachSender
+from app.services.outreach.templates.listing_terms import listing_terms_hash
 
 
 class ApprovalResult(BaseModel):
@@ -64,7 +68,7 @@ def approve_invitations(
 
     try:
         # _stage flushes the approval row, so the unique-hash constraint can fire inside this block too.
-        approval, invitations = _stage(preview, acting_account_id, sender, db)
+        approval, invitations = _stage(preview, _current_terms_hash(listing, db), acting_account_id, sender, db)
         db.commit()
     except IntegrityError as error:
         # A concurrent identical approval (or another batch inviting one of these providers) committed
@@ -85,8 +89,16 @@ def approve_invitations(
     )
 
 
+def _current_terms_hash(listing: PublicListingRecord, db: Session) -> str:
+    owner = db.get(Account, listing.owner_account_id)
+    if owner is None:
+        raise HTTPException(status_code=status.HTTP_404_NOT_FOUND, detail="Listing owner not found")
+    return listing_terms_hash(projection_from_record(listing), owner.business_name, owner.handle)
+
+
 def _stage(
     preview: InvitationPreview,
+    terms_hash: str,
     acting_account_id: str,
     sender: OutreachSender,
     db: Session,
@@ -104,6 +116,7 @@ def _stage(
             ]
         ),
         listing_url=preview.listing_url,
+        listing_terms_hash=terms_hash,
     )
     db.add(approval)
     db.flush()

@@ -149,6 +149,7 @@ def _create_invitation_approvals() -> None:
         sa.Column("message_hash", sa.String(length=64), nullable=False),
         sa.Column("recipients", sa.Text(), nullable=False),
         sa.Column("listing_url", sa.String(length=1024), nullable=False),
+        sa.Column("listing_terms_hash", sa.String(length=64), nullable=False),
         sa.ForeignKeyConstraint(["listing_id"], ["public_listings.id"]),
         sa.ForeignKeyConstraint(["approved_by_account_id"], ["accounts.id"]),
         sa.PrimaryKeyConstraint("id"),
@@ -186,6 +187,7 @@ def _create_invitations() -> None:
         sa.ForeignKeyConstraint(["owner_account_id"], ["accounts.id"]),
         sa.PrimaryKeyConstraint("id"),
         sa.UniqueConstraint("listing_id", "provider_candidate_id", name="uq_invitation_listing_candidate"),
+        sa.UniqueConstraint("listing_id", "recipient_email", name="uq_invitation_listing_recipient"),
     )
     op.create_index("ix_invitations_listing_id", "invitations", ["listing_id"])
     op.create_index("ix_invitations_state", "invitations", ["state"])

@@ -82,8 +82,19 @@ def resolve_recipient_batch(
 
     messages: list[PreviewMessage] = []
     blocked: list[BlockedRecipient] = []
+    batch_emails: set[str] = set()
     for candidate in selected:
         eligibility = assessed[candidate.id].eligibility
+        if eligibility.can_invite and candidate.contact_email in batch_emails:
+            # Two selected records sharing one address would be one inbox receiving two invitations.
+            blocked.append(
+                BlockedRecipient(
+                    candidate_id=candidate.id,
+                    business_name=candidate.business_name,
+                    reason="Same email as another selected supplier",
+                )
+            )
+            continue
         if not eligibility.can_invite or not candidate.contact_email:
             blocked.append(
                 BlockedRecipient(
@@ -93,6 +104,7 @@ def resolve_recipient_batch(
                 )
             )
             continue
+        batch_emails.add(candidate.contact_email)
         rendered = render_invitation(projection, owner.business_name, owner.handle, candidate, settings)
         messages.append(
             PreviewMessage(

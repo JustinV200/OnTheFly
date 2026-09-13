@@ -2,7 +2,7 @@
 Each invitation is claimed atomically (queued -> sending) and committed before the send, so double runs are no-ops.
 """
 
-from datetime import datetime
+from datetime import datetime, timezone
 import json
 
 from pydantic import BaseModel
@@ -10,10 +10,15 @@ from sqlalchemy import or_, select, update
 from sqlalchemy.orm import Session
 
 from app.core.invitation_state import InvitationState
+from app.core.timestamps import as_utc
+from app.models.account import Account
 from app.models.listing import PublicListingRecord
 from app.models.outreach.invitation import Invitation
+from app.models.outreach.invitation_approval import InvitationApproval
 from app.services.listings.owned_listing import listing_is_public
+from app.services.listings.projection import projection_from_record
 from app.services.outreach import OutgoingMessage, OutreachSender, SendResult, is_suppressed
+from app.services.outreach.templates.listing_terms import listing_terms_hash
 from app.workers.outreach.backoff import MAX_ATTEMPTS, retry_delay
 
 
@@ -70,6 +75,17 @@ def _process_one(invitation_id: str, db: Session, sender: OutreachSender, now: d
         summary.skipped += 1
         return
 
+    stale_reason = _stale_reason(invitation, listing, db, now)
+    if stale_reason is not None:
+        # The approved words no longer match the listing, or offers have closed: never send them. One invitation per
+        # provider per listing still holds, so the owner shares the listing link by hand if it should still go out.
+        if _transition_from_queued(invitation.id, db, state=InvitationState.failed.value, failure_reason=stale_reason, updated_at=now):
+            summary.failed += 1
+        else:
+            summary.skipped += 1
+        db.commit()
+        return
+
     if is_suppressed(invitation.recipient_email, db):
         if _transition_from_queued(invitation.id, db, state=InvitationState.suppressed.value, updated_at=now):
             summary.suppressed += 1
@@ -108,6 +124,19 @@ def _process_one(invitation_id: str, db: Session, sender: OutreachSender, now: d
     db.commit()
 
 
+def _stale_reason(invitation: Invitation, listing: PublicListingRecord, db: Session, now: datetime) -> str | None:
+    if listing.challenge_deadline is not None and as_utc(listing.challenge_deadline) <= now:
+        return "Not sent: the listing's offer deadline passed before it could be sent"
+    approval = db.get(InvitationApproval, invitation.approval_id)
+    owner = db.get(Account, listing.owner_account_id)
+    if approval is None or owner is None:
+        return "Not sent: the approval or the listing owner could not be found"
+    current = listing_terms_hash(projection_from_record(listing), owner.business_name, owner.handle)
+    if current != approval.listing_terms_hash:
+        return "Not sent: the listing changed after you approved this invitation, so the email no longer matched it"
+    return None
+
+
 def _transition_from_queued(invitation_id: str, db: Session, **values: object) -> bool:
     # A conditional UPDATE is the claim: only one caller can move a row out of `queued`.
     result = db.execute(
@@ -123,7 +152,9 @@ def _record_outcome(invitation: Invitation, result: SendResult, now: datetime, s
     invitation.updated_at = now
     if result.outcome == "accepted":
         invitation.state = InvitationState.sent.value
-        invitation.sent_at = now
+        # Stamped at acceptance, not when the pass started: attribution counts only bids made after the send.
+        # `now` still wins when a caller passes a later time (tests simulating the future).
+        invitation.sent_at = max(now, datetime.now(timezone.utc))
         invitation.provider_message_id = result.provider_message_id
         invitation.failure_reason = None
         summary.sent += 1
