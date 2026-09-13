@@ -1,12 +1,43 @@
-/* Transaction rows: raw bank descriptions in monospace that may wrap, and uncounted rows set in muted text. */
+/* Transaction rows: a small date-and-status line, the raw bank description in monospace that may wrap, the exclusion
+   reason when there is one, and uncounted rows set in muted text. */
+.trace-transaction__meta {
+  color: var(--color-text-secondary);
+  font-size: var(--text-sm);
+  font-weight: var(--weight-medium);
+}
+
 .trace-transaction__date {
   white-space: nowrap;
 }
 
 .trace-transaction__description {
+  color: var(--color-text-muted);
+  display: block;
+  font-size: var(--text-xs);
+  margin-top: var(--space-0_5);
   overflow-wrap: anywhere;
 }
 
-.trace-transaction--not-counted {
+.trace-transaction__excluded {
+  color: var(--color-text-secondary);
+  font-size: var(--text-xs);
+  font-weight: var(--weight-semibold);
+  margin-top: var(--space-0_5);
+}
+
+.trace-transaction__amount {
+  font-weight: var(--weight-medium);
+}
+
+.trace-transaction__flags {
+  display: flex;
+  flex-wrap: wrap;
+  gap: var(--space-1);
+  justify-content: flex-end;
+  margin-top: var(--space-1);
+}
+
+.trace-transaction--not-counted,
+.trace-transaction--not-counted .trace-transaction__meta {
   color: var(--color-text-muted);
 }
