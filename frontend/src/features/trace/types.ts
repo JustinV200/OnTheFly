@@ -1,5 +1,9 @@
 /* Declares the offer trace response (backend app/services/trace/types.py). */
+import type { FlyBrainAttribution } from '../../shared/flybrain/types';
+
 export interface OfferTrace {
+  // Null when the offer is unranked: there is no figure to trace, and offer.unranked_reason says why.
+  // The baseline is the price confirmed on the scope version the offer answered, not necessarily today's.
   savings: {
     label: string;
     currency: string;
@@ -9,7 +13,7 @@ export interface OfferTrace {
     first_year_net_savings_minor: number;
     is_provisional: boolean;
     assumptions: string[];
-  };
+  } | null;
   offer: {
     challenge_id: string;
     challenger_name: string;
@@ -26,6 +30,7 @@ export interface OfferTrace {
     scope_completeness: number;
     missing_items: string[];
     unstated_items: string[];
+    unranked_reason: string | null;
     submitted_at: string;
     revised_at: string | null;
     revision_count: number;
@@ -82,14 +87,22 @@ export interface OfferTrace {
     last_seen: string;
     provenance: string[];
   };
+  // Every row filed under the expense's vendor, not only the ones behind the baseline.
   transactions: {
     id: string;
     posted_at: string;
     raw_description: string;
+    // Unsigned, as imported: direction carries the sign, so a refund credit has the same amount as a charge.
     amount_minor: number;
     currency: string;
+    direction: string;
+    status: string;
     source_type: string;
     is_excluded: boolean;
     excluded_reason: string | null;
+    // Set by the server's baseline code; the page shows it and never re-derives the rule.
+    counts_toward_baseline: boolean;
   }[];
+  // The Compound Eye chose the counted rows; the backend lists it with its reason when it didn't run.
+  fly_brain: FlyBrainAttribution[];
 }

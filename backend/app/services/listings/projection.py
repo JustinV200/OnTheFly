@@ -24,7 +24,7 @@ def build_public_listing(
     return PublicListingProjection(
         id=listing.id,
         expense_id=expense.id,
-        category=expense.category or "commercial_cleaning",
+        category=expense.category or "cleaning",  # MVP's one category, under the key fixtures and the filter use
         scope_summary=_build_scope_summary(scope),
         required_tasks=_parse_tasks(scope.required_tasks),
         visit_frequency=scope.visit_frequency,

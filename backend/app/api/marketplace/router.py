@@ -23,6 +23,13 @@ from app.services.marketplace import find_similar_listings
 
 router = APIRouter(prefix="/api/marketplace", tags=["marketplace"])
 
+# Listings published before the projection's missing-category fallback became "cleaning"
+# were stored as "commercial_cleaning". Both keys name the same category, so the filter
+# matches either one and those stored rows stay findable without a data migration.
+_CATEGORY_KEY_GROUPS: tuple[frozenset[str], ...] = (
+    frozenset({"cleaning", "commercial_cleaning"}),
+)
+
 
 @router.get("", response_model=MarketplaceFeedResponse)
 def list_marketplace(
@@ -38,7 +45,7 @@ def list_marketplace(
         PublicListingRecord.visibility == ListingVisibility.public.value
     )
     if category:
-        query = query.where(PublicListingRecord.category == category)
+        query = query.where(PublicListingRecord.category.in_(_matching_category_keys(category)))
     if service_area:
         query = query.where(PublicListingRecord.service_area_approximate.contains(service_area))
     if acting_account_id:
@@ -119,6 +126,14 @@ def get_similar_listings(
             )
         ],
     )
+
+
+def _matching_category_keys(category: str) -> list[str]:
+    # A key outside every alias group matches only itself, exactly as before.
+    for group in _CATEGORY_KEY_GROUPS:
+        if category in group:
+            return sorted(group)
+    return [category]
 
 
 def _active_challenge_counts(listing_ids: list[str], db: Session) -> dict[str, int]:

@@ -3,6 +3,8 @@
 from datetime import datetime, timezone
 import json
 
+import pytest
+
 from app.models.challenge import Challenge
 from app.models.listing import ScopeVersion
 from app.models.service_expense import ServiceExpense
@@ -131,6 +133,64 @@ def test_scope_gap_detects_two_visits_vs_three() -> None:
     assert result.score < 1.0
 
 
+def _challenge_including(included: list[str]) -> Challenge:
+    return Challenge(
+        id="challenge-1",
+        scope_version_id="scope-1",
+        challenger_account_id="acc_challenger_1",
+        bidding_mode_at_submission="sealed",
+        price_minor=187500,
+        price_currency="USD",
+        billing_frequency="monthly",
+        scope_included=json.dumps(included),
+        scope_excluded="[]",
+        scope_extras="[]",
+        setup_fee_minor=0,
+        taxes_included=True,
+        supplies_included=True,
+        provenance="challenger_submitted",
+    )
+
+
+@pytest.mark.parametrize("scope_frequency", ["3× weekly", "3 times a week", "3x/week", "3x per week", "3X Weekly"])
+def test_visit_gap_is_flagged_for_every_common_frequency_notation(scope_frequency: str) -> None:
+    """A two-visit offer against a three-visit scope is a gap however the owner wrote the frequency."""
+    scope = _build_scope()
+    scope.visit_frequency = scope_frequency
+
+    result = is_scope_complete(_challenge_including(["vacuum", "trash", "2x weekly"]), scope)
+
+    assert result.breakdown["visit_frequency"] == 0.0
+    assert result.missing_items == [f"visit_frequency:{scope_frequency}"]
+    assert result.score < 1.0
+
+
+@pytest.mark.parametrize(
+    ("scope_frequency", "offer_frequency"),
+    [("3 times a week", "3x weekly"), ("3x weekly", "3 times a week"), ("3× weekly", "3x per week")],
+)
+def test_matching_visit_counts_in_different_notations_are_a_match(scope_frequency: str, offer_frequency: str) -> None:
+    scope = _build_scope()
+    scope.visit_frequency = scope_frequency
+
+    result = is_scope_complete(_challenge_including(["vacuum", "trash", offer_frequency, "equipment"]), scope)
+
+    assert result.breakdown["visit_frequency"] == 1.0
+    assert not any(item.startswith("visit_frequency:") for item in result.missing_items + result.unstated_items)
+
+
+def test_unparseable_scope_frequency_needs_review_instead_of_matching() -> None:
+    """The comparison can't check a frequency it can't read, so it never reports a full match."""
+    scope = _build_scope()
+    scope.visit_frequency = "Mon, Wed and Fri evenings"
+
+    result = is_scope_complete(_challenge_including(["vacuum", "trash", "2x weekly", "equipment"]), scope)
+
+    assert result.breakdown["visit_frequency"] == 0.5
+    assert result.unstated_items == ["visit_frequency:Mon, Wed and Fri evenings"]
+    assert not any(item.startswith("visit_frequency:") for item in result.missing_items)
+
+
 def test_savings_are_provisional_when_setup_fee_unknown() -> None:
     savings = compute_savings(
         current_monthly=Money(amount=240000, currency="USD"),
@@ -218,7 +278,7 @@ def test_rank_challenges_includes_incumbent_baseline() -> None:
         is_active=True,
     )
 
-    ranked = rank_challenges([challenge], scope, expense)
+    ranked = rank_challenges([challenge], scope, expense, {scope.id: scope})
 
     assert ranked[0].is_incumbent is True
 
@@ -236,6 +296,7 @@ def test_baseline_is_normalized_from_a_non_monthly_expense() -> None:
     )
     challenge = Challenge(
         id="challenge-1",
+        scope_version_id="scope-1",
         challenger_account_id="acc_challenger_1",
         bidding_mode_at_submission="open",
         price_minor=150000,
@@ -250,7 +311,7 @@ def test_baseline_is_normalized_from_a_non_monthly_expense() -> None:
         provenance="demo_data",
     )
 
-    ranked = rank_challenges([challenge], scope, expense)
+    ranked = rank_challenges([challenge], scope, expense, {scope.id: scope})
 
     assert ranked[1].savings.label == "Potential savings"
     assert ranked[0].normalized_price.amount == 200000
@@ -263,6 +324,7 @@ def test_ranked_offer_missing_required_tasks_carries_the_gap_into_savings() -> N
     expense = ServiceExpense(id="expense-1", cadence="monthly", amount_minor_per_period=240000, currency="USD")
     challenge = Challenge(
         id="challenge-1",
+        scope_version_id="scope-1",
         challenger_account_id="acc_challenger_1",
         bidding_mode_at_submission="open",
         price_minor=180000,
@@ -277,8 +339,70 @@ def test_ranked_offer_missing_required_tasks_carries_the_gap_into_savings() -> N
         provenance="challenger_submitted",
     )
 
-    ranked = rank_challenges([challenge], scope, expense)
+    ranked = rank_challenges([challenge], scope, expense, {scope.id: scope})
 
     assert ranked[1].savings is not None
     assert ranked[1].savings.label == "Potential savings (scope gaps)"
     assert "task:vacuum" in ranked[1].savings.assumptions[0]
+
+
+def test_an_offer_is_scored_against_the_scope_version_it_answered() -> None:
+    """A newer scope version prices the incumbent row only; it never reframes an offer made on an older one."""
+    answered = _build_scope()
+    current = _build_scope()
+    current.id = "scope-2"
+    current.version_number = 2
+    current.required_tasks = json.dumps(["vacuum", "trash", "windows"])
+    current.current_price_minor = 210000
+    expense = ServiceExpense(id="expense-1", cadence="monthly", amount_minor_per_period=240000, currency="USD")
+    challenge = Challenge(
+        id="challenge-1",
+        scope_version_id="scope-1",
+        challenger_account_id="acc_challenger_1",
+        bidding_mode_at_submission="open",
+        price_minor=200000,
+        price_currency="USD",
+        billing_frequency="monthly",
+        scope_included=json.dumps(["vacuum", "trash", "3x weekly", "equipment"]),
+        scope_excluded="[]",
+        scope_extras="[]",
+        setup_fee_minor=0,
+        taxes_included=True,
+        supplies_included=True,
+        provenance="challenger_submitted",
+    )
+
+    incumbent, offer = rank_challenges([challenge], current, expense, {answered.id: answered, current.id: current})
+
+    assert incumbent.normalized_price.amount == 210000
+    assert offer.scope_completeness == 1.0
+    assert offer.missing_items == []
+    assert offer.baseline_monthly.amount == 240000
+    assert offer.savings is not None
+    assert offer.savings.annual_recurring_savings.amount == (240000 - 200000) * 12
+    assert (offer.answered_scope_version_number, offer.is_current_scope_version) == (1, False)
+
+
+def test_an_offer_in_another_currency_is_unranked_with_no_savings() -> None:
+    scope = _build_scope()
+    expense = ServiceExpense(id="expense-1", cadence="monthly", amount_minor_per_period=240000, currency="USD")
+    challenge = Challenge(
+        id="challenge-1",
+        scope_version_id="scope-1",
+        challenger_account_id="acc_challenger_1",
+        bidding_mode_at_submission="open",
+        price_minor=100,
+        price_currency="usd",
+        billing_frequency="monthly",
+        scope_included="[]",
+        scope_excluded="[]",
+        scope_extras="[]",
+        setup_fee_minor=0,
+        provenance="challenger_submitted",
+    )
+
+    ranked = rank_challenges([challenge], scope, expense, {scope.id: scope})
+
+    assert ranked[1].savings is None
+    assert ranked[1].unranked_reason is not None
+    assert "usd" in ranked[1].unranked_reason

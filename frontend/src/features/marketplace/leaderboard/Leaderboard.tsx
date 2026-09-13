@@ -1,10 +1,16 @@
 /* Renders the anonymized public leaderboard, ranked by scope completeness before price.
-   Sealed-at-submission offers are counted but never priced, even after the owner opens bidding. */
+   Sealed-at-submission offers are counted but never priced, even after the owner opens bidding.
+   Offers on an earlier scope version, or in another currency, sit in their own labelled groups and get no rank number. */
+import { Fragment } from 'react';
+
 import { useApiQuery } from '../../../shared/api/useApiQuery';
 import { ErrorState } from '../../../shared/components/ErrorState';
 import { LoadingSpinner } from '../../../shared/components/LoadingSpinner';
 import { MoneyDisplay } from '../../../shared/components/MoneyDisplay';
 import { formatTimestamp } from '../../../shared/format/formatTimestamp';
+import { answeredScopeLabel } from '../../../shared/offers/answeredScopeLabel';
+import { OfferGroupHeadingRow } from '../../../shared/offers/OfferGroupHeadingRow';
+import { groupHeadingBefore } from '../../../shared/offers/offerGroups';
 import { ProvenanceBadge } from '../../../shared/provenance/ProvenanceBadge';
 import type { LeaderboardResponse } from '../types';
 import { ScopeCompleteness } from './ScopeCompleteness';
@@ -22,7 +28,7 @@ export function Leaderboard({ listingId }: { listingId: string }): JSX.Element {
       : <LoadingSpinner label="Loading offers…" />;
   }
 
-  const { entries, sealed_offer_count: sealedCount, total_offer_count: totalCount } = board.data;
+  const { entries, sealed_offer_count: sealedCount, total_offer_count: totalCount, current_scope_version_number: currentVersion } = board.data;
   const sealedNote = sealedCount > 0
     ? `${sealedCount} ${sealedCount === 1 ? 'offer was' : 'offers were'} made while bidding was sealed and ${sealedCount === 1 ? 'stays' : 'stay'} sealed: counted, never priced here.`
     : null;
@@ -58,15 +64,30 @@ export function Leaderboard({ listingId }: { listingId: string }): JSX.Element {
               </tr>
             </thead>
             <tbody>
-              {entries.map((entry, index) => (
-                <tr key={entry.challenge_id} style={{ borderTop: '1px solid #e2e8f0' }}>
-                  <td style={{ fontWeight: 700, padding: '0.4rem 0' }}>#{index + 1}</td>
-                  <td style={{ fontSize: '1.1rem' }}><MoneyDisplay amountMinor={entry.normalized_price_minor} currency={entry.price_currency} /></td>
-                  <td><ScopeCompleteness score={entry.scope_completeness} /></td>
-                  <td>{formatTimestamp(entry.submitted_at)}</td>
-                  <td><ProvenanceBadge kind="offer" value={entry.provenance} /></td>
-                </tr>
-              ))}
+              {entries.map((entry, index) => {
+                const heading = groupHeadingBefore(entries, index);
+                // The current-scope group always comes first, so its position is its rank; other groups aren't ranked against it.
+                const isRanked = entry.is_current_scope_version && entry.unranked_reason === null;
+                return (
+                  <Fragment key={entry.challenge_id}>
+                    {heading ? <OfferGroupHeadingRow colSpan={5} group={heading} /> : null}
+                    <tr style={{ borderTop: '1px solid #e2e8f0' }}>
+                      <td style={{ fontWeight: 700, padding: '0.4rem 0' }}>{isRanked ? `#${index + 1}` : '—'}</td>
+                      <td style={{ fontSize: '1.1rem' }}><MoneyDisplay amountMinor={entry.normalized_price_minor} currency={entry.price_currency} /></td>
+                      <td>
+                        <ScopeCompleteness score={entry.scope_completeness} />
+                        {entry.is_current_scope_version ? null : (
+                          <div style={{ color: '#475569', fontSize: '0.85rem' }}>
+                            {answeredScopeLabel(entry.answered_scope_version_number, currentVersion)}
+                          </div>
+                        )}
+                      </td>
+                      <td>{formatTimestamp(entry.submitted_at)}</td>
+                      <td><ProvenanceBadge kind="offer" value={entry.provenance} /></td>
+                    </tr>
+                  </Fragment>
+                );
+              })}
             </tbody>
           </table>
         </div>

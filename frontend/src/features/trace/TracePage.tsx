@@ -13,7 +13,9 @@ import { categoryLabel } from '../../shared/format/categoryLabel';
 import { formatTimestamp } from '../../shared/format/formatTimestamp';
 import { scopeItemLabel } from '../../shared/format/scopeItemLabel';
 import { ProvenanceBadge } from '../../shared/provenance/ProvenanceBadge';
+import { SavingsStep } from './SavingsStep';
 import { TraceStep } from './TraceStep';
+import { TransactionsStep } from './TransactionsStep';
 import type { OfferTrace } from './types';
 
 /** Render the owner-only trace for one offer. */
@@ -36,24 +38,19 @@ export function TracePage(): JSX.Element {
       : <LoadingSpinner label="Tracing this number…" />;
   }
 
-  const { savings, offer, scope_version: scope, listing, baseline, expense, transactions } = trace.data;
-  const money = (amountMinor: number, currency = savings.currency): JSX.Element => <MoneyDisplay amountMinor={amountMinor} currency={currency} />;
+  const { savings, offer, scope_version: scope, listing, baseline, expense, transactions, fly_brain: flyBrain } = trace.data;
+  const money = (amountMinor: number, currency = baseline.currency): JSX.Element => <MoneyDisplay amountMinor={amountMinor} currency={currency} />;
 
   return (
     <section>
       <p><Link to={`/listings/${listing.id}/inbox`}>← Back to offers</Link></p>
       <h2 style={{ marginTop: 0 }}>Where this number comes from</h2>
 
-      <TraceStep leadsTo="The offer being compared" step={1} title={<>{savings.label}: {money(savings.first_year_net_savings_minor)} first year</>}>
-        <p style={{ margin: '0 0 0.25rem' }}>
-          ({money(savings.baseline_monthly_minor)} current − {money(savings.offer_monthly_minor)} offer) × 12 months ={' '}
-          <strong>{money(savings.annual_recurring_savings_minor)}</strong> annual recurring, then first-year costs subtracted ={' '}
-          <strong>{money(savings.first_year_net_savings_minor)}</strong>.
-        </p>
-        {savings.is_provisional ? <p style={{ margin: '0 0 0.25rem' }}>Provisional, because:</p> : null}
-        <ul style={{ margin: 0 }}>{savings.assumptions.map((item) => <li key={item}>{item}</li>)}</ul>
-        <p style={{ color: '#475569', margin: '0.25rem 0 0' }}>Potential until a switch actually happens. Computed by the server, not estimated.</p>
-      </TraceStep>
+      <SavingsStep
+        earlierScopeVersion={scope.is_listing_current_version ? null : scope.version_number}
+        savings={savings}
+        unrankedReason={offer.unranked_reason}
+      />
 
       <TraceStep leadsTo="The scope version this offer answered" step={2} title={`Offer from ${offer.challenger_name}`}>
         <p style={{ margin: '0 0 0.25rem' }}>
@@ -66,7 +63,7 @@ export function TracePage(): JSX.Element {
           <ProvenanceBadge kind="offer" value={offer.provenance} /> <BiddingModePill mode={offer.bidding_mode_at_submission} />
         </p>
         <p style={{ margin: 0 }}>
-          Covers {Math.round(offer.scope_completeness * 100)}% of scope. Includes: {offer.scope_included.join(', ') || 'nothing stated'}.
+          Covers {Math.round(offer.scope_completeness * 100)}% of scope version {scope.version_number}. Includes: {offer.scope_included.join(', ') || 'nothing stated'}.
           {offer.scope_excluded.length ? ` Excludes: ${offer.scope_excluded.join(', ')}.` : ''}
           {offer.missing_items.length ? ` Missing: ${offer.missing_items.map(scopeItemLabel).join(', ')}.` : ''}
           {offer.unstated_items.length ? ` Not stated: ${offer.unstated_items.map(scopeItemLabel).join(', ')}.` : ''}
@@ -94,7 +91,7 @@ export function TracePage(): JSX.Element {
         </p>
       </TraceStep>
 
-      <TraceStep leadsTo="The current price offers are measured against" step={4} title={`Listing: ${categoryLabel(listing.category)}`}>
+      <TraceStep leadsTo="The price this offer is measured against" step={4} title={`Listing: ${categoryLabel(listing.category)}`}>
         <p style={{ margin: 0 }}>
           Published price {money(listing.price_minor, listing.price_currency)} / {listing.billing_cadence} ·{' '}
           {listing.visibility === 'public' ? 'public' : `now ${listing.visibility}`}
@@ -103,16 +100,23 @@ export function TracePage(): JSX.Element {
         </p>
       </TraceStep>
 
-      <TraceStep leadsTo="The private expense behind that price" step={5} title="Current price baseline">
+      <TraceStep
+        leadsTo="The private expense behind that price"
+        step={5}
+        title={scope.is_listing_current_version ? 'Current price baseline' : `Price baseline on scope version ${scope.version_number}`}
+      >
         <p style={{ margin: 0 }}>
           {money(baseline.amount_minor, baseline.currency)} / {baseline.cadence} = {money(baseline.monthly_minor, baseline.currency)} per month,{' '}
           {baseline.source === 'owner_confirmed_scope'
             ? `confirmed by the owner on scope version ${baseline.confirmed_on_scope_version} (prefilled from the transactions below).`
             : 'taken directly from the transaction baseline below.'}
+          {/* A re-scope never reframes an offer, so an older offer keeps the price of the version it answered. */}
+          {scope.is_listing_current_version ? null : ' This offer answered that version, so it is measured against that price, not the listing’s current one.'}
         </p>
       </TraceStep>
 
-      <TraceStep leadsTo={`The ${transactions.length} transactions behind it`} step={6} title={`Private expense: ${expense.vendor}`}>
+      {/* Not every listed row is behind the figure: refunds, unsettled charges, and earlier prices are listed but don't count. */}
+      <TraceStep leadsTo={describeTransactionCounts(transactions)} step={6} title={`Private expense: ${expense.vendor}`}>
         <p style={{ margin: 0 }}>
           {money(expense.amount_minor_per_period, expense.currency)} per {expense.cadence} period from {expense.period_count} payments
           ({formatTimestamp(expense.first_seen, { dateOnly: true })} to {formatTimestamp(expense.last_seen, { dateOnly: true })}),
@@ -122,30 +126,15 @@ export function TracePage(): JSX.Element {
         </p>
       </TraceStep>
 
-      <TraceStep step={7} title="Original transactions (private, never published)">
-        <div style={{ overflowX: 'auto' }}>
-          <table style={{ borderCollapse: 'collapse', width: '100%' }}>
-            <thead>
-              <tr style={{ textAlign: 'left' }}><th>Posted</th><th>Description</th><th>Amount</th><th>Source</th></tr>
-            </thead>
-            <tbody>
-              {transactions.map((transaction) => (
-                <tr key={transaction.id} style={{ borderTop: '1px solid #e2e8f0' }}>
-                  <td>{formatTimestamp(transaction.posted_at, { dateOnly: true })}</td>
-                  <td>
-                    <code>{transaction.raw_description}</code>
-                    {transaction.is_excluded ? ` (excluded: ${transaction.excluded_reason})` : ''}
-                  </td>
-                  <td>{money(transaction.amount_minor, transaction.currency)}</td>
-                  <td><ProvenanceBadge kind="financial" value={transaction.source_type} /></td>
-                </tr>
-              ))}
-            </tbody>
-          </table>
-        </div>
-      </TraceStep>
+      <TransactionsStep flyBrain={flyBrain} transactions={transactions} />
     </section>
   );
+}
+
+function describeTransactionCounts(transactions: OfferTrace['transactions']): string {
+  const countedCount = transactions.filter((transaction) => transaction.counts_toward_baseline).length;
+  const noun = transactions.length === 1 ? 'transaction' : 'transactions';
+  return `${transactions.length} ${noun} from this vendor, ${countedCount} counted in the baseline`;
 }
 
 function describeBoolean(value: boolean | null): string {

@@ -39,7 +39,15 @@ class InboxChallengeResponse(BaseModel):
     missing_items: list[str]
     added_items: list[str]
     unstated_items: list[str]
-    savings: SavingsResponse
+    # Scope figures and savings are measured against the version the offer answered, not the newest one.
+    answered_scope_version_number: int
+    is_current_scope_version: bool
+    # The monthly price this offer's savings use: the one confirmed on its answered scope version.
+    baseline_monthly_minor: int
+    baseline_currency: str
+    # None only when the offer is unranked; unranked_reason then says why no savings figure exists.
+    savings: SavingsResponse | None
+    unranked_reason: str | None
     evidence_rollup: EvidenceRollup
     platform_check_status: str
     identity_check_status: str
@@ -58,6 +66,7 @@ class InboxResponse(BaseModel):
 
     challenges: list[InboxChallengeResponse]
     bidding_mode: str
+    current_scope_version_number: int
     # The stored public record for this listing. It reports "private" after unpublishing, which
     # is how the inbox shows that retained offers belong to a listing nobody can see now.
     listing: PublicListingProjection
@@ -75,7 +84,14 @@ class ComparisonRowResponse(BaseModel):
     missing_items: list[str]
     added_items: list[str]
     unstated_items: list[str]
+    # The incumbent row reports the current version; an offer reports the version it answered.
+    answered_scope_version_number: int
+    is_current_scope_version: bool
+    baseline_monthly_minor: int
+    baseline_currency: str
+    # None for the incumbent row and for unranked offers; unranked_reason explains the latter.
     savings: SavingsResponse | None
+    unranked_reason: str | None
     provenance: str
 
 
@@ -83,3 +99,4 @@ class ComparisonResponse(BaseModel):
     """Wraps side-by-side comparison rows for the owner view."""
 
     rows: list[ComparisonRowResponse]
+    current_scope_version_number: int

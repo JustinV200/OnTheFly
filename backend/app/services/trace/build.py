@@ -14,6 +14,8 @@ from app.models.service_expense import ServiceExpense
 from app.models.transaction import Transaction
 from app.services.comparison.rank import RankedChallenge, rank_challenges
 from app.services.listings.current_price import resolve_current_price
+from app.services.trace.baseline_membership import find_baseline_membership
+from app.services.trace.compound_eye_attribution import compound_eye_attribution
 from app.services.trace.types import (
     OfferTrace,
     TraceBaseline,
@@ -49,34 +51,42 @@ def build_offer_trace(challenge_id: str, acting_account_id: str, db: Session) ->
     if expense is None or listing_scope is None or answered_scope is None or challenger is None:
         raise TraceNotFoundError(challenge_id)
 
-    # The inbox ranks every offer against the listing's current scope; ranking this offer alone
-    # gives the identical baseline row and savings, since each offer's savings are independent.
-    baseline_row, offer_row = rank_challenges([challenge], listing_scope, expense)
+    # The inbox scores each offer against the scope version it answered; ranking this offer alone with
+    # that same version gives the identical row and savings, since each offer's savings are independent.
+    _, offer_row = rank_challenges([challenge], listing_scope, expense, {answered_scope.id: answered_scope})
     transactions = db.scalars(
         select(Transaction)
         .where(Transaction.owner_account_id == listing.owner_account_id)
         .where(Transaction.normalized_vendor == expense.normalized_vendor)
         .order_by(Transaction.posted_at.desc())
     ).all()
+    # The vendor's rows include refunds, unsettled charges, and earlier prices; mark the ones the baseline used.
+    membership = find_baseline_membership(transactions)
 
     return OfferTrace(
-        savings=_savings(baseline_row, offer_row),
+        savings=_savings(offer_row),
         offer=_offer(challenge, challenger, offer_row, db),
         scope_version=_scope_version(answered_scope, listing),
         listing=_listing(listing, listing_scope),
-        baseline=_baseline(expense, listing_scope, baseline_row),
+        # The answered version's price, matching the savings above and the "still answers version N" text.
+        baseline=_baseline(expense, answered_scope, offer_row),
         expense=_expense(expense, transactions),
-        transactions=[_transaction(transaction) for transaction in transactions],
+        transactions=[
+            _transaction(transaction, transaction.id in membership.transaction_ids) for transaction in transactions
+        ],
+        # The Compound Eye chose which charges count, so the response labels it (or says why it didn't run).
+        fly_brain=[compound_eye_attribution(membership)],
     )
 
 
-def _savings(baseline_row: RankedChallenge, offer_row: RankedChallenge) -> TraceSavings:
+def _savings(offer_row: RankedChallenge) -> TraceSavings | None:
+    # An unranked offer has no savings figure to trace; TraceOffer.unranked_reason says why.
     if offer_row.savings is None:
-        raise ValueError("A ranked offer row always carries savings")
+        return None
     return TraceSavings(
         label=offer_row.savings.label,
-        currency=baseline_row.normalized_price.currency,
-        baseline_monthly_minor=baseline_row.normalized_price.amount,
+        currency=offer_row.baseline_monthly.currency,
+        baseline_monthly_minor=offer_row.baseline_monthly.amount,
         offer_monthly_minor=offer_row.normalized_price.amount,
         annual_recurring_savings_minor=offer_row.savings.annual_recurring_savings.amount,
         first_year_net_savings_minor=offer_row.savings.first_year_net_savings.amount,
@@ -105,6 +115,7 @@ def _offer(challenge: Challenge, challenger: Account, offer_row: RankedChallenge
         scope_completeness=offer_row.scope_completeness,
         missing_items=offer_row.missing_items,
         unstated_items=offer_row.unstated_items,
+        unranked_reason=offer_row.unranked_reason,
         submitted_at=challenge.submitted_at,
         revised_at=challenge.revised_at,
         revision_count=int(revision_count or 0),
@@ -147,7 +158,7 @@ def _listing(listing: PublicListingRecord, listing_scope: ScopeVersion) -> Trace
     )
 
 
-def _baseline(expense: ServiceExpense, scope: ScopeVersion, baseline_row: RankedChallenge) -> TraceBaseline:
+def _baseline(expense: ServiceExpense, scope: ScopeVersion, offer_row: RankedChallenge) -> TraceBaseline:
     current_price = resolve_current_price(expense, scope)
     # Mirrors resolve_current_price's rule: the scope's pair wins only when stated in full.
     is_confirmed = scope.current_price_minor is not None and bool(scope.billing_cadence)
@@ -156,7 +167,7 @@ def _baseline(expense: ServiceExpense, scope: ScopeVersion, baseline_row: Ranked
         amount_minor=current_price.amount.amount,
         currency=current_price.amount.currency,
         cadence=current_price.cadence,
-        monthly_minor=baseline_row.normalized_price.amount,
+        monthly_minor=offer_row.baseline_monthly.amount,
         confirmed_on_scope_version=scope.version_number if is_confirmed else None,
     )
 
@@ -178,14 +189,17 @@ def _expense(expense: ServiceExpense, transactions: list[Transaction]) -> TraceE
     )
 
 
-def _transaction(transaction: Transaction) -> TraceTransaction:
+def _transaction(transaction: Transaction, counts_toward_baseline: bool) -> TraceTransaction:
     return TraceTransaction(
         id=transaction.id,
         posted_at=transaction.posted_at,
         raw_description=transaction.raw_description,
         amount_minor=transaction.amount_minor,
         currency=transaction.currency,
+        direction=transaction.direction,
+        status=transaction.status,
         source_type=transaction.source_type,
         is_excluded=transaction.is_excluded,
         excluded_reason=transaction.excluded_reason,
+        counts_toward_baseline=counts_toward_baseline,
     )

@@ -13,7 +13,9 @@ from app.models.challenge import Challenge
 from app.models.listing import ScopeVersion
 
 
-FREQUENCY_RE = re.compile(r"(\d+)x\s+weekly", re.IGNORECASE)
+# Owners type visit frequency as free text, so accept the common ways of writing "N visits a week":
+# "3x weekly", "3× weekly", "3x/week", "3x per week", "3 times a week". Anything else is left unparsed.
+FREQUENCY_RE = re.compile(r"(\d+)\s*(?:x|×|times)\s*(?:/\s*|a\s+|per\s+)?week(?:ly)?", re.IGNORECASE)
 
 
 class NormalizedOffer(BaseModel):
@@ -113,9 +115,11 @@ def _compare_visit_frequency(included: list[str], expected: str | None) -> dict[
 
     expected_match = FREQUENCY_RE.search(expected)
     challenge_match = next((FREQUENCY_RE.search(item) for item in included if FREQUENCY_RE.search(item)), None)
-    if challenge_match is None:
+    # A scope frequency we can't read can't be checked, so it needs review rather than counting as a match;
+    # otherwise a two-visit offer against "three visits" written some other way would rank on price alone.
+    if expected_match is None or challenge_match is None:
         return {"missing": [], "unstated": [f"visit_frequency:{expected}"], "score": 0.5}
-    if expected_match and challenge_match.group(1) != expected_match.group(1):
+    if int(challenge_match.group(1)) != int(expected_match.group(1)):
         return {"missing": [f"visit_frequency:{expected}"], "unstated": [], "score": 0.0}
     return {"missing": [], "unstated": [], "score": 1.0}
 

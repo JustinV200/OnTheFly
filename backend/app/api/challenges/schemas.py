@@ -133,7 +133,13 @@ class LeaderboardEntry(BaseModel):
     challenge_id: str
     normalized_price_minor: int
     price_currency: str
+    # Scored against the scope version this offer answered, which the next two fields name, so a later
+    # scope edit never lowers it. A version number is not identifying: it says nothing about who bid.
     scope_completeness: float
+    answered_scope_version_number: int
+    is_current_scope_version: bool
+    # Set when the offer's currency differs from the listing's; such a row is listed apart and never ranked.
+    unranked_reason: str | None
     submitted_at: datetime
     # Origin label (challenger_submitted | captured_off_platform | demo_data). It names no one,
     # and without it a simulated price on a public leaderboard would read as a real market rate.
@@ -149,3 +155,5 @@ class LeaderboardResponse(BaseModel):
     # sealed (no row, no price), so sealed_offer_count explains why entries can be shorter.
     total_offer_count: int
     sealed_offer_count: int
+    # Lets the board say "answered scope v1 (current is v2)" beside offers made before a re-scope.
+    current_scope_version_number: int

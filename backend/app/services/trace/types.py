@@ -7,9 +7,14 @@ from typing import Literal
 
 from pydantic import BaseModel
 
+from app.services.flybrain import FlyBrainAttribution
+
 
 class TraceSavings(BaseModel):
-    """The headline potential-savings figure and the two monthly amounts it is computed from."""
+    """The headline potential-savings figure and the two monthly amounts it is computed from.
+
+    The baseline is the price confirmed on the scope version the offer answered, not necessarily today's.
+    """
 
     label: str
     currency: str
@@ -39,6 +44,8 @@ class TraceOffer(BaseModel):
     scope_completeness: float
     missing_items: list[str]
     unstated_items: list[str]
+    # Set when the offer can't be compared with its baseline (e.g. another currency); savings is then None.
+    unranked_reason: str | None
     submitted_at: datetime
     revised_at: datetime | None
     revision_count: int
@@ -81,7 +88,10 @@ class TraceListing(BaseModel):
 
 
 class TraceBaseline(BaseModel):
-    """The current price savings are measured against, and where that price came from."""
+    """The price this offer's savings are measured against, and where that price came from.
+
+    It is resolved from the scope version the offer answered, so a later re-scope doesn't move it.
+    """
 
     source: Literal["owner_confirmed_scope", "transaction_baseline"]
     amount_minor: int
@@ -110,25 +120,36 @@ class TraceExpense(BaseModel):
 
 
 class TraceTransaction(BaseModel):
-    """One original transaction behind the expense, with its source label."""
+    """One original transaction filed under the expense's vendor, with its source label.
+
+    Not every row supports the baseline: counts_toward_baseline says which ones it was computed from.
+    """
 
     id: str
     posted_at: datetime
     raw_description: str
+    # Unsigned, as imported; direction carries the sign, so a refund credit has the same amount as a charge.
     amount_minor: int
     currency: str
+    direction: str
+    status: str
     source_type: str
     is_excluded: bool
     excluded_reason: str | None
+    # Computed by the baseline code itself, so the page never re-derives which rows count.
+    counts_toward_baseline: bool
 
 
 class OfferTrace(BaseModel):
     """The whole chain for one offer, visible only to the listing owner."""
 
-    savings: TraceSavings
+    # None when the offer is unranked; there is no figure to trace, and offer.unranked_reason says why.
+    savings: TraceSavings | None
     offer: TraceOffer
     scope_version: TraceScopeVersion
     listing: TraceListing
     baseline: TraceBaseline
     expense: TraceExpense
     transactions: list[TraceTransaction]
+    # Labels the Compound Eye, which chose the counted rows; it is still listed, with its reason, when it didn't run.
+    fly_brain: list[FlyBrainAttribution]
