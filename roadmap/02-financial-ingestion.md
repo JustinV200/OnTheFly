@@ -1,5 +1,11 @@
 # Phase 02 — Financial ingestion
 
+> Status reconciliation — 2026-09-12: Stripe transaction-only sandbox sessions, company binding, imports, status updates, polling and UI are implemented with mocked-provider tests. Actual sandbox consent remains unverified. Add the separate GovCon fixture ledger next. Useful custom Stripe transactions are not a dependency; balances/webhooks remain deferred.
+>
+> Follow [the current P0/P1/P2 roadmap](README.md) and [current product plan](../plan/plan1.md). The earlier specification below is retained for reusable implementation detail. Its old priorities, demo category, and unchecked boxes are not a current completion report.
+
+## Earlier component specification
+
 **Goal:** normalized, deduplicated, account-scoped transaction records in the database — from Stripe Financial Connections sandbox and from labeled fixtures, behind one interface neither the UI nor any service can tell apart.
 
 **Depends on:** [00](00-foundations.md). **Size:** L. **Critical path:** yes.

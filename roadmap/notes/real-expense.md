@@ -1,5 +1,7 @@
 # Real Expense Notes
 
+> Historical cleaning-demo note. The current buyer is planned GovCon Industries with a synthetic DevSecOps ledger; a genuine external quote is optional. See [the current roadmap](../README.md). The data below is not the GovCon dataset.
+
 **Status:** Pending — this is the human-track phase.
 
 The real-counteroffer path requires a real business owner to consent to publishing

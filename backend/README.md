@@ -1,97 +1,44 @@
 # Backend
 
-Local FastAPI backend for the spend-transparency marketplace demo.
+FastAPI + SQLAlchemy + Alembic for On the Fly. Local storage is SQLite. Stripe sandbox ingestion and the existing marketplace are implemented; the GovCon REBID services in [the current roadmap](../roadmap/README.md) are the next work.
 
-## Setup
+## Setup (PowerShell)
 
-```bash
+From the repository root:
+
+```powershell
 cd backend
-python -m pip install -e '.[dev]'
-cp .env.example .env
+python -m pip install -e ".[dev]"
+if (!(Test-Path .env)) { Copy-Item .env.example .env }
+python -m alembic upgrade head
+python -m uvicorn app.main:app --reload --host 127.0.0.1 --port 8000
 ```
 
-Settings rejects keys it doesn't define, so a stale non-empty line in `.env` stops startup with "Extra inputs are not permitted" instead of loading and doing nothing. Delete `STRIPE_BASE_URL` and `STRIPE_WEBHOOK_SECRET` from an older `.env`: the Stripe host is fixed to `api.stripe.com`, and the sandbox flow polls rather than taking webhooks.
+Startup seeds the existing demo companies when the schema is available. An empty database has no expenses until imported. API documentation: http://127.0.0.1:8000/docs.
 
-## Database
+## Stripe sandbox
 
-```bash
-cd backend
-alembic upgrade head
-python - <<'PY'
-from app.db.session import get_session_factory
-from app.db.seed import run_seed
+Set `STRIPE_SECRET_KEY=sk_test_...` in `.env`. Keep keys out of source control. The frontend needs the publishable key from the same sandbox.
 
-db = get_session_factory()()
-try:
-    run_seed(db)
-finally:
-    db.close()
-PY
+The minimal flow requests transactions only. Dedicated `/api/connections/stripe` routes provide local status, session creation, completion, sync polling and imported transaction inspection. They select the Stripe adapter explicitly, so `TRANSACTION_SOURCE=fixture` can remain the local default. No webhook secret is needed.
+
+Company binding is enforced against the demo account header. This is sandbox isolation, not production authentication. Live keys/data are rejected. See [Stripe integration notes](app/services/transactions/stripe/NOTES.md).
+
+## Data currently available
+
+- Existing `fixture_apex_main` cleaning/demo transactions.
+- Stripe-provided simulated transactions after a completed sandbox connection.
+- GovCon Industries and `fixture_govcon_main` are planned, not seeded yet.
+- USAspending, public labor-rate pricing, OpenAI, Tavily and Fly Scout are not integrated.
+
+## Optional old demo reset
+
+`python -m app.cli.seed_demo` drops/recreates the configured database and creates the earlier cleaning scenario. Stop the server and back up any important data first. Stored Stripe connections are removed. Its limited counteroffer preservation is not a full backup. Do not run this command as part of normal startup or for the new GovCon ledger. It seeds fixture data, so it requires `TRANSACTION_SOURCE=fixture` and exits before touching the database under any other source.
+
+## Verification
+
+```powershell
+python -m pytest -q
 ```
 
-## Reset demo state
-
-One command drops the schema, rebuilds it through Alembic, and reseeds a known state. Run it before every rehearsal.
-
-```bash
-cd backend
-python -m app.cli.seed_demo                      # live: accounts + fixture transactions, everything private, nothing published
-python -m app.cli.seed_demo --scenario staged    # the cleaning listing already public with offers (rehearse later steps, or recover)
-python -m app.cli.seed_demo --confirm-remote     # required when DATABASE_URL is not SQLite (e.g. the deployed Postgres)
-```
-
-The seed imports fixture data, so it requires `TRANSACTION_SOURCE=fixture`; under any other source it exits 2 before reading or dropping anything. Every reset also drops linked Stripe sandbox connections, so owners reconnect Stripe afterwards.
-
-`staged` publishes Apex's cleaning listing sealed. Bay Clean then makes a sealed $1,875 offer, the owner opens bidding, and Golden Gate makes an open $1,950 offer. That leaves Summit Building Services free to underbid live, and it shows that a sealed offer stays sealed after bidding opens. Every seeded offer is labeled `demo_data`.
-
-### Genuine counteroffers survive every reset
-
-Before anything is dropped, the command copies every genuine offer (`challenger_submitted` or `captured_off_platform`, from a non-seeded account) into `backend/demo_data/genuine_counteroffers.json`, then writes that file atomically. The file is gitignored because it can hold a real business's terms. `staged` restores each offer with its original provenance, bidding mode, and timestamps. `live` keeps the offers in the ledger, because the listing they attach to doesn't exist until the owner publishes it.
-
-If reading those offers fails (a locked database, a dropped connection, a timeout), the command prints the error, exits 1, and drops nothing. Rerun it once the database is reachable. Only a database with no `challenges` table yet counts as a first run with nothing to capture, and the summary reports that as `schema_missing_before_reset: true`.
-
-To enter a quote received off the platform, add an entry to the ledger by hand, then run `--scenario staged`:
-
-```json
-{
-  "version": 1,
-  "entries": [
-    {
-      "account": { "id": "acc_<business>", "handle": "<business-handle>", "business_name": "<Legal business name>",
-                   "service_area": "<City, ST>", "created_at": "<when they first engaged, ISO 8601>" },
-      "offer": { "provenance": "captured_off_platform", "bidding_mode_at_submission": "sealed",
-                 "price_minor": 190000, "price_currency": "USD", "billing_frequency": "monthly",
-                 "scope_included": ["vacuum", "trash", "restrooms", "3x weekly"], "minimum_term": "<as stated>",
-                 "site_visit_required": true, "submitted_at": "<actual time the quote arrived, ISO 8601 with zone>" },
-      "original_evidence": "<where the original email/notes are kept>"
-    }
-  ]
-}
-```
-
-Validation rejects an off-platform entry with no `original_evidence`, or one marked `open` (such a quote was never shown bidding terms). Keep hedges verbatim. "Around $1,900, depends on a walkthrough" goes in as `site_visit_required: true` plus the wording in `other_conditions`.
-
-## Pre-demo preflight
-
-A read-only check of the deployed stack. It covers API health, public reads with no account header, demo data seeded, whether a genuine offer exists, CORS for the frontend origin, and a profile deep link surviving a refresh. Items only a person can check print as MANUAL.
-
-```bash
-cd backend
-python -m app.cli.preflight --api https://<api-host> --frontend https://<frontend-host>
-```
-
-It exits non-zero if any automated check fails.
-
-## Run tests
-
-```bash
-cd backend
-pytest
-```
-
-## Start server
-
-```bash
-cd backend
-uvicorn app.main:app --reload
-```
+Last check (2026-09-12): 313 backend tests passed, including mocked-provider ownership, pagination and transaction-status tests. The Windows test-engine cleanup was fixed. Real Stripe sandbox consent and the new REBID story still need their own acceptance runs.

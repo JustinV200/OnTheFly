@@ -1,5 +1,11 @@
 # Phase 01 — Real-counteroffer path (human track)
 
+> Status reconciliation — 2026-09-12: A genuine external quote is now an optional bonus. The full demo needs a submitted challenge, which can be labeled demo data. The earlier hour-zero critical-path requirement and quote deadline below no longer govern the build.
+>
+> Follow [the current P0/P1/P2 roadmap](README.md) and [current product plan](../plan/plan1.md). The earlier specification below is retained for reusable implementation detail. Its old priorities, demo category, and unchecked boxes are not a current completion report.
+
+## Earlier component specification
+
 **Goal:** one genuine counteroffer, from one real business, against one concrete listed expense — obtained in parallel with the build, not after it.
 
 **Depends on:** nothing. **Size:** S in effort, longest in latency. **Critical path:** yes — **start at hour zero**.

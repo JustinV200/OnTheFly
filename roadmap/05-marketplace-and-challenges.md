@@ -1,5 +1,11 @@
 # Phase 05 — Marketplace and challenges
 
+> Status reconciliation — 2026-09-12: Listing, submission/revision, sealed/open bidding and inbox code exist. Adapt them to the DevSecOps scope and verify a two-device bid. Notifications are excluded. Connect discovered suppliers to this existing flow instead of creating a second marketplace.
+>
+> Follow [the current P0/P1/P2 roadmap](README.md) and [current product plan](../plan/plan1.md). The earlier specification below is retained for reusable implementation detail. Its old priorities, demo category, and unchecked boxes are not a current completion report.
+
+## Earlier component specification
+
 **Goal:** a different account browses a feed of public listings, opens one, and submits a counteroffer that reaches the listing's owner — sealed by default, or into open bidding if the owner turned it on.
 
 **Depends on:** [04](04-visibility-and-profiles.md). **Size:** L. **Critical path:** yes.

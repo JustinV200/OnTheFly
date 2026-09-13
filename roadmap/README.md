@@ -1,100 +1,79 @@
-# Roadmap
+# On the Fly — Current Build Roadmap
 
-Build order for the public-spend-profile marketplace described in [../plan/plan1.md](../plan/plan1.md). The plan says *what* and *why*; this folder says *in what order* and *done when*.
+Updated 2026-09-12. Follow this order for the [current REBID plan](../plan/plan1.md). Preserve the existing marketplace implementation; the numbered files below are reusable component specifications from the previous build order.
 
-One file per phase. Work them in numeric order, with the exception noted below.
+## Where we are
 
-| # | Phase | Depends on | Size | On critical path |
-|---|---|---|---|---|
-| [00](00-foundations.md) | Foundations, identity, deploy skeleton | — | M | Yes |
-| [01](01-real-counteroffer-path.md) | Real-counteroffer path (human track) | — | S | **Yes — start hour zero** |
-| [02](02-financial-ingestion.md) | Financial ingestion | 00 | L | Yes |
-| [03](03-expense-dashboard.md) | Expense dashboard | 02 | M | Yes |
-| [04](04-visibility-and-profiles.md) | Visibility and public profiles | 03 | L | Yes |
-| [05](05-marketplace-and-challenges.md) | Marketplace and challenges | 04 | L | Yes |
-| [06](06-counteroffer-comparison.md) | Counteroffer comparison | 05 | M | Yes |
-| [07](07-challenger-evidence.md) | Challenger evidence | 05 | L | No |
-| [08](08-outbound-invitations.md) | Outbound invitations (secondary path) | 05 | M | No |
-| [09](09-demo-polish.md) | UI modernization and demo polish | all | L | Yes |
-| [10](10-stretch.md) | Stretch | all | — | No |
+| Capability | Evidence in repository | Status |
+|---|---|---|
+| App foundation | React features, FastAPI routes, SQLAlchemy models, Alembic migrations | Implemented locally |
+| Stripe sandbox ingestion | `transactions/stripe/`, `api/connections/`, frontend connection controls, mocked HTTP tests | Implemented; real sandbox consent unverified |
+| Expense pipeline | Fixture source, normalization, recurrence, baseline and expense API | Implemented for existing data; GovCon validation pending |
+| Publishing and profiles | Scope form, exact preview, public projections and visibility tests | Reuse; cleaning-specific scope needs adaptation |
+| Challenges/comparison | Submission/revisions, sealed/open rules, inbox and deterministic math | Reuse; new two-device GovCon demo pending |
+| Evidence/outreach | Local evidence logic; registry and invitation stubs | External integrations missing |
+| New REBID experience | No GovCon/REBID/USAspending/public-rate/Fly Scout implementation found | Not started |
 
-Sizes are relative to each other, not hour estimates — team size and window are still open questions.
+Last verified implementation result: **39 backend tests passed; frontend build passed**. This is the previous Stripe implementation check, not a fresh end-to-end acceptance run for the new plan. Existing checklists must not be marked complete merely because routes or files exist.
 
-## Two tracks, both starting immediately
+## P0 — Next work
 
-**Phase 01 is not code and does not wait its turn.** Getting a genuine counteroffer from a real business is the longest-latency item in the project and the one you control least. It starts before the first line of code and runs in the background through every other phase. Starting it on day two is how the demo ends up with only simulated offers.
+- [ ] Verify Stripe sandbox consent with configured keys and confirm imported transactions render.
+- [ ] Add GovCon Industries and `fixture_govcon_main` through the existing normalized pipeline.
+- [ ] Seed 3–6 months across five categories; verify rounded display values against exact arithmetic.
+- [ ] Label synthetic GovCon data separately from Stripe sandbox data.
+- [ ] Add REBID action and persisted/recoverable progress for one DevSecOps expense.
+- [ ] Draft/confirm scope, labor mix, hours, location, clearance and classification inputs.
+- [ ] Connect USAspending; return real suppliers and preserve award identifiers/source evidence.
+- [ ] Apply deterministic qualification and deduplication.
+- [ ] Integrate one usable public labor-rate path and explain comparability assumptions.
+- [ ] Display deterministic modeled annual cost and potential savings with the model/quote distinction.
 
-Everything else is sequential: `00 → 02 → 03 → 04 → 05 → 06 → (07, 08) → 09`.
+**Gate:** Spend → REBID → actual suppliers → cited public pricing → modeled savings.
 
-## The spine
+## P1 — Complete the planned demo
 
-Phases 00 through 06, plus 09, are the product. The loop closes without 07 and 08:
+- [ ] Enrich shortlisted suppliers through Tavily and source-backed LLM summaries.
+- [ ] Select and run the Fly Scout implementation on qualified candidates.
+- [ ] Record actual fly output and map it to the supplier selected for deeper research.
+- [ ] Adapt existing listing/challenge/comparison models and forms to DevSecOps.
+- [ ] Submit a challenge from another browser/device and update the buyer view.
+- [ ] Distinguish a teammate demo offer from a genuine supplier quote.
+- [ ] Apply the modern UI system across Spend, Progress, Market, Fly and Bid.
+- [ ] Rehearse in a fresh browser, exercise API failure states, and record a backup.
 
-- Without **challenger evidence (07)**, you see a counteroffer but not who's behind it.
-- Without **outbound invitations (08)**, nobody gets nudged to come look at a listing.
+A genuine external quote is optional. Notifications and automated email outreach are not required. Manual sharing of the listing is sufficient.
 
-That ordering is deliberate. Build the loop that closes — publish, browse, challenge, compare — then make it good. Evidence checks attached to a marketplace nobody can post to demo nothing.
+## P2 — Only after P0/P1 are stable
 
-## Minimum demo path
+Tool-selecting agent orchestration, fly learning/rewards, SAM.gov if needed beyond USAspending, broader categories/pricing, more banks, production auth, and deployment expansion. A fixed orchestration sequence remains sufficient for P0.
 
-If the schedule collapses, this is the smallest sequence that still shows the actual idea:
+## Existing phase documents: reuse map
 
-1. Import transactions (fixture source is fine, labeled as such).
-2. Show the dashboard with everything private.
-3. Toggle one expense public, confirm scope, preview the payload, publish.
-4. Switch accounts, find the listing in the feed, submit a counteroffer.
-5. Switch back, see it, compare against the current price.
+| File | Reuse now | Change under the new plan |
+|---|---|---|
+| [00 Foundations](00-foundations.md) | App, money/provenance, accounts, migrations | Do not restart scaffolding; hosting is not the first gate |
+| [01 Real counteroffer](01-real-counteroffer-path.md) | Evidence/provenance guidance for genuine quotes | Optional bonus, no longer critical path |
+| [02 Ingestion](02-financial-ingestion.md) | Stripe and fixture pipeline | Verify Stripe; add GovCon fixtures; no custom Stripe ledger dependency |
+| [03 Dashboard](03-expense-dashboard.md) | Grouping/recurrence/annualization | GovCon spend and REBID entry |
+| [04 Visibility/profiles](04-visibility-and-profiles.md) | Private defaults, exact preview, scope versions | DevSecOps scope; private research before publish |
+| [05 Marketplace/challenges](05-marketplace-and-challenges.md) | Browse, submit, revise, sealed/open controls | Wire discovered suppliers into existing challenge path |
+| [06 Comparison](06-counteroffer-comparison.md) | Deterministic normalization and scope differences | Add separate public-rate modeled estimates |
+| [07 Evidence](07-challenger-evidence.md) | Source/status conventions | USAspending P0; Tavily P1; no blanket verification |
+| [08 Invitations](08-outbound-invitations.md) | Future approved outreach design | Deferred; manual share is enough |
+| [09 Polish](09-demo-polish.md) | Privacy proof and failure-state rehearsal | New five-screen UI and actual fly output |
+| [10 Stretch](10-stretch.md) | Later expansion ideas | Current P2 list above wins |
 
-That is phases 00, 02, 03, 04, 05, 06. Everything else is additive.
+## Implementation boundaries and decisions to resolve
 
-## Cut order
+- Reuse `TransactionSource`, existing ORM models and feature folders; extend through migrations.
+- Decide exact seed amounts and cadence before promising $4.03M annual spend.
+- Add staffing/hours and rate comparability data before asserting modeled savings.
+- Establish available USAspending/public-rate responses during integration; example counts are not guarantees.
+- Select and validate the actual Fly Scout runtime; biological/neuron-count claims require evidence.
+- Decide the demo hosting arrangement when two-device access is needed.
+- Keep notifications out of scope, and preserve owner approval for publishing or outreach.
 
-When time runs short, cut from the bottom up. Decide now, not at 3am:
+## Definition of done
 
-1. **10** — all stretch items.
-2. **08** — outbound invitations. Tell a challenger about a listing by messaging them yourself.
-3. **07** — evidence sources beyond identity matching. Show unimplemented checks honestly rather than hiding the column.
-4. **03's** suggestion ranking. Show all expenses unranked; the owner picks what to publish anyway.
-
-**Never cut:** the visibility toggle's private-by-default behavior, the publish preview, the challenge submission path, the comparison arithmetic, or the provenance labels.
-
-Open bidding ([05](05-marketplace-and-challenges.md) steps 3–4) is cuttable — sealed offers still close the loop. If it's cut, cut the toggle too. A toggle that doesn't work is worse than no toggle.
-
-## What must never regress
-
-Two defaults carry the product's promises, and neither is trimmable under time pressure:
-
-- **Expenses are private until the owner publishes them.** If a shortcut would make an expense public through any path the owner didn't explicitly take, the shortcut is wrong, however late it is.
-- **Offers are sealed unless the owner opened bidding *before* they were made.** Publicity is read from the mode stored on the offer, never from the listing's current mode.
-
-Both are the difference between a marketplace and a leak, and both fail silently — which is why they need tests rather than care.
-
-## Decisions already made
-
-Settled, so they don't get relitigated mid-build:
-
-- **One account type.** Every account is a business that both publishes its own expenses and challenges others'. No buyer/vendor role split.
-- **Seeded demo accounts plus an in-app switcher.** No signup, no passwords, no auth flows. Real auth is post-MVP.
-- **Counteroffers are sealed by default**, with only a count shown publicly. **Open bidding is a per-listing toggle, default off**: turning it on publishes offer amounts and scope so challengers can underbid. Challenger identities stay private to the owner in both modes, and turning the toggle on never retroactively publishes an offer made while it was off.
-- **Outbound discovery and invitation are a secondary path** for seeding supply, subordinate to the public loop. An invited challenger lands on the same public listing as everyone else.
-
-## Decisions to lock before phase 02
-
-- **Which real business and cleaning scope anchors the genuine counteroffer**, and will they create an account or respond off-platform? Blocks phase 01.
-- **Does the Stripe Financial Connections sandbox flow expose enough simulated recurring service spend?** Blocks the phase 02 spike. If not, fixtures remain the deterministic demo path and the pitch says so out loud.
-- **What is the cutoff after which the demo runs on labeled-simulated offers?** Pick a wall-clock hour and write it here:
-
-  > Real-counteroffer cutoff: `TBD — fill this in`
-
-- **How many builders, and for how long?** Determines whether 07 and 08 are realistic at all.
-
-## Conventions every phase assumes
-
-From [../CLAUDE.md](../CLAUDE.md), repeated because they shape the steps and not just the code:
-
-- Private is the default and the fallback. Everything imports private.
-- The public projection is built explicitly, field by field — never filtered down from the private record.
-- Money is integer minor units plus a currency, computed in deterministic code.
-- Every record carries provenance: `production | sandbox | imported | fixture` for financial data, `challenger-submitted | captured from an off-platform response | demo data` for offers.
-- An unavailable source is *not checked*; an empty result is *no match found in this source*.
-- AI drafts and extracts. It does not calculate, and it does not decide what's public.
+Verified sandbox connection → labeled GovCon spend → REBID → real suppliers/evidence → defensible modeled savings → actual Fly Scout selection → submitted challenge. All prices, source counts and progress states must follow actual data or clearly labeled demo data. No further features until this sequence is reliable.
