@@ -1,32 +1,31 @@
-/* The owner's offers inbox for one listing: status and controls, any genuine offer first, every offer, then the comparison.
-   It polls, so an offer made by another business shows up after switching back without a refresh. */
-import type { ReactNode } from 'react';
+/* The owner's Offers page for one listing: status and controls, any genuine offer first, then one ranked list with
+   "What you pay now" pinned on top. A row opens the offer drawer. It polls, so an offer made by another business shows
+   up after switching back without a refresh. */
+import { ReactNode, useState } from 'react';
 import { useParams } from 'react-router-dom';
 
 import { useActingAccount } from '../../shared/account/ActingAccountContext';
-import { useApiQuery } from '../../shared/api/useApiQuery';
 import { BiddingModePill } from '../../shared/components/BiddingModePill';
 import { EmptyState } from '../../shared/components/EmptyState';
 import { ErrorState } from '../../shared/components/ErrorState';
 import { LoadingSpinner } from '../../shared/components/LoadingSpinner';
 import { categoryLabel } from '../../shared/format/categoryLabel';
 import { ButtonLink, Callout, Grid, PageHeader, Stack } from '../../shared/ui';
-import { ComparisonView } from './comparison/ComparisonView';
 import { ListingControls } from './controls/ListingControls';
 import { ListingVisibilityBadge } from './controls/ListingVisibilityBadge';
 import { CurrentPriceCard } from './CurrentPriceCard';
-import { GenuineOfferCallout } from './offers/GenuineOfferCallout';
-import { OffersTable } from './offers/OffersTable';
-import type { OwnerChallengeListResponse } from './types';
+import { OfferDrawer } from './detail/OfferDrawer';
+import { GenuineOfferCallout } from './genuine/GenuineOfferCallout';
+import { RankedOffersSection } from './offers/RankedOffersSection';
 import { useInbox } from './useInbox';
 import './InboxPage.css';
 
-/** Render the owner inbox page for one listing. */
+/** Render the owner's Offers page for one listing. */
 export function InboxPage(): JSX.Element {
   const { id = '' } = useParams();
   const { account } = useActingAccount();
-  const { inbox, comparison, reload } = useInbox(id);
-  const ownerOffers = useApiQuery<OwnerChallengeListResponse>(`/api/listings/${id}/challenges`, { pollIntervalMs: 5000 });
+  const { inbox, comparison, ownerOffers, reload } = useInbox(id);
+  const [openOfferId, setOpenOfferId] = useState<string | null>(null);
 
   if (inbox.error?.status === 404 || inbox.error?.status === 401) {
     // Same message whether the listing is missing or belongs to someone else, so ids can't be probed.
@@ -50,6 +49,10 @@ export function InboxPage(): JSX.Element {
   }
 
   const { listing, challenges, current_scope_version_number: currentScopeVersionNumber } = inbox.data;
+  // Looked up on every poll, so the drawer shows fresh figures and closes itself if the offer is withdrawn.
+  const openOffer = challenges.find((challenge) => challenge.challenge_id === openOfferId) ?? null;
+  const incumbent = comparison.data?.rows.find((row) => row.is_incumbent) ?? null;
+
   return (
     <Stack gap={6}>
       <PageHeader
@@ -82,16 +85,18 @@ export function InboxPage(): JSX.Element {
             : 'No offers arrived while this listing was public.'}
         </EmptyState>
       ) : (
-        <OffersTable challenges={challenges} currentScopeVersionNumber={currentScopeVersionNumber} />
+        <RankedOffersSection
+          comparisonError={comparison.data ? null : comparison.error}
+          currentScopeVersionNumber={currentScopeVersionNumber}
+          incumbent={incumbent}
+          listing={listing}
+          offers={challenges}
+          onOpenOffer={setOpenOfferId}
+          onRetry={reload}
+        />
       )}
 
-      {challenges.length > 0 && comparison.data ? (
-        <ComparisonView currentScopeVersionNumber={comparison.data.current_scope_version_number} rows={comparison.data.rows} />
-      ) : null}
-      {challenges.length > 0 && !comparison.data && comparison.error ? (
-        <ErrorState error={comparison.error} onRetry={reload} title="Couldn’t load the comparison" />
-      ) : null}
-      {challenges.length > 0 && !comparison.data && !comparison.error ? <LoadingSpinner label="Loading the comparison…" /> : null}
+      <OfferDrawer offer={openOffer} onClose={() => setOpenOfferId(null)} ownerOffers={ownerOffers} />
     </Stack>
   );
 }

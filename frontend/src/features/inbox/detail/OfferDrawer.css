@@ -1,0 +1,82 @@
+/* Offer drawer: sections divided by hairlines, small section headings, a two-column term list, and a quoted message. */
+.offer-drawer {
+  display: grid;
+}
+
+.offer-drawer__description {
+  align-items: center;
+  display: flex;
+  flex-wrap: wrap;
+  gap: var(--space-1) var(--space-2);
+}
+
+.offer-drawer__section {
+  display: grid;
+  gap: var(--space-3);
+  padding: var(--space-5) 0;
+}
+
+.offer-drawer__section:first-child {
+  padding-top: 0;
+}
+
+.offer-drawer__section + .offer-drawer__section {
+  border-top: var(--border-width) solid var(--color-border-subtle);
+}
+
+.offer-drawer__section-head {
+  align-items: center;
+  display: flex;
+  flex-wrap: wrap;
+  gap: var(--space-2);
+  justify-content: space-between;
+}
+
+.offer-drawer__section-title {
+  color: var(--color-text-muted);
+  font-size: var(--text-xs);
+  font-weight: var(--weight-semibold);
+  letter-spacing: var(--tracking-wide);
+  margin: 0;
+  text-transform: uppercase;
+}
+
+.offer-drawer__terms {
+  display: grid;
+  margin: 0;
+}
+
+.offer-drawer__term {
+  display: grid;
+  gap: var(--space-0_5) var(--space-4);
+  grid-template-columns: minmax(7rem, 38%) minmax(0, 1fr);
+  padding: var(--space-2) 0;
+}
+
+.offer-drawer__term + .offer-drawer__term {
+  border-top: var(--border-width) solid var(--color-border-subtle);
+}
+
+.offer-drawer__term > dt {
+  color: var(--color-text-muted);
+  font-size: var(--text-sm);
+}
+
+.offer-drawer__term > dd {
+  font-size: var(--text-sm);
+  margin: 0;
+  overflow-wrap: anywhere;
+}
+
+.offer-drawer__message {
+  border-left: 3px solid var(--color-border-strong);
+  color: var(--color-text);
+  margin: 0;
+  padding: var(--space-1) 0 var(--space-1) var(--space-3);
+}
+
+.offer-drawer__muted {
+  color: var(--color-text-muted);
+  font-size: var(--text-sm);
+  margin: 0;
+}

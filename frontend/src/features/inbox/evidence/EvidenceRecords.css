@@ -1,0 +1,56 @@
+/* Evidence records: the rollup line, then one hairline-separated record per check with its limits and audit details. */
+.evidence-records {
+  display: grid;
+  gap: var(--space-3);
+}
+
+.evidence-records__rollup {
+  align-items: center;
+  display: flex;
+  flex-wrap: wrap;
+  gap: var(--space-1) var(--space-2);
+}
+
+.evidence-records__list {
+  border: var(--border-width) solid var(--color-border-subtle);
+  border-radius: var(--radius-md);
+  list-style: none;
+  margin: 0;
+  padding: 0;
+}
+
+.evidence-records__item {
+  display: grid;
+  gap: var(--space-1);
+  min-width: 0;
+  padding: var(--space-3);
+}
+
+.evidence-records__item + .evidence-records__item {
+  border-top: var(--border-width) solid var(--color-border-subtle);
+}
+
+.evidence-records__head {
+  align-items: center;
+  display: flex;
+  flex-wrap: wrap;
+  gap: var(--space-1) var(--space-2);
+}
+
+.evidence-records__name {
+  font-size: var(--text-sm);
+  font-weight: var(--weight-semibold);
+}
+
+.evidence-records__limits {
+  color: var(--color-text-secondary);
+  font-size: var(--text-sm);
+  margin: 0;
+}
+
+.evidence-records__meta {
+  color: var(--color-text-muted);
+  font-size: var(--text-xs);
+  margin: 0;
+  overflow-wrap: anywhere;
+}
