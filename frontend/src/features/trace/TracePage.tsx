@@ -9,7 +9,7 @@ import { useApiQuery } from '../../shared/api/useApiQuery';
 import { EmptyState } from '../../shared/components/EmptyState';
 import { ErrorState } from '../../shared/components/ErrorState';
 import { LoadingSpinner } from '../../shared/components/LoadingSpinner';
-import { Badge, Icon, PageHeader, Stack } from '../../shared/ui';
+import { Badge, ButtonLink, Icon, PageHeader, Stack } from '../../shared/ui';
 import { TraceHeadline } from './headline/TraceHeadline';
 import { ListingStep } from './steps/offer/ListingStep';
 import { OfferStep } from './steps/offer/OfferStep';
@@ -32,7 +32,7 @@ export function TracePage(): JSX.Element {
   if (trace.error?.status === 404 || trace.error?.status === 401) {
     return (
       <TracePageFrame>
-        <EmptyState action={<Link to="/marketplace">Back to the marketplace</Link>} title="Only the listing owner can trace this offer">
+        <EmptyState action={<ButtonLink to="/marketplace">Back to the marketplace</ButtonLink>} title="Only the listing owner can trace this offer">
           {account ? `You're acting as ${account.businessName}.` : 'Pick the owning business in the bar above.'} The trace includes private
           transactions, so nobody else can open it.
         </EmptyState>
