@@ -31,7 +31,9 @@ def merge_vendor_alias(
     no other transaction changed group; otherwise everything rolls back and the merge is
     refused, with its own message when the other group has listing history. Merging never
     changes visibility: the canonical expense keeps its own state and any listing keeps
-    its stored public projection.
+    its stored public projection. An owner's not-publishable mark on the alias does carry
+    to the canonical expense, because sync never drops a less publishable choice in a
+    regroup; a refused merge rolls that back with everything else.
     """
 
     alias = _get_owned_expense(alias_expense_id, owner_account_id, db)

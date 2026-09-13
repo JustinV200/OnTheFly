@@ -1,5 +1,6 @@
 """Combines the deterministic hard-exclusion classifier with the owner's corrections and not-publishable mark.
-Sync and the owner-correction endpoint both call it, so a PATCH response and the next dashboard load agree.
+Sync and the owner-correction endpoint both call it, so a PATCH response and the next dashboard load agree
+for the same group; a rename that folds charges into another expense also gives that expense any mark either row held.
 """
 
 from app.services.expenses.corrections.owner_overrides import OwnerOverrides

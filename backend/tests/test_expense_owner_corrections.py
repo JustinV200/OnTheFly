@@ -1,5 +1,6 @@
 """Checks that owner corrections made through PATCH /api/expenses/{id} survive the dashboard's re-sync.
 Covers the not-publishable mark, category and vendor corrections on Stripe rows, and partial updates.
+How the mark survives a rename or alias merge is covered in test_owner_mark_regroups.py.
 """
 
 import uuid
@@ -127,26 +128,6 @@ def test_a_later_partial_patch_keeps_earlier_corrections(client, db_session) -> 
     assert list(reloaded) == ["City Permits [USD]"]
     permits = reloaded["City Permits [USD]"]
     assert (permits["category"], permits["is_publishable"], permits["period_count"]) == ("tax", False, 4)
-
-
-def test_not_publishable_mark_follows_the_expense_through_a_vendor_rename(client, db_session) -> None:
-    _add_stripe_charges(db_session, "SHINE OFFICE SVCS", 4)
-    sync_service_expenses(STRIPE_OWNER_ID, db_session)
-    expense_id = _dashboard(client, STRIPE_HEADERS)["Shine Office Svcs [USD]"]["id"]
-    _patch(client, expense_id, {"is_publishable": False}, STRIPE_HEADERS)
-
-    renamed = _patch(client, expense_id, {"owner_corrected_vendor": "Shine Office Services"}, STRIPE_HEADERS)
-    reloaded = _dashboard(client, STRIPE_HEADERS)
-
-    assert renamed.status_code == 200
-    assert list(reloaded) == ["Shine Office Services [USD]"]
-    shine = reloaded["Shine Office Services [USD]"]
-    assert (shine["is_publishable"], shine["eligibility_reason"], shine["period_count"]) == (
-        False,
-        "owner_marked_ineligible",
-        4,
-    )
-    assert _create_listing(client, shine["id"], STRIPE_HEADERS).status_code == 400
 
 
 def test_marking_a_hard_exclusion_not_publishable_keeps_its_exclusion_reason(client, db_session) -> None:

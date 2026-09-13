@@ -12,7 +12,12 @@ from app.models.service_expense import ServiceExpense
 from app.models.transaction import Transaction
 from app.services.expenses.baseline import compute_baseline
 from app.services.expenses.baseline_charges import baseline_charges
-from app.services.expenses.corrections import OwnerOverrides, classify_owner_eligibility
+from app.services.expenses.corrections import (
+    OwnerOverrides,
+    RegroupedMarks,
+    build_unposted_marked_expense,
+    classify_owner_eligibility,
+)
 from app.services.expenses.listing_references import listed_expense_ids
 from app.services.expenses.recurrence import detect_recurrence
 from app.services.expenses.vendor_group_key import vendor_group_key
@@ -26,30 +31,40 @@ def sync_service_expenses(owner_account_id: str, db: Session, commit: bool = Tru
     With commit=False the regroup is only flushed, so a caller (the alias merge) can
     inspect the result and then commit or roll back the whole operation as one unit.
     Eligibility honours the owner's stored corrections and not-publishable mark on every
-    branch; sync never clears the mark, and a group regrouped under a new key inherits it.
+    branch. Sync never clears the mark, and charges regrouped out of a marked row (a vendor
+    rename or alias merge) mark the group they land in, whether its row is new or existing.
     """
 
     transactions = db.scalars(
         select(Transaction).where(Transaction.owner_account_id == owner_account_id)
     ).all()
-    # Read before grouping rewrites each transaction's key: it is how a regrouped charge finds the row it left.
-    previous_keys = {transaction.id: transaction.normalized_vendor for transaction in transactions}
-    grouped = _group_transactions(owner_account_id, transactions, db)
     stored_by_key = {
         expense.normalized_vendor: expense
         for expense in db.scalars(
             select(ServiceExpense).where(ServiceExpense.owner_account_id == owner_account_id)
         ).all()
     }
+    # Read before grouping rewrites each transaction's key: it is how a regrouped charge finds the row it left.
+    regrouped_marks = RegroupedMarks.before_regroup(transactions, stored_by_key.values())
+    grouped = _group_transactions(owner_account_id, transactions, db)
     results: list[ServiceExpense] = []
 
     for vendor_key, vendor_transactions in grouped.items():
         existing = stored_by_key.get(vendor_key)
+        is_mark_inherited = regrouped_marks.is_inherited_by(vendor_key, vendor_transactions)
+        if existing is not None and is_mark_inherited:
+            # Charges folded in from a row the owner marked: a rename onto this name or a merged alias.
+            # The column is set, not just this sync's result, because once every charge sits under this
+            # key no later sync can tell where they came from.
+            existing.owner_marked_ineligible = True
         # Keep all rows for audit; unsettled Stripe payments are not baseline spend. The
         # spend-signals report selects with the same helper so it explains these exact charges.
         charge_transactions = baseline_charges(vendor_transactions)
         if not charge_transactions:
-            if existing:
+            if existing is None and is_mark_inherited:
+                category = _choose_category(vendor_transactions)
+                db.add(build_unposted_marked_expense(owner_account_id, vendor_key, category, vendor_transactions))
+            elif existing:
                 eligibility = classify_owner_eligibility(
                     vendor_key, existing.category, OwnerOverrides.of(existing), has_posted_charges=False
                 )
@@ -67,8 +82,8 @@ def sync_service_expenses(owner_account_id: str, db: Session, commit: bool = Tru
         if existing is not None:
             overrides = OwnerOverrides.of(existing)
         else:
-            previous = _previous_expenses(vendor_key, vendor_transactions, previous_keys, stored_by_key)
-            overrides = OwnerOverrides.carried_from(previous)
+            # A new row has no vendor or category correction of its own: the rules that formed it apply those.
+            overrides = OwnerOverrides(marked_ineligible=is_mark_inherited)
         eligibility = classify_owner_eligibility(display_vendor, category, overrides)
         cadence = recurrence.cadence if recurrence.cadence != "insufficient_data" else "irregular"
 
@@ -128,22 +143,6 @@ def _remove_orphaned_expenses(owner_account_id: str, current_vendor_keys: set[st
     for expense in orphaned:
         if expense.id not in referenced:
             db.delete(expense)
-
-
-def _previous_expenses(
-    vendor_key: str,
-    vendor_transactions: list[Transaction],
-    previous_keys: dict[str, str | None],
-    stored_by_key: dict[str, ServiceExpense],
-) -> list[ServiceExpense]:
-    # The stored rows this new group's charges were grouped under before this sync, e.g. the row
-    # a vendor rename re-keyed away from. A never-synced Stripe charge has no key and adds nothing.
-    keys = {previous_keys.get(transaction.id) for transaction in vendor_transactions}
-    return [
-        stored_by_key[key]
-        for key in keys
-        if key is not None and key != vendor_key and key in stored_by_key
-    ]
 
 
 def _group_transactions(
