@@ -3,6 +3,7 @@
 from datetime import datetime, timezone
 import json
 
+from app.core.config import get_settings
 from app.models.account import Account
 from app.models.challenge import Challenge
 from app.services.challenges.submit import submit_challenge
@@ -24,6 +25,21 @@ def test_status_is_public_and_reports_fixture_data_and_no_offers(client, db_sess
         "demo": 0,
         "all_simulated": True,
     }
+    assert response.json()["outreach"] == {
+        "channel": "sandbox",
+        "channel_label": "Sandbox outbox — no email leaves this machine",
+        "delivers_real_email": False,
+    }
+
+
+def test_status_says_when_invitations_would_be_real_email(client, db_session, monkeypatch) -> None:
+    monkeypatch.setenv("OUTREACH_CHANNEL", "smtp")
+    get_settings.cache_clear()
+
+    outreach = client.get("/api/demo/status").json()["outreach"]
+
+    assert outreach["channel"] == "smtp"
+    assert outreach["delivers_real_email"] is True
 
 
 def test_offers_from_seeded_accounts_count_as_simulated(client, db_session) -> None:

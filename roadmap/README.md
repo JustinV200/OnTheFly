@@ -11,7 +11,7 @@ Updated 2026-09-12. Follow this order for the [current REBID plan](../plan/plan1
 | Expense pipeline | Fixture source, normalization, recurrence, baseline and expense API | Implemented for existing data; GovCon validation pending |
 | Publishing and profiles | Scope form, exact preview, public projections and visibility tests | Reuse; cleaning-specific scope needs adaptation |
 | Challenges/comparison | Submission/revisions, sealed/open rules, inbox and deterministic math | Reuse; new two-device GovCon demo pending |
-| Evidence/outreach | Local evidence logic; registry and invitation stubs | External integrations missing |
+| Evidence/outreach | Local evidence logic; registry stub; outreach backend on `feat/outreach` (fixture/Tavily discovery, approval gate, sandbox/allowlisted SMTP queue) | Registry missing; outreach UI not built, Tavily and SMTP unverified live |
 | New REBID experience | No GovCon/REBID/USAspending/public-rate/Fly Scout implementation found | Not started |
 
 Last verified implementation result: **39 backend tests passed; frontend build passed**. This is the previous Stripe implementation check, not a fresh end-to-end acceptance run for the new plan. Existing checklists must not be marked complete merely because routes or files exist.
@@ -62,7 +62,7 @@ Tool-selecting agent orchestration, fly learning/rewards, SAM.gov if needed beyo
 | [05 Marketplace/challenges](05-marketplace-and-challenges.md) | Browse, submit, revise, sealed/open controls | Wire discovered suppliers into existing challenge path |
 | [06 Comparison](06-counteroffer-comparison.md) | Deterministic normalization and scope differences | Add separate public-rate modeled estimates |
 | [07 Evidence](07-challenger-evidence.md) | Source/status conventions | USAspending P0; Tavily P1; no blanket verification |
-| [08 Invitations](08-outbound-invitations.md) | Future approved outreach design | Deferred; manual share is enough |
+| [08 Invitations](08-outbound-invitations.md) | Approved outreach: backend implemented with sandbox default | Secondary; UI not built; manual share is still enough |
 | [09 Polish](09-demo-polish.md) | Privacy proof and failure-state rehearsal | New five-screen UI and actual fly output; visual system detailed in 11 |
 | [10 Stretch](10-stretch.md) | Later expansion ideas | Current P2 list above wins |
 | [11 Usability and dark mode](11-usability-and-dark-mode.md) | Walkthrough findings, design principles, per-screen redesign, theme tokens | New; P1, with tokens/primitives runnable alongside P0 |

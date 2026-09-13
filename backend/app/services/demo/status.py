@@ -1,6 +1,6 @@
-"""Reports the demo's seams: where the financial data came from and whether any offer is genuine.
+"""Reports the demo's seams: where the financial data came from, whether any offer is genuine, and where invitations go.
 Counts come from stored records, so a label can't drift from what is actually on screen (roadmap 09, "Honest labeling of the demo's seams").
-It returns counts only, never a challenger identity or an offer amount.
+It returns counts and channel facts only, never a challenger identity, an offer amount, or a recipient.
 """
 
 from pydantic import BaseModel
@@ -10,6 +10,7 @@ from sqlalchemy.orm import Session
 from app.core.provenance import FinancialProvenance, OfferProvenance
 from app.models.challenge import Challenge
 from app.models.transaction import Transaction
+from app.services.outreach import ChannelInfo
 
 # Provenances that came from a real business. demo_data is everything the team simulated,
 # including offers typed in live by the seeded demo accounts.
@@ -36,15 +37,24 @@ class OfferDataStatus(BaseModel):
     all_simulated: bool
 
 
+class OutreachChannelStatus(BaseModel):
+    """Where approved invitations go, so the screen can say whether any email really leaves the machine."""
+
+    channel: str
+    channel_label: str
+    delivers_real_email: bool
+
+
 class DemoStatus(BaseModel):
-    """Both seams the demo must state on screen, not just aloud."""
+    """The seams the demo must state on screen, not just aloud."""
 
     financial: FinancialDataStatus
     offers: OfferDataStatus
+    outreach: OutreachChannelStatus
 
 
-def get_demo_status(transaction_source: str, db: Session) -> DemoStatus:
-    """Return the financial-data and offer-provenance seams from stored records."""
+def get_demo_status(transaction_source: str, outreach_channel: ChannelInfo, db: Session) -> DemoStatus:
+    """Return the financial-data and offer-provenance seams from stored records, plus the configured invitation channel."""
 
     provenance = sorted(db.scalars(select(Transaction.source_type).distinct()).all())
     offer_counts = {
@@ -72,5 +82,10 @@ def get_demo_status(transaction_source: str, db: Session) -> DemoStatus:
             # provenance value can never inflate the genuine count.
             demo=total - genuine,
             all_simulated=genuine == 0,
+        ),
+        outreach=OutreachChannelStatus(
+            channel=outreach_channel.name,
+            channel_label=outreach_channel.label,
+            delivers_real_email=outreach_channel.delivers_real_email,
         ),
     )

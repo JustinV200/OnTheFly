@@ -23,6 +23,32 @@ class Settings(BaseSettings):
     # Comma-separated allowed CORS origins; defaults to local dev frontend
     cors_allow_origins: str = "http://localhost:5173,http://127.0.0.1:5173"
 
+    # Provider discovery (roadmap 08, step 1). "fixture" returns deterministic, fictional demo providers
+    # labeled as demo data; "tavily" runs a real web search and needs TAVILY_API_KEY.
+    discovery_source: str = "fixture"
+    # Without a key the Tavily source reports discovery as not run; it never falls back to fixtures.
+    tavily_api_key: str = ""
+
+    # Invitation delivery channel. "sandbox" stores rendered invitations in the sandbox outbox table and
+    # no email leaves the machine; "smtp" sends real email, only to OUTREACH_RECIPIENT_ALLOWLIST.
+    outreach_channel: str = "sandbox"
+    # The platform sends on the business's behalf, so From names the platform, never the owner.
+    outreach_from_name: str = "On the Fly"
+    outreach_from_email: str = "invitations@onthefly.example"
+    # The platform's physical postal address for the commercial-email footer. Never the business's
+    # address, which would disclose a private street address. Empty blocks the smtp channel.
+    outreach_postal_address: str = ""
+    # Base of the public frontend; invitations link to {base}/listings/{id} and {base}/opt-out/{token}.
+    public_app_base_url: str = "http://localhost:5173"
+    smtp_host: str = ""
+    smtp_port: int = 587
+    smtp_username: str = ""
+    smtp_password: str = ""
+    smtp_use_starttls: bool = True
+    # Comma-separated exact addresses the smtp channel may send to (roadmap 08, "Use a sandbox or a
+    # whitelist until the approval gate is proven"). Empty means smtp sends to nobody.
+    outreach_recipient_allowlist: str = ""
+
     # Extra keys stay forbidden (the pydantic-settings default): a stale or misspelled non-empty line
     # in .env stops startup instead of loading as a setting that nothing reads.
     model_config = SettingsConfigDict(

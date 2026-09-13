@@ -19,6 +19,9 @@ class Account(Base):
     handle: Mapped[str] = mapped_column(String(120), unique=True, nullable=False)
     business_name: Mapped[str] = mapped_column(String(255), nullable=False)
     service_area: Mapped[str] = mapped_column(String(255), nullable=False)
+    # Private, never on a profile. Lowercased; it lets an invitation be attributed to the account that
+    # later challenges by exact address equality, never a tracking token (roadmap 08, step 9).
+    contact_email: Mapped[str | None] = mapped_column(String(255), nullable=True)
     created_at: Mapped[datetime] = mapped_column(
         DateTime(timezone=True),
         nullable=False,

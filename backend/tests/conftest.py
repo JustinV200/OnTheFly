@@ -41,6 +41,13 @@ def reset_settings_cache(monkeypatch: pytest.MonkeyPatch) -> None:
         TEST_DB_PATH.unlink()
     monkeypatch.setenv("DATABASE_URL", TEST_DATABASE_URL)
     monkeypatch.setenv("TRANSACTION_SOURCE", "fixture")
+    # Environment beats a developer's .env, so no test can reach Tavily or a real mail server by accident.
+    monkeypatch.setenv("DISCOVERY_SOURCE", "fixture")
+    monkeypatch.setenv("TAVILY_API_KEY", "")
+    monkeypatch.setenv("OUTREACH_CHANNEL", "sandbox")
+    monkeypatch.setenv("OUTREACH_POSTAL_ADDRESS", "")
+    monkeypatch.setenv("OUTREACH_RECIPIENT_ALLOWLIST", "")
+    monkeypatch.setenv("SMTP_HOST", "")
     get_settings.cache_clear()
     get_engine.cache_clear()
     yield

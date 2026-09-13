@@ -1,0 +1,165 @@
+{
+  "_comment": "Fictional demo providers for fixture discovery. Every business, address, and phone number here is invented; websites and emails use the reserved .example domain so nothing can reach a real inbox. Aggregator and duplicate entries are deliberate, so the filters visibly do their work.",
+  "categories": {
+    "cleaning": [
+      {
+        "business_name": "Bay Clean Professional Services",
+        "page_title": "Bay Clean Professional Services | Commercial Office Cleaning",
+        "website_url": "https://bayclean.example",
+        "contact_email": "bids@bayclean.example",
+        "contact_email_source_url": "https://bayclean.example/contact",
+        "phone": "(415) 555-0142",
+        "service_area": "San Francisco Bay Area",
+        "capability_summary": "Commercial janitorial for offices of 5,000 to 20,000 sq ft; nightly and 3x weekly schedules covering restrooms, trash, and vacuuming.",
+        "source_urls": ["https://bayclean.example/", "https://bayclean.example/contact"]
+      },
+      {
+        "business_name": "Golden Gate Janitorial",
+        "page_title": "Golden Gate Janitorial - Office & Commercial Cleaning",
+        "website_url": "https://goldengatejanitorial.example",
+        "contact_email": "quotes@goldengatejanitorial.example",
+        "contact_email_source_url": "https://goldengatejanitorial.example/request-a-quote",
+        "phone": "(415) 555-0178",
+        "service_area": "San Francisco and the Peninsula",
+        "capability_summary": "Office and light-industrial cleaning with day porter options; supplies included on request.",
+        "source_urls": ["https://goldengatejanitorial.example/request-a-quote"]
+      },
+      {
+        "business_name": "Summit Building Services",
+        "page_title": "Summit Building Services | Janitorial & Facility Maintenance",
+        "website_url": "https://summitbuilding.example",
+        "contact_email": "hello@summitbuilding.example",
+        "contact_email_source_url": "https://summitbuilding.example/about",
+        "phone": "(510) 555-0119",
+        "service_area": "East Bay and San Francisco",
+        "capability_summary": "Janitorial and facility maintenance for multi-tenant commercial buildings; green-certified products.",
+        "source_urls": ["https://summitbuilding.example/about"]
+      },
+      {
+        "business_name": "Mission Street Maintenance Co.",
+        "page_title": "Mission Street Maintenance Co. - Commercial Cleaning San Francisco",
+        "website_url": "https://missionstreetmaintenance.example",
+        "contact_email": "office@missionstreetmaintenance.example",
+        "contact_email_source_url": "https://missionstreetmaintenance.example/contact-us",
+        "phone": "(415) 555-0163",
+        "service_area": "San Francisco",
+        "capability_summary": "Small commercial cleaning crew for offices and retail; evening service three to five times a week.",
+        "source_urls": ["https://missionstreetmaintenance.example/contact-us"]
+      },
+      {
+        "business_name": "Harbor Light Facility Care",
+        "page_title": "Harbor Light Facility Care | Office Cleaning Oakland & SF",
+        "website_url": "https://harborlightcare.example",
+        "contact_email": null,
+        "contact_email_source_url": null,
+        "phone": "(510) 555-0187",
+        "service_area": "Oakland and San Francisco",
+        "capability_summary": "Office cleaning and floor care; the website lists a phone number and a callback form but no email address.",
+        "source_urls": ["https://harborlightcare.example/"]
+      },
+      {
+        "business_name": "Presidio Office Cleaning",
+        "page_title": "Presidio Office Cleaning - Recurring Commercial Cleaning",
+        "website_url": "https://presidiooffice.example",
+        "contact_email": "estimates@presidiooffice.example",
+        "contact_email_source_url": "https://presidiooffice.example/estimates",
+        "phone": "(415) 555-0131",
+        "service_area": "San Francisco",
+        "capability_summary": "Recurring commercial cleaning for offices up to 15,000 sq ft; restrooms, kitchens, trash, and vacuuming.",
+        "source_urls": ["https://presidiooffice.example/estimates"]
+      },
+      {
+        "business_name": "Top 10 Commercial Cleaning Services in San Francisco, CA",
+        "page_title": "Top 10 Commercial Cleaning Services in San Francisco, CA - Yelp",
+        "website_url": "https://www.yelp.com",
+        "contact_email": null,
+        "contact_email_source_url": null,
+        "phone": null,
+        "service_area": "San Francisco, CA",
+        "capability_summary": "A directory page listing many cleaning companies.",
+        "source_urls": ["https://www.yelp.com/search?find_desc=commercial+cleaning&find_loc=San+Francisco%2C+CA"]
+      },
+      {
+        "business_name": "Bay Clean Pro",
+        "page_title": "Bay Clean Pro - Office Cleaning in San Francisco",
+        "website_url": "https://bayclean.example",
+        "contact_email": null,
+        "contact_email_source_url": null,
+        "phone": "415-555-0142",
+        "service_area": "San Francisco",
+        "capability_summary": "Office cleaning service page for the same business under a second URL.",
+        "source_urls": ["https://bayclean.example/services/office-cleaning"]
+      }
+    ],
+    "landscaping": [
+      {
+        "business_name": "Coastal Oak Grounds Care",
+        "page_title": "Coastal Oak Grounds Care | Commercial Landscape Maintenance",
+        "website_url": "https://coastaloakgrounds.example",
+        "contact_email": "service@coastaloakgrounds.example",
+        "contact_email_source_url": "https://coastaloakgrounds.example/contact",
+        "phone": "(650) 555-0124",
+        "service_area": "San Francisco Bay Area",
+        "capability_summary": "Commercial landscape maintenance: mowing, pruning, irrigation checks, and seasonal planting.",
+        "source_urls": ["https://coastaloakgrounds.example/contact"]
+      },
+      {
+        "business_name": "Fogline Landscape Services",
+        "page_title": "Fogline Landscape Services - Office Park Grounds Maintenance",
+        "website_url": "https://foglinelandscape.example",
+        "contact_email": null,
+        "contact_email_source_url": null,
+        "phone": "(415) 555-0150",
+        "service_area": "San Francisco",
+        "capability_summary": "Grounds maintenance for office parks; phone and web form only.",
+        "source_urls": ["https://foglinelandscape.example/"]
+      },
+      {
+        "business_name": "The 10 Best Landscapers Near Me",
+        "page_title": "The 10 Best Landscapers Near Me (with Free Estimates) - Angi",
+        "website_url": "https://www.angi.com",
+        "contact_email": null,
+        "contact_email_source_url": null,
+        "phone": null,
+        "service_area": null,
+        "capability_summary": "A lead-marketplace directory page.",
+        "source_urls": ["https://www.angi.com/companylist/us/ca/san-francisco/landscaping.htm"]
+      }
+    ],
+    "pest_control": [
+      {
+        "business_name": "Redwood Shield Pest Management",
+        "page_title": "Redwood Shield Pest Management | Commercial Pest Control",
+        "website_url": "https://redwoodshield.example",
+        "contact_email": "commercial@redwoodshield.example",
+        "contact_email_source_url": "https://redwoodshield.example/commercial",
+        "phone": "(408) 555-0166",
+        "service_area": "San Francisco Bay Area",
+        "capability_summary": "Commercial pest management with monthly and quarterly service plans and inspection reports.",
+        "source_urls": ["https://redwoodshield.example/commercial"]
+      },
+      {
+        "business_name": "Tenderloin Pest Solutions",
+        "page_title": "Tenderloin Pest Solutions - Office & Restaurant Pest Control",
+        "website_url": "https://tenderloinpest.example",
+        "contact_email": "info@tenderloinpest.example",
+        "contact_email_source_url": "https://tenderloinpest.example/contact",
+        "phone": "(415) 555-0192",
+        "service_area": "San Francisco",
+        "capability_summary": "Pest control for offices and restaurants; quarterly service agreements.",
+        "source_urls": ["https://tenderloinpest.example/contact"]
+      },
+      {
+        "business_name": "Pest Control Services near San Francisco, CA",
+        "page_title": "Best Pest Control Services near San Francisco, CA - Thumbtack",
+        "website_url": "https://www.thumbtack.com",
+        "contact_email": null,
+        "contact_email_source_url": null,
+        "phone": null,
+        "service_area": null,
+        "capability_summary": "A lead-marketplace directory page.",
+        "source_urls": ["https://www.thumbtack.com/ca/san-francisco/pest-control/"]
+      }
+    ]
+  }
+}
