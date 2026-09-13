@@ -12,10 +12,12 @@ import { sealedOfferNote } from './sealedOfferNote';
 
 interface LeaderboardTabProps {
   board: ApiQueryState<LeaderboardResponse>;
+  // Past the deadline no new offer can arrive, so the empty state mustn't invite one.
+  isClosed: boolean;
 }
 
 /** Render the leaderboard tab for the page's shared leaderboard query, with every non-happy state spelled out. */
-export function LeaderboardTab({ board }: LeaderboardTabProps): JSX.Element {
+export function LeaderboardTab({ board, isClosed }: LeaderboardTabProps): JSX.Element {
   if (!board.data) {
     return board.error
       ? <ErrorState error={board.error} onRetry={board.reload} title="Leaderboard unavailable" />
@@ -45,7 +47,9 @@ export function LeaderboardTab({ board }: LeaderboardTabProps): JSX.Element {
             </Disclosure>
           </div>
           {entries.length === 0 ? (
-            <EmptyState title="No published prices yet">The first open offer sets the price to beat.</EmptyState>
+            <EmptyState title="No published prices yet">
+              {isClosed ? 'This task closed before any open offer was priced.' : 'The first open offer sets the price to beat.'}
+            </EmptyState>
           ) : (
             <LeaderboardTable currentScopeVersion={currentVersion} entries={entries} />
           )}

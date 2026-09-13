@@ -14,10 +14,12 @@ import './OfferActivity.css';
 interface OpenOffersProps {
   listing: PublicListingProjection;
   board: ApiQueryState<LeaderboardResponse>;
+  // Past the deadline no new offer can arrive, so the empty state mustn't invite one.
+  isClosed: boolean;
 }
 
 /** Render the open-bidding offer activity for the shared leaderboard query. */
-export function OpenOffers({ listing, board }: OpenOffersProps): JSX.Element {
+export function OpenOffers({ listing, board, isClosed }: OpenOffersProps): JSX.Element {
   if (!board.data) {
     return board.error ? (
       <ErrorState error={board.error} onRetry={board.reload} title="Offer prices unavailable" />
@@ -54,7 +56,11 @@ export function OpenOffers({ listing, board }: OpenOffersProps): JSX.Element {
       {plotted.length === 0 ? (
         <div className="open-offers__empty">
           <p className="open-offers__empty-title">No public offer prices yet</p>
-          <p className="ui-text-muted ui-text-sm">Open bidding: the first offer sets the price to beat, and it shows up here.</p>
+          <p className="ui-text-muted ui-text-sm">
+            {isClosed
+              ? 'This task closed before any open offer was priced.'
+              : 'Open bidding: the first offer sets the price to beat, and it shows up here.'}
+          </p>
         </div>
       ) : null}
 

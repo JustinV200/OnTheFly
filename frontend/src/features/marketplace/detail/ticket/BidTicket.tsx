@@ -31,7 +31,7 @@ export function BidTicket({ listing, closes, ownership }: BidTicketProps): JSX.E
             {termsSentence(isOpen, isOwner)}
           </TermRow>
           <TermRow icon="clock" title={closes.label}>
-            {closes.exact ? (closes.isClosed ? `Closed ${closes.exact}` : `Until ${closes.exact}`) : 'No deadline set. Offers are accepted while the listing is public.'}
+            {closes.exact ? (closes.isClosed ? `Since ${closes.exact}` : `Until ${closes.exact}`) : 'No deadline set. Offers are accepted while the listing is public.'}
           </TermRow>
         </div>
 

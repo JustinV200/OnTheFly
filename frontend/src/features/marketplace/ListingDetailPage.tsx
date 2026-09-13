@@ -58,7 +58,7 @@ export function ListingDetailPage(): JSX.Element {
         <aside aria-label="Bid on this task" className="market-page__ticket">
           <BidTicket closes={closes} listing={listing} ownership={ownership} />
         </aside>
-        <OfferActivity board={board} className="market-page__activity" listing={listing} offerCount={offerCount} />
+        <OfferActivity board={board} className="market-page__activity" closes={closes} listing={listing} offerCount={offerCount} />
         <MarketTabs board={board} className="market-page__tabs" closes={closes} listing={listing} />
       </div>
 

@@ -3,6 +3,7 @@
    Either listing or leaderboard saying anything but "open" shows the sealed panel, so a mode change mid-poll never
    leaves prices on screen. */
 import type { ApiQueryState } from '../../../../shared/api/useApiQuery';
+import type { ClosesIn } from '../../../../shared/market';
 import { Card } from '../../../../shared/ui';
 import type { PublicListingProjection } from '../../../publish/types';
 import type { LeaderboardResponse } from '../../types';
@@ -14,18 +15,19 @@ interface OfferActivityProps {
   // The listing detail's own count, shown for a sealed listing until the leaderboard's count arrives.
   offerCount: number;
   board: ApiQueryState<LeaderboardResponse>;
+  closes: ClosesIn;
   className?: string;
 }
 
 /** Render the offer activity card for one listing. */
-export function OfferActivity({ listing, offerCount, board, className }: OfferActivityProps): JSX.Element {
+export function OfferActivity({ listing, offerCount, board, closes, className }: OfferActivityProps): JSX.Element {
   const isSealed = listing.bidding_mode !== 'open' || (board.data !== null && board.data.bidding_mode !== 'open');
 
   return (
     <Card className={className} title="Offer activity">
       {isSealed
         ? <SealedOffersPanel offerCount={board.data?.total_offer_count ?? offerCount} />
-        : <OpenOffers board={board} listing={listing} />}
+        : <OpenOffers board={board} isClosed={closes.isClosed} listing={listing} />}
     </Card>
   );
 }

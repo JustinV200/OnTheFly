@@ -24,7 +24,7 @@ export function MarketTabs({ listing, board, closes, className }: MarketTabsProp
 
   const tabs: TabItem[] = [
     { id: 'scope', label: 'Scope', content: <ScopeRequirements listing={listing} /> },
-    ...(isOpen ? [{ id: 'leaderboard', label: 'Leaderboard', meta: pricedCount, content: <LeaderboardTab board={board} /> }] : []),
+    ...(isOpen ? [{ id: 'leaderboard', label: 'Leaderboard', meta: pricedCount, content: <LeaderboardTab board={board} isClosed={closes.isClosed} /> }] : []),
     { id: 'rules', label: 'How bidding works', content: <BiddingRules biddingMode={listing.bidding_mode} closes={closes} /> },
   ];
 
