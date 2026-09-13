@@ -1,6 +1,7 @@
-/* The portfolio headline of Spend: tracked annual spend as the biggest number, then compact private, public, and
-   data-source tiles. Totals only add like currencies; a second currency is listed beside the first, never converted.
-   Counts and totals use the same aggregation the dashboard has always shown; nothing here is a new money calculation. */
+/* The portfolio headline of Spend: eligible annual spend as the biggest number, then compact private, public, and
+   data-source tiles. Expenses the server marks ineligible (payroll, taxes, transfers) stay out of the headline and are
+   named in its caption instead. Totals only add like currencies; a second currency is listed beside the first, never
+   converted. The sums are display aggregation over server amounts, not a new money calculation. */
 import type { ReactNode } from 'react';
 
 import { ProvenanceBadge } from '../../../shared/provenance/ProvenanceBadge';
@@ -17,12 +18,10 @@ interface SpendOverviewProps {
   sources: ImportedSource[];
 }
 
-/** Render the tracked-spend headline with its provenance and the three summary tiles. */
+/** Render the eligible-spend headline with its provenance and the three summary tiles. */
 export function SpendOverview({ expenses, sources }: SpendOverviewProps): JSX.Element {
-  const totalsByCurrency = expenses.reduce<Record<string, number>>((totals, expense) => {
-    totals[expense.currency] = (totals[expense.currency] ?? 0) + expense.annualized_amount_minor;
-    return totals;
-  }, {});
+  const eligible = expenses.filter((expense) => expense.is_eligible);
+  const excluded = expenses.filter((expense) => !expense.is_eligible);
   const publicCount = expenses.filter((expense) => expense.visibility === 'public').length;
   const provenance = Array.from(new Set(expenses.flatMap((expense) => expense.provenance))).sort();
   const sourceNames = Array.from(new Set(sources.map((source) => sourceLabel(source.provider, source.source_type))));
@@ -32,19 +31,20 @@ export function SpendOverview({ expenses, sources }: SpendOverviewProps): JSX.El
       <Stat
         caption={
           <>
-            <span>Across {expenses.length} {expenses.length === 1 ? 'expense' : 'expenses'}</span>
+            <span>Across {eligible.length} {eligible.length === 1 ? 'expense' : 'expenses'}</span>
+            {excluded.length > 0 ? (
+              <span>
+                Excludes <CurrencyTotals expenses={excluded} /> / year that can’t be listed (payroll, taxes, transfers, or
+                marked ineligible)
+              </span>
+            ) : null}
             {provenance.map((value) => <ProvenanceBadge key={value} kind="financial" value={value} />)}
           </>
         }
-        label="Tracked annual spend"
+        label="Eligible annual spend"
         size="xl"
         unit="/ year"
-        value={Object.entries(totalsByCurrency).map(([currency, total], index) => (
-          <span key={currency}>
-            {index > 0 ? ' + ' : null}
-            <WholeAmount amountMinor={total} currency={currency} />
-          </span>
-        ))}
+        value={eligible.length > 0 ? <CurrencyTotals expenses={eligible} /> : 'None'}
       />
 
       <div className="spend-overview__tiles">
@@ -64,6 +64,25 @@ export function SpendOverview({ expenses, sources }: SpendOverviewProps): JSX.El
         </Tile>
       </div>
     </section>
+  );
+}
+
+// Annualized totals per currency, joined with "+" rather than converted.
+function CurrencyTotals({ expenses }: { expenses: Expense[] }): JSX.Element {
+  const totalsByCurrency = expenses.reduce<Record<string, number>>((totals, expense) => {
+    totals[expense.currency] = (totals[expense.currency] ?? 0) + expense.annualized_amount_minor;
+    return totals;
+  }, {});
+
+  return (
+    <>
+      {Object.entries(totalsByCurrency).map(([currency, total], index) => (
+        <span key={currency}>
+          {index > 0 ? ' + ' : null}
+          <WholeAmount amountMinor={total} currency={currency} />
+        </span>
+      ))}
+    </>
   );
 }
 
