@@ -5,8 +5,8 @@ import { useState } from 'react';
 
 import { Button, Callout } from '../../../shared/ui';
 import { PlainFlyBrainBadge } from '../flybrain/PlainFlyBrainBadge';
+import { VendorAliasDrawer } from './drawer/VendorAliasDrawer';
 import { useVendorAliases } from './useVendorAliases';
-import { VendorAliasDrawer } from './VendorAliasDrawer';
 import './DuplicateVendors.css';
 
 interface DuplicateVendorsProps {

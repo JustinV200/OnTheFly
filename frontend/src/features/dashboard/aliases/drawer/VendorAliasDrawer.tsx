@@ -1,11 +1,11 @@
 /* The merge UI for possible duplicate vendors, in a drawer opened from DuplicateVendorNotice. Suggestions come from the
    fly brain's name matching; nothing merges without the owner's click, and a merge never publishes anything. */
-import type { FlyBrainAttribution } from '../../../shared/flybrain/types';
-import { Callout, Cluster, Drawer, Stack } from '../../../shared/ui';
-import { FlyBrainDisclosure } from '../flybrain/FlyBrainDisclosure';
-import { PlainFlyBrainBadge } from '../flybrain/PlainFlyBrainBadge';
+import type { FlyBrainAttribution } from '../../../../shared/flybrain/types';
+import { Callout, Cluster, Drawer, Stack } from '../../../../shared/ui';
+import { FlyBrainDisclosure } from '../../flybrain/FlyBrainDisclosure';
+import { PlainFlyBrainBadge } from '../../flybrain/PlainFlyBrainBadge';
+import type { VendorAliasSuggestion } from '../types';
 import { AliasSuggestionRow } from './AliasSuggestionRow';
-import type { VendorAliasSuggestion } from './types';
 import './VendorAliasDrawer.css';
 
 interface VendorAliasDrawerProps {
