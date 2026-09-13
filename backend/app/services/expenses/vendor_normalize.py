@@ -4,11 +4,12 @@ It also persists owner-specific correction rules for future imports.
 
 import re
 import uuid
+from collections.abc import Callable
 
 from sqlalchemy import select
 from sqlalchemy.orm import Session
 
-from app.models.vendor_correction import VendorCorrection
+from app.models.vendor_correction import CorrectionMatchMode, VendorCorrection
 
 
 PREFIX_RE = re.compile(r"^(sq\s*\*|tst\s*\*|stripe:)\s*", re.IGNORECASE)
@@ -37,7 +38,8 @@ class VendorCorrectionStore:
     """
 
     def __init__(self) -> None:
-        self._rules_by_owner: dict[str, list[tuple[re.Pattern[str], VendorCorrection]]] = {}
+        # Each cached rule pairs a matcher over the casefolded description with the rule itself.
+        self._rules_by_owner: dict[str, list[tuple[Callable[[str], bool], VendorCorrection]]] = {}
 
     def resolve(
         self,
@@ -49,14 +51,16 @@ class VendorCorrectionStore:
     ) -> tuple[str, str | None]:
         """Return corrected vendor/category values when a rule matches the raw text.
 
-        A rule matches on whole words, so "orkin" never claims "Porkington BBQ". When
-        several rules match, the longest (most specific) pattern wins, so a merge rule
-        for one exact descriptor outranks a broad rename rule regardless of insert order.
+        A "word" rule (owner rename) matches on whole words, so "orkin" never claims
+        "Porkington BBQ". An "exact" rule (alias merge) matches only the whole description,
+        so "SPARKLE" never claims "SPARKLE WINDOWS". Both ignore case. When several rules
+        match, the longest (most specific) pattern wins, so a merge rule for one exact
+        descriptor outranks a broad rename rule regardless of insert order.
         """
 
         lowered = raw_description.casefold()
-        for pattern, correction in self._rules_for(owner_account_id, db):
-            if not pattern.search(lowered):
+        for matches, correction in self._rules_for(owner_account_id, db):
+            if not matches(lowered):
                 continue
             return (
                 correction.corrected_vendor or fallback_vendor,
@@ -71,8 +75,13 @@ class VendorCorrectionStore:
         corrected_vendor: str | None,
         corrected_category: str | None,
         db: Session,
+        match_mode: CorrectionMatchMode = CorrectionMatchMode.word,
     ) -> VendorCorrection:
-        """Create or update one correction rule for future imports; patterns compare case-insensitively."""
+        """Create or update one correction rule for future imports; patterns compare case-insensitively.
+
+        Owner renames use the default whole-word mode; alias merges pass exact. There is one
+        rule per pattern, so updating an existing rule replaces its targets and its mode.
+        """
 
         self._rules_by_owner.pop(owner_account_id, None)
         existing = db.scalars(
@@ -92,6 +101,7 @@ class VendorCorrectionStore:
                 raw_description_pattern=raw_description_pattern,
                 corrected_vendor=corrected_vendor,
                 corrected_category=corrected_category,
+                match_mode=match_mode.value,
             )
             db.add(correction)
             # Sessions here don't autoflush; flushing lets a second upsert of the same
@@ -101,26 +111,43 @@ class VendorCorrectionStore:
 
         correction.corrected_vendor = corrected_vendor
         correction.corrected_category = corrected_category
+        correction.match_mode = match_mode.value
         return correction
 
     def _rules_for(
         self,
         owner_account_id: str,
         db: Session,
-    ) -> list[tuple[re.Pattern[str], VendorCorrection]]:
+    ) -> list[tuple[Callable[[str], bool], VendorCorrection]]:
         cached = self._rules_by_owner.get(owner_account_id)
         if cached is not None:
             return cached
         corrections = db.scalars(
             select(VendorCorrection).where(VendorCorrection.owner_account_id == owner_account_id)
         ).all()
+        # Two rules that match one description tie on length only when they have the same text
+        # (an exact rule and a word rule written in different case); the exact rule sorts first.
         ordered = sorted(
             corrections,
-            key=lambda correction: (-len(correction.raw_description_pattern), correction.raw_description_pattern.casefold()),
+            key=lambda correction: (
+                -len(correction.raw_description_pattern),
+                correction.match_mode != CorrectionMatchMode.exact.value,
+                correction.raw_description_pattern.casefold(),
+            ),
         )
-        rules = [(_whole_word_pattern(correction.raw_description_pattern), correction) for correction in ordered]
+        rules = [(_rule_matcher(correction), correction) for correction in ordered]
         self._rules_by_owner[owner_account_id] = rules
         return rules
+
+
+def _rule_matcher(correction: VendorCorrection) -> Callable[[str], bool]:
+    # Parsing raises on an unknown stored mode rather than guessing: widening it to whole words
+    # could fold other vendors in, and narrowing it to exact would silently undo an owner rename.
+    if CorrectionMatchMode(correction.match_mode) is CorrectionMatchMode.exact:
+        folded = correction.raw_description_pattern.casefold()
+        return lambda lowered: lowered == folded
+    pattern = _whole_word_pattern(correction.raw_description_pattern)
+    return lambda lowered: pattern.search(lowered) is not None
 
 
 def _whole_word_pattern(raw_pattern: str) -> re.Pattern[str]:
