@@ -24,7 +24,8 @@ class Settings(BaseSettings):
     cors_allow_origins: str = "http://localhost:5173,http://127.0.0.1:5173"
 
     # Provider discovery (roadmap 08, step 1). "fixture" returns deterministic, fictional demo providers
-    # labeled as demo data; "tavily" runs a real web search and needs TAVILY_API_KEY.
+    # labeled as demo data; "tavily" runs a real web search and needs TAVILY_API_KEY; "usaspending_tavily"
+    # searches public USAspending contract awards (no key) and enriches those suppliers through Tavily when keyed.
     discovery_source: str = "fixture"
     # Without a key the Tavily source reports discovery as not run; it never falls back to fixtures.
     tavily_api_key: str = ""

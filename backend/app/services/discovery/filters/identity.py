@@ -56,9 +56,15 @@ def normalize_business_name(business_name: str) -> str:
     return " ".join(words)
 
 
-def build_dedupe_key(business_name: str, website_url: str | None) -> str:
-    """Return the stored candidate key: the registrable domain when known, else the normalized name."""
+def build_dedupe_key(business_name: str, website_url: str | None, supplier_uei: str | None = None) -> str:
+    """Return the stored candidate key: the UEI when known, else the registrable domain, else the normalized name.
 
+    A UEI key keeps two award recipients with look-alike names (or one shared web result) from colliding
+    on the listing's unique dedupe key.
+    """
+
+    if supplier_uei:
+        return f"uei:{supplier_uei.strip().upper()}"
     return registrable_domain(website_url) or normalize_business_name(business_name) or business_name.strip().casefold()
 
 

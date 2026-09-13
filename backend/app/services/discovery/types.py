@@ -7,6 +7,8 @@ from typing import Literal
 
 from pydantic import BaseModel, Field
 
+from app.services.discovery.evidence.records import CandidateEvidence
+
 # ok: the source ran (possibly finding nothing). unavailable: it could not run (e.g. no API key).
 # error: it tried and failed. Only ok means the source was actually checked.
 DiscoveryStatus = Literal["ok", "unavailable", "error"]
@@ -32,10 +34,15 @@ class DiscoveredProvider(BaseModel):
     service_area: str | None = None
     capability_summary: str | None = None
     source_urls: list[str] = Field(default_factory=list)
-    # ProviderCandidateProvenance value: demo_data or public_web.
+    # ProviderCandidateProvenance value: demo_data, public_web or public_award.
     provenance: str
     # The page title as returned, kept for the aggregator title heuristics.
     page_title: str | None = None
+    # USAspending's recipient identifier. When present it is the provider's identity: deduplication and
+    # rediscovery match on it alone and never merge two UEIs because their names look alike.
+    supplier_uei: str | None = None
+    # The awards and pages behind this provider, each attributable to its own source after merging.
+    evidence: list[CandidateEvidence] = Field(default_factory=list)
 
 
 class DiscoverySearchResult(BaseModel):

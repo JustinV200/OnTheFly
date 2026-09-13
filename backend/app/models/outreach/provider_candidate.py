@@ -37,12 +37,16 @@ class ProviderCandidate(Base):
     capability_summary: Mapped[str | None] = mapped_column(Text, nullable=True)
     # ProviderCandidateOrigin: discovered | manually_added.
     origin: Mapped[str] = mapped_column(String(32), nullable=False)
-    # The discovery source name (fixture | tavily), or "owner" for a manual addition.
+    # The discovery source name (fixture | tavily | usaspending_tavily), or "owner" for a manual addition.
     discovery_source: Mapped[str] = mapped_column(String(32), nullable=False)
-    # ProviderCandidateProvenance: demo_data | public_web | owner_entered.
+    # ProviderCandidateProvenance: demo_data | public_web | public_award | owner_entered.
     provenance: Mapped[str] = mapped_column(String(32), nullable=False)
+    # USAspending's recipient UEI, the candidate's identity when present. Null for fixture, web and manual candidates.
+    supplier_uei: Mapped[str | None] = mapped_column(String(32), nullable=True, index=True)
     # JSON array of the pages this provider's details were read from.
     source_urls: Mapped[str] = mapped_column(Text, nullable=False, default="[]")
+    # JSON array of evidence records (services/discovery/evidence): awards and web pages, each with its own source.
+    evidence: Mapped[str] = mapped_column(Text, nullable=False, default="[]")
     # Null only for a manual addition, which was never retrieved from a source.
     retrieved_at: Mapped[datetime | None] = mapped_column(DateTime(timezone=True), nullable=True)
     dedupe_key: Mapped[str] = mapped_column(String(255), nullable=False)

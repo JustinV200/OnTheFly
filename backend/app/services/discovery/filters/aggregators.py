@@ -47,6 +47,10 @@ def drop_aggregators(providers: list[DiscoveredProvider]) -> AggregatorFilterRes
 
 
 def _is_aggregator(provider: DiscoveredProvider) -> bool:
+    # A UEI means USAspending recorded this business winning a contract, so it is a supplier, never a directory.
+    # Its source URLs are usaspending.gov award pages, which would otherwise read as an aggregator domain.
+    if provider.supplier_uei:
+        return False
     urls = [provider.website_url, *provider.source_urls]
     if any(registrable_domain(url) in AGGREGATOR_DOMAINS for url in urls if url):
         return True

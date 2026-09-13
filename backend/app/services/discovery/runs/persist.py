@@ -12,7 +12,8 @@ from app.core.email_address import normalize_email
 from app.core.provenance import ProviderCandidateOrigin
 from app.models.listing import PublicListingRecord
 from app.models.outreach.provider_candidate import ProviderCandidate
-from app.services.discovery.filters.identity import build_dedupe_key, identity_of
+from app.services.discovery.evidence import evidence_json, merge_evidence, parse_evidence_json
+from app.services.discovery.filters.identity import ProviderIdentity, build_dedupe_key, identity_of
 from app.services.discovery.types import DiscoveredProvider
 
 
@@ -34,14 +35,7 @@ def upsert_discovered_candidates(
     new_count = 0
     for provider in providers:
         identity = identity_of(provider.business_name, provider.website_url, provider.phone)
-        match = next(
-            (
-                candidate
-                for candidate in existing
-                if identity_of(candidate.business_name, candidate.website_url, candidate.phone).matches(identity)
-            ),
-            None,
-        )
+        match = next((candidate for candidate in existing if _same_business(candidate, provider, identity)), None)
         if match is None:
             candidate = _new_candidate(listing, provider, source_name, retrieved_at)
             db.add(candidate)
@@ -72,10 +66,19 @@ def _new_candidate(
         origin=ProviderCandidateOrigin.discovered.value,
         discovery_source=source_name,
         provenance=provider.provenance,
+        supplier_uei=provider.supplier_uei,
         source_urls=json.dumps(provider.source_urls),
+        evidence=evidence_json(provider.evidence),
         retrieved_at=retrieved_at,
-        dedupe_key=build_dedupe_key(provider.business_name, provider.website_url),
+        dedupe_key=build_dedupe_key(provider.business_name, provider.website_url, provider.supplier_uei),
     )
+
+
+def _same_business(candidate: ProviderCandidate, provider: DiscoveredProvider, identity: ProviderIdentity) -> bool:
+    # The same rule as deduplication: a UEI on either side decides the match alone.
+    if provider.supplier_uei or candidate.supplier_uei:
+        return provider.supplier_uei == candidate.supplier_uei
+    return identity_of(candidate.business_name, candidate.website_url, candidate.phone).matches(identity)
 
 
 def _refresh(candidate: ProviderCandidate, provider: DiscoveredProvider, retrieved_at: datetime) -> None:
@@ -83,6 +86,7 @@ def _refresh(candidate: ProviderCandidate, provider: DiscoveredProvider, retriev
     # swapped underneath them. Every source URL is kept, so each stored detail stays citable.
     candidate.retrieved_at = retrieved_at
     candidate.source_urls = json.dumps(list(dict.fromkeys([*json.loads(candidate.source_urls), *provider.source_urls])))
+    candidate.evidence = evidence_json(merge_evidence(parse_evidence_json(candidate.evidence), provider.evidence))
     if candidate.contact_email is None and provider.contact_email:
         candidate.contact_email = normalize_email(provider.contact_email)
         candidate.contact_email_source_url = provider.contact_email_source_url

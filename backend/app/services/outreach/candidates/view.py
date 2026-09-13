@@ -12,6 +12,7 @@ from sqlalchemy.orm import Session
 from app.core.timestamps import as_utc
 from app.models.listing import PublicListingRecord
 from app.models.outreach.provider_candidate import ProviderCandidate
+from app.services.discovery.evidence import CandidateEvidence, parse_evidence_json
 from app.services.outreach.candidates.eligibility import AssessedCandidate, CandidateEligibility, assess_candidates
 from app.services.outreach.senders.base import OutreachSender
 
@@ -31,7 +32,9 @@ class CandidateView(BaseModel):
     origin: str
     discovery_source: str
     provenance: str
+    supplier_uei: str | None
     source_urls: list[str]
+    evidence: list[CandidateEvidence]
     retrieved_at: datetime | None
     contacted_off_platform: bool
     created_at: datetime
@@ -82,7 +85,9 @@ def candidate_view(candidate: ProviderCandidate, assessed: AssessedCandidate) ->
         origin=candidate.origin,
         discovery_source=candidate.discovery_source,
         provenance=candidate.provenance,
+        supplier_uei=candidate.supplier_uei,
         source_urls=json.loads(candidate.source_urls),
+        evidence=parse_evidence_json(candidate.evidence),
         retrieved_at=as_utc(candidate.retrieved_at) if candidate.retrieved_at else None,
         contacted_off_platform=candidate.contacted_off_platform,
         created_at=as_utc(candidate.created_at),
