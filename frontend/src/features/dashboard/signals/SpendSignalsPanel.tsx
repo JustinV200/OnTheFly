@@ -1,4 +1,4 @@
-/* Shows the fly-brain spend signals for one private expense: baseline basis, price changes, unusual charges.
+/* Shows the fly-brain spend signals for one private expense: baseline basis, price changes, unusual charges (all charges on request).
    Each section carries the badge of the circuit that produced it, and the panel ends with FlyBrainNote.
    Owner-only data; this panel is never reused on public pages. */
 import { ReactNode, useId } from 'react';
@@ -8,7 +8,7 @@ import { FlyBrainBadge } from '../../../shared/flybrain/FlyBrainBadge';
 import { FlyBrainNote } from '../../../shared/flybrain/FlyBrainNote';
 import type { FlyBrainAttribution, FlyBrainComponent } from '../../../shared/flybrain/types';
 import { Badge, Callout, Cluster, Icon, Stack } from '../../../shared/ui';
-import { ChargeReviewList } from './charges/ChargeReviewList';
+import { ChargeSignals } from './charges/ChargeSignals';
 import { formatNotAnalyzedSummary } from './formatSignals';
 import { BaselineBasisSummary } from './price/BaselineBasisSummary';
 import { PriceChangeList } from './price/PriceChangeList';
@@ -68,7 +68,7 @@ function SpendSignalsReportBody({ report }: { report: SpendSignalsReport }): JSX
         }
         title="Charges"
       >
-        <ChargeReviewList charges={report.charges} />
+        <ChargeSignals charges={report.charges} />
       </SignalSection>
 
       <FlyBrainNote attributions={report.fly_brain} />
