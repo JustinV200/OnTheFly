@@ -1,10 +1,11 @@
-/* Shows possible duplicate vendors found by the Mushroom Body FlyHash circuit.
+/* Shows possible duplicate vendors found by the Mushroom Body FlyHash circuit, as an outlined suggestion card.
    Nothing merges without the owner's click, and a merge never publishes anything. */
-import { MoneyDisplay } from '../../../shared/components/MoneyDisplay';
 import { FlyBrainBadge } from '../../../shared/flybrain/FlyBrainBadge';
 import { FlyBrainNote } from '../../../shared/flybrain/FlyBrainNote';
-import type { VendorAliasSuggestion, VendorGroupSummary } from './types';
+import { Callout, Card, Stack } from '../../../shared/ui';
+import { AliasSuggestionRow } from './AliasSuggestionRow';
 import { useVendorAliases } from './useVendorAliases';
+import './VendorAliasPanel.css';
 
 interface VendorAliasPanelProps {
   /** Called after a merge succeeds so the dashboard can reload its expense rows. */
@@ -20,73 +21,33 @@ export function VendorAliasPanel({ onMerged }: VendorAliasPanelProps): JSX.Eleme
   }
 
   return (
-    <section
-      aria-label="Possible duplicate vendors"
-      style={{ border: '1px solid #f59e0b', borderRadius: '12px', marginBottom: '1rem', padding: '0.75rem 1rem' }}
+    <Card
+      actions={attributions.map((attribution) => <FlyBrainBadge attribution={attribution} key={attribution.component} />)}
+      title="Possible duplicate vendors"
+      tone="outlined"
     >
-      <h3 style={{ marginTop: 0 }}>Possible duplicate vendors</h3>
-      {error ? <p role="alert">{error}</p> : null}
-      {suggestions.map((suggestion) => (
-        <SuggestionRow
-          key={suggestion.alias.expense_id}
-          suggestion={suggestion}
-          attributionBadge={attributions[0] ? <FlyBrainBadge attribution={attributions[0]} /> : null}
-          isPending={pendingAliasId === suggestion.alias.expense_id}
-          onMerge={async () => {
-            if (await merge(suggestion)) {
-              onMerged();
-            }
-          }}
-          onDismiss={() => void dismiss(suggestion)}
-        />
-      ))}
-      <FlyBrainNote attributions={attributions} />
-    </section>
-  );
-}
-
-interface SuggestionRowProps {
-  suggestion: VendorAliasSuggestion;
-  attributionBadge: JSX.Element | null;
-  isPending: boolean;
-  onMerge: () => Promise<void>;
-  onDismiss: () => void;
-}
-
-function SuggestionRow({ suggestion, attributionBadge, isPending, onMerge, onDismiss }: SuggestionRowProps): JSX.Element {
-  const { alias, canonical } = suggestion;
-
-  return (
-    <article style={{ borderTop: '1px solid #fde68a', padding: '0.6rem 0' }}>
-      <div style={{ alignItems: 'center', display: 'flex', flexWrap: 'wrap', gap: '0.5rem' }}>
-        {attributionBadge}
-        <span>Name match {Math.round(suggestion.name_similarity * 100)}%</span>
-        {suggestion.shared_words.length > 0 ? <span>· shared: {suggestion.shared_words.join(', ')}</span> : null}
-      </div>
-      <p style={{ margin: '0.4rem 0' }}>
-        <strong>{alias.vendor}</strong> <GroupFacts group={alias} currency={suggestion.currency} /> may be the same
-        vendor as <strong>{canonical.vendor}</strong> <GroupFacts group={canonical} currency={suggestion.currency} />.
-      </p>
-      <p style={{ color: '#475569', fontSize: '0.85rem', margin: '0 0 0.4rem' }}>
-        Merging groups these charges under {canonical.vendor} now and on future imports. It does not publish anything.
-      </p>
-      <div style={{ display: 'flex', flexWrap: 'wrap', gap: '0.5rem' }}>
-        <button disabled={isPending} onClick={() => void onMerge()} type="button">
-          {isPending ? 'Working…' : `Merge into ${canonical.vendor}`}
-        </button>
-        <button disabled={isPending} onClick={onDismiss} type="button">
-          Not the same vendor
-        </button>
-      </div>
-    </article>
-  );
-}
-
-function GroupFacts({ group, currency }: { group: VendorGroupSummary; currency: string }): JSX.Element {
-  return (
-    <span style={{ color: '#475569' }}>
-      ({group.charge_count} {group.charge_count === 1 ? 'charge' : 'charges'},{' '}
-      <MoneyDisplay amountMinor={group.amount_minor_per_period} currency={currency} /> {group.cadence})
-    </span>
+      <Stack gap={4}>
+        {error ? <Callout role="alert" tone="danger">{error}</Callout> : null}
+        {suggestions.length > 0 ? (
+          <ul className="alias-suggestions">
+            {suggestions.map((suggestion) => (
+              <li className="alias-suggestions__item" key={suggestion.alias.expense_id}>
+                <AliasSuggestionRow
+                  isPending={pendingAliasId === suggestion.alias.expense_id}
+                  onDismiss={() => void dismiss(suggestion)}
+                  onMerge={async () => {
+                    if (await merge(suggestion)) {
+                      onMerged();
+                    }
+                  }}
+                  suggestion={suggestion}
+                />
+              </li>
+            ))}
+          </ul>
+        ) : null}
+        <FlyBrainNote attributions={attributions} />
+      </Stack>
+    </Card>
   );
 }

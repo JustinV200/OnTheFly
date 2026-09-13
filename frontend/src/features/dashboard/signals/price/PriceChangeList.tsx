@@ -1,8 +1,9 @@
 /* Lists Compound Eye price-level findings: confirmed changes, an earlier price that was never established,
    an unconfirmed jump, or why none were checked. */
-import { MoneyDisplay } from '../../../shared/components/MoneyDisplay';
-import { formatBasisPoints, formatPostedDate } from './formatSignals';
-import type { NotAssessedReason, PriceLevelAnalysis } from './types';
+import { MoneyDisplay } from '../../../../shared/components/MoneyDisplay';
+import { formatBasisPoints, formatPostedDate } from '../formatSignals';
+import type { NotAssessedReason, PriceLevelAnalysis } from '../types';
+import './PriceChangeList.css';
 
 interface PriceChangeListProps {
   priceLevels: PriceLevelAnalysis;
@@ -22,7 +23,7 @@ const NOT_ASSESSED_TEXT: Record<NotAssessedReason, string> = {
 export function PriceChangeList({ priceLevels, currency }: PriceChangeListProps): JSX.Element {
   if (!priceLevels.is_assessed) {
     return (
-      <p style={{ color: '#475569' }}>
+      <p className="price-changes__unchecked">
         {priceLevels.not_assessed_reason ? NOT_ASSESSED_TEXT[priceLevels.not_assessed_reason] : 'Price changes not checked.'}
       </p>
     );
@@ -31,12 +32,12 @@ export function PriceChangeList({ priceLevels, currency }: PriceChangeListProps)
   const { shifts, pending_change: pending, unconfirmed_earlier_price: earlier } = priceLevels;
 
   return (
-    <ul style={{ margin: '0.25rem 0', paddingLeft: '1.1rem' }}>
-      {shifts.length === 0 && !pending && !earlier ? <li>No price changes found across these charges.</li> : null}
+    <ul className="price-changes">
+      {shifts.length === 0 && !pending && !earlier ? <li className="price-changes__item">No price changes found across these charges.</li> : null}
       {earlier ? (
         // Never "Price changed": the opening charge never became a price to change from. Nor
         // "one-off": a real price that changed after one period looks exactly the same.
-        <li>
+        <li className="price-changes__item">
           Earlier price not established:{' '}
           {earlier.transaction_ids.length === 1 ? (
             <>
@@ -56,14 +57,15 @@ export function PriceChangeList({ priceLevels, currency }: PriceChangeListProps)
         </li>
       ) : null}
       {shifts.map((shift) => (
-        <li key={shift.transaction_id}>
+        <li className="price-changes__item" key={shift.transaction_id}>
           Price changed {formatPostedDate(shift.changed_at)}:{' '}
           <MoneyDisplay amountMinor={shift.previous_amount_minor} currency={currency} /> →{' '}
           <MoneyDisplay amountMinor={shift.new_amount_minor} currency={currency} /> ({formatBasisPoints(shift.change_basis_points)})
         </li>
       ))}
       {pending ? (
-        <li>
+        // Tinted as needing attention; the sentence itself says the change is unconfirmed.
+        <li className="price-changes__item price-changes__item--pending">
           Possible price change, not yet confirmed: latest charge{' '}
           <MoneyDisplay amountMinor={pending.latest_amount_minor} currency={currency} /> vs the{' '}
           <MoneyDisplay amountMinor={pending.level_amount_minor} currency={currency} /> price (

@@ -1,0 +1,25 @@
+/* Row actions: small buttons that wrap and hug the cell's right edge; the never-publishable reason reads as a locked fact. */
+.expense-row-actions {
+  align-items: flex-start;
+  display: inline-flex;
+  flex-wrap: wrap;
+  gap: var(--space-2);
+  justify-content: flex-end;
+}
+
+/* On a laptop the table has room, so a public row's two buttons stay on one line instead of doubling the row height. */
+@media (min-width: 1024px) {
+  .expense-row-actions {
+    flex-wrap: nowrap;
+  }
+}
+
+.expense-row-actions__ineligible {
+  align-items: center;
+  color: var(--color-text-secondary);
+  display: inline-flex;
+  font-size: var(--text-sm);
+  font-weight: var(--weight-medium);
+  gap: var(--space-1);
+  text-align: left;
+}

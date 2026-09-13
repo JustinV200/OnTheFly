@@ -1,4 +1,12 @@
-/* Presents sandbox connection controls without handling provider requests. */
+/* Presents the Stripe sandbox source on the dashboard: consent and import controls, progress, and imported rows.
+   Provider requests and polling live in useStripeConnection; this file only renders that hook's state. */
+import { formatTimestamp } from '../../shared/format/formatTimestamp';
+import { ProvenanceBadge } from '../../shared/provenance/ProvenanceBadge';
+import { Badge, Button, Icon } from '../../shared/ui';
+import { DataSourceSection } from './sources/DataSourceSection';
+import { stripeMessageKind } from './stripe/stripeMessageKind';
+import { StripeStatusNotice } from './stripe/StripeStatusNotice';
+import { StripeTransactionList } from './stripe/StripeTransactionList';
 import { useStripeConnection } from './useStripeConnection';
 
 interface StripeConnectionProps {
@@ -7,28 +15,63 @@ interface StripeConnectionProps {
   onConnected: () => void;
 }
 
-/** Show consent/import controls and an explicit sandbox data label. */
+/** Show consent/import controls, labelled as sandbox data, as one section of the Data sources card. */
 export function StripeConnection({ onImported, onConnected }: StripeConnectionProps): JSX.Element {
   const { connection, transactions, busy, message, connect, refresh } = useStripeConnection(onImported, onConnected);
-  return <section aria-label="Stripe sandbox connection" style={{ margin: '1rem 0' }}>
-    <strong>Stripe sandbox</strong>
-    <p>Connect one simulated checking account. Imported transactions stay private.</p>
-    <button type="button" disabled={busy} onClick={() => void connect()}>
-      {connection?.connected ? 'Reconnect Stripe' : 'Connect Stripe sandbox'}
-    </button>{' '}
-    {connection?.connected && <button type="button" disabled={busy} onClick={() => void refresh()}>
-      {busy ? 'Importing…' : 'Refresh transactions'}
-    </button>}
-    {connection?.last_synced_at && <p>Last imported: {new Date(connection.last_synced_at).toLocaleString()}</p>}
-    <p role="status" aria-live="polite">{message || (busy ? 'Connecting…' : '')}</p>
-    {connection?.connected && <details>
-      <summary>Imported Stripe sandbox transactions (latest 100)</summary>
-      {!transactions.length && <p>No transactions imported yet.</p>}
-      <ul>{transactions.map((row) => <li key={row.id}>
-        {new Date(row.posted_at).toLocaleDateString()} · {row.raw_description} ·{' '}
-        {new Intl.NumberFormat(undefined, { style: 'currency', currency: row.currency }).format(row.amount_minor / 100)}{' '}
-        · {row.direction} · {row.status} · sandbox
-      </li>)}</ul>
-    </details>}
-  </section>;
+  const isConnected = connection?.connected === true;
+  // The hook has no loading flag. Before its first status response lands, nothing is connected, running, or reported;
+  // once that request settles, either the connection is set or its failure message is.
+  const isCheckingStatus = connection === null && !busy && message === '';
+
+  return (
+    <DataSourceSection
+      actions={
+        <>
+          {/* Only a first connect can be running while nothing is connected, so the spinner goes on this button then. */}
+          <Button disabled={busy} isBusy={busy && !isConnected} onClick={() => void connect()}>
+            {isConnected ? 'Reconnect Stripe' : 'Connect Stripe sandbox'}
+          </Button>
+          {isConnected ? (
+            <Button isBusy={busy} onClick={() => void refresh()}>
+              {busy ? 'Importing…' : 'Refresh transactions'}
+            </Button>
+          ) : null}
+        </>
+      }
+      meta={
+        <>
+          <ProvenanceBadge kind="financial" value="sandbox" />
+          <ConnectionStateBadge connection={connection} message={message} />
+        </>
+      }
+      description={
+        <>
+          <p>Connect one simulated checking account. Imported transactions stay private.</p>
+          {connection?.last_synced_at ? (
+            <p className="ui-text-sm ui-text-muted">Last imported: {formatTimestamp(connection.last_synced_at)}</p>
+          ) : null}
+        </>
+      }
+      title="Stripe sandbox"
+    >
+      <StripeStatusNotice busy={busy} isCheckingStatus={isCheckingStatus} message={message} />
+      {isConnected ? <StripeTransactionList transactions={transactions} /> : null}
+    </DataSourceSection>
+  );
+}
+
+interface ConnectionStateBadgeProps {
+  connection: { connected: boolean } | null;
+  message: string;
+}
+
+function ConnectionStateBadge({ connection, message }: ConnectionStateBadgeProps): JSX.Element | null {
+  if (!connection) {
+    // With no status loaded, a failure (shown below) leaves the state unknown, not "not connected". While it is still
+    // loading or a first connect is running, the status line says so and no badge guesses.
+    return message && stripeMessageKind(message) === 'failure' ? <Badge tone="warning">Status unknown</Badge> : null;
+  }
+  return connection.connected
+    ? <Badge icon={<Icon name="check" />} tone="success">Connected</Badge>
+    : <Badge tone="neutral">Not connected</Badge>;
 }

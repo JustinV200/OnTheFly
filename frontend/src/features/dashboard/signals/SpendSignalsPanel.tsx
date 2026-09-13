@@ -1,84 +1,104 @@
 /* Shows the fly-brain spend signals for one private expense: baseline basis, price changes, unusual charges.
+   Each section carries the badge of the circuit that produced it, and the panel ends with FlyBrainNote.
    Owner-only data; this panel is never reused on public pages. */
+import { ReactNode, useId } from 'react';
+
 import { LoadingSpinner } from '../../../shared/components/LoadingSpinner';
 import { FlyBrainBadge } from '../../../shared/flybrain/FlyBrainBadge';
 import { FlyBrainNote } from '../../../shared/flybrain/FlyBrainNote';
 import type { FlyBrainAttribution, FlyBrainComponent } from '../../../shared/flybrain/types';
-import { BaselineBasisSummary } from './BaselineBasisSummary';
-import { ChargeReviewList } from './ChargeReviewList';
+import { Badge, Callout, Card, Cluster, Icon, Stack } from '../../../shared/ui';
+import { ChargeReviewList } from './charges/ChargeReviewList';
 import { formatNotAnalyzedSummary } from './formatSignals';
-import { PriceChangeList } from './PriceChangeList';
-import type { NotAnalyzedTransaction } from './types';
+import { BaselineBasisSummary } from './price/BaselineBasisSummary';
+import { PriceChangeList } from './price/PriceChangeList';
+import type { SpendSignalsReport } from './types';
 import { useSpendSignals } from './useSpendSignals';
 
 interface SpendSignalsPanelProps {
   expenseId: string;
 }
 
-/** Render the spend-signals report for one expense, labelling each section with its circuit. */
+/** Render the spend-signals card for one expense: loading, unavailable, or the labelled report. */
 export function SpendSignalsPanel({ expenseId }: SpendSignalsPanelProps): JSX.Element {
   const { report, isLoading, error } = useSpendSignals(expenseId);
 
-  if (isLoading) {
-    return <LoadingSpinner />;
-  }
-  if (error || !report) {
-    return <p role="alert">{error ?? 'Spend signals are unavailable.'}</p>;
-  }
+  return (
+    <Card title="Spend signals" titleLevel={4}>
+      {isLoading ? <LoadingSpinner label="Loading spend signals…" /> : null}
+      {!isLoading && (error || !report) ? (
+        <Callout role="alert" tone="danger">{error ?? 'Spend signals are unavailable.'}</Callout>
+      ) : null}
+      {!isLoading && report ? <SpendSignalsReportBody report={report} /> : null}
+    </Card>
+  );
+}
 
+function SpendSignalsReportBody({ report }: { report: SpendSignalsReport }): JSX.Element {
   const { baseline } = report;
 
   return (
-    <section aria-label="Spend signals" style={{ border: '1px solid #e2e8f0', borderRadius: '12px', marginTop: '1rem', padding: '0.75rem 1rem' }}>
-      <h4 style={{ margin: '0 0 0.5rem' }}>Spend signals</h4>
-      <NotAnalyzedNote transactions={report.not_analyzed_transactions} />
-
-      <SectionHeading title="Price" attribution={findAttribution(report.fly_brain, 'compound_eye')} />
-      {baseline ? (
-        <>
-          <BaselineBasisSummary baseline={baseline} />
-          <PriceChangeList priceLevels={report.price_levels} currency={baseline.currency} />
-        </>
-      ) : (
-        // No posted charges: there is no baseline, which must not read as a $0 price.
-        <p style={{ color: '#475569', margin: '0.25rem 0' }}>
-          <strong>No baseline:</strong> no charge from this vendor has posted, so there is no price to explain or check for changes.
+    <Stack gap={5}>
+      {report.not_analyzed_transactions.length > 0 ? (
+        // The transaction list shows every stored row; say which ones these signals skipped.
+        <p className="ui-text-sm ui-text-muted">
+          Only posted charges are analyzed. Left out: {formatNotAnalyzedSummary(report.not_analyzed_transactions)} (listed
+          with their status under Supporting transactions).
         </p>
-      )}
+      ) : null}
 
-      <SectionHeading
-        title={
-          report.unusual_charge_count > 0
-            ? `Charges · ${report.unusual_charge_count} unusual`
-            : 'Charges'
-        }
+      <SignalSection attribution={findAttribution(report.fly_brain, 'compound_eye')} title="Price">
+        {baseline ? (
+          <>
+            <BaselineBasisSummary baseline={baseline} />
+            <PriceChangeList currency={baseline.currency} priceLevels={report.price_levels} />
+          </>
+        ) : (
+          // No posted charges: there is no baseline, which must not read as a $0 price.
+          <p className="ui-text-muted">
+            <strong>No baseline:</strong> no charge from this vendor has posted, so there is no price to explain or check for changes.
+          </p>
+        )}
+      </SignalSection>
+
+      <SignalSection
         attribution={findAttribution(report.fly_brain, 'mushroom_body_novelty')}
-      />
-      <ChargeReviewList charges={report.charges} />
+        status={
+          report.unusual_charge_count > 0
+            ? <Badge icon={<Icon name="alert-triangle" />} tone="warning">{report.unusual_charge_count} unusual</Badge>
+            : null
+        }
+        title="Charges"
+      >
+        <ChargeReviewList charges={report.charges} />
+      </SignalSection>
 
       <FlyBrainNote attributions={report.fly_brain} />
+    </Stack>
+  );
+}
+
+interface SignalSectionProps {
+  title: string;
+  attribution: FlyBrainAttribution | undefined;
+  // A count that needs attention, shown beside the title in words.
+  status?: ReactNode;
+  children: ReactNode;
+}
+
+function SignalSection({ title, attribution, status, children }: SignalSectionProps): JSX.Element {
+  const headingId = useId();
+  return (
+    <section aria-labelledby={headingId}>
+      <Stack gap={2}>
+        <Cluster gap={2}>
+          <h5 id={headingId}>{title}</h5>
+          {status}
+          {attribution ? <FlyBrainBadge attribution={attribution} /> : null}
+        </Cluster>
+        {children}
+      </Stack>
     </section>
-  );
-}
-
-function NotAnalyzedNote({ transactions }: { transactions: NotAnalyzedTransaction[] }): JSX.Element | null {
-  // The transaction list above shows every stored row; say which ones these signals skipped.
-  if (transactions.length === 0) {
-    return null;
-  }
-  return (
-    <p style={{ color: '#475569', fontSize: '0.9rem', margin: '0 0 0.5rem' }}>
-      Only posted charges are analyzed. Left out: {formatNotAnalyzedSummary(transactions)} (listed above with their status).
-    </p>
-  );
-}
-
-function SectionHeading({ title, attribution }: { title: string; attribution: FlyBrainAttribution | undefined }): JSX.Element {
-  return (
-    <div style={{ alignItems: 'center', display: 'flex', flexWrap: 'wrap', gap: '0.5rem', marginTop: '0.75rem' }}>
-      <strong>{title}</strong>
-      {attribution ? <FlyBrainBadge attribution={attribution} /> : null}
-    </div>
   );
 }
 

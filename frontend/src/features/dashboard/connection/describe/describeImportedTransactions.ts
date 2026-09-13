@@ -1,7 +1,7 @@
 /* Says how many transactions were imported and from where, e.g. "31 transactions (28 from fixture, 3 from Stripe sandbox)".
    Counts and labels come from the stored rows (backend connection/sources.py), never from the configured source. */
+import type { ImportedSource } from '../types';
 import { sourceLabel } from './sourceLabel';
-import type { ImportedSource } from './types';
 
 /** Describe the imported transactions per source. A source with no live link is marked as no longer connected. */
 export function describeImportedTransactions(transactionCount: number, sources: ImportedSource[]): string {

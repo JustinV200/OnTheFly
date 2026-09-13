@@ -1,7 +1,9 @@
-/* Lists Mushroom Body novelty readings per charge, newest first, with unusual charges called out. */
-import { MoneyDisplay } from '../../../shared/components/MoneyDisplay';
-import { formatPostedDate } from './formatSignals';
-import type { ChargeNovelty, ChargeStatus, NoveltyReason } from './types';
+/* Lists Mushroom Body novelty readings per charge, newest first, with unusual charges called out in words and an icon. */
+import { MoneyDisplay } from '../../../../shared/components/MoneyDisplay';
+import { Icon, joinClassNames } from '../../../../shared/ui';
+import { formatPostedDate } from '../formatSignals';
+import type { ChargeNovelty, ChargeStatus, NoveltyReason } from '../types';
+import './ChargeReviewList.css';
 
 interface ChargeReviewListProps {
   charges: ChargeNovelty[];
@@ -23,39 +25,30 @@ const REASON_TEXT: Record<NoveltyReason, string> = {
 export function ChargeReviewList({ charges }: ChargeReviewListProps): JSX.Element {
   // Only an expense with no posted charges has none to score; say so rather than render an empty list.
   if (charges.length === 0) {
-    return <p style={{ color: '#475569' }}>Charges not checked: no charge has posted, so there is nothing to compare.</p>;
+    return <p className="charge-review__empty">Charges not checked: no charge has posted, so there is nothing to compare.</p>;
   }
 
   // The backend returns oldest first (the order it learned them); owners scan newest first.
   const newestFirst = [...charges].reverse();
 
   return (
-    <ul style={{ listStyle: 'none', margin: 0, padding: 0 }}>
+    <ul className="charge-review">
       {newestFirst.map((charge) => {
         const isUnusual = charge.status === 'unusual';
         return (
-          <li
-            key={charge.transaction_id}
-            style={{
-              alignItems: 'baseline',
-              backgroundColor: isUnusual ? '#fef2f2' : 'transparent',
-              borderTop: '1px solid #e2e8f0',
-              display: 'flex',
-              flexWrap: 'wrap',
-              gap: '0.5rem',
-              justifyContent: 'space-between',
-              padding: '0.4rem 0.25rem',
-            }}
-          >
-            <span>
+          <li className={joinClassNames('charge-review__item', isUnusual && 'charge-review__item--unusual')} key={charge.transaction_id}>
+            <span className="charge-review__charge">
               {formatPostedDate(charge.posted_at)} · <MoneyDisplay amountMinor={charge.amount_minor} currency={charge.currency} />
               {charge.direction === 'credit' ? ' (credit)' : ''}
             </span>
-            <span style={{ color: isUnusual ? '#991b1b' : '#475569', fontWeight: isUnusual ? 600 : 400 }}>
-              {STATUS_TEXT[charge.status]}
-              {isUnusual && charge.reasons.length > 0
-                ? ` (${charge.reasons.map((reason) => REASON_TEXT[reason]).join('; ')})`
-                : ''}
+            <span className="charge-review__status">
+              {isUnusual ? <Icon className="charge-review__icon" name="alert-triangle" size={14} /> : null}
+              <span>
+                {STATUS_TEXT[charge.status]}
+                {isUnusual && charge.reasons.length > 0
+                  ? ` (${charge.reasons.map((reason) => REASON_TEXT[reason]).join('; ')})`
+                  : ''}
+              </span>
             </span>
           </li>
         );

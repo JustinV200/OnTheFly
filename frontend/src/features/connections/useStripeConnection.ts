@@ -3,6 +3,7 @@ import { useEffect, useRef, useState } from 'react';
 import { loadStripe } from '@stripe/stripe-js';
 import { apiFetch, post } from '../../shared/api/client';
 import type { ExpenseTransaction } from '../dashboard/types';
+import { STRIPE_MESSAGES } from './stripe/stripeMessages';
 
 interface ConnectionState {
   connected: boolean;
@@ -61,11 +62,11 @@ export function useStripeConnection(onImported: () => void, onConnected: () => v
         setConnection(result);
         if (result.status === 'succeeded') {
           setTransactions(await apiFetch<ExpenseTransaction[]>(`${base}/transactions`, { signal: abort.signal }));
-          setMessage('Stripe sandbox transactions imported.');
+          setMessage(STRIPE_MESSAGES.imported);
           onImported();
           return;
         }
-        setMessage('Waiting for Stripe to prepare transactions…');
+        setMessage(STRIPE_MESSAGES.waiting);
         await new Promise<void>((resolve) => window.setTimeout(resolve, 3000));
       }
       // The loop only ends by abort: this sync's timeout, or the unmount cleanup, which shows no message.
@@ -91,7 +92,7 @@ export function useStripeConnection(onImported: () => void, onConnected: () => v
         if (!active.current) return;
         if (result.error) throw new Error(result.error.message ?? 'Stripe connection failed.');
         if (!result.financialConnectionsSession?.accounts.length) {
-          setMessage('Connection cancelled. No account imported.');
+          setMessage(STRIPE_MESSAGES.cancelled);
           return;
         }
         setConnection(await post<ConnectionState>(`${base}/complete`, { session_id: session.id }));
@@ -103,7 +104,7 @@ export function useStripeConnection(onImported: () => void, onConnected: () => v
     } catch (error: unknown) {
       // Only this run's own timeout reads as a timeout; session, modal, and /complete failures keep their cause.
       if (active.current) setMessage(error instanceof ImportTimeoutError
-        ? 'Import timed out. Use Refresh to resume.'
+        ? STRIPE_MESSAGES.timedOut
         : error instanceof Error ? error.message : 'Import failed. Try again.');
     } finally { if (active.current) setBusy(false); }
   };
