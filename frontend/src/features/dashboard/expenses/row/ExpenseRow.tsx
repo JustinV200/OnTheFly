@@ -7,7 +7,7 @@ import { ProvenanceBadge } from '../../../../shared/provenance/ProvenanceBadge';
 import { Icon, joinClassNames } from '../../../../shared/ui';
 import type { Expense } from '../../types';
 import { ExpenseRowActions } from './ExpenseRowActions';
-import { VisibilityBadge } from './VisibilityBadge';
+import { VisibilityBadge } from '../../visibility/VisibilityBadge';
 import './ExpenseRow.css';
 
 interface ExpenseRowProps {
