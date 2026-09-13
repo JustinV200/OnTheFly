@@ -1,0 +1,31 @@
+/* Candidate list: a borderless list inside the card, with the selection bar pinned to the bottom of the viewport. */
+.candidate-list {
+  border-top: var(--border-width) solid var(--color-border);
+  list-style: none;
+  margin: var(--space-4) 0 0;
+  padding: 0;
+}
+
+.candidate-list__empty {
+  border-top: var(--border-width) solid var(--color-border);
+  color: var(--color-text-muted);
+  margin: var(--space-4) 0 0;
+  padding: var(--space-6) var(--space-4);
+  text-align: center;
+}
+
+.candidate-list__bar {
+  align-items: center;
+  background-color: var(--color-surface-raised);
+  border-top: var(--border-width) solid var(--color-border);
+  border-radius: 0 0 var(--radius-lg) var(--radius-lg);
+  bottom: 0;
+  box-shadow: var(--shadow-md);
+  display: flex;
+  flex-wrap: wrap;
+  gap: var(--space-3);
+  justify-content: space-between;
+  padding: var(--space-3) var(--space-4);
+  position: sticky;
+  z-index: 2;
+}

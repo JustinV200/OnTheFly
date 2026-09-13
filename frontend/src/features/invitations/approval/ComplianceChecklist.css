@@ -1,0 +1,46 @@
+/* Compliance checklist: an icon column coloured by result, with the result also written in words. */
+.compliance-list {
+  display: grid;
+  gap: var(--space-3);
+  list-style: none;
+  margin: 0;
+  padding: 0;
+}
+
+.compliance-list__item {
+  align-items: flex-start;
+  display: grid;
+  gap: var(--space-2);
+  grid-template-columns: auto minmax(0, 1fr);
+}
+
+.compliance-list__item > svg {
+  margin-top: 0.15rem;
+}
+
+.compliance-list__item--passed > svg { color: var(--color-success-text); }
+.compliance-list__item--warning > svg { color: var(--color-warning-text); }
+.compliance-list__item--blocking > svg { color: var(--color-danger-text); }
+
+.compliance-list__label {
+  display: flex;
+  flex-wrap: wrap;
+  font-size: var(--text-sm);
+  font-weight: var(--weight-semibold);
+  gap: var(--space-1) var(--space-2);
+  margin: 0;
+}
+
+.compliance-list__status {
+  color: var(--color-text-muted);
+  font-weight: var(--weight-medium);
+}
+
+.compliance-list__item--blocking .compliance-list__status { color: var(--color-danger-text); }
+.compliance-list__item--warning .compliance-list__status { color: var(--color-warning-text); }
+
+.compliance-list__detail {
+  color: var(--color-text-muted);
+  font-size: var(--text-sm);
+  margin: 0;
+}

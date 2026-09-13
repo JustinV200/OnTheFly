@@ -1,0 +1,28 @@
+/* Discovery result line: counts first, then when, with the search phrasings behind a disclosure. */
+.discovery-run {
+  background-color: var(--color-surface-subtle);
+  border: var(--border-width) solid var(--color-border-subtle);
+  border-radius: var(--radius-md);
+  padding: var(--space-3) var(--space-4);
+}
+
+.discovery-run__summary {
+  font-size: var(--text-sm);
+  margin: 0 0 var(--space-1);
+}
+
+.discovery-run__time,
+.discovery-run__detail {
+  color: var(--color-text-muted);
+}
+
+.discovery-run__detail {
+  font-size: var(--text-sm);
+  margin: 0 0 var(--space-1);
+}
+
+.discovery-run__queries {
+  font-family: var(--font-mono);
+  font-size: var(--text-xs);
+  margin: 0;
+}
