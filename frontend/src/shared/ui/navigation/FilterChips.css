@@ -1,0 +1,52 @@
+/* Filter chips: quiet outlined pills; the chosen one is filled with the text colour, as in a market category bar. */
+.ui-filter-chips {
+  display: flex;
+  gap: var(--space-2);
+  overflow-x: auto;
+  padding-bottom: var(--space-0_5);
+  scrollbar-width: none;
+}
+
+.ui-filter-chips::-webkit-scrollbar {
+  display: none;
+}
+
+.ui-filter-chip {
+  align-items: center;
+  background-color: var(--color-surface);
+  border: var(--border-width) solid var(--color-border);
+  border-radius: var(--radius-pill);
+  box-shadow: none;
+  color: var(--color-text-secondary);
+  display: inline-flex;
+  flex: none;
+  font-size: var(--text-sm);
+  font-weight: var(--weight-semibold);
+  gap: var(--space-2);
+  min-height: 34px;
+  padding: 0 var(--space-4);
+  white-space: nowrap;
+}
+
+.ui-filter-chip:hover:not(:disabled) {
+  background-color: var(--color-surface-hover);
+  border-color: var(--color-border-strong);
+  color: var(--color-text);
+}
+
+.ui-filter-chip[aria-pressed="true"],
+.ui-filter-chip[aria-pressed="true"]:hover:not(:disabled) {
+  background-color: var(--color-text);
+  border-color: var(--color-text);
+  /* The canvas colour is the inverse of the text colour in both themes. */
+  color: var(--color-canvas);
+}
+
+.ui-filter-chip__icon {
+  display: inline-flex;
+}
+
+.ui-filter-chip__count {
+  font-variant-numeric: tabular-nums;
+  opacity: 0.7;
+}

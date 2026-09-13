@@ -1,0 +1,63 @@
+/* Segmented control: a sunken track with the chosen segment raised onto the surface, like a trading app's toggle. */
+.ui-segmented {
+  background-color: var(--color-surface-sunken);
+  border: var(--border-width) solid var(--color-border);
+  border-radius: var(--radius-pill);
+  display: inline-flex;
+  gap: var(--space-0_5);
+  max-width: 100%;
+  padding: var(--space-0_5);
+}
+
+.ui-segmented__option {
+  align-items: center;
+  background: none;
+  border: var(--border-width) solid transparent;
+  border-radius: var(--radius-pill);
+  box-shadow: none;
+  color: var(--color-text-muted);
+  cursor: pointer;
+  display: inline-flex;
+  flex: 1 1 auto;
+  font-weight: var(--weight-semibold);
+  gap: var(--space-1);
+  justify-content: center;
+  line-height: var(--leading-tight);
+  white-space: nowrap;
+}
+
+.ui-segmented--sm .ui-segmented__option {
+  font-size: var(--text-xs);
+  min-height: 28px;
+  min-width: 28px;
+  padding: 0 var(--space-2);
+}
+
+.ui-segmented--md .ui-segmented__option {
+  font-size: var(--text-sm);
+  min-height: 32px;
+  padding: 0 var(--space-3);
+}
+
+.ui-segmented__option:hover:not(:disabled) {
+  background-color: var(--color-surface-hover);
+  border-color: transparent;
+  color: var(--color-text);
+}
+
+.ui-segmented__option[aria-checked="true"],
+.ui-segmented__option[aria-checked="true"]:hover:not(:disabled) {
+  background-color: var(--color-surface-raised);
+  border-color: var(--color-border-strong);
+  box-shadow: var(--shadow-sm);
+  color: var(--color-text);
+}
+
+.ui-segmented__option:focus-visible {
+  outline: 2px solid var(--color-focus-ring);
+  outline-offset: 1px;
+}
+
+.ui-segmented__icon {
+  display: inline-flex;
+}

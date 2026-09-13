@@ -1,0 +1,58 @@
+/* Tabs: an underlined row that scrolls sideways on a phone rather than wrapping. */
+.ui-tabs__list {
+  border-bottom: var(--border-width) solid var(--color-border);
+  display: flex;
+  gap: var(--space-4);
+  overflow-x: auto;
+  scrollbar-width: none;
+}
+
+.ui-tabs__list::-webkit-scrollbar {
+  display: none;
+}
+
+.ui-tabs__tab {
+  align-items: center;
+  background: none;
+  border: 0;
+  border-bottom: 2px solid transparent;
+  border-radius: 0;
+  box-shadow: none;
+  color: var(--color-text-muted);
+  display: inline-flex;
+  flex: none;
+  font-size: var(--text-md);
+  font-weight: var(--weight-semibold);
+  gap: var(--space-2);
+  margin-bottom: -1px;
+  min-height: 40px;
+  padding: 0 var(--space-0_5);
+}
+
+.ui-tabs__tab:hover:not(:disabled) {
+  background: none;
+  color: var(--color-text);
+}
+
+.ui-tabs__tab[aria-selected="true"] {
+  border-bottom-color: var(--color-text);
+  color: var(--color-text);
+}
+
+.ui-tabs__meta {
+  background-color: var(--color-surface-sunken);
+  border-radius: var(--radius-pill);
+  color: var(--color-text-muted);
+  font-size: var(--text-xs);
+  font-variant-numeric: tabular-nums;
+  padding: 0 var(--space-2);
+}
+
+.ui-tabs__panel {
+  padding-top: var(--space-4);
+}
+
+.ui-tabs__panel:focus-visible {
+  border-radius: var(--radius-sm);
+  outline-offset: 4px;
+}

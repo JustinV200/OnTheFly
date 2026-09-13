@@ -1,17 +1,18 @@
 # On the Fly design system
 
-Plain CSS custom properties plus small typed React primitives. No CSS-in-JS, no UI kit, no Tailwind. The aim is Robinhood-like clarity around money and actions inside a restrained, structured dashboard: neutral surfaces, one indigo accent, status colours only where a state means something.
+Plain CSS custom properties plus small typed React primitives. No CSS-in-JS, no UI kit, no Tailwind. The reference is a prediction-market app (Kalshi): a "task market" where every listing reads like a market card, the price is the biggest thing on the screen, and the one action is obvious. Neutral surfaces, one green accent for actions, status colours only where a state means something, and a light and a dark theme that swap tokens, never components.
 
 ## Where things live
 
 | Path | What it is |
 |---|---|
-| `styles/tokens.css` | Every colour, type size, space, radius, shadow, duration, and the breakpoint list. Values only. |
+| `styles/tokens.css` | Type sizes, spacing, radii, durations, layout, and the breakpoint list. Values only, the same in both themes. |
+| `styles/themes/light.css`, `styles/themes/dark.css` | Every colour role and shadow, per theme. The only files allowed to contain colour literals (`npm run check:colors`). Contrast is checked by `npm run check:contrast`. |
 | `styles/base.css` | Element defaults (body, headings, links, focus ring, bare buttons/inputs/tables, reduced motion). All wrapped in `:where()`, so zero specificity. |
 | `styles/utilities.css` | `.ui-num`, `.ui-money`, `.ui-text-muted`, `.ui-text-sm`, `.ui-text-xs`, `.ui-eyebrow`, `.ui-visually-hidden`, `.ui-truncate`. |
 | `index.ts` | The public surface. Import primitives from here only. |
 
-`main.tsx` imports the three stylesheets once. Each primitive imports its own CSS.
+`main.tsx` imports the global stylesheets once. Each primitive imports its own CSS. The theme (`shared/theme`) sets `data-theme` on `<html>`; an inline script in `index.html` does it before first paint so dark mode never flashes white.
 
 ```tsx
 import { Button, ButtonLink, Card, Cluster, Field, Input, PageHeader, Stack, Stat, Table } from '../../shared/ui';
@@ -21,14 +22,16 @@ import { Button, ButtonLink, Card, Cluster, Field, Input, PageHeader, Stack, Sta
 
 Use the semantic roles, not the raw scales.
 
-- **Surfaces:** `--color-canvas` (page), `--color-surface` (cards), `--color-surface-subtle`, `--color-surface-sunken`.
+- **Surfaces:** `--color-canvas` (page), `--color-surface` (cards), `--color-surface-raised` (menus, popovers), `--color-surface-subtle`, `--color-surface-sunken` (tracks, search fields), `--color-surface-hover`, `--color-surface-selected`, `--color-backdrop` (behind a drawer).
+- **Inverse pair:** text drawn on a `--color-text` fill uses `--color-canvas` (they invert in both themes). Text on `--color-brand` uses `--color-on-brand` (white in light, near-black in dark), never `--color-text-inverse`.
 - **Text:** `--color-text`, `--color-text-secondary`, `--color-text-muted` (captions; passes 4.5:1 on canvas and surface), `--color-text-subtle` (placeholders and disabled only), `--color-text-link`.
 - **Borders:** `--color-border-subtle` (row dividers), `--color-border` (cards), `--color-border-strong`, `--color-border-control` (inputs).
-- **Brand:** `--color-brand`, `--color-brand-hover`, `--color-brand-soft` + `--color-brand-soft-border` + `--color-brand-text` (tints). Primary actions, links, focus, active nav, fly-brain labels.
-- **Status:** `--color-{success|warning|danger|info|simulated|private|neutral}-{text|bg|border}` plus `-solid` for success/warning/danger/info/simulated. Always use a tone's own text, bg, and border together.
-- **Type:** `--text-xs` 12 · `--text-sm` 13 · `--text-md` 15 (body) · `--text-lg` 17 · `--text-xl` 20 · `--text-2xl` 24 · `--text-3xl` 30 · `--text-4xl` 36. Weights `--weight-regular|medium|semibold|bold`.
+- **Brand (green):** `--color-brand`, `--color-brand-hover`, `--color-on-brand`, `--color-brand-soft` + `--color-brand-soft-border` + `--color-brand-text` (tints). Primary actions, links, focus, active nav, selection. Not for fly-brain output.
+- **Status:** `--color-{success|warning|danger|info|simulated|private|neutral|flybrain}-{text|bg|border}` plus `-solid` for success/warning/danger/info/simulated/flybrain. Always use a tone's own text, bg, and border together. `flybrain` (violet) is only for fly-brain output.
+- **Charts:** `--color-chart-line`, `--color-chart-fill`, `--color-chart-reference` (the current-price line), `--color-chart-grid`.
+- **Type:** `--text-2xs` 11 · `--text-xs` 12 · `--text-sm` 13 · `--text-md` 15 (body) · `--text-lg` 17 · `--text-xl` 20 · `--text-2xl` 24 · `--text-3xl` 30 · `--text-4xl` 36 · `--text-5xl` 48 (a listing's market price). Weights `--weight-regular|medium|semibold|bold`.
 - **Space:** `--space-1` 4px … `--space-16` 64px on a 4px grid (1, 2, 3, 4, 5, 6, 8, 10, 12, 16).
-- **Radii:** `--radius-sm` 6 · `md` 8 (controls) · `lg` 12 (cards, callouts, tables) · `xl` 16 · `pill`.
+- **Radii:** `--radius-sm` 6 · `md` 10 (controls) · `lg` 14 (cards, callouts, tables) · `xl` 18 · `pill` (chips, segmented controls, search).
 - **Shadows:** `--shadow-xs` (cards, controls) · `sm` (primary buttons) · `md` · `lg` (popovers). Focus: `--focus-ring`.
 - **Motion:** `--duration-fast|base|slow`, `--ease-standard`. Reduced motion is handled globally.
 - **Breakpoints** (literal in media queries, mobile-first): `480px` large phone · `768px` tablet, shell goes desktop · `1024px` laptop, inline nav · `1280px` desktop/projector.
@@ -52,7 +55,13 @@ Don't hard-code a hex value or a pixel size in a screen. If a token is missing, 
 | `Input` / `Select` / `Textarea` | Native controls, styled. They stay native, so form-level `onChange` handlers still hear them | native props |
 | `Checkbox` / `Radio` | Labelled choices with an optional consequence hint | `label`, `hint`, native props. Group radios in a `<fieldset>` with a `<legend>` |
 | `Skeleton` / `Spinner` | Loading placeholders. Always beside a named `role="status"` label | `width`, `height`, `shape` / `size` |
-| `Icon` | Decorative 24-grid icons: `info`, `check`, `check-circle`, `alert-triangle`, `alert-circle`, `lock`, `eye`, `chevron-down`, `fly` | `name`, `size` |
+| `Icon` | Decorative 24-grid icons (drawings in `icons/iconPaths.tsx`): alerts, arrows, check, chevrons, clock, copy, external-link, eye, globe, info, lock, mail, menu, monitor, moon, plus, search, send, sun, trending-down, users, x, and the filled `fly` | `name`, `size` |
+| `SegmentedControl` | Two to four short, mutually exclusive choices shown at once (Included / Not included / Not stated; Sealed / Open). Radio semantics, arrow keys | `label`, `options`, `value` (null = unanswered), `onChange`, `size` |
+| `FilterChips` | A scrolling pill row that filters a list (market categories, sort) | `label`, `chips` (`value`, `label`, `count`), `value`, `onChange` |
+| `Tabs` | Views of one thing (Overview / Transactions / Signals). Only the active panel renders | `label`, `tabs` (`id`, `label`, `meta`, `content`), optional controlled `activeId`/`onChange` |
+| `Disclosure` | "Why?" and "How ranking works": the explanation behind a label, never the label itself | `summary`, `variant` (`inline`/`card`), `isDefaultOpen` |
+| `Drawer` | Row detail without leaving the list: right panel on desktop, full-screen sheet on phones | `isOpen`, `onClose`, `title`, `description`, `footer`, `width` |
+| `CopyButton` | Copy a share link, with a visible fallback if the clipboard is refused | `value`, `label`, `variant`, `size` |
 
 Button emphasis: one `primary` per view (publish, submit offer, challenge). Everything else is `secondary`. `ghost` is for low-emphasis toolbar actions. `danger` is only for destructive, hard-to-undo actions. **Unpublish is the safe direction, so it is `secondary`, never `danger`.** While a request is in flight pass `isBusy` and change the label ("Publishing…").
 
@@ -138,6 +147,18 @@ Button emphasis: one `primary` per view (publish, submit offer, challenge). Ever
 - Focus rings are global; never remove `outline` without replacing it.
 - Icons are decorative. State is always carried by words (badges, callout titles, button labels), never by colour alone.
 
+### Dark mode
+
+- Every colour comes from a role token, so a component never branches on the theme. If something looks wrong in one theme, a role is missing or misused: fix the token, not the component.
+- Never write a colour literal outside `styles/themes/` (business identity colours in `demoAccounts.ts` are the documented exception). `npm run check:colors` fails the build step otherwise.
+- Check both themes at 1280px and 390px before calling a screen done.
+
+### Market look (task market)
+
+- A listing is a market card: category and area as the title, the current price as the big number with its period, one line of scope, then a meta row (bidding mode, offers, closes in). The whole card links to the listing; there is exactly one button on it.
+- The listing page is a market page: the price headline, the offer chart or the sealed panel, tabs for scope, leaderboard and rules, and a sticky ticket on the right with the one action.
+- Money is the largest text on a screen; labels are small and muted; numbers use `.ui-money`/`.ui-num`.
+
 ## Not built yet
 
-Dialog, drawer, tabs, and toast are in the roadmap's list but no current screen needs them. Add them here, as primitives with their own CSS, when a screen does.
+Dialog and toast. Add them here, as primitives with their own CSS, when a screen needs one.
