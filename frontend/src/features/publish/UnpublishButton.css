@@ -1,0 +1,15 @@
+/* Unpublish button with its failure message stacked underneath, so a "Still public" error sits right by the button. */
+.unpublish-button {
+  align-items: flex-start;
+  display: inline-flex;
+  flex-direction: column;
+  gap: var(--space-1);
+  max-width: 100%;
+}
+
+.unpublish-button__error {
+  color: var(--color-danger-text);
+  font-size: var(--text-sm);
+  font-weight: var(--weight-medium);
+  line-height: var(--leading-snug);
+}
