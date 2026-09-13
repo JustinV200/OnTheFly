@@ -1,4 +1,4 @@
-"""Exercises the USAspending award client against a recorded response: the request it sends, exact cents, and failures.
+"""Exercises the USAspending prime award search against a recorded response: the request, exact cents, and failures.
 recorded/usaspending_awards_devsecops_va.json is a real response saved with its request and timestamp; no test calls the API.
 """
 
@@ -46,7 +46,14 @@ def test_the_request_carries_the_award_type_group_the_endpoint_requires() -> Non
     assert body["filters"]["place_of_performance_locations"] == [{"country": "USA", "state": "VA"}]
     assert body["filters"]["time_period"] == [{"start_date": "2021-09-13", "end_date": "2026-09-13"}]
     assert "psc_codes" not in body["filters"]
+    assert body["subawards"] is False
     assert set(RECORDED["request"]["filters"]) == set(body["filters"])
+
+
+def test_a_search_without_any_classification_code_is_rejected() -> None:
+    # It would otherwise ask for every federal contract in the window.
+    with pytest.raises(ValueError, match="NAICS or PSC"):
+        AwardSearch(start_date=date(2021, 9, 13), end_date=date(2026, 9, 13))
 
 
 def test_recorded_awards_parse_into_exact_cents_codes_and_award_page_links() -> None:

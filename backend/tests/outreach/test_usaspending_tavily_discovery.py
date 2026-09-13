@@ -16,7 +16,8 @@ from app.services.discovery.types import DiscoveryQuery
 from app.services.discovery.usaspending.source import UsaSpendingTavilyDiscoverySource
 from tests.outreach.support import OWNER_HEADERS, OWNER_ID, candidates_by_name, publish_cleaning_listing
 
-RECORDED = json.loads((Path(__file__).parent / "recorded" / "usaspending_awards_devsecops_va.json").read_text("utf-8"))
+RECORDING = Path(__file__).parents[1] / "market_data" / "recorded" / "usaspending_awards_devsecops_va.json"
+RECORDED = json.loads(RECORDING.read_text("utf-8"))
 DEVSECOPS_QUERY = DiscoveryQuery(text="unused", category="devsecops", service_area="Northern Virginia")
 
 

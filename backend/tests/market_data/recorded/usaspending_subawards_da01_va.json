@@ -1,0 +1,164 @@
+{
+  "recorded_at": "2026-09-13T08:13:21+00:00",
+  "url": "https://api.usaspending.gov/api/v2/search/spending_by_award/",
+  "request": {
+    "filters": {
+      "time_period": [
+        {
+          "start_date": "2021-09-13",
+          "end_date": "2026-09-13"
+        }
+      ],
+      "award_type_codes": [
+        "A",
+        "B",
+        "C",
+        "D"
+      ],
+      "psc_codes": [
+        "DA01"
+      ],
+      "place_of_performance_locations": [
+        {
+          "country": "USA",
+          "state": "VA"
+        }
+      ]
+    },
+    "fields": [
+      "Sub-Award ID",
+      "Sub-Awardee Name",
+      "Sub-Recipient UEI",
+      "Sub-Award Amount",
+      "Sub-Award Date",
+      "Prime Award ID",
+      "Prime Recipient Name",
+      "Awarding Agency",
+      "prime_award_generated_internal_id"
+    ],
+    "limit": 8,
+    "page": 1,
+    "sort": "Sub-Award Amount",
+    "order": "desc",
+    "subawards": true
+  },
+  "response": {
+    "spending_level": "subawards",
+    "limit": 8,
+    "results": [
+      {
+        "internal_id": "PO-0031046",
+        "prime_award_internal_id": 298090850,
+        "Sub-Award ID": "PO-0031046",
+        "Sub-Awardee Name": "KAMBRIAN CORPORATION",
+        "Sub-Recipient UEI": "MB2KUC9KA6C7",
+        "Sub-Award Amount": 831603241.0,
+        "Sub-Award Date": "2022-01-27",
+        "Prime Award ID": "FA460021F0056",
+        "Prime Recipient Name": "PERATON ENTERPRISE SOLUTIONS LLC",
+        "Awarding Agency": "Department of Defense",
+        "prime_award_generated_internal_id": "CONT_AWD_FA460021F0056_9700_FA460021D0001_9700"
+      },
+      {
+        "internal_id": "P010219242",
+        "prime_award_internal_id": 291840895,
+        "Sub-Award ID": "P010219242",
+        "Sub-Awardee Name": "ACCENTURE FEDERAL SERVICES LLC",
+        "Sub-Recipient UEI": "C47BNA8GM833",
+        "Sub-Award Amount": 222031807.0,
+        "Sub-Award Date": "2022-12-15",
+        "Prime Award ID": "80NSSC23F0020",
+        "Prime Recipient Name": "SCIENCE APPLICATIONS INTERNATIONAL CORPORATION",
+        "Awarding Agency": "National Aeronautics and Space Administration",
+        "prime_award_generated_internal_id": "CONT_AWD_80NSSC23F0020_8000_NNX16MB01C_8000"
+      },
+      {
+        "internal_id": "PO-0029020",
+        "prime_award_internal_id": 298090810,
+        "Sub-Award ID": "PO-0029020",
+        "Sub-Awardee Name": "LOGISTICS365 INC",
+        "Sub-Recipient UEI": "XRT9FXKM4KJ3",
+        "Sub-Award Amount": 180423410.0,
+        "Sub-Award Date": "2021-09-30",
+        "Prime Award ID": "FA460021F0010",
+        "Prime Recipient Name": "PERATON ENTERPRISE SOLUTIONS LLC",
+        "Awarding Agency": "Department of Defense",
+        "prime_award_generated_internal_id": "CONT_AWD_FA460021F0010_9700_FA460021D0001_9700"
+      },
+      {
+        "internal_id": "GDIT-57701",
+        "prime_award_internal_id": 281082413,
+        "Sub-Award ID": "GDIT-57701",
+        "Sub-Awardee Name": "KARSUN SOLUTIONS LLC",
+        "Sub-Recipient UEI": "WTERVPLW2SS6",
+        "Sub-Award Amount": 78692176.0,
+        "Sub-Award Date": "2024-08-30",
+        "Prime Award ID": "47QFCA24F0014",
+        "Prime Recipient Name": "GENERAL DYNAMICS INFORMATION TECHNOLOGY, INC.",
+        "Awarding Agency": "General Services Administration",
+        "prime_award_generated_internal_id": "CONT_AWD_47QFCA24F0014_4732_47QTCK18D0003_4732"
+      },
+      {
+        "internal_id": "P010281456",
+        "prime_award_internal_id": 277631381,
+        "Sub-Award ID": "P010281456",
+        "Sub-Awardee Name": "SKY TECHNOLOGIES L.L.C.",
+        "Sub-Recipient UEI": "KFD6P6Q68KL9",
+        "Sub-Award Amount": 51357577.0,
+        "Sub-Award Date": "2024-04-30",
+        "Prime Award ID": "1333BJ24F00280007",
+        "Prime Recipient Name": "SCIENCE APPLICATIONS INTERNATIONAL CORPORATION",
+        "Awarding Agency": "Department of Commerce",
+        "prime_award_generated_internal_id": "CONT_AWD_1333BJ24F00280007_1344_1333BJ21D00280004_1344"
+      },
+      {
+        "internal_id": "PO-0033600",
+        "prime_award_internal_id": 298588628,
+        "Sub-Award ID": "PO-0033600",
+        "Sub-Awardee Name": "NORTHROP GRUMMAN SYSTEMS CORPORATION",
+        "Sub-Recipient UEI": "DJUCEANK2KP4",
+        "Sub-Award Amount": 47259351.06,
+        "Sub-Award Date": "2022-04-01",
+        "Prime Award ID": "FA873022F8506",
+        "Prime Recipient Name": "PERATON INC.",
+        "Awarding Agency": "Department of Defense",
+        "prime_award_generated_internal_id": "CONT_AWD_FA873022F8506_9700_47QTCK18D0011_4732"
+      },
+      {
+        "internal_id": "GDIT-50583",
+        "prime_award_internal_id": 281082410,
+        "Sub-Award ID": "GDIT-50583",
+        "Sub-Awardee Name": "LEIDOS, INC.",
+        "Sub-Recipient UEI": "UE9QJD4KK1L6",
+        "Sub-Award Amount": 45000000.0,
+        "Sub-Award Date": "2024-04-18",
+        "Prime Award ID": "47QFCA24F0009",
+        "Prime Recipient Name": "GENERAL DYNAMICS INFORMATION TECHNOLOGY, INC.",
+        "Awarding Agency": "General Services Administration",
+        "prime_award_generated_internal_id": "CONT_AWD_47QFCA24F0009_4732_47QTCK18D0003_4732"
+      },
+      {
+        "internal_id": "0045-2",
+        "prime_award_internal_id": 307878258,
+        "Sub-Award ID": "0045-2",
+        "Sub-Awardee Name": "ACCENTURE FEDERAL SERVICES LLC",
+        "Sub-Recipient UEI": "C47BNA8GM833",
+        "Sub-Award Amount": 40630000.0,
+        "Sub-Award Date": "2022-09-30",
+        "Prime Award ID": "HT003822F0045",
+        "Prime Recipient Name": "VIINETWORK, INC.",
+        "Awarding Agency": "Department of Defense",
+        "prime_award_generated_internal_id": "CONT_AWD_HT003822F0045_9700_HT003822G0003_9700"
+      }
+    ],
+    "page_metadata": {
+      "page": 1,
+      "hasNext": true,
+      "last_record_unique_id": "307878258",
+      "last_record_sort_value": "4063000000"
+    },
+    "messages": [
+      "For searches, time period start and end dates are currently limited to an earliest date of 2007-10-01.  For data going back to 2000-10-01, use either the Custom Award Download feature on the website or one of our download or bulk_download API endpoints as listed on https://api.usaspending.gov/docs/endpoints. "
+    ]
+  }
+}
