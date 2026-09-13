@@ -1,11 +1,11 @@
 /* The price row: taller controls, with the amount in larger tabular numerals so it reads as the figure being offered.
    Scoped under the form so these outrank the control primitives' own sizing whatever order the stylesheets load in. */
-.challenge-form .challenge-price__control {
+.bid-form .bid-price__control,
+.bid-form .bid-price__amount {
   min-height: calc(var(--control-height) + var(--space-2));
 }
 
-.challenge-form .challenge-price__amount {
+.bid-form .bid-price__amount {
   font-size: var(--text-xl);
-  font-variant-numeric: tabular-nums;
   font-weight: var(--weight-semibold);
 }

@@ -1,10 +1,11 @@
 /* Tells a returning challenger that the form below revises their stored offer, before they change anything.
-   It sets the mode the current version is recorded under beside the mode a revision will take, since the two can differ. */
+   It sets the mode the current version is recorded under beside the mode a revision will take, since the two can differ,
+   and names any stored terms this form can't carry, so a revision never drops them silently. */
 import { BiddingModePill } from '../../../shared/components/BiddingModePill';
 import { MoneyDisplay } from '../../../shared/components/MoneyDisplay';
 import { formatTimestamp } from '../../../shared/format/formatTimestamp';
 import { ProvenanceBadge } from '../../../shared/provenance/ProvenanceBadge';
-import { Callout, Card, Stack, Stat } from '../../../shared/ui';
+import { Callout, Card, Icon, Stack, Stat } from '../../../shared/ui';
 import type { BiddingModeValue, StoredOffer } from '../types';
 import './ExistingOfferNotice.css';
 
@@ -17,17 +18,14 @@ interface ExistingOfferNoticeProps {
   revisionMode: BiddingModeValue;
 }
 
-/** Render the stored offer's price, recorded mode, and anything a revision from this form would change or drop. */
+/** Render the stored offer's price, recorded mode beside the revision's mode, and anything a revision would change or drop. */
 export function ExistingOfferNotice({ offer, isOnCurrentScope, revisionMode }: ExistingOfferNoticeProps): JSX.Element {
   // Anything but an explicit "open" reads as sealed, the same fallback the server applies.
   const recordedMode: BiddingModeValue = offer.bidding_mode_at_submission === 'open' ? 'open' : 'sealed';
   const uneditableTerms = describeUneditableTerms(offer);
 
   return (
-    <Card
-      description="Submitting revises it. The form below starts from your current offer. Every term you submit replaces the stored one; earlier versions are kept."
-      title="You already have an offer on this listing"
-    >
+    <Card description="The form starts from it. Submitting replaces every term; earlier versions are kept." title="Revising your current offer">
       <Stack gap={4}>
         <div className="existing-offer__summary">
           <Stat
@@ -37,27 +35,23 @@ export function ExistingOfferNotice({ offer, isOnCurrentScope, revisionMode }: E
                 <span>saved {formatTimestamp(offer.revised_at ?? offer.submitted_at)}</span>
               </>
             )}
-            label="Your current offer"
-            size="lg"
+            label="Current offer"
+            size="md"
             unit={`/ ${offer.billing_frequency}`}
             value={<MoneyDisplay amountMinor={offer.price_minor} currency={offer.price_currency} />}
           />
-          <dl className="existing-offer__modes">
-            <div className="existing-offer__mode">
-              <dt>Your current version is recorded as</dt>
+          <div className="existing-offer__modes">
+            <dl className="existing-offer__mode">
+              <dt>Recorded as</dt>
               <dd><BiddingModePill mode={recordedMode} /></dd>
-            </div>
-            <div className="existing-offer__mode">
-              <dt>This revision will be recorded as</dt>
+            </dl>
+            <Icon className="existing-offer__arrow" name="arrow-right" size={16} />
+            <dl className="existing-offer__mode">
+              <dt>This revision</dt>
               <dd><BiddingModePill mode={revisionMode} /></dd>
-            </div>
-          </dl>
+            </dl>
+          </div>
         </div>
-        <p className="existing-offer__consequence">
-          {revisionMode === 'open'
-            ? 'This revision’s price and scope will be visible to other challengers, never your identity.'
-            : 'Only the owner will see this revision’s price.'}
-        </p>
         {isOnCurrentScope ? null : (
           <Callout role="note" tone="warning">
             <p>

@@ -1,0 +1,80 @@
+/* A compact three-column checklist that fits the 22rem summary card and a phone: term, what was asked, the answer.
+   Marks stay one neutral colour: "Not included" can be exactly what the owner asked for, so red or green would be a judgement. */
+.bid-checklist__table {
+  border-collapse: collapse;
+  font-size: var(--text-sm);
+  table-layout: fixed;
+  width: 100%;
+}
+
+.bid-checklist__table th,
+.bid-checklist__table td {
+  border-top: var(--border-width) solid var(--color-border-subtle);
+  line-height: var(--leading-snug);
+  overflow-wrap: anywhere;
+  padding: calc(var(--space-1) + var(--space-0_5)) var(--space-1);
+  text-align: left;
+  vertical-align: top;
+}
+
+.bid-checklist__table thead th {
+  border-top: 0;
+  color: var(--color-text-muted);
+  font-size: var(--text-2xs);
+  font-weight: var(--weight-semibold);
+  letter-spacing: var(--tracking-wide);
+  padding-bottom: var(--space-1);
+  text-transform: uppercase;
+}
+
+.bid-checklist__table th:first-child,
+.bid-checklist__table td:first-child {
+  padding-left: 0;
+}
+
+.bid-checklist__table th:last-child,
+.bid-checklist__table td:last-child {
+  padding-right: 0;
+}
+
+.bid-checklist__table thead th:first-child {
+  width: 34%;
+}
+
+/* Row headers override the bare table header style (small, muted) so each term reads like the rest of the row. */
+.bid-checklist__table .bid-checklist__term {
+  color: var(--color-text);
+  font-size: var(--text-sm);
+  font-weight: var(--weight-medium);
+  letter-spacing: normal;
+  text-transform: none;
+}
+
+.bid-checklist__asked {
+  color: var(--color-text-muted);
+}
+
+.bid-checklist__answer-text {
+  align-items: baseline;
+  display: flex;
+  gap: var(--space-1);
+}
+
+.bid-checklist__answer--not_stated {
+  color: var(--color-text-muted);
+}
+
+.bid-checklist__mark {
+  color: var(--color-text-secondary);
+  flex: none;
+  font-weight: var(--weight-bold);
+  width: 0.8rem;
+}
+
+.bid-checklist__extra {
+  border-top: var(--border-width) solid var(--color-border-subtle);
+  font-size: var(--text-sm);
+  margin: 0;
+  overflow-wrap: anywhere;
+  padding-top: var(--space-2);
+}

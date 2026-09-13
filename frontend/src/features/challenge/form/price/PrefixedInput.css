@@ -1,11 +1,11 @@
 /* The prefix sits over the input's left padding, so the whole box stays one focusable, clickable native control. */
-.publish-prefixed-input {
+.bid-prefixed-input {
   display: block;
   min-width: 0;
   position: relative;
 }
 
-.publish-prefixed-input__prefix {
+.bid-prefixed-input__prefix {
   color: var(--color-text-muted);
   font-weight: var(--weight-medium);
   left: var(--space-3);
@@ -16,7 +16,7 @@
 }
 
 /* Scoped under the wrapper so it outranks .ui-control's padding whatever order the stylesheets load in. */
-.publish-prefixed-input .publish-prefixed-input__control {
+.bid-prefixed-input .bid-prefixed-input__control {
   font-variant-numeric: tabular-nums;
   padding-left: calc(var(--space-3) + var(--prefix-chars, 1) * 0.6em + 0.5em);
 }

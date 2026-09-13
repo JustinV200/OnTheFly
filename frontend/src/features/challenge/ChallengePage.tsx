@@ -1,9 +1,9 @@
-/* Hosts the challenge form for one public listing and every way submitting can go wrong.
+/* Hosts the bid form for one public listing and every way submitting can go wrong.
    The mode shown when the form opened is what the challenger acknowledges; a later change must be re-confirmed before
-   submitting, and the form stays mounted meanwhile so the draft survives. A returning challenger's form starts from their offer.
-   On wide screens the challenged price and any mode change sit in an aside that stays in view beside the form. */
-import { ReactNode, useEffect, useMemo, useState } from 'react';
-import { Link, useParams, useSearchParams } from 'react-router-dom';
+   submitting, and the form stays mounted meanwhile so the draft survives. A returning challenger's form starts from their
+   offer, an owner gets no form for their own listing, and nothing renders a form until both checks have answered. */
+import { useEffect, useMemo, useState } from 'react';
+import { useParams, useSearchParams } from 'react-router-dom';
 
 import { useActingAccount } from '../../shared/account/ActingAccountContext';
 import { ApiError } from '../../shared/api/client';
@@ -11,25 +11,24 @@ import { useApiQuery } from '../../shared/api/useApiQuery';
 import { EmptyState } from '../../shared/components/EmptyState';
 import { ErrorState } from '../../shared/components/ErrorState';
 import { LoadingSpinner } from '../../shared/components/LoadingSpinner';
-import { categoryLabel } from '../../shared/format/categoryLabel';
 import { describeDeadline } from '../../shared/format/describeDeadline';
-import { ButtonLink, PageHeader, Stack } from '../../shared/ui';
+import { ButtonLink, Stack } from '../../shared/ui';
 import type { MarketplaceListing } from '../marketplace/types';
 import { ChallengeForm } from './form/ChallengeForm';
+import { OwnListingNotice } from './owner/OwnListingNotice';
 import { useOwnListingCheck } from './owner/useOwnListingCheck';
-import { ChallengedPriceCard } from './status/ChallengedPriceCard';
+import { BidPageFrame } from './page/BidPageFrame';
+import { BidPageHeader } from './page/BidPageHeader';
 import { ExistingOfferNotice } from './status/ExistingOfferNotice';
-import { ModeChangeAlert } from './status/ModeChangeAlert';
 import { SubmittedOffer } from './status/SubmittedOffer';
 import { readBidTicket } from './ticket/readBidTicket';
 import type { BiddingModeValue, ChallengePayload, ChallengeResponse, OwnOfferResponse, StoredOffer } from './types';
 import { useChallenge } from './useChallenge';
-import './ChallengePage.css';
 
 // Polling lets the page notice an unpublish or a mode change while the challenger is still typing.
 const POLL_INTERVAL_MS = 5000;
 
-/** Render the challenge page for the acting business. */
+/** Render the bid page for the acting business. */
 export function ChallengePage(): JSX.Element {
   const { id = '' } = useParams();
   const { account } = useActingAccount();
@@ -57,66 +56,56 @@ export function ChallengePage(): JSX.Element {
 
   if (!account) {
     return (
-      <ChallengePageFrame>
-        <EmptyState action={<ButtonLink to={`/listings/${id}`}>View the listing</ButtonLink>} title="Pick a business to challenge as">
-          Offers come from a business on the platform. Choose one in the bar above. Visitors can still view the listing.
+      <BidPageFrame>
+        <EmptyState action={<ButtonLink to={`/listings/${id}`}>View the listing</ButtonLink>} title="Pick a business to bid as">
+          Offers come from a business on the platform. Choose one in the account menu. Visitors can still view the listing.
         </EmptyState>
-      </ChallengePageFrame>
+      </BidPageFrame>
     );
   }
   if (listingQuery.error?.status === 404) {
     return (
-      <ChallengePageFrame>
-        <EmptyState action={<ButtonLink to="/marketplace">Back to the marketplace</ButtonLink>} title="This listing is no longer public">
+      <BidPageFrame>
+        <EmptyState action={<ButtonLink to="/marketplace">Back to Markets</ButtonLink>} title="This listing is no longer public">
           {submitted
             ? 'Its owner unpublished it after your offer was recorded. Your offer is kept with the owner.'
             : ownOfferQuery.data?.offer
               ? 'Its owner unpublished it. Your existing offer is kept with the owner; nothing you typed here was submitted.'
               : 'Its owner unpublished it. Nothing you typed here was submitted.'}
         </EmptyState>
-      </ChallengePageFrame>
+      </BidPageFrame>
     );
   }
   if (!listingQuery.data || !currentMode || !shownMode) {
     return (
-      <ChallengePageFrame>
+      <BidPageFrame>
         {listingQuery.error
           ? <ErrorState error={listingQuery.error} onRetry={listingQuery.reload} title="Couldn’t load this listing" />
           : <LoadingSpinner label="Loading listing terms…" />}
-      </ChallengePageFrame>
+      </BidPageFrame>
     );
   }
   if (ownListing.isOwnListing === null) {
     // No form until this resolves, so an owner never starts typing an offer the server would refuse.
     return (
-      <ChallengePageFrame>
+      <BidPageFrame>
         {ownListing.error
           ? <ErrorState error={ownListing.error} onRetry={ownListing.reload} title="Couldn’t check whether this is your own listing" />
           : <LoadingSpinner label="Checking this listing…" />}
-      </ChallengePageFrame>
+      </BidPageFrame>
     );
   }
   if (ownListing.isOwnListing) {
     return (
-      <ChallengePageFrame>
-        <EmptyState
-          action={(
-            <>
-              <ButtonLink to={`/listings/${id}/inbox`} variant="primary">Manage offers</ButtonLink>
-              <ButtonLink to={`/listings/${id}`}>View the listing</ButtonLink>
-            </>
-          )}
-          title="This is your own listing"
-        >
-          A business can’t bid on its own listing. Offers from other businesses arrive in your offers inbox.
-        </EmptyState>
-      </ChallengePageFrame>
+      <BidPageFrame>
+        <OwnListingNotice listingId={id} />
+      </BidPageFrame>
     );
   }
   if (!ownOfferQuery.data) {
     // No form until this resolves: a blank form submitted over a stored offer would replace every one of its terms.
     return (
-      <ChallengePageFrame>
+      <BidPageFrame>
         {ownOfferQuery.error
           ? (
             <ErrorState error={ownOfferQuery.error} onRetry={ownOfferQuery.reload} title="Couldn’t check for your existing offer">
@@ -124,7 +113,7 @@ export function ChallengePage(): JSX.Element {
             </ErrorState>
           )
           : <LoadingSpinner label="Checking for your existing offer…" />}
-      </ChallengePageFrame>
+      </BidPageFrame>
     );
   }
 
@@ -143,6 +132,7 @@ export function ChallengePage(): JSX.Element {
     try {
       setSubmitted(await submitChallenge(id, payload));
       setIsConfirmationShown(true);
+      window.scrollTo({ top: 0 });
       // The ticket has been used; a reload or a Revise must start from the stored offer, not re-apply the old ticket.
       setSearchParams((current) => {
         const next = new URLSearchParams(current);
@@ -150,6 +140,8 @@ export function ChallengePage(): JSX.Element {
         next.delete('billing');
         return next;
       }, { replace: true });
+      // The public offer count shown on the confirmation comes from the listing, so fetch it again now.
+      listingQuery.reload();
     } catch (error) {
       if (!(error instanceof ApiError)) {
         throw error;
@@ -170,57 +162,31 @@ export function ChallengePage(): JSX.Element {
 
   return (
     <Stack gap={6}>
-      <PageHeader
-        eyebrow={<Link to={`/listings/${listing.id}`}>← Back to the listing</Link>}
-        title={`Challenge: ${categoryLabel(listing.category)}, ${listing.service_area_approximate}`}
-      />
-      <div className="challenge-page__layout">
-        <aside aria-label="The price you are challenging" className="challenge-page__aside">
-          <Stack gap={4}>
-            {isAwaitingModeConfirmation ? (
-              <ModeChangeAlert currentMode={currentMode} onConfirm={() => setShownMode(currentMode)} shownMode={shownMode} />
-            ) : null}
-            <ChallengedPriceCard deadline={deadline} listing={listing} />
-          </Stack>
-        </aside>
-
-        <Stack className="challenge-page__main" gap={5}>
-          {isFormShown ? null : submitProblem}
-          {submitted && isConfirmationShown ? <SubmittedOffer offer={submitted} onReviseAgain={() => setIsConfirmationShown(false)} /> : null}
-          {!isConfirmationShown && deadline.isClosed ? (
-            <EmptyState title="Closed to new offers">The deadline has passed, so offers and revisions are no longer accepted.</EmptyState>
-          ) : null}
-          {isFormShown ? (
-            <>
-              {currentOffer ? <ExistingOfferNotice isOnCurrentScope={isOnCurrentScope} offer={currentOffer} revisionMode={currentMode} /> : null}
-              {/* Keyed by stored version: the form reads its starting terms once, so each newly stored version re-seeds it.
-                  The key doesn't change on a mode change or a rejected submit, so neither discards the draft. */}
-              <ChallengeForm
-                acknowledgedMode={isAwaitingModeConfirmation ? null : shownMode}
-                currentMode={currentMode}
-                initialOffer={currentOffer}
-                isSubmitting={isSubmitting}
-                key={currentOffer ? `${currentOffer.id}@${currentOffer.revised_at ?? currentOffer.submitted_at}` : 'new-offer'}
-                listing={listing}
-                onConfirmMode={() => setShownMode(currentMode)}
-                ticket={submitted ? null : ticket}
-                onSubmit={handleSubmit}
-                submitProblem={submitProblem}
-              />
-            </>
-          ) : null}
-        </Stack>
-      </div>
-    </Stack>
-  );
-}
-
-// Gives the states shown before the listing loads the page's h1, so no message sits under a missing heading.
-function ChallengePageFrame({ children }: { children: ReactNode }): JSX.Element {
-  return (
-    <Stack gap={6}>
-      <PageHeader title="Challenge this price" />
-      {children}
+      <BidPageHeader listing={listing} />
+      {isFormShown ? null : submitProblem}
+      {submitted && isConfirmationShown ? <SubmittedOffer offer={submitted} onReviseAgain={() => setIsConfirmationShown(false)} /> : null}
+      {!isConfirmationShown && deadline.isClosed ? (
+        <EmptyState action={<ButtonLink to="/marketplace">Back to Markets</ButtonLink>} title="Closed to new offers">
+          {deadline.text}. Offers and revisions are no longer accepted; offers already made still count.
+        </EmptyState>
+      ) : null}
+      {isFormShown ? (
+        // Keyed by stored version: the form reads its starting terms once, so each newly stored version re-seeds it.
+        // The key doesn't change on a mode change or a rejected submit, so neither discards the draft.
+        <ChallengeForm
+          acknowledgedMode={isAwaitingModeConfirmation ? null : shownMode}
+          currentMode={currentMode}
+          initialOffer={currentOffer}
+          intro={currentOffer ? <ExistingOfferNotice isOnCurrentScope={isOnCurrentScope} offer={currentOffer} revisionMode={currentMode} /> : null}
+          isSubmitting={isSubmitting}
+          key={currentOffer ? `${currentOffer.id}@${currentOffer.revised_at ?? currentOffer.submitted_at}` : 'new-offer'}
+          listing={listing}
+          onConfirmMode={() => setShownMode(currentMode)}
+          onSubmit={handleSubmit}
+          submitProblem={submitProblem}
+          ticket={submitted ? null : ticket}
+        />
+      ) : null}
     </Stack>
   );
 }

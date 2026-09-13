@@ -1,6 +1,6 @@
 /* States the bidding terms an offer will be submitted under, directly above the price field.
    A resubmission is a revision, and the server records it under the mode in force now, not the old offer's.
-   After a mode change it also carries the confirm action, since on a phone the page's alert has scrolled out of view. */
+   After a mode change it becomes an alert carrying the confirm action; the summary card repeats both beside the submit button. */
 import { Button, Callout } from '../../../shared/ui';
 import { describeModeChange } from '../status/describeModeChange';
 import type { BiddingModeValue } from '../types';
@@ -29,8 +29,9 @@ export function BiddingTermsCallout({ acknowledgedMode, currentMode, onConfirmMo
       <div id={BIDDING_TERMS_ANCHOR}>
         <Callout
           actions={<Button onClick={onConfirmMode}>I’ve read the new terms: continue with {currentMode} bidding</Button>}
-          role="note"
-          title={`The bidding terms changed to ${currentMode}`}
+          // An alert, so the change is announced while the challenger is still typing (the page polls for it).
+          role="alert"
+          title={`The owner changed bidding to ${currentMode} while you were writing`}
           tone="warning"
         >
           <p>{describeModeChange(currentMode)} Confirm the new terms before submitting; what you typed here is kept. {replacement}</p>
