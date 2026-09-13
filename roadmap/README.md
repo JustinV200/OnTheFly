@@ -39,7 +39,9 @@ Last verified implementation result: **39 backend tests passed; frontend build p
 - [ ] Adapt existing listing/challenge/comparison models and forms to DevSecOps.
 - [ ] Submit a challenge from another browser/device and update the buyer view.
 - [ ] Distinguish a teammate demo offer from a genuine supplier quote.
-- [ ] Apply the modern UI system across Spend, Progress, Market, Fly and Bid.
+- [ ] Build theme tokens, a Light/Dark/System toggle and shared UI primitives ([11](11-usability-and-dark-mode.md), "Theme tokens and dark mode" and "Styling approach and shared primitives"). Frontend-only; can start alongside P0 so REBID screens use it from the start.
+- [ ] Replace the tall header with a compact, task-based app shell ([11](11-usability-and-dark-mode.md), "App shell").
+- [ ] Redesign Spend, Publish, Marketplace, Challenge and Inbox for usability, and build Progress, Market, Fly and Bid on the same system ([11](11-usability-and-dark-mode.md)).
 - [ ] Rehearse in a fresh browser, exercise API failure states, and record a backup.
 
 A genuine external quote is optional. Notifications and automated email outreach are not required. Manual sharing of the listing is sufficient.
@@ -61,8 +63,9 @@ Tool-selecting agent orchestration, fly learning/rewards, SAM.gov if needed beyo
 | [06 Comparison](06-counteroffer-comparison.md) | Deterministic normalization and scope differences | Add separate public-rate modeled estimates |
 | [07 Evidence](07-challenger-evidence.md) | Source/status conventions | USAspending P0; Tavily P1; no blanket verification |
 | [08 Invitations](08-outbound-invitations.md) | Future approved outreach design | Deferred; manual share is enough |
-| [09 Polish](09-demo-polish.md) | Privacy proof and failure-state rehearsal | New five-screen UI and actual fly output |
+| [09 Polish](09-demo-polish.md) | Privacy proof and failure-state rehearsal | New five-screen UI and actual fly output; visual system detailed in 11 |
 | [10 Stretch](10-stretch.md) | Later expansion ideas | Current P2 list above wins |
+| [11 Usability and dark mode](11-usability-and-dark-mode.md) | Walkthrough findings, design principles, per-screen redesign, theme tokens | New; P1, with tokens/primitives runnable alongside P0 |
 
 ## Implementation boundaries and decisions to resolve
 
