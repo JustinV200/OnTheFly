@@ -13,6 +13,7 @@ import { nextStep } from '../nextStep/nextStep';
 import { NextStepCallout, StepHandlers } from '../nextStep/NextStepCallout';
 import type { TaskNotice } from '../notices/taskNotice';
 import { TaskNoticeCallout } from '../notices/TaskNoticeCallout';
+import { useArrivalNotice } from '../notices/useArrivalNotice';
 import { TaskPublishDrawer } from '../publish/TaskPublishDrawer';
 import type { TaskDetail } from '../types';
 import { buildTaskTabs, FocusTarget } from './buildTaskTabs';
@@ -29,8 +30,10 @@ interface TaskViewProps {
 /** Render the task page for a loaded task. */
 export function TaskView({ task, reload, refreshError }: TaskViewProps): JSX.Element {
   // Null follows the default for the task's current state until the viewer (or an action) picks a tab.
-  const [activeTab, setActiveTab] = useState<string | null>(null);
-  const [notice, setNotice] = useState<TaskNotice | null>(null);
+  const arrivalNotice = useArrivalNotice();
+  // An acceptance made in the Offers drawer arrives with its notice and opens on Overview, like one made here.
+  const [activeTab, setActiveTab] = useState<string | null>(arrivalNotice ? 'overview' : null);
+  const [notice, setNotice] = useState<TaskNotice | null>(arrivalNotice);
   const [isPublishOpen, setIsPublishOpen] = useState(false);
   const [focusTarget, setFocusTarget] = useState<FocusTarget>(null);
   const [highlightedPieceId, setHighlightedPieceId] = useState<string | null>(null);

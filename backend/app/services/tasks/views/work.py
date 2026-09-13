@@ -55,6 +55,7 @@ def _item(task: Task, account_id: str, db: Session) -> WorkItem:
         relationship=relationship.value if relationship is not None else "none",
         is_subcontract=is_subcontract(task, db),
         parent=visible_parent(task, account_id, db),
+        parent_scope_changed_at=task.parent_scope_changed_at if is_poster else None,
         listing_id=listing.id if listing is not None and is_poster else None,
         listing_visibility=listing.visibility if listing is not None and is_poster else None,
         offer_count=offer_count if is_poster else 0,

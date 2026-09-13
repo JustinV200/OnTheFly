@@ -9,6 +9,7 @@ import { Icon, IconName, Stat } from '../../../shared/ui';
 import { sourceLabel } from '../connection/describe/sourceLabel';
 import type { ImportedSource } from '../connection/types';
 import type { Expense } from '../types';
+import { expenseVisibility } from '../visibility/expenseVisibility';
 import { WholeAmount } from './WholeAmount';
 import './SpendOverview.css';
 
@@ -22,7 +23,10 @@ interface SpendOverviewProps {
 export function SpendOverview({ expenses, sources }: SpendOverviewProps): JSX.Element {
   const eligible = expenses.filter((expense) => expense.is_eligible);
   const excluded = expenses.filter((expense) => !expense.is_eligible);
-  const publicCount = expenses.filter((expense) => expense.visibility === 'public').length;
+  // Live listings only: an accepted REBID is off the markets even though its expense still reads public.
+  const publicCount = expenses.filter((expense) => expenseVisibility(expense) === 'public').length;
+  // An accepted REBID was published and is now off the markets: it is neither live nor "not published".
+  const privateCount = expenses.filter((expense) => !['public', 'accepted'].includes(expenseVisibility(expense))).length;
   const provenance = Array.from(new Set(expenses.flatMap((expense) => expense.provenance))).sort();
   const sourceNames = Array.from(new Set(sources.map((source) => sourceLabel(source.provider, source.source_type))));
 
@@ -49,7 +53,7 @@ export function SpendOverview({ expenses, sources }: SpendOverviewProps): JSX.El
 
       <div className="spend-overview__tiles">
         <Tile>
-          <Stat caption="Not published" label={<IconLabel icon="lock">Private</IconLabel>} size="md" value={expenses.length - publicCount} />
+          <Stat caption="Not published" label={<IconLabel icon="lock">Private</IconLabel>} size="md" value={privateCount} />
         </Tile>
         <Tile>
           <Stat caption="Live listings" label={<IconLabel icon="globe">Public</IconLabel>} size="md" value={publicCount} />

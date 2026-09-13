@@ -42,7 +42,7 @@ export function WhatYouPayFields({ expense, values, onChange, priceError, cadenc
   };
 
   return (
-    <FormSection description="The price challengers see and try to beat." title="What you pay">
+    <FormSection description="The price bidders see and try to beat." title="What you pay">
       <Stack gap={3}>
         <p className="publish-pay__baseline">
           <Icon name="info" size={14} />

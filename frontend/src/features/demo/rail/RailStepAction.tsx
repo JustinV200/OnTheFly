@@ -26,7 +26,9 @@ export function RailStepAction({ step }: RailStepActionProps): JSX.Element {
     );
   }
 
-  if (account?.id === step.actorId && pathname === path) {
+  // Pages under the step's page count (a listing's bid form, a task's inbox), and so do the step's own extra pages.
+  const isOnStepPage = pathname === path || pathname.startsWith(`${path}/`) || step.herePrefixes.some((prefix) => pathname.startsWith(prefix));
+  if (account?.id === step.actorId && isOnStepPage) {
     return (
       <p className="demo-rail__detail">
         <Badge tone="brand">You’re here</Badge> {step.detail}

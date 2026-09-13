@@ -4,14 +4,11 @@
 import { firstPieceNeedingAction } from '../tasks/pieces/pieceNextAction';
 import type { PieceLine, WorkItem } from '../tasks/types';
 
-// The server flags a piece whose parent changed scope only through its next_step text (services/tasks/views/work.py);
-// WorkItem carries no field for it. Replace this prefix check with a parent_scope_changed_at field once WorkItem has one.
-const PARENT_SCOPE_REVIEW_PREFIX = 'The task this piece came from changed its scope';
-
 /** Return the card's next-step sentence, or null when there is nothing to suggest. */
 export function workNextStep(item: WorkItem): string | null {
-  if (item.next_step?.startsWith(PARENT_SCOPE_REVIEW_PREFIX)) {
-    return item.next_step;
+  // Reviewing a changed parent scope comes first, as on the task page: nothing on the piece was rewritten to match.
+  if (item.parent_scope_changed_at !== null) {
+    return 'The task this piece came from changed its scope: review';
   }
   if (item.relationship === 'owner') {
     return pieceStep(item.owner_money?.pieces ?? []) ?? (

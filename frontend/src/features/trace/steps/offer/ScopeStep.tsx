@@ -1,24 +1,20 @@
 /* Step 3 of the offer trace: the scope version the offer answered. For a listing scoped as requirement rows it shows how
-   the offer answered each requirement; for an older on-site listing, every stored field it states or leaves unspecified.
-   Which one applies is only known once the listing's requirement rows load, so neither shows before then. */
-import { ErrorState } from '../../../../shared/components/ErrorState';
-import { LoadingSpinner } from '../../../../shared/components/LoadingSpinner';
+   the offer answered each requirement; for an older on-site listing, every stored field it states or leaves unspecified. */
 import { formatTimestamp } from '../../../../shared/format/formatTimestamp';
 import { Badge, Stack } from '../../../../shared/ui';
 import { FactList } from '../../chain/FactList';
 import { TraceStep } from '../../chain/TraceStep';
 import { RequirementCoverage } from '../../requirements/RequirementCoverage';
-import type { TraceRequirementContext } from '../../requirements/useTraceRequirements';
 import type { OfferTrace } from '../../types';
 
 interface ScopeStepProps {
   scope: OfferTrace['scope_version'];
+  answers: OfferTrace['offer']['requirement_responses'];
   currentScopeVersionNumber: number;
-  requirementContext: TraceRequirementContext;
 }
 
 /** Render the scope version step, saying whether the listing has moved on to a later version. */
-export function ScopeStep({ scope, currentScopeVersionNumber, requirementContext }: ScopeStepProps): JSX.Element {
+export function ScopeStep({ scope, answers, currentScopeVersionNumber }: ScopeStepProps): JSX.Element {
   return (
     <TraceStep
       badges={scope.is_listing_current_version
@@ -35,28 +31,15 @@ export function ScopeStep({ scope, currentScopeVersionNumber, requirementContext
             ? 'This is the listing’s current scope.'
             : `The listing has since moved to version ${currentScopeVersionNumber}; this offer still answers version ${scope.version_number}.`}
         </p>
-        <ScopeBody currentScopeVersionNumber={currentScopeVersionNumber} requirementContext={requirementContext} scope={scope} />
+        <ScopeBody answers={answers} scope={scope} />
       </Stack>
     </TraceStep>
   );
 }
 
-function ScopeBody({ scope, currentScopeVersionNumber, requirementContext }: ScopeStepProps): JSX.Element {
-  if (requirementContext.status === 'loading') {
-    return <LoadingSpinner label="Loading this listing’s requirements…" />;
-  }
-  if (requirementContext.status === 'failed') {
-    return <ErrorState error={requirementContext.error} onRetry={requirementContext.reload} title="Couldn’t load this listing’s requirements" />;
-  }
-  if (requirementContext.requirements.length > 0) {
-    return (
-      <RequirementCoverage
-        answers={requirementContext.answers}
-        currentScopeVersionNumber={currentScopeVersionNumber}
-        isCurrentScope={scope.is_listing_current_version}
-        requirements={requirementContext.requirements}
-      />
-    );
+function ScopeBody({ scope, answers }: Pick<ScopeStepProps, 'scope' | 'answers'>): JSX.Element {
+  if (scope.requirements.length > 0) {
+    return <RequirementCoverage answers={answers} requirements={scope.requirements} />;
   }
   return (
     <FactList

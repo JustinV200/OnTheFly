@@ -12,8 +12,11 @@ from app.models.challenge import Challenge, ChallengeRevision
 from app.models.listing import PublicListingRecord, ScopeVersion
 from app.models.service_expense import ServiceExpense
 from app.models.transaction import Transaction
+from app.services.challenges.requirement_responses import load_current_responses
 from app.services.comparison.rank import RankedChallenge, rank_challenges
 from app.services.listings.current_price import resolve_current_price
+from app.services.listings.types import PublicRequirement
+from app.services.scope.requirements import load_requirements
 from app.services.trace.baseline_membership import find_baseline_membership
 from app.services.trace.compound_eye_attribution import compound_eye_attribution
 from app.services.trace.compound_eye_stimulus import compound_eye_stimulus
@@ -23,6 +26,7 @@ from app.services.trace.types import (
     TraceExpense,
     TraceListing,
     TraceOffer,
+    TraceRequirementAnswer,
     TraceSavings,
     TraceScopeVersion,
     TraceTransaction,
@@ -67,7 +71,7 @@ def build_offer_trace(challenge_id: str, acting_account_id: str, db: Session) ->
     return OfferTrace(
         savings=_savings(offer_row),
         offer=_offer(challenge, challenger, offer_row, db),
-        scope_version=_scope_version(answered_scope, listing),
+        scope_version=_scope_version(answered_scope, listing, db),
         listing=_listing(listing, listing_scope),
         # The answered version's price, matching the savings above and the "still answers version N" text.
         baseline=_baseline(expense, answered_scope, offer_row),
@@ -115,6 +119,10 @@ def _offer(challenge: Challenge, challenger: Account, offer_row: RankedChallenge
         scope_included=json.loads(challenge.scope_included),
         scope_excluded=json.loads(challenge.scope_excluded),
         scope_extras=json.loads(challenge.scope_extras),
+        requirement_responses=[
+            TraceRequirementAnswer(requirement_key=row.requirement_key, is_included=row.is_included, note=row.note)
+            for row in load_current_responses([challenge.id], db)[challenge.id]
+        ],
         scope_completeness=offer_row.scope_completeness,
         missing_items=offer_row.missing_items,
         unstated_items=offer_row.unstated_items,
@@ -125,12 +133,23 @@ def _offer(challenge: Challenge, challenger: Account, offer_row: RankedChallenge
     )
 
 
-def _scope_version(scope: ScopeVersion, listing: PublicListingRecord) -> TraceScopeVersion:
+def _scope_version(scope: ScopeVersion, listing: PublicListingRecord, db: Session) -> TraceScopeVersion:
     return TraceScopeVersion(
         id=scope.id,
         version_number=scope.version_number,
         created_at=scope.created_at,
         is_listing_current_version=scope.id == listing.scope_version_id,
+        # The answered version's own rows, so the trace shows the wording the offer actually answered.
+        requirements=[
+            PublicRequirement(
+                key=row.requirement_key,
+                text=row.text,
+                priority=row.priority,
+                labor_category=row.labor_category,
+                hours=row.hours_estimate,
+            )
+            for row in load_requirements(scope.id, db)
+        ],
         service_area=scope.service_area,
         location_approximate=scope.location_approximate,
         square_footage=scope.square_footage,
@@ -150,6 +169,7 @@ def _scope_version(scope: ScopeVersion, listing: PublicListingRecord) -> TraceSc
 def _listing(listing: PublicListingRecord, listing_scope: ScopeVersion) -> TraceListing:
     return TraceListing(
         id=listing.id,
+        title=listing.title,
         visibility=listing.visibility,
         bidding_mode=listing.bidding_mode,
         category=listing.category,

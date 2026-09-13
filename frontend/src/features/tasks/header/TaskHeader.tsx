@@ -1,6 +1,6 @@
-/* The top of a task page: back to My work, the task's title and category, the facts a participant reads first (its
-   origin and state, the viewer's own relationship to it, a Subcontract label), and the ownership line saying who owns it
-   now and who its one direct counterparty is. */
+/* The top of a task page: back to My work (and, for a piece, to the task it was split from), the task's title and
+   category, the facts a participant reads first (its origin and state, the viewer's own relationship to it, a
+   Subcontract label), and the ownership line saying who owns it now and who its one direct counterparty is. */
 import { Link } from 'react-router-dom';
 
 import { categoryLabel } from '../../../shared/format/categoryLabel';
@@ -23,10 +23,18 @@ export function TaskHeader({ task }: TaskHeaderProps): JSX.Element {
 
   return (
     <div className="task-header">
-      <Link className="task-header__back" to="/work">
-        <Icon name="arrow-left" size={14} />
-        My work
-      </Link>
+      <div className="task-header__trail">
+        <Link className="task-header__back" to="/work">
+          <Icon name="arrow-left" size={14} />
+          My work
+        </Link>
+        {/* Sent only to an account that posted or owns the parent, so a piece's winner never gets this link. */}
+        {task.parent ? (
+          <Link className="task-header__back" to={`/tasks/${task.parent.task_id}`}>
+            Split from {task.parent.title ?? 'an untitled task'}
+          </Link>
+        ) : null}
+      </div>
       <div className="task-header__main">
         <CategoryTile category={task.category} size="lg" />
         <PageHeader

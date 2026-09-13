@@ -26,6 +26,7 @@ from tests.tasks.support import (
     listing_of,
     offer,
     publish_task,
+    republish,
     requirement_keys,
     split,
     stage,
@@ -141,7 +142,10 @@ def test_buyer_still_sees_the_parent_of_its_own_piece_after_accepting_the_parent
     chain = stage(db_session, "rebid_published")
     keys = requirement_keys(db_session, chain.rebid_task_id)
     piece_id = split(client, chain.rebid_task_id, GOVCON, [keys[4]], 11_520_000)["body"]["child_task_id"]
-    assert offer(client, db_session, chain.rebid_task_id, PRIME_A, 120_000_000)["status"] == 200
+    # A buyer's split writes a new scope version, which goes back through the exact preview before bidding reopens.
+    republish(client, chain.rebid_task_id, GOVCON)
+    offered = offer(client, db_session, chain.rebid_task_id, PRIME_A, 120_000_000)
+    assert offered["status"] == 200, offered["body"]
     accepted = accept(client, chain.rebid_task_id, GOVCON, active_offer_id(db_session, chain.rebid_task_id, PRIME_A))
     assert accepted["status"] == 200, accepted["body"]
 

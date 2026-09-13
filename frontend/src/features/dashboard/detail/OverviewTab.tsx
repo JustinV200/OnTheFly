@@ -8,6 +8,7 @@ import { describePattern } from '../expenses/row/describePattern';
 import { perPeriodLabel } from '../expenses/row/perPeriodLabel';
 import type { Expense } from '../types';
 import { notPublishableReason } from '../visibility/notPublishableReason';
+import { expenseVisibility } from '../visibility/expenseVisibility';
 import { VisibilityBadge } from '../visibility/VisibilityBadge';
 import './OverviewTab.css';
 
@@ -53,7 +54,7 @@ export function OverviewTab({ expense }: OverviewTabProps): JSX.Element {
         <div className="expense-overview__fact">
           <dt>Visibility</dt>
           <dd>
-            <VisibilityBadge size="sm" visibility={expense.visibility} />
+            <VisibilityBadge size="sm" visibility={expenseVisibility(expense)} />
             <span className="ui-text-sm ui-text-muted">
               {expense.visibility === 'public'
                 ? 'Strangers see the listing, never these transactions.'

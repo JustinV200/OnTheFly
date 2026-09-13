@@ -11,22 +11,21 @@ import { ProvenanceBadge } from '../../../../shared/provenance/ProvenanceBadge';
 import { Cluster, Grid, Stack, Stat } from '../../../../shared/ui';
 import { Fact, FactList } from '../../chain/FactList';
 import { TraceStep } from '../../chain/TraceStep';
-import type { TraceRequirementContext } from '../../requirements/useTraceRequirements';
 import type { OfferTrace } from '../../types';
 
 interface OfferStepProps {
   offer: OfferTrace['offer'];
-  // The scope version this offer answered.
+  // The scope version this offer answered, and its requirement rows (empty for an on-site scope).
   scopeVersionNumber: number;
-  requirementContext: TraceRequirementContext;
+  requirementCount: number;
 }
 
 /** Render the offer step: price, monthly restatement, setup fee, timing, and scope coverage with its gaps. */
-export function OfferStep({ offer, scopeVersionNumber, requirementContext }: OfferStepProps): JSX.Element {
+export function OfferStep({ offer, scopeVersionNumber, requirementCount }: OfferStepProps): JSX.Element {
   const money = (amountMinor: number): JSX.Element => <MoneyDisplay amountMinor={amountMinor} currency={offer.price_currency} />;
   const facts: Fact[] = [
     { label: 'Scope covered', value: `${Math.round(offer.scope_completeness * 100)}% of scope version ${scopeVersionNumber}` },
-    ...inclusionFacts(offer, requirementContext),
+    ...inclusionFacts(offer, requirementCount),
   ];
   if (offer.scope_excluded.length) {
     facts.push({ label: 'Excludes', value: offer.scope_excluded.join(', ') });
@@ -61,21 +60,18 @@ export function OfferStep({ offer, scopeVersionNumber, requirementContext }: Off
   );
 }
 
-// What the offer includes. Until the listing's requirement rows load, an empty free-text list is left out rather than
-// called "nothing stated", since the offer may have answered every requirement instead.
-function inclusionFacts(offer: OfferTrace['offer'], context: TraceRequirementContext): Fact[] {
+// What the offer includes. On a requirement scope the answers carry it, so an empty free-text list isn't "nothing stated".
+function inclusionFacts(offer: OfferTrace['offer'], requirementCount: number): Fact[] {
   const hasFreeText = offer.scope_included.length > 0;
-  if (context.status !== 'ready') {
-    return hasFreeText ? [{ label: 'Includes', value: offer.scope_included.join(', ') }] : [];
-  }
-  if (context.requirements.length === 0) {
+  if (requirementCount === 0) {
     return [{ label: 'Includes', value: offer.scope_included.join(', ') || 'nothing stated' }];
   }
 
   const facts: Fact[] = [];
-  if (context.answers !== null) {
-    const includedCount = context.answers.filter((answer) => answer.is_included).length;
-    facts.push({ label: 'Requirements included', value: `${includedCount} of ${context.answers.length} (step 3 lists each one)` });
+  const answers = offer.requirement_responses;
+  if (answers.length > 0) {
+    const includedCount = answers.filter((answer) => answer.is_included).length;
+    facts.push({ label: 'Requirements included', value: `${includedCount} of ${answers.length} (step 3 lists each one)` });
   }
   if (hasFreeText) {
     facts.push({ label: 'Also includes', value: offer.scope_included.join(', ') });

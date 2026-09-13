@@ -121,6 +121,8 @@ class WorkItem(BaseModel):
     is_subcontract: bool
     # Same rule as TaskDetail.parent, so My work can list a piece under the task it came from.
     parent: ParentTaskRef | None
+    # Set for the poster when the task this piece came from changed its scope since, as on TaskDetail.
+    parent_scope_changed_at: datetime | None
     listing_id: str | None
     listing_visibility: str | None
     offer_count: int

@@ -13,7 +13,7 @@ export function UnansweredQuestions({ questions }: UnansweredQuestionsProps): JS
   if (questions.length === 0) {
     return (
       <Callout role="note" title="Every scope question has an answer" tone="success">
-        <p>Challengers will price against exactly what you entered.</p>
+        <p>Bidders will price against exactly what you entered.</p>
       </Callout>
     );
   }
@@ -24,7 +24,7 @@ export function UnansweredQuestions({ questions }: UnansweredQuestionsProps): JS
       title={questions.length === 1 ? '1 question unanswered' : `${questions.length} questions unanswered`}
       tone="warning"
     >
-      <p>Challengers will see these as not specified. Answer them, choose “Not stated”, or preview anyway.</p>
+      <p>Bidders will see these as not specified. Answer them, choose “Not stated”, or preview anyway.</p>
       <Cluster as="ul" className="publish-questions__list" gap={2}>
         {questions.map((question) => (
           <li key={question.fieldId}>

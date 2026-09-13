@@ -142,14 +142,15 @@ function posterStep(task: TaskDetail): NextStep | null {
       title: 'Public: one of your pieces needs you',
       body: 'Other businesses can bid on this task now. Meanwhile, a piece you split off is waiting on you.',
       primary: pieceLinks,
-      secondary: [{ kind: 'link', label: 'View as a stranger', to: `/listings/${listing.id}` }],
+      secondary: [{ kind: 'waysToSave', label: 'Ways to save' }],
     };
   }
   return {
     title: 'Public and waiting for offers',
     body: 'Other businesses can bid now. Meanwhile, you can look for pieces worth splitting off first.',
     primary: { kind: 'waysToSave', label: 'Ways to save' },
-    secondary: [{ kind: 'link', label: 'View as a stranger', to: `/listings/${listing.id}` }],
+    // "View as a stranger" stays on the listing card; repeating it here only adds a third copy.
+    secondary: [],
   };
 }
 

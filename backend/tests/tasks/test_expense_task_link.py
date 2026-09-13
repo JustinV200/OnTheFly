@@ -14,8 +14,8 @@ def test_expense_carries_its_rebid_task_for_the_owner_only(client: TestClient, d
     expenses = client.get("/api/expenses", headers=headers(GOVCON)).json()["expenses"]
     detail = client.get(f"/api/expenses/{expense_id}", headers=headers(GOVCON)).json()
 
-    linked = {row["id"]: row["task_id"] for row in expenses if row["task_id"] is not None}
-    assert linked == {expense_id: chain.rebid_task_id}
+    linked = {row["id"]: (row["task_id"], row["task_state"]) for row in expenses if row["task_id"] is not None}
+    assert linked == {expense_id: (chain.rebid_task_id, "public")}
     assert detail["task_id"] == chain.rebid_task_id
     # Expenses are owner-scoped: another business can't open GovCon's, so the task id can't reach it through Spend.
     assert client.get(f"/api/expenses/{expense_id}", headers=headers(PRIME_A)).status_code == 404

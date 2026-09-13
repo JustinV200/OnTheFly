@@ -5,6 +5,7 @@ import { useState } from 'react';
 import { ApiError, put } from '../../../../shared/api/client';
 import { formatMinorForInput } from '../../../../shared/format/formatMinorForInput';
 import { parseDollarsToMinor } from '../../../../shared/format/parseDollarsToMinor';
+import { perPeriodWords } from '../../../../shared/market';
 import { Button, Field, Input } from '../../../../shared/ui';
 import type { SavingsCardView } from '../../types';
 import './details.css';
@@ -47,7 +48,7 @@ export function OversightControl({ card, onSaved }: OversightControlProps): JSX.
       <Field
         error={error}
         hint={card.oversight_minor === null ? 'Unset: the card stays provisional.' : 'Subtracted from potential savings.'}
-        label={`Your oversight cost per ${card.billing_period} period`}
+        label={`Your oversight cost ${perPeriodWords(card.billing_period)}`}
       >
         <Input inputMode="decimal" onChange={(event) => setText(event.target.value)} placeholder="e.g. 12,000" value={text} />
       </Field>

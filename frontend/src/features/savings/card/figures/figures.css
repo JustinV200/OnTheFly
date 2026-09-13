@@ -1,6 +1,7 @@
-/* Card figures: the savings equation (terms separated by operators, wrapping on a phone) and the threshold pass line. */
+/* Card figures: the savings equation (terms separated by operators, wrapping on a phone) and the threshold pass line.
+   Terms align at the top so every label shares a row; operators drop past the label to sit beside the figures. */
 .savings-equation {
-  align-items: flex-end;
+  align-items: flex-start;
   display: flex;
   flex-wrap: wrap;
   gap: var(--space-2) var(--space-3);
@@ -65,7 +66,8 @@
 .savings-equation__operator {
   color: var(--color-text-muted);
   font-size: var(--text-xl);
-  line-height: 1.6;
+  line-height: var(--leading-tight);
+  padding-top: calc(var(--text-sm) * var(--leading-normal) + var(--space-1));
 }
 
 .savings-pass-line {

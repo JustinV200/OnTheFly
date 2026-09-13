@@ -18,7 +18,8 @@ export interface ChainTasks {
   primeTask: WorkItem | null;
   piece: WorkItem | null;
   subTask: WorkItem | null;
-  // Every chain task id, including pieces split further down; anything else a business has is outside the story.
+  // Every chain task id, including pieces split further down (found through each piece's parent link); anything else a
+  // business has is outside the story.
   taskIds: ReadonlySet<string>;
 }
 
@@ -26,15 +27,24 @@ export interface ChainTasks {
 export function findChainTasks(views: ChainViews): ChainTasks {
   const rebid = views.govcon?.posted.find((item) => item.origin === 'rebid' && item.category === 'devsecops') ?? null;
   const primeTask = rebid ? views.prime?.owned.find((item) => item.task_id === rebid.task_id) ?? null : null;
-  const piece = views.prime?.posted.find((item) => item.origin === 'split') ?? null;
+  // A piece's poster owns its parent, so its work item names that parent (WorkItem.parent); Prime A's piece is its split
+  // of the REBID. A business that only won a piece gets no parent, which is why the walk starts from the posters' side.
+  const piece = rebid ? views.prime?.posted.find((item) => item.origin === 'split' && item.parent?.task_id === rebid.task_id) ?? null : null;
   const subTask = piece ? views.sub?.owned.find((item) => item.task_id === piece.task_id) ?? null : null;
 
-  // Work items carry no parent id, so pieces are recognised as splits posted by Prime A or Sub B. A demo reset deletes
-  // every task those two posted or own, so in the staged demo their only splits come from this chain.
-  const splitIds = [...(views.prime?.posted ?? []), ...(views.sub?.posted ?? [])]
-    .filter((item) => item.origin === 'split')
-    .map((item) => item.task_id);
-  const taskIds = new Set([...(rebid ? [rebid.task_id] : []), ...splitIds]);
+  return { rebid, primeTask, piece, subTask, taskIds: chainTaskIds(rebid, views) };
+}
 
-  return { rebid, primeTask, piece, subTask, taskIds };
+// The REBID and every split below it, level by level: each business's posted splits whose parent is already in the chain.
+function chainTaskIds(rebid: WorkItem | null, views: ChainViews): ReadonlySet<string> {
+  const ids = new Set<string>(rebid ? [rebid.task_id] : []);
+  const splits = [...(views.govcon?.posted ?? []), ...(views.prime?.posted ?? []), ...(views.sub?.posted ?? [])]
+    .filter((item) => item.origin === 'split' && item.parent !== null);
+  let isGrowing = ids.size > 0;
+  while (isGrowing) {
+    const next = splits.filter((item) => !ids.has(item.task_id) && ids.has(item.parent?.task_id ?? ''));
+    next.forEach((item) => ids.add(item.task_id));
+    isGrowing = next.length > 0;
+  }
+  return ids;
 }

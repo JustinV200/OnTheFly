@@ -18,6 +18,10 @@ export interface Expense {
   is_publishable: boolean;
   // Present once a listing was drafted; kept after unpublishing so retained offers stay reachable.
   listing_id: string | null;
+  // The REBID task this business opened on the expense, if any, so Spend can open it instead of starting another, and
+  // its lifecycle state: once "accepted", the expense's own visibility no longer describes the listing.
+  task_id: string | null;
+  task_state: string | null;
   // Financial provenance of the transactions behind this row: production | sandbox | imported | fixture.
   provenance: string[];
 }

@@ -6,7 +6,7 @@ from collections.abc import Mapping, Sequence
 
 from pydantic import BaseModel
 
-from app.core.cadence import to_monthly
+from app.core.cadence import convert_cadence, to_monthly
 from app.core.money import Money
 from app.models.challenge import Challenge
 from app.models.listing import ScopeVersion
@@ -134,6 +134,7 @@ def _rank_one(
             missing_scope_items=completeness.missing_items,
             unstated_scope_items=completeness.unstated_items,
             label_base=savings_label,
+            annual_recurring_difference=_annual_difference(expense, answered_scope, challenge),
         )
 
     return RankedChallenge(
@@ -163,6 +164,18 @@ def _monthly_baseline(expense: ServiceExpense | None, scope: ScopeVersion) -> Mo
     if current_price is None:
         return None
     return to_monthly(current_price.amount, current_price.cadence)
+
+
+def _annual_difference(expense: ServiceExpense | None, scope: ScopeVersion, challenge: Challenge) -> Money | None:
+    # Each side restated per year from its own cadence and rounded once, so a yearly baseline and a yearly offer differ by
+    # exactly their stated amounts; ordering still uses the monthly figures. Called only once a baseline resolved and the
+    # currencies matched, so neither lookup nor subtraction can fail here.
+    current_price = resolve_task_price(expense, scope)
+    if current_price is None:
+        return None
+    baseline_annual = convert_cadence(current_price.amount, current_price.cadence, "annual")
+    offer_annual = convert_cadence(Money(amount=challenge.price_minor, currency=challenge.price_currency), challenge.billing_frequency, "annual")
+    return baseline_annual.subtract(offer_annual)
 
 
 def _answered_scope(challenge: Challenge, answered_scopes: Mapping[str, ScopeVersion]) -> ScopeVersion:

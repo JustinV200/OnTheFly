@@ -1,6 +1,8 @@
 /* Declares the offer trace response (backend app/services/trace/types.py). */
 import type { BrainStimulus } from '../../shared/flybrain/live';
 import type { FlyBrainAttribution } from '../../shared/flybrain/types';
+import type { RequirementAnswerItem } from '../../shared/offers/RequirementAnswerList';
+import type { PublicRequirement } from '../publish/types';
 
 export interface OfferTrace {
   // Null when the offer is unranked: there is no figure to trace, and offer.unranked_reason says why.
@@ -28,6 +30,8 @@ export interface OfferTrace {
     scope_included: string[];
     scope_excluded: string[];
     scope_extras: string[];
+    // Its current per-requirement answers; empty on a listing scoped without requirement rows.
+    requirement_responses: RequirementAnswerItem[];
     scope_completeness: number;
     missing_items: string[];
     unstated_items: string[];
@@ -41,6 +45,8 @@ export interface OfferTrace {
     version_number: number;
     created_at: string;
     is_listing_current_version: boolean;
+    // This version's own requirement rows, in the wording the offer answered; empty for an on-site scope.
+    requirements: PublicRequirement[];
     service_area: string | null;
     location_approximate: string | null;
     square_footage: number | null;
@@ -57,6 +63,8 @@ export interface OfferTrace {
   };
   listing: {
     id: string;
+    // The listing's title; null for a listing from before tasks, which is named by its category.
+    title: string | null;
     visibility: string;
     bidding_mode: string;
     category: string;

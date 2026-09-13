@@ -51,7 +51,8 @@ export function InboxHeader({ listing }: { listing: PublicListingProjection | nu
               ) : null}
             </>
           )}
-          subtitle={`${area} · ${listing.scope_summary}`}
+          // A task listing's scope summary already opens with its area; saying it twice reads as a glitch.
+          subtitle={listing.scope_summary.startsWith(area) ? listing.scope_summary : `${area} · ${listing.scope_summary}`}
           title={listing.title ? `Offers on “${listing.title}”` : `Offers on your ${categoryLabel(listing.category).toLowerCase()} listing`}
         />
       </div>

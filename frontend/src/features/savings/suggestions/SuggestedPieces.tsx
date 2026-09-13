@@ -31,7 +31,8 @@ export function SuggestedPieces(props: SuggestedPiecesProps): JSX.Element {
     <div aria-label="Suggested pieces" className="suggested-pieces" ref={regionRef} role="region" tabIndex={-1}>
       {cards.length === 0 ? (
         <Callout
-          actions={canSplitManually ? <Button onClick={onSplitManually} variant="primary">Split off manually</Button> : undefined}
+          // Secondary: the page's next-step callout already holds the one primary action.
+          actions={canSplitManually ? <Button onClick={onSplitManually}>Split off manually</Button> : undefined}
           role="status"
           title="No piece clears the thresholds on these numbers"
           tone="info"

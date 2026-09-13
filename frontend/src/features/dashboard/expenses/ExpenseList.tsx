@@ -14,15 +14,13 @@ import './ExpenseList.css';
 
 interface ExpenseListProps {
   expenses: Expense[];
-  // Listing id → task id, so a row whose expense already has a task can open it.
-  taskIdByListingId: ReadonlyMap<string, string>;
   selectedExpenseId: string | null;
   onOpen: (expenseId: string) => void;
   onVisibilityChanged: () => void;
 }
 
 /** Render the "Expenses" section with its grouped, sorted rows. Assumes at least one expense. */
-export function ExpenseList({ expenses, taskIdByListingId, selectedExpenseId, onOpen, onVisibilityChanged }: ExpenseListProps): JSX.Element {
+export function ExpenseList({ expenses, selectedExpenseId, onOpen, onVisibilityChanged }: ExpenseListProps): JSX.Element {
   const headingId = useId();
   const groupHeadingId = useId();
   const { publishable, notPublishable } = arrangeExpenses(expenses);
@@ -38,7 +36,7 @@ export function ExpenseList({ expenses, taskIdByListingId, selectedExpenseId, on
       onOpen={onOpen}
       onVisibilityChanged={onVisibilityChanged}
       shouldShowProvenance={commonProvenance === null}
-      taskId={expense.listing_id ? taskIdByListingId.get(expense.listing_id) ?? null : null}
+      taskId={expense.task_id}
     />
   );
 

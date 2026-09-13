@@ -62,6 +62,8 @@ Don't hard-code a hex value or a pixel size in a screen. If a token is missing, 
 | `Disclosure` | "Why?" and "How ranking works": the explanation behind a label, never the label itself | `summary`, `variant` (`inline`/`card`), `isDefaultOpen` |
 | `Drawer` | Row detail without leaving the list: right panel on desktop, full-screen sheet on phones | `isOpen`, `onClose`, `title`, `description`, `footer`, `width` |
 | `CopyButton` | Copy a share link, with a visible fallback if the clipboard is refused | `value`, `label`, `variant`, `size` |
+| `TermHint` | A jargon word explained in one plain sentence ("Keep cost", "Remainder"): dotted underline, focusable, tooltip on hover or focus, announced as the term's description. Explains a word; never hides an honesty label | `hint`, children (the term) |
+| `useFocusOnRequest` | A button elsewhere on the page ("Review offers") scrolls to a region and moves focus there once that region has loaded, exactly once | `ref`, `isRequested`, `isReady`, `onHandled` |
 
 Button emphasis: one `primary` per view (publish, submit offer, challenge). Everything else is `secondary`. `ghost` is for low-emphasis toolbar actions. `danger` is only for destructive, hard-to-undo actions. **Unpublish is the safe direction, so it is `secondary`, never `danger`.** While a request is in flight pass `isBusy` and change the label ("Publishing…").
 
@@ -85,8 +87,9 @@ Button emphasis: one `primary` per view (publish, submit offer, challenge). Ever
 
 - Visibility (`VisibilityBadge`) and bidding mode (`BiddingModePill`) go in `PageHeader meta` or the `Card` header, so they are read before any action.
 - Private is a strong neutral (`private` tone, lock icon); public is `success`. Words are always present.
-- Bidding terms before a challenge form: a `Callout` (`tone="info"` for open, `tone="private"` for sealed, `role="note"`) **above** the price field, with the full sentence.
-- Leaderboards: rank, price, **scope completeness in the adjacent column**, time, origin. No challenger identity column, ever.
+- Bidding terms on a bid form: the mode pill in the page header, and **one** full-sentence explanation next to the submit button, where the bidder decides. Don't repeat it above the price field; a mode change while the bidder types gets its own `Callout role="alert"`.
+- Leaderboards: rank, price, **scope completeness in the adjacent column**, time, origin. No bidder identity column, ever.
+- Say "bidder" and "business" in visible copy, not "challenger" and "owner" (the code keeps its `challenge` names).
 
 ### Forms
 

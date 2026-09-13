@@ -19,7 +19,7 @@ export function WhatYouBuyFields({ values, fieldSet, onChange, squareFootageErro
   const { examples } = fieldSet;
 
   return (
-    <FormSection description="What a challenger prices against. Leave anything you don’t know blank rather than guessing." title="What you buy">
+    <FormSection description="What a bidder prices against. Leave anything you don’t know blank rather than guessing." title="What you buy">
       <Grid minItemWidth="220px">
         <Field label="How often">
           <Input

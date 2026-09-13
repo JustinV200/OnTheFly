@@ -6,6 +6,8 @@ import type { ReactNode } from 'react';
 
 import { BiddingModePill } from '../../../shared/components/BiddingModePill';
 import { ListedPrice } from '../../../shared/components/ListedPrice';
+import { MoneyDisplay } from '../../../shared/components/MoneyDisplay';
+import { parseDollarsToMinor } from '../../../shared/format/parseDollarsToMinor';
 import { cadenceSuffix, describeBilling } from '../../../shared/market';
 import { Button, Callout, Card, Stack } from '../../../shared/ui';
 import type { PublicListingProjection } from '../../publish/types';
@@ -33,10 +35,15 @@ interface OfferSummaryProps {
 /** Render the summary card; its submit button submits the form identified by formId. */
 export function OfferSummary(props: OfferSummaryProps): JSX.Element {
   const { formId, fields, listing, acknowledgedMode, currentMode, onConfirmMode, isRevision, isSubmitting, validationError, submitProblem } = props;
-  // Display formatting only: a leading "$" the bidder typed isn't doubled. The text is otherwise shown as typed.
+  // Display formatting only: a parseable amount reads like every other price ("$1,298,000.00"); anything else is shown as
+  // typed, without doubling a leading "$", so the bidder sees exactly what the form will reject.
   const typedPrice = fields.price.trim().replace(/^\$/, '');
   const typedSetupFee = fields.setupFee.trim().replace(/^\$/, '');
   const symbol = listing.price_currency === 'USD' ? '$' : `${listing.price_currency} `;
+  const asTyped = (text: string): ReactNode => {
+    const amountMinor = parseDollarsToMinor(text);
+    return amountMinor === null ? `${symbol}${text}` : <MoneyDisplay amountMinor={amountMinor} currency={listing.price_currency} />;
+  };
 
   return (
     <Card actions={<BiddingModePill mode={acknowledgedMode ?? currentMode} />} as="aside" className="bid-summary" title="Your offer">
@@ -45,14 +52,14 @@ export function OfferSummary(props: OfferSummaryProps): JSX.Element {
           <p className="ui-eyebrow">{isRevision ? 'Revised price' : 'Your price'}</p>
           {typedPrice ? (
             <p className="bid-summary__figure">
-              <span className="bid-summary__amount ui-money">{symbol}{typedPrice}</span>
+              <span className="bid-summary__amount ui-money">{asTyped(typedPrice)}</span>
               {/* The period the bidder picked, as its short suffix; the amount is never restated in another period. */}
               <span className="bid-summary__period">{cadenceSuffix(fields.billingFrequency)}</span>
             </p>
           ) : (
             <p className="bid-summary__empty">No price entered yet</p>
           )}
-          {typedSetupFee ? <p className="bid-summary__setup">+ {symbol}{typedSetupFee} setup fee</p> : null}
+          {typedSetupFee ? <p className="bid-summary__setup">+ {asTyped(typedSetupFee)} setup fee</p> : null}
           <p className="bid-summary__current">
             {listing.price_minor === null
               ? <>The business didn’t disclose its price; bid what the work is worth. The listing is {describeBilling(listing.billing_cadence)}.</>

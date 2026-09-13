@@ -38,7 +38,7 @@ export function BiddingFields({ values, choices, onChange, onChoicesChange }: Bi
             <Radio
               checked={choices.bidding_mode === 'open'}
               className="publish-bidding__option"
-              hint="Offer prices and scope go public, never who made them, so challengers can underbid."
+              hint="Offer prices and scope go public, never who made them, so bidders can underbid."
               label="Open"
               name="bidding_mode"
               onChange={() => onChoicesChange({ ...choices, bidding_mode: 'open' })}

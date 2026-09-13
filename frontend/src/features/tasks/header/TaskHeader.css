@@ -1,7 +1,13 @@
-/* Task header: a quiet back link, then the category tile beside the page header. */
+/* Task header: quiet back links, then the category tile beside the page header. */
 .task-header {
   display: grid;
   gap: var(--space-3);
+}
+
+.task-header__trail {
+  display: flex;
+  flex-wrap: wrap;
+  gap: var(--space-1) var(--space-4);
 }
 
 .task-header__back {

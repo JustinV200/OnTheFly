@@ -1,13 +1,15 @@
-/* Everything about one offer without leaving the ranked list: scope covered, the price as offered and compared per month,
-   potential savings and why they are provisional, every evidence record, the challenger's message, terms as offered, and
-   history. Owner-only, like the page; the footer leads to the trace of the savings figure. Scope comes before price here
-   too. */
+/* Everything about one offer without leaving the ranked list: scope covered (answer by answer on a requirement listing),
+   the price as offered and compared per month, potential savings and why they are provisional, every evidence record, the
+   bidder's message, terms as offered, and history. Owner-only, like the page; the footer leads to the trace of the savings
+   figure. Scope comes before price here too. */
 import type { ApiQueryState } from '../../../shared/api/useApiQuery';
 import { ErrorState } from '../../../shared/components/ErrorState';
 import { MoneyDisplay } from '../../../shared/components/MoneyDisplay';
 import { cadenceSuffix } from '../../../shared/market';
+import { RequirementAnswerList } from '../../../shared/offers/RequirementAnswerList';
 import { ProvenanceBadge } from '../../../shared/provenance/ProvenanceBadge';
 import { ButtonLink, Drawer, Grid, Icon, Skeleton, Stat } from '../../../shared/ui';
+import type { PublicRequirement } from '../../publish/types';
 import { EvidenceRecords } from '../evidence/EvidenceRecords';
 import { SavingsBreakdown } from '../savings/SavingsBreakdown';
 import { ScopeCoverage } from '../scope/ScopeCoverage';
@@ -29,16 +31,19 @@ interface OfferDrawerProps {
   task: InboxTaskSummary | null;
   // Whether the listing is a rebid of an expense: only those have a trace from savings down to transactions.
   hasExpense: boolean;
+  // The listing's current requirement rows, for naming each answer; keys are stable across scope versions.
+  requirements: PublicRequirement[];
   onAccepted: (task: TaskDetail) => void;
 }
 
 /** Render the offer drawer while an offer is selected. */
-export function OfferDrawer({ offer, ownerOffers, onClose, task, hasExpense, onAccepted }: OfferDrawerProps): JSX.Element | null {
+export function OfferDrawer({ offer, ownerOffers, onClose, task, hasExpense, requirements, onAccepted }: OfferDrawerProps): JSX.Element | null {
   if (!offer) {
     return null;
   }
   const terms = ownerOffers.data?.challenges.find((candidate) => candidate.id === offer.challenge_id) ?? null;
   const isEarlierScope = !offer.is_current_scope_version;
+  const answers = terms?.requirement_responses ?? [];
 
   return (
     <Drawer
@@ -77,6 +82,9 @@ export function OfferDrawer({ offer, ownerOffers, onClose, task, hasExpense, onA
             missingItems={offer.missing_items}
             unstatedItems={offer.unstated_items}
           />
+          {answers.length > 0 ? (
+            <RequirementAnswerList answers={answers} notePrefix="Bidder’s note" requirements={requirements} />
+          ) : null}
         </DrawerSection>
 
         <DrawerSection title="Price">
@@ -108,7 +116,7 @@ export function OfferDrawer({ offer, ownerOffers, onClose, task, hasExpense, onA
           <EvidenceRecords checks={offer.evidence_checks} lastUpdated={offer.evidence_last_updated} rollup={offer.evidence_rollup} />
         </DrawerSection>
 
-        <DrawerSection title="Message from the challenger">
+        <DrawerSection title="Message from the bidder">
           {terms ? (
             terms.message_to_owner
               ? <blockquote className="offer-drawer__message">{terms.message_to_owner}</blockquote>
@@ -117,7 +125,7 @@ export function OfferDrawer({ offer, ownerOffers, onClose, task, hasExpense, onA
         </DrawerSection>
 
         <DrawerSection title="Terms as offered">
-          {terms ? <OfferTerms offer={terms} /> : <TermsPending ownerOffers={ownerOffers} />}
+          {terms ? <OfferTerms hasRequirementAnswers={answers.length > 0} offer={terms} /> : <TermsPending ownerOffers={ownerOffers} />}
         </DrawerSection>
 
         <DrawerSection title="History">

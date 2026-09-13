@@ -1,6 +1,7 @@
 /* Who owns the task, in one line under its title, so a transfer is visible rather than implied:
    client after acceptance: "[GI] GovCon Industries → [PA] Prime A Federal Systems · owns it now";
-   owner: "Client: [GI] GovCon Industries · [PA] You own it"; poster that still owns it: "[GI] You posted and own it".
+   owner: "Client: [GI] GovCon Industries · [PA] You own it". A poster that still owns its task gets no line: there is no
+   counterparty yet, and the header's "You posted and own this" badge already says so.
    Names come only from what the API returned (buyer_money.accepted_bidder, owner_money.client) plus the acting business
    itself; nothing two steps away is ever named here. */
 import { Link } from 'react-router-dom';
@@ -46,13 +47,7 @@ export function OwnershipLine({ task }: { task: TaskDetail }): JSX.Element | nul
       </p>
     );
   }
-  return (
-    <p className="ownership-line">
-      {you}
-      <span>You posted and own it</span>
-      <span className="ownership-line__muted">· no offer accepted yet</span>
-    </p>
-  );
+  return null;
 }
 
 function Party({ party }: { party: Counterparty }): JSX.Element {

@@ -12,6 +12,8 @@ export interface ChainStep {
   isDone: boolean;
   // Where the actor should go next; null when the target doesn't exist yet.
   path: string | null;
+  // Other pages that already count as being on this step (pages below path count too), e.g. the REBID form Spend opens.
+  herePrefixes: string[];
 }
 
 /** Return the ordered steps with their status and links. */
@@ -28,6 +30,8 @@ export function chainSteps(views: ChainViews): ChainStep[] {
       detail: 'Spend → DevSecOps Support → REBID… Fill with the demo scope, confirm, then preview and publish from the task page.',
       isDone: isPublicOrLater(rebid),
       path: rebid ? `/tasks/${rebid.task_id}` : '/',
+      // Spend's REBID… opens the form, which is still this step until the task exists.
+      herePrefixes: rebid ? [] : ['/tasks/new'],
     },
     {
       id: 'prime-bids',
@@ -37,15 +41,17 @@ export function chainSteps(views: ChainViews): ChainStep[] {
       detail: 'Open the market, answer every requirement, and submit an offer (for example $1,298,000 a year).',
       isDone: Boolean(rebid && (rebid.offer_count > 0 || rebid.state === 'accepted')),
       path: rebid?.listing_id && rebid.listing_visibility === 'public' ? `/listings/${rebid.listing_id}` : '/marketplace',
+      herePrefixes: [],
     },
     {
       id: 'govcon-accepts',
       actorId: GOVCON_ID,
       actorName: 'GovCon Industries',
       title: 'Accept Prime A’s offer: ownership moves',
-      detail: 'Task page → Listing & offers → Accept…. GovCon’s Split button disappears; Prime A now owns the task.',
+      detail: 'Task page → Review offers → Accept… → Accept and transfer ownership. Prime A now owns the task; GovCon’s Split off turns disabled.',
       isDone: rebid?.state === 'accepted',
       path: rebid ? `/tasks/${rebid.task_id}` : null,
+      herePrefixes: [],
     },
     {
       id: 'prime-splits',
@@ -55,6 +61,7 @@ export function chainSteps(views: ChainViews): ChainStep[] {
       detail: 'Priced from Prime A’s own internal rates against market evidence. Split off takes the suggested cut.',
       isDone: (primeOwned?.owner_money?.pieces.length ?? 0) > 0,
       path: primeOwned ? `/tasks/${primeOwned.task_id}` : null,
+      herePrefixes: [],
     },
     {
       id: 'prime-publishes',
@@ -64,6 +71,7 @@ export function chainSteps(views: ChainViews): ChainStep[] {
       detail: 'The preview shows no GovCon name, no parent task and no accepted price. The cut stays hidden by default.',
       isDone: isPublicOrLater(piece),
       path: piece ? `/tasks/${piece.task_id}` : null,
+      herePrefixes: [],
     },
     {
       id: 'sub-bids',
@@ -73,6 +81,7 @@ export function chainSteps(views: ChainViews): ChainStep[] {
       detail: 'Sub B sees a Subcontract listing with its price not disclosed, and bids (for example $219,000 a year).',
       isDone: Boolean(piece && (piece.offer_count > 0 || piece.state === 'accepted')),
       path: piece?.listing_id && piece.listing_visibility === 'public' ? `/listings/${piece.listing_id}` : '/marketplace',
+      herePrefixes: [],
     },
     {
       id: 'prime-accepts',
@@ -82,6 +91,7 @@ export function chainSteps(views: ChainViews): ChainStep[] {
       detail: 'The difference under the cut returns to Prime A’s remainder.',
       isDone: piece?.state === 'accepted',
       path: piece ? `/tasks/${piece.task_id}` : null,
+      herePrefixes: [],
     },
     {
       id: 'sub-owns',
@@ -92,6 +102,7 @@ export function chainSteps(views: ChainViews): ChainStep[] {
       detail: 'The new owner can split again. The demo guide’s money views show each business’s own figures.',
       isDone: Boolean(subOwned),
       path: subOwned ? `/tasks/${subOwned.task_id}` : null,
+      herePrefixes: [],
     },
   ];
 }

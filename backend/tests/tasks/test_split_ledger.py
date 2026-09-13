@@ -75,6 +75,19 @@ def test_undo_restores_the_cut_closes_the_piece_and_keeps_its_offers(client: Tes
     assert split(client, chain.rebid_task_id, PRIME_A, keys[2:4], 20_000_000)["status"] == 200
 
 
+def test_a_piece_whose_split_was_undone_cant_be_confirmed_or_published_again(client: TestClient, db_session: Session) -> None:
+    chain = stage(db_session, "piece_published")
+    split_id = build_ledger(task_of(db_session, chain.rebid_task_id), db_session).pieces[0].split_id
+    assert client.post(f"/api/splits/{split_id}/undo", headers=headers(PRIME_A)).status_code == 200
+
+    confirmed = client.post(
+        f"/api/tasks/{chain.piece_task_id}/confirm", headers=headers(PRIME_A), json={"bidding_mode": "sealed", "show_price": False}
+    )
+
+    assert confirmed.status_code == 400 and "split was undone" in confirmed.json()["detail"]
+    assert listing_of(db_session, chain.piece_task_id).visibility == "closed"
+
+
 def test_undo_is_refused_once_the_piece_accepted_an_offer(client: TestClient, db_session: Session) -> None:
     chain = stage(db_session, "sub_owns")
     split_id = build_ledger(task_of(db_session, chain.rebid_task_id), db_session).pieces[0].split_id

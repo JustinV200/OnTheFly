@@ -1,5 +1,7 @@
 /* The dock's own pieces: the labelled pill shown while the panel is minimized, and the line shown while the panel code
-   loads. Both sit in the bottom corner and stay small, so a run labels itself without covering a table's last column. */
+   loads. Both sit small in the bottom-right corner, in the page margin on a laptop. Unlike the open panel, the pill stays
+   under drawers: a drawer's primary action ("Publish exactly this") sits in that same corner and must never be covered,
+   and a drawer that shows fly output labels it itself. */
 .fly-brain-dock__chip,
 .fly-brain-dock__loading {
   align-items: center;
@@ -16,7 +18,7 @@
   padding: var(--space-2) var(--space-3);
   position: fixed;
   right: var(--space-3);
-  z-index: var(--z-brain-dock);
+  z-index: calc(var(--z-drawer) - 1);
 }
 
 .fly-brain-dock__chip {

@@ -8,6 +8,7 @@ from typing import Literal
 from pydantic import BaseModel
 
 from app.services.flybrain import BrainStimulus, FlyBrainAttribution
+from app.services.listings.types import PublicRequirement
 
 
 class TraceSavings(BaseModel):
@@ -26,6 +27,14 @@ class TraceSavings(BaseModel):
     assumptions: list[str]
 
 
+class TraceRequirementAnswer(BaseModel):
+    """How the offer answered one requirement on the scope version it answered."""
+
+    requirement_key: str
+    is_included: bool
+    note: str | None
+
+
 class TraceOffer(BaseModel):
     """The counteroffer as submitted, with its provenance and revision history size."""
 
@@ -41,6 +50,8 @@ class TraceOffer(BaseModel):
     scope_included: list[str]
     scope_excluded: list[str]
     scope_extras: list[str]
+    # Its current per-requirement answers; empty for an offer on a listing scoped without requirement rows.
+    requirement_responses: list[TraceRequirementAnswer]
     scope_completeness: float
     missing_items: list[str]
     unstated_items: list[str]
@@ -58,6 +69,8 @@ class TraceScopeVersion(BaseModel):
     version_number: int
     created_at: datetime
     is_listing_current_version: bool
+    # This version's own requirement rows, in the wording the offer answered; empty for an on-site scope.
+    requirements: list[PublicRequirement]
     service_area: str | None
     location_approximate: str | None
     square_footage: int | None
@@ -77,6 +90,8 @@ class TraceListing(BaseModel):
     """The listing record as stored now, including whether it is still public."""
 
     id: str
+    # The listing's title as published; None for a listing from before tasks, which is named by its category.
+    title: str | None
     visibility: str
     bidding_mode: str
     category: str

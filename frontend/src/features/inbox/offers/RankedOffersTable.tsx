@@ -36,7 +36,7 @@ export function RankedOffersTable({ listing, offers, offerTerms, currentScopeVer
     <Table className="ranked-offers" label="Offers ranked against what you pay now" layout="stack" minWidth="960px">
       <thead>
         <tr>
-          <th className="ranked-offers__col-challenger">Challenger · only you see names</th>
+          <th className="ranked-offers__col-challenger">Bidder · only you see names</th>
           <th className="ranked-offers__col-scope">Scope covered</th>
           <th className="ranked-offers__col-price ui-num">Price</th>
           <th className="ranked-offers__col-savings">Potential savings</th>

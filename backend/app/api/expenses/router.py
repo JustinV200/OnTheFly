@@ -20,7 +20,7 @@ from app.models.service_expense import ServiceExpense
 from app.models.transaction import Transaction
 from app.services.expenses.corrections import ExpenseCorrectionError, OwnerExpenseUpdate, apply_owner_expense_update
 from app.services.expenses.sync import sync_service_expenses
-from app.services.tasks.expense_tasks import rebid_task_ids_by_expense
+from app.services.tasks.expense_tasks import ExpenseTask, rebid_tasks_by_expense
 
 router = APIRouter(prefix="/api/expenses", tags=["expenses"])
 
@@ -43,14 +43,14 @@ def list_expenses(request: Request, db: Session = Depends(get_db)) -> ExpenseLis
         .order_by(ServiceExpense.annualized_amount_minor.desc())
     ).all()
     listing_ids = _listing_ids_by_expense(account_id, db)
-    task_ids = rebid_task_ids_by_expense(account_id, db)
+    tasks = rebid_tasks_by_expense(account_id, db)
     provenance = _provenance_by_vendor(account_id, db)
     return ExpenseListResponse(
         expenses=[
             _serialize_expense(
                 expense,
                 listing_ids.get(expense.id),
-                task_ids.get(expense.id),
+                tasks.get(expense.id),
                 provenance.get(expense.normalized_vendor, []),
             )
             for expense in expenses
@@ -77,7 +77,7 @@ def get_expense_detail(
     row = _serialize_expense(
         expense,
         _listing_ids_by_expense(account_id, db).get(expense.id),
-        rebid_task_ids_by_expense(account_id, db).get(expense.id),
+        rebid_tasks_by_expense(account_id, db).get(expense.id),
         sorted({transaction.source_type for transaction in transactions}),
     )
     return ExpenseDetailResponse(
@@ -127,7 +127,7 @@ def update_expense(
     return _serialize_expense(
         expense,
         _listing_ids_by_expense(account_id, db).get(expense.id),
-        rebid_task_ids_by_expense(account_id, db).get(expense.id),
+        rebid_tasks_by_expense(account_id, db).get(expense.id),
         provenance,
     )
 
@@ -167,7 +167,7 @@ def _provenance_by_vendor(account_id: str, db: Session) -> dict[str, list[str]]:
     return {vendor: sorted(sources) for vendor, sources in by_vendor.items()}
 
 
-def _serialize_expense(expense: ServiceExpense, listing_id: str | None, task_id: str | None, provenance: list[str]) -> ExpenseResponse:
+def _serialize_expense(expense: ServiceExpense, listing_id: str | None, task: ExpenseTask | None, provenance: list[str]) -> ExpenseResponse:
     return ExpenseResponse(
         id=expense.id,
         vendor=expense.owner_corrected_vendor or expense.normalized_vendor,
@@ -185,6 +185,7 @@ def _serialize_expense(expense: ServiceExpense, listing_id: str | None, task_id:
         eligibility_reason=expense.eligibility_reason,
         is_publishable=expense.is_publishable,
         listing_id=listing_id,
-        task_id=task_id,
+        task_id=task.task_id if task is not None else None,
+        task_state=task.state if task is not None else None,
         provenance=provenance,
     )

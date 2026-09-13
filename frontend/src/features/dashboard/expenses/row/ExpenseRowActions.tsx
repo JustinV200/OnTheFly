@@ -35,6 +35,10 @@ export function ExpenseRowActions({ expense, taskId, onVisibilityChanged }: Expe
     <ButtonLink size="sm" to={`/tasks/${taskId}`} variant="primary">Open task</ButtonLink>
   ) : null;
 
+  // After acceptance the task page is the only place left to act: bidding is closed, so there is nothing to unpublish.
+  if (openTask && expense.task_state === 'accepted') {
+    return <span className="expense-row-actions">{openTask}</span>;
+  }
   if (expense.visibility === 'public' && expense.listing_id) {
     return (
       <span className="expense-row-actions">

@@ -7,7 +7,7 @@ import { useEffect, useState } from 'react';
 
 import { ApiError } from '../../../shared/api/client';
 import { MoneyDisplay } from '../../../shared/components/MoneyDisplay';
-import { cadenceSuffix } from '../../../shared/market';
+import { cadenceSuffix, perPeriodWords } from '../../../shared/market';
 import { Button, Callout, Checkbox, Icon, Spinner, Stack } from '../../../shared/ui';
 import type { TaskDetail } from '../types';
 import { AcceptanceCheck, acceptOffer, checkAcceptance } from './acceptanceApi';
@@ -94,7 +94,7 @@ export function AcceptOfferPanel({ taskId, challengeId, bidderName, onAccepted, 
         <Callout role="note" title={`Accept ${bidderName}’s offer?`} tone="info">
           <p>
             <strong><MoneyDisplay amountMinor={check.offer_price_minor} currency={check.currency} /> {cadenceSuffix(check.billing_period)}</strong>{' '}
-            (restated per {check.billing_period} period by the server). Bidding closes, and {bidderName} becomes the task owner:
+            (restated {perPeriodWords(check.billing_period)} by the server). Bidding closes, and {bidderName} becomes the task owner:
             only they can split it from then on. This is a marketplace record, not a contract.
           </p>
           {check.remainder_after_minor !== null ? (

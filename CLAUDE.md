@@ -49,7 +49,20 @@ Not implemented:
 Also implemented (merged 2026-09-13):
 - A Kalshi-style "task market" UI with light/dark/system themes (roadmap 11, "Task market direction").
 - Owner-approved supplier invitations (roadmap 08): fixture, Tavily or USAspending discovery, a preview-hash approval gate, an idempotent queue to a sandbox outbox by default (SMTP only behind an allowlist), and a public opt-out page. SMTP has only been exercised with mocks.
-- A live simulated fly brain (`features/brainview`, `shared/flybrain/live`). Every fly-brain result carries a `brain_stimulus` that a Web Worker plays on a leaky integrate-and-fire port of the FlyWire release 783 model, loaded from `frontend/public/flybrain`. It is a simulation shown alongside results; results don't depend on it, and it is not Fly Scout.
+- A live simulated fly brain (`features/brainview`, `shared/flybrain/live`). Every fly-brain result carries a `brain_stimulus` that a Web Worker plays on a leaky integrate-and-fire port of the FlyWire release 783 model, loaded from `frontend/public/flybrain`. It is a simulation shown alongside results; results don't depend on it, and it is not Fly Scout. The dock starts minimized to a labeled pill.
+
+A demoability pass (2026-09-13) made the chain walkable without the guide open:
+- **Presenter tools:** a demo rail under the top bar shows the next step and a **Do it** button that switches business and opens the page (`features/demo`, labeled Presenter tool). `?as=<account_id>` opens a tab as a business, and the guide links three windows for one-screen rehearsal. The account menu lists GovCon, Prime A and Sub B first.
+- **One primary action per screen:** REBID… is Spend's action for every category the task form covers (the `/publish` wizard stays for the cleaning categories). The task page has four tabs (Overview, Ways to save, Listing & offers, Details), and its next-step callout performs the step.
+- **Visible moments:** accepting shows an ownership line and a banner, and the poster sees a disabled Split off with the reason. A split stays on the parent with the remainder before and after.
+- **Ways to save:** one card per suggestion with the keep cost − cut = savings equation and a ✓/✗ line per threshold. The other groups fold into one line.
+- **Bid form:** price and per-requirement answers first, and optional terms behind "Add details". The bidding mode is explained once, next to submit. The confirmation lists each answer and what happens next.
+- **API additions:**
+  - `ExpenseResponse.task_id`/`task_state`.
+  - `TaskDetail.parent` and `WorkItem.parent`, sent only to an account that posted or owns the parent, never to a piece's winner.
+  - `WorkItem.parent_scope_changed_at`.
+  - Requirement answers and the listing title on the offer trace.
+- **Server guards:** a piece whose split was undone can't be confirmed or published again. Offer savings on matching cadences are exact yearly differences, not rounded monthly × 12.
 
 ## Scope and stack decisions
 

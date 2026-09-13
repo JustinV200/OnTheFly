@@ -2,6 +2,7 @@
    confirmed or an estimate, the owner's rate and the market rate it was compared with, the owner's oversight cost (set
    here), supplier and award counts, then the full evidence. The honesty label is never in here; it stays on the card. */
 import { formatMoneyText } from '../../../../shared/format/formatMoneyText';
+import { perPeriodWords } from '../../../../shared/market';
 import { Badge, Disclosure, Stack, TermHint } from '../../../../shared/ui';
 import { MONEY_TERM_HINTS } from '../../glossary/moneyTerms';
 import type { SavingsCardView } from '../../types';
@@ -24,7 +25,7 @@ export function CardDetails({ card, onOversightSaved }: CardDetailsProps): JSX.E
       <Stack gap={4}>
         <section>
           <h5 className="savings-details__heading">
-            Hours{card.hours_total === null ? ' (some unanswered)' : `: ${card.hours_total.toLocaleString('en-US')} per ${card.billing_period} period`}
+            Hours{card.hours_total === null ? ' (some unanswered)' : `: ${card.hours_total.toLocaleString('en-US')} ${perPeriodWords(card.billing_period)}`}
           </h5>
           <ul className="savings-details__list">
             {card.inputs.requirements.map((requirement) => (

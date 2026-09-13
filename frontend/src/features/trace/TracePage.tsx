@@ -12,7 +12,6 @@ import { LoadingSpinner } from '../../shared/components/LoadingSpinner';
 import { usePublishBrainStimulus } from '../../shared/flybrain/live';
 import { Badge, ButtonLink, Icon, PageHeader, Stack } from '../../shared/ui';
 import { TraceHeadline } from './headline/TraceHeadline';
-import { useTraceRequirements } from './requirements/useTraceRequirements';
 import { ListingStep } from './steps/offer/ListingStep';
 import { OfferStep } from './steps/offer/OfferStep';
 import { SavingsStep } from './steps/offer/SavingsStep';
@@ -32,8 +31,6 @@ export function TracePage(): JSX.Element {
   const trace = useApiQuery<OfferTrace>(`/api/challenges/${challengeId}/trace`);
   // The fly brain view plays alongside; nothing on this page waits for it.
   usePublishBrainStimulus(trace.data?.brain_stimulus);
-  // Called on every render, as hooks must be; it requests nothing until the trace has named the listing.
-  const requirementContext = useTraceRequirements(trace.data?.listing.id ?? null, challengeId);
 
   if (trace.error?.status === 404 || trace.error?.status === 401) {
     return (
@@ -78,9 +75,9 @@ export function TracePage(): JSX.Element {
           savings={savings}
           unrankedReason={offer.unranked_reason}
         />
-        <OfferStep offer={offer} requirementContext={requirementContext} scopeVersionNumber={scope.version_number} />
-        <ScopeStep currentScopeVersionNumber={listing.current_scope_version_number} requirementContext={requirementContext} scope={scope} />
-        <ListingStep listing={listing} title={requirementContext.status === 'ready' ? requirementContext.title : null} />
+        <OfferStep offer={offer} requirementCount={scope.requirements.length} scopeVersionNumber={scope.version_number} />
+        <ScopeStep answers={offer.requirement_responses} currentScopeVersionNumber={listing.current_scope_version_number} scope={scope} />
+        <ListingStep listing={listing} />
         <BaselineStep baseline={baseline} scope={scope} />
         <ExpenseStep expense={expense} transactions={transactions} />
         <TransactionsStep flyBrain={flyBrain} transactions={transactions} />

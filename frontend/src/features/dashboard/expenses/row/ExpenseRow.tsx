@@ -7,6 +7,7 @@ import { categoryLabel } from '../../../../shared/format/categoryLabel';
 import { ProvenanceBadge } from '../../../../shared/provenance/ProvenanceBadge';
 import { joinClassNames } from '../../../../shared/ui';
 import type { Expense } from '../../types';
+import { expenseVisibility } from '../../visibility/expenseVisibility';
 import { VisibilityBadge } from '../../visibility/VisibilityBadge';
 import { describePattern } from './describePattern';
 import { ExpenseRowActions } from './ExpenseRowActions';
@@ -73,7 +74,7 @@ export function ExpenseRow({ expense, isSelected, shouldShowProvenance, taskId, 
       </div>
 
       <div className="expense-row__visibility">
-        <VisibilityBadge size="sm" visibility={expense.visibility} />
+        <VisibilityBadge size="sm" visibility={expenseVisibility(expense)} />
       </div>
 
       {/* Actions navigate or unpublish; they must not also open the row. */}

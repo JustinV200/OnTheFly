@@ -29,6 +29,7 @@ def compute_savings(
     missing_scope_items: list[str] | None = None,
     unstated_scope_items: list[str] | None = None,
     label_base: str = "Potential savings",
+    annual_recurring_difference: Money | None = None,
 ) -> SavingsResult:
     """Compute potential savings, provisional when costs are unknown or the offer's scope differs.
 
@@ -36,9 +37,16 @@ def compute_savings(
     like-for-like price, so its "savings" partly measure doing less (CLAUDE.md, money and math).
     label_base names what the difference is for the task's origin: a new task compares against a budget and never
     says "savings" (plan2, "Tasks and ownership").
+    annual_recurring_difference, when given, is the baseline minus the offer with each side restated per year from its
+    own cadence; it replaces (monthly difference × 12), which carries the monthly figures' rounding into the year (a
+    $1,298,000 yearly offer is $108,166.67 a month, and ×12 that is $1,298,000.04).
     """
 
-    annual_recurring = current_monthly.subtract(offer_monthly).multiply_by(12)
+    annual_recurring = (
+        annual_recurring_difference
+        if annual_recurring_difference is not None
+        else current_monthly.subtract(offer_monthly).multiply_by(12)
+    )
     assumptions: list[str] = []
 
     if missing_scope_items:

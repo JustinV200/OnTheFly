@@ -1,4 +1,5 @@
 /* Declares inbox and comparison response shapes local to the inbox feature. */
+import type { RequirementAnswerItem } from '../../shared/offers/RequirementAnswerList';
 import type { PublicListingProjection } from '../publish/types';
 
 export interface SavingsResponse {
@@ -121,6 +122,8 @@ export interface OwnerChallenge {
   availability: string | null;
   offer_expiry: string | null;
   site_visit_required: boolean;
+  // The offer's current per-requirement answers; empty on a listing scoped without requirement rows.
+  requirement_responses: RequirementAnswerItem[];
   provenance: string;
   submitted_at: string;
   revised_at: string | null;

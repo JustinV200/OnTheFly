@@ -32,7 +32,7 @@ export function InboxPage(): JSX.Element {
       <InboxPageFrame>
         <EmptyState action={<ButtonLink to="/marketplace">Back to the marketplace</ButtonLink>} title="Only this listing’s owner can see its offers">
           {account ? `You're acting as ${account.businessName}, which doesn't own this listing.` : 'Pick the owning business in the bar above.'}{' '}
-          Other challengers never see who made an offer.
+          Other bidders never see who made an offer.
         </EmptyState>
       </InboxPageFrame>
     );
@@ -107,9 +107,11 @@ export function InboxPage(): JSX.Element {
       <OfferDrawer
         hasExpense={listing.expense_id !== null}
         offer={openOffer}
-        onAccepted={(accepted) => navigate(`/tasks/${accepted.id}`)}
+        // The task page shows the ownership-moved banner for an acceptance handed over this way (tasks/notices/useArrivalNotice).
+        onAccepted={(accepted) => navigate(`/tasks/${accepted.id}`, { state: { acceptedBidderName: openOffer?.challenger_name ?? 'The bidder' } })}
         onClose={() => setOpenOfferId(null)}
         ownerOffers={ownerOffers}
+        requirements={listing.requirements ?? []}
         task={task}
       />
     </Stack>

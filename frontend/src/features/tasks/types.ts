@@ -77,6 +77,13 @@ export interface TaskLedger {
   remainder_minor: number | null;
 }
 
+// The task a piece was split from. The server sends it only to an account that posted or owns that parent
+// (backend services/tasks/views/parent_ref.py), so a piece's winner never learns what it came from.
+export interface ParentTaskRef {
+  task_id: string;
+  title: string | null;
+}
+
 export interface RequirementRow {
   key: string;
   text: string;
@@ -132,6 +139,7 @@ export interface TaskDetail {
   is_owned_by_you: boolean;
   is_subcontract: boolean;
   parent_scope_changed_at: string | null;
+  parent: ParentTaskRef | null;
   expense_id: string | null;
   listing: ListingSummary | null;
   scope_version_number: number | null;
@@ -159,6 +167,10 @@ export interface WorkItem {
   billing_period: string;
   relationship: string;
   is_subcontract: boolean;
+  // Same rule as TaskDetail.parent: lets My work list a piece under the task it came from.
+  parent: ParentTaskRef | null;
+  // Set for the poster when the task this piece came from changed its scope since, as on TaskDetail.
+  parent_scope_changed_at: string | null;
   listing_id: string | null;
   listing_visibility: string | null;
   offer_count: number;

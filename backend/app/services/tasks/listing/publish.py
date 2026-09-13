@@ -5,12 +5,14 @@ Only the poster acts, nothing publishes without the preview hash, and every visi
 from datetime import datetime, timezone
 
 from fastapi import HTTPException, status
+from sqlalchemy import select
 from sqlalchemy.orm import Session
 
 from app.core.cadence import is_regular_cadence
+from app.core.task_lifecycle import TaskOrigin
 from app.core.visibility import ListingVisibility
 from app.models.listing import PublicListingRecord, ScopeVersion
-from app.models.tasks import Task
+from app.models.tasks import Task, TaskSplit
 from app.services.listings.audit import write_visibility_audit
 from app.services.listings.projection import build_payload_hash, persist_projection
 from app.services.listings.types import PublicListingProjection
@@ -27,6 +29,7 @@ def confirm_task_scope(task: Task, choices: TaskPublishChoices, acting_account_i
 
     listing, scope = _poster_listing(task, acting_account_id, "confirming scope", db)
     _ensure_not_accepted(task)
+    _ensure_split_active(task, db)
     if listing.visibility == ListingVisibility.public.value:
         raise HTTPException(
             status_code=status.HTTP_400_BAD_REQUEST,
@@ -60,6 +63,7 @@ def publish_task_listing(task: Task, previewed_payload_hash: str, acting_account
 
     listing, scope = _poster_listing(task, acting_account_id, "publishing", db)
     _ensure_not_accepted(task)
+    _ensure_split_active(task, db)
     if listing.visibility != ListingVisibility.scope_confirmed.value:
         raise HTTPException(status_code=status.HTTP_400_BAD_REQUEST, detail="Confirm the scope before publishing")
 
@@ -108,4 +112,17 @@ def _ensure_not_accepted(task: Task) -> None:
         raise HTTPException(
             status_code=status.HTTP_400_BAD_REQUEST,
             detail="This task already accepted an offer; its listing is closed.",
+        )
+
+
+def _ensure_split_active(task: Task, db: Session) -> None:
+    # Undoing a split returns the piece's cut and requirements to its task, so the closed piece has nothing of its own
+    # left to offer; republishing it would list work that is back with the parent (roadmap 12, "Undoing a split").
+    if task.origin != TaskOrigin.split.value:
+        return
+    active = db.scalar(select(TaskSplit.id).where(TaskSplit.child_task_id == task.id, TaskSplit.undone_at.is_(None)))
+    if active is None:
+        raise HTTPException(
+            status_code=status.HTTP_400_BAD_REQUEST,
+            detail="This piece's split was undone, so it can't be published again. Split a new piece off its task instead.",
         )

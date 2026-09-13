@@ -19,6 +19,9 @@ export function VisibilityBadge({ visibility, size = 'md' }: VisibilityBadgeProp
       return <Badge icon={lock} size={size} title="Scope drafted but not published. Nobody else can see it." tone="private">Draft · private</Badge>;
     case 'closed':
       return <Badge size={size} tone="neutral">Closed</Badge>;
+    case 'accepted':
+      // Off the market: accepting closed bidding, so the listing no longer shows in the markets or takes offers.
+      return <Badge icon={lock} size={size} title="You accepted an offer: bidding is closed and the listing is off the markets." tone="neutral">Accepted</Badge>;
     case 'shortlisted':
       return <Badge size={size} tone="neutral">Shortlisted</Badge>;
     case 'private':
