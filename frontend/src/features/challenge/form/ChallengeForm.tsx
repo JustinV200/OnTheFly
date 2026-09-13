@@ -8,7 +8,9 @@ import { Button, Callout, Card, Cluster, Stack } from '../../../shared/ui';
 import type { PublicListingProjection } from '../../publish/types';
 import { buildChallengePayload, ChallengeFormFields } from '../buildChallengePayload';
 import { fullRequestedScope } from '../fullRequestedScope';
-import { offerToFormFields } from '../offerToFormFields';
+import { BidTicketNote } from '../ticket/BidTicketNote';
+import type { BidTicket } from '../ticket/readBidTicket';
+import { seedOfferFields } from '../ticket/seedOfferFields';
 import type { BiddingModeValue, ChallengePayload, StoredOffer } from '../types';
 import { BiddingTermsCallout } from './BiddingTermsCallout';
 import { OfferTermsFields } from './OfferTermsFields';
@@ -20,23 +22,6 @@ import './ChallengeForm.css';
 // and labelled as common tasks rather than requested ones; anything else goes in "other inclusions".
 const TEMPLATE_TASKS = ['vacuum', 'trash', 'restrooms'];
 
-const EMPTY_FIELDS: ChallengeFormFields = {
-  price: '',
-  billingFrequency: 'monthly',
-  tasks: [],
-  visitsPerWeek: '',
-  equipmentIncluded: null,
-  suppliesIncluded: null,
-  taxesIncluded: null,
-  otherInclusions: '',
-  exclusions: '',
-  setupFee: '',
-  minimumTerm: '',
-  availability: '',
-  siteVisitRequired: false,
-  message: '',
-};
-
 interface ChallengeFormProps {
   // null while the owner has changed the mode and the challenger hasn't re-confirmed: the draft stays, submitting doesn't.
   acknowledgedMode: BiddingModeValue | null;
@@ -45,6 +30,8 @@ interface ChallengeFormProps {
   onConfirmMode: () => void;
   // The challenger's stored offer, when it has one. The form starts from its terms, because submitting replaces all of them.
   initialOffer: StoredOffer | null;
+  // The market page's bid ticket (price and billing), applied over the starting fields; null once this page stored a version.
+  ticket: BidTicket | null;
   listing: PublicListingProjection;
   isSubmitting: boolean;
   onSubmit: (payload: ChallengePayload) => Promise<void>;
@@ -53,13 +40,14 @@ interface ChallengeFormProps {
 }
 
 /** Render the challenge form. acknowledgedMode must be the mode currently shown to the challenger, or null to block submitting.
-    initialOffer is read once on mount; the page keys this form by stored version so a new version re-seeds it. */
-export function ChallengeForm({ acknowledgedMode, currentMode, onConfirmMode, initialOffer, listing, isSubmitting, onSubmit, submitProblem }: ChallengeFormProps): JSX.Element {
+    initialOffer and ticket are read once on mount; the page keys this form by stored version so a new version re-seeds it. */
+export function ChallengeForm({ acknowledgedMode, currentMode, onConfirmMode, initialOffer, ticket, listing, isSubmitting, onSubmit, submitProblem }: ChallengeFormProps): JSX.Element {
   const requested = fullRequestedScope(listing);
   const isTemplateTasks = requested.tasks.length === 0;
   const taskChoices = isTemplateTasks ? TEMPLATE_TASKS : requested.tasks;
 
-  const [fields, setFields] = useState<ChallengeFormFields>(() => (initialOffer ? offerToFormFields(initialOffer, taskChoices) : EMPTY_FIELDS));
+  const [seeded] = useState(() => seedOfferFields(initialOffer, taskChoices, ticket));
+  const [fields, setFields] = useState<ChallengeFormFields>(seeded.fields);
   const [validationError, setValidationError] = useState<string | null>(null);
   const update = (patch: Partial<ChallengeFormFields>): void => setFields((current) => ({ ...current, ...patch }));
 
@@ -96,6 +84,7 @@ export function ChallengeForm({ acknowledgedMode, currentMode, onConfirmMode, in
               onConfirmMode={onConfirmMode}
             />
             <PriceFields fields={fields} onChange={update} />
+            <BidTicketNote origin={seeded.origin} />
           </Stack>
         </Card>
         <ScopeFields

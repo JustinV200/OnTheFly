@@ -2,8 +2,8 @@
    The mode shown when the form opened is what the challenger acknowledges; a later change must be re-confirmed before
    submitting, and the form stays mounted meanwhile so the draft survives. A returning challenger's form starts from their offer.
    On wide screens the challenged price and any mode change sit in an aside that stays in view beside the form. */
-import { ReactNode, useEffect, useState } from 'react';
-import { Link, useParams } from 'react-router-dom';
+import { ReactNode, useEffect, useMemo, useState } from 'react';
+import { Link, useParams, useSearchParams } from 'react-router-dom';
 
 import { useActingAccount } from '../../shared/account/ActingAccountContext';
 import { ApiError } from '../../shared/api/client';
@@ -20,6 +20,7 @@ import { ChallengedPriceCard } from './status/ChallengedPriceCard';
 import { ExistingOfferNotice } from './status/ExistingOfferNotice';
 import { ModeChangeAlert } from './status/ModeChangeAlert';
 import { SubmittedOffer } from './status/SubmittedOffer';
+import { readBidTicket } from './ticket/readBidTicket';
 import type { BiddingModeValue, ChallengePayload, ChallengeResponse, OwnOfferResponse, StoredOffer } from './types';
 import { useChallenge } from './useChallenge';
 import './ChallengePage.css';
@@ -31,6 +32,8 @@ const POLL_INTERVAL_MS = 5000;
 export function ChallengePage(): JSX.Element {
   const { id = '' } = useParams();
   const { account } = useActingAccount();
+  const [searchParams, setSearchParams] = useSearchParams();
+  const ticket = useMemo(() => readBidTicket(searchParams), [searchParams]);
   const listingQuery = useApiQuery<MarketplaceListing>(`/api/marketplace/${id}`, { pollIntervalMs: POLL_INTERVAL_MS });
   // Not polled: AppShell remounts this page when the acting business switches, and after that only this page's
   // own submissions change the offer, which arrive as `submitted`.
@@ -111,6 +114,13 @@ export function ChallengePage(): JSX.Element {
     try {
       setSubmitted(await submitChallenge(id, payload));
       setIsConfirmationShown(true);
+      // The ticket has been used; a reload or a Revise must start from the stored offer, not re-apply the old ticket.
+      setSearchParams((current) => {
+        const next = new URLSearchParams(current);
+        next.delete('price');
+        next.delete('billing');
+        return next;
+      }, { replace: true });
     } catch (error) {
       if (!(error instanceof ApiError)) {
         throw error;
@@ -164,6 +174,7 @@ export function ChallengePage(): JSX.Element {
                 key={currentOffer ? `${currentOffer.id}@${currentOffer.revised_at ?? currentOffer.submitted_at}` : 'new-offer'}
                 listing={listing}
                 onConfirmMode={() => setShownMode(currentMode)}
+                ticket={submitted ? null : ticket}
                 onSubmit={handleSubmit}
                 submitProblem={submitProblem}
               />

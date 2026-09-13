@@ -2,10 +2,8 @@
    Amounts stay as typed text here; buildChallengePayload parses them into minor units and reports anything unreadable. */
 import { Field, Grid, Input, Select } from '../../../shared/ui';
 import type { ChallengeFormFields } from '../buildChallengePayload';
+import { BILLING_FREQUENCIES } from './billingFrequencies';
 import './PriceFields.css';
-
-// Must stay in sync with BillingFrequency in backend/app/api/challenges/schemas.py.
-const FREQUENCIES = ['monthly', 'weekly', 'biweekly', 'bimonthly', 'quarterly', 'annual'];
 
 interface PriceFieldsProps {
   fields: ChallengeFormFields;
@@ -16,7 +14,7 @@ interface PriceFieldsProps {
 export function PriceFields({ fields, onChange }: PriceFieldsProps): JSX.Element {
   // A stored offer can use a frequency this list doesn't name (the API also accepts "yearly"). It is shown as its own
   // option, since a select with no matching option displays the first one while submitting the stored value.
-  const frequencyChoices = FREQUENCIES.includes(fields.billingFrequency) ? FREQUENCIES : [...FREQUENCIES, fields.billingFrequency];
+  const frequencyChoices = BILLING_FREQUENCIES.includes(fields.billingFrequency) ? BILLING_FREQUENCIES : [...BILLING_FREQUENCIES, fields.billingFrequency];
 
   return (
     <Grid minItemWidth="11rem">
