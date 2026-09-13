@@ -23,7 +23,7 @@ export function TopSavingsTile({ offers, onOpenOffer }: TopSavingsTileProps): JS
         <Stat
           caption={offers.length === 0 ? 'No offers yet' : 'No offer could be ranked yet'}
           label="Top-ranked potential savings"
-          size="lg"
+          size="xl"
           value={<span className="inbox-summary__none">None yet</span>}
         />
       </Card>
@@ -48,7 +48,7 @@ export function TopSavingsTile({ offers, onOpenOffer }: TopSavingsTileProps): JS
           </>
         )}
         label="Top-ranked potential savings"
-        size="lg"
+        size="xl"
         tone={savings.first_year_net_savings_minor > 0 ? 'success' : 'default'}
         unit="first year"
         value={<MoneyDisplay amountMinor={savings.first_year_net_savings_minor} currency={top.baseline_currency} />}

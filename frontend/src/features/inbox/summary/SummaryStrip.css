@@ -1,13 +1,17 @@
-/* Summary strip: two tiles side by side on a phone with savings and controls full width, three tiles on a tablet with
-   controls below, and one row of tiles plus the controls card from laptop width. */
+/* Summary strip: the three figure tiles in one row (two across plus a full-width savings tile on a phone), then the
+   controls card as a band underneath, so the tiles never stretch to the height of the controls. */
 .inbox-summary {
+  display: grid;
+  gap: var(--space-3);
+}
+
+.inbox-summary__tiles {
   display: grid;
   gap: var(--space-3);
   grid-template-columns: repeat(2, minmax(0, 1fr));
 }
 
-.inbox-summary__savings,
-.inbox-summary__controls {
+.inbox-summary__savings {
   grid-column: 1 / -1;
   min-width: 0;
 }
@@ -20,23 +24,24 @@
   color: var(--color-text-muted);
 }
 
+/* Two tiles share a phone's width, so the headline figures step down one size to keep "$2,400.00" on one line. */
+@media (max-width: 767px) {
+  .inbox-summary__tile .ui-stat__value {
+    font-size: var(--text-2xl);
+  }
+}
+
 @media (min-width: 768px) {
-  .inbox-summary {
+  .inbox-summary,
+  .inbox-summary__tiles {
     gap: var(--space-4);
+  }
+
+  .inbox-summary__tiles {
     grid-template-columns: repeat(3, minmax(0, 1fr));
   }
 
   .inbox-summary__savings {
-    grid-column: auto;
-  }
-}
-
-@media (min-width: 1024px) {
-  .inbox-summary {
-    grid-template-columns: repeat(3, minmax(0, 1fr)) minmax(22rem, 1.5fr);
-  }
-
-  .inbox-summary__controls {
     grid-column: auto;
   }
 }
