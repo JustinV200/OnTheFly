@@ -41,3 +41,11 @@
     font-size: var(--text-5xl);
   }
 }
+
+/* The words that stand in for a hidden price: large enough to read as the headline, calmer than a figure. */
+.price-headline__undisclosed {
+  color: var(--color-text-secondary);
+  font-size: var(--text-3xl);
+  font-weight: var(--weight-semibold);
+  line-height: 1.1;
+}

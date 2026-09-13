@@ -42,8 +42,9 @@ class InboxChallengeResponse(BaseModel):
     # Scope figures and savings are measured against the version the offer answered, not the newest one.
     answered_scope_version_number: int
     is_current_scope_version: bool
-    # The monthly price this offer's savings use: the one confirmed on its answered scope version.
-    baseline_monthly_minor: int
+    # The monthly price this offer's savings use: the one confirmed on its answered scope version. None for a new
+    # task with no budget, where there is nothing to compare against.
+    baseline_monthly_minor: int | None
     baseline_currency: str
     # None only when the offer is unranked; unranked_reason then says why no savings figure exists.
     savings: SavingsResponse | None
@@ -61,6 +62,17 @@ class InboxChallengeResponse(BaseModel):
     revised_at: datetime | None
 
 
+class InboxTaskSummary(BaseModel):
+    """The task behind the listing, as its poster sees it: enough to accept an offer and follow ownership."""
+
+    id: str
+    origin: str
+    state: str
+    accepted_challenge_id: str | None
+    # False for the poster once an offer is accepted: responsibility moved to that bidder.
+    is_owned_by_you: bool
+
+
 class InboxResponse(BaseModel):
     """Wraps the owner inbox rows for one listing, plus the listing they answer."""
 
@@ -70,6 +82,8 @@ class InboxResponse(BaseModel):
     # The stored public record for this listing. It reports "private" after unpublishing, which
     # is how the inbox shows that retained offers belong to a listing nobody can see now.
     listing: PublicListingProjection
+    # None only for a listing record from before tasks that was never backfilled.
+    task: InboxTaskSummary | None = None
 
 
 class ComparisonRowResponse(BaseModel):
@@ -78,7 +92,8 @@ class ComparisonRowResponse(BaseModel):
     challenge_id: str | None
     challenger_name: str
     is_incumbent: bool
-    normalized_price_minor: int
+    # None only on the baseline row of a new task with no budget.
+    normalized_price_minor: int | None
     price_currency: str
     scope_completeness: float
     missing_items: list[str]
@@ -87,7 +102,7 @@ class ComparisonRowResponse(BaseModel):
     # The incumbent row reports the current version; an offer reports the version it answered.
     answered_scope_version_number: int
     is_current_scope_version: bool
-    baseline_monthly_minor: int
+    baseline_monthly_minor: int | None
     baseline_currency: str
     # None for the incumbent row and for unranked offers; unranked_reason explains the latter.
     savings: SavingsResponse | None

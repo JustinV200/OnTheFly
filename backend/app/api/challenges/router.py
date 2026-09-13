@@ -24,8 +24,10 @@ from app.models.challenge import Challenge
 from app.models.listing import PublicListingRecord, ScopeVersion
 from app.services.comparison.answered_scopes import load_answered_scopes
 from app.services.comparison.currency import currency_mismatch_reason
-from app.services.comparison.normalize import is_scope_complete, normalize_to_monthly
+from app.services.comparison.normalize import normalize_to_monthly
+from app.services.comparison.requirement_completeness import RequirementContext, load_requirement_context, score_scope
 from app.services.comparison.ordering import offer_sort_key
+from app.services.challenges.requirement_responses import RequirementResponseInput, load_current_responses
 from app.services.challenges.submit import revise_challenge, submit_challenge
 from app.services.listings.bidding_mode import BiddingMode, resolve_bidding_mode
 
@@ -135,8 +137,11 @@ def get_leaderboard(listing_id: str, db: Session = Depends(get_db)) -> Leaderboa
         challenge for challenge in challenges if challenge.bidding_mode_at_submission == BiddingMode.open.value
     ]
     answered_scopes = load_answered_scopes(open_challenges, db)
+    context = load_requirement_context(open_challenges, answered_scopes, db)
     entries = [
-        _leaderboard_entry(challenge, answered_scopes[challenge.scope_version_id], current_scope, listing.price_currency)
+        _leaderboard_entry(
+            challenge, answered_scopes[challenge.scope_version_id], current_scope, listing.price_currency, context
+        )
         for challenge in open_challenges
     ]
     entries.sort(
@@ -165,6 +170,7 @@ def _leaderboard_entry(
     answered_scope: ScopeVersion,
     current_scope: ScopeVersion,
     listing_currency: str,
+    context: RequirementContext,
 ) -> LeaderboardEntry:
     # Completeness is scored against the version this offer answered: a later scope edit must not
     # lower a public score for work that was never requested of it.
@@ -173,7 +179,7 @@ def _leaderboard_entry(
         challenge_id=challenge.id,
         normalized_price_minor=normalized.monthly_price.amount,
         price_currency=normalized.monthly_price.currency,
-        scope_completeness=is_scope_complete(challenge, answered_scope).score,
+        scope_completeness=score_scope(challenge, answered_scope, context).score,
         answered_scope_version_number=answered_scope.version_number,
         is_current_scope_version=answered_scope.id == current_scope.id,
         # Measured against the published price's currency, which every viewer sees, so ranked prices on
@@ -213,4 +219,8 @@ def _serialize_challenge(challenge: Challenge, db: Session) -> ChallengeResponse
         submitted_at=challenge.submitted_at,
         revised_at=challenge.revised_at,
         is_active=challenge.is_active,
+        requirement_responses=[
+            RequirementResponseInput(requirement_key=row.requirement_key, is_included=row.is_included, note=row.note)
+            for row in load_current_responses([challenge.id], db)[challenge.id]
+        ],
     )

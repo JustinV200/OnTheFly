@@ -1,6 +1,7 @@
 /* Decides the bid form's starting fields: the stored offer when the challenger has one (a revision replaces every term,
    so a blank form would silently drop them), otherwise an empty form; then the bid ticket's price and billing, when
    usable, replace just those two fields. It also reports what came from where, so the form can say so. */
+import { initialBilling } from '../../marketplace/detail/ticket/form/billingOptions';
 import type { ChallengeFormFields } from '../buildChallengePayload';
 import { offerToFormFields } from '../offerToFormFields';
 import type { StoredOffer } from '../types';
@@ -21,6 +22,7 @@ const EMPTY_FIELDS: ChallengeFormFields = {
   availability: '',
   siteVisitRequired: false,
   message: '',
+  requirementAnswers: {},
 };
 
 export interface TicketOrigin {
@@ -39,8 +41,15 @@ export interface SeededFields {
 
 /** Return the starting fields. taskChoices are the task checkboxes the form shows; ticket is null once this page has
     stored a version, since the ticket described the offer before that submit, not the one being revised now. */
-export function seedOfferFields(initialOffer: StoredOffer | null, taskChoices: string[], ticket: BidTicket | null): SeededFields {
-  const base = initialOffer ? offerToFormFields(initialOffer, taskChoices) : EMPTY_FIELDS;
+export function seedOfferFields(
+  initialOffer: StoredOffer | null,
+  taskChoices: string[],
+  ticket: BidTicket | null,
+  listingCadence: string,
+): SeededFields {
+  // A blank form starts on the listing's own billing period: a yearly task bid in a monthly default would overstate the
+  // price twelvefold without the bidder noticing.
+  const base = initialOffer ? offerToFormFields(initialOffer, taskChoices) : { ...EMPTY_FIELDS, billingFrequency: initialBilling(listingCadence) };
   const price = ticket?.price ?? null;
   const billingFrequency = ticket?.billingFrequency ?? null;
 

@@ -1,15 +1,17 @@
-/* What the ticket offers the business that published the listing: no bid form (an owner can't bid on their own
-   listing), but the two things an owner comes here to do next. */
+/* What the ticket offers the business that published the listing: no bid form (a poster can't bid on its own
+   listing), but the things a poster comes here to do next: open its task, manage offers, invite suppliers. */
 import { ButtonLink, Stack } from '../../../../shared/ui';
 import './BidTicket.css';
 
 interface OwnerTicketActionsProps {
   listingId: string;
+  // The task behind the listing, known only to its poster; null for a listing from before tasks.
+  taskId: string | null;
   isClosed: boolean;
 }
 
-/** Render the owner's note and the Manage offers / Invite suppliers links. */
-export function OwnerTicketActions({ listingId, isClosed }: OwnerTicketActionsProps): JSX.Element {
+/** Render the poster's note and its task, offers and invitation links. */
+export function OwnerTicketActions({ listingId, taskId, isClosed }: OwnerTicketActionsProps): JSX.Element {
   return (
     <Stack gap={3}>
       <p className="bid-ticket__message">
@@ -17,6 +19,7 @@ export function OwnerTicketActions({ listingId, isClosed }: OwnerTicketActionsPr
         what bidders offered, or invite suppliers to bid.
       </p>
       <ButtonLink isFullWidth size="lg" to={`/listings/${listingId}/inbox`} variant="primary">Manage offers</ButtonLink>
+      {taskId ? <ButtonLink isFullWidth to={`/tasks/${taskId}`}>Open your task</ButtonLink> : null}
       <ButtonLink isFullWidth to={`/listings/${listingId}/invite`}>Invite suppliers</ButtonLink>
     </Stack>
   );

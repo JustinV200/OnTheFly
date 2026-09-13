@@ -1,0 +1,35 @@
+/* Task header: a quiet back link, then the category tile beside the page header. */
+.task-header {
+  display: grid;
+  gap: var(--space-3);
+}
+
+.task-header__back {
+  align-items: center;
+  color: var(--color-text-muted);
+  display: inline-flex;
+  font-size: var(--text-sm);
+  gap: var(--space-1);
+  text-decoration: none;
+  width: fit-content;
+}
+
+.task-header__back:hover {
+  color: var(--color-text);
+}
+
+.task-header__main {
+  align-items: flex-start;
+  display: flex;
+  gap: var(--space-4);
+  min-width: 0;
+}
+
+.task-header__main > :last-child {
+  flex: 1 1 auto;
+  min-width: 0;
+}
+
+.task-header__subtitle {
+  overflow-wrap: anywhere;
+}

@@ -24,6 +24,7 @@ async def handle_http_exception(
     labels = {
         status.HTTP_400_BAD_REQUEST: "bad_request",
         status.HTTP_401_UNAUTHORIZED: "unauthorized",
+        status.HTTP_403_FORBIDDEN: "forbidden",
         status.HTTP_404_NOT_FOUND: "not_found",
         status.HTTP_409_CONFLICT: "conflict",
         status.HTTP_503_SERVICE_UNAVAILABLE: "service_unavailable",

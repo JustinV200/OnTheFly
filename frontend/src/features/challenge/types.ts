@@ -1,6 +1,13 @@
 /* Declares challenge submission types local to the challenge feature. */
 export type BiddingModeValue = 'sealed' | 'open';
 
+// One requirement answered by an offer (backend services/challenges/requirement_responses.py).
+export interface RequirementResponsePayload {
+  requirement_key: string;
+  is_included: boolean;
+  note: string | null;
+}
+
 export interface ChallengePayload {
   // The terms the challenger was shown; the server rejects the offer (409) if they changed since.
   acknowledged_bidding_mode: BiddingModeValue;
@@ -16,6 +23,8 @@ export interface ChallengePayload {
   availability: string | null;
   site_visit_required: boolean;
   message_to_owner: string | null;
+  // Required, one per requirement, when the listing is scoped as requirement rows; omitted otherwise.
+  requirement_responses?: RequirementResponsePayload[];
 }
 
 // One stored version of the acting business's own offer. A revision replaces every one of these terms,
@@ -42,6 +51,8 @@ export interface StoredOffer {
   provenance: string;
   submitted_at: string;
   revised_at: string | null;
+  // The stored version's per-requirement answers; empty on a listing without requirement rows.
+  requirement_responses?: RequirementResponsePayload[];
 }
 
 // POST /api/listings/{id}/challenges: the version just stored. It always answers the listing's current scope.

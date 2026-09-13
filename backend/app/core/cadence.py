@@ -26,7 +26,27 @@ class UnsupportedCadenceError(ValueError):
 def to_monthly(amount: Money, cadence: str) -> Money:
     """Return the amount restated per month; raises for cadences such as irregular."""
 
+    return amount.multiply_by(_monthly_factor(cadence))
+
+
+def convert_cadence(amount: Money, from_cadence: str, to_cadence: str) -> Money:
+    """Return the amount restated from one regular cadence to another, rounded once (half up).
+
+    The ratio of the two monthly factors is taken before rounding, so weekly → annual is exactly ×52 rather
+    than a monthly figure rounded and then multiplied. Raises UnsupportedCadenceError for irregular cadences.
+    """
+
+    return amount.multiply_by(_monthly_factor(from_cadence) / _monthly_factor(to_cadence))
+
+
+def is_regular_cadence(cadence: str | None) -> bool:
+    """Return True when the cadence has a deterministic monthly conversion."""
+
+    return cadence is not None and cadence.strip().casefold() in MONTHLY_FACTORS
+
+
+def _monthly_factor(cadence: str) -> Decimal:
     factor = MONTHLY_FACTORS.get(cadence.strip().casefold())
     if factor is None:
         raise UnsupportedCadenceError(f"Unsupported billing cadence: {cadence}")
-    return amount.multiply_by(factor)
+    return factor

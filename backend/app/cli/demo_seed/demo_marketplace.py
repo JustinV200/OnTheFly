@@ -13,7 +13,7 @@ from app.models.listing import PublicListingRecord
 from app.models.service_expense import ServiceExpense
 from app.services.challenges.submit import submit_challenge
 from app.services.listings.bidding_mode import BiddingMode, set_bidding_mode
-from app.services.listings.create import build_scope_version, create_listing_draft
+from app.services.listings.create import build_scope_version, create_listing_draft, load_rebid_content
 from app.services.listings.projection import build_payload_hash, build_public_listing
 from app.services.listings.types import PublishChoices
 from app.services.listings.visibility import publish_listing
@@ -112,7 +112,7 @@ def _publish_sealed_listing(
     db.refresh(listing)
 
     # Publishing takes the hash of the exact preview, the same confirmation the publish flow requires.
-    preview = build_public_listing(listing, expense, scope, choices)
+    preview = build_public_listing(listing, expense, scope, choices, load_rebid_content(scope, expense, None, db))
     publish_listing(
         expense_id=expense.id,
         scope_version_id=scope.id,

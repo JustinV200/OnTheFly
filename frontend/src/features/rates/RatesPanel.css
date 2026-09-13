@@ -1,0 +1,2 @@
+/* Rates panel: padding for the empty line inside an unpadded card. */
+.rates-panel__empty { margin: 0; padding: var(--space-4); }

@@ -2,7 +2,6 @@
 Draft creation does not publish anything; it only prepares the later preview flow.
 """
 
-import json
 import uuid
 
 from fastapi import HTTPException, status
@@ -15,8 +14,11 @@ from app.models.listing import PublicListingRecord, ScopeVersion
 from app.models.service_expense import ServiceExpense
 from app.services.listings.audit import write_visibility_audit
 from app.services.listings.current_price import resolve_current_price
-from app.services.listings.projection import build_public_listing
+from app.services.listings.projection import build_public_listing, persist_projection
 from app.services.listings.types import PublishChoices
+from app.services.scope.public_content import PublicScopeContent, build_public_scope_content
+from app.services.tasks.rebid_task import ensure_rebid_task
+from app.services.tasks.state_sync import sync_task_state
 
 
 
@@ -26,7 +28,7 @@ def create_listing_draft(
     choices: PublishChoices,
     db: Session,
 ) -> PublicListingRecord:
-    """Create or update a scope-confirmed draft listing for one expense.
+    """Create or update a scope-confirmed draft listing for one expense, and link both to the expense's rebid task.
 
     Raises 400 when the current price has no monthly figure, because every offer
     is compared on a monthly basis and an unconvertible baseline cannot be ranked.
@@ -36,6 +38,9 @@ def create_listing_draft(
     existing = db.scalar(
         select(PublicListingRecord).where(PublicListingRecord.expense_id == expense.id)
     )
+    # Resolved before a new listing joins the session: creating the task flushes, and a half-built listing
+    # (no scope version yet) must not be flushed with it.
+    task = ensure_rebid_task(expense, existing, scope.current_price_currency, scope.billing_cadence or expense.cadence, db)
     listing = existing or PublicListingRecord(
         id=str(uuid.uuid4()),
         expense_id=expense.id,
@@ -44,26 +49,17 @@ def create_listing_draft(
     if existing is None:
         db.add(listing)
 
+    listing.task_id = task.id
+    scope.task_id = task.id
     listing.scope_version_id = scope.id
     listing.visibility = ListingVisibility.scope_confirmed.value
     listing.bidding_mode = choices.bidding_mode
     listing.show_incumbent_vendor = choices.show_incumbent_vendor
     listing.show_exact_address = choices.show_exact_address
 
-    projection = build_public_listing(listing, expense, scope, choices)
-    listing.category = projection.category
-    listing.scope_summary = projection.scope_summary
-    listing.required_tasks = json.dumps(projection.required_tasks)
-    listing.visit_frequency = projection.visit_frequency
-    listing.supplies_included = projection.supplies_included
-    listing.equipment_included = projection.equipment_included
-    listing.taxes_included = projection.taxes_included
-    listing.price_minor = projection.price_minor
-    listing.price_currency = projection.price_currency
-    listing.billing_cadence = projection.billing_cadence
-    listing.service_area_approximate = projection.service_area_approximate
-    listing.challenge_deadline = projection.challenge_deadline
-    listing.incumbent_vendor_name = projection.incumbent_vendor_name
+    projection = build_public_listing(listing, expense, scope, choices, load_rebid_content(scope, expense, task.title, db))
+    persist_projection(listing, projection)
+    sync_task_state(task, listing.visibility)
 
     previous_state = expense.visibility
     expense.visibility = ListingVisibility.scope_confirmed.value
@@ -74,6 +70,7 @@ def create_listing_draft(
         new_state=ListingVisibility.scope_confirmed.value,
         snapshot=projection.model_dump_json(),
         db=db,
+        task_id=task.id,
     )
     db.flush()
     return listing
@@ -95,6 +92,17 @@ def build_scope_version(expense_id: str, payload: dict, db: Session) -> ScopeVer
     db.add(scope)
     db.flush()
     return scope
+
+
+def load_rebid_content(
+    scope: ScopeVersion,
+    expense: ServiceExpense,
+    title: str | None,
+    db: Session,
+) -> PublicScopeContent:
+    """Return the public requirement rows, constraints and template fields of a rebid scope version."""
+
+    return build_public_scope_content(scope, expense.owner_corrected_category or expense.category or "cleaning", title, db)
 
 
 def _confirm_current_price(expense: ServiceExpense, scope: ScopeVersion) -> None:

@@ -49,6 +49,21 @@ class Settings(BaseSettings):
     # whitelist until the approval gate is proven"). Empty means smtp sends to nobody.
     outreach_recipient_allowlist: str = ""
 
+    # Task splitting (roadmap 12). Ways to save may suggest at most this many active pieces per task; manual
+    # splits are never capped, and there is no depth limit, so a chain can keep splitting (roadmap open question 4).
+    max_suggested_pieces_per_task: int = 5
+    # Ways to save thresholds (plan2, "Thresholds"). Printed on every card; never lowered to force a demo result.
+    savings_min_basis_points: int = 1000
+    savings_min_annual_minor: int = 2500000
+    savings_min_suppliers: int = 3
+    savings_lookback_years: int = 5
+    # Market evidence behind Ways to save. "mock" returns deterministic demo data labeled as such (roadmap open
+    # question 2: mock numbers until the public-data branch lands); "live" is the slot that branch wires up.
+    market_data_source: str = "mock"
+    # Presenter controls (stage the task-chain demo, simulate a labeled demo bid). Local demo only; set false
+    # anywhere the database is shared, since staging deletes and reseeds the GovCon task chain.
+    demo_controls_enabled: bool = True
+
     # Extra keys stay forbidden (the pydantic-settings default): a stale or misspelled non-empty line
     # in .env stops startup instead of loading as a setting that nothing reads.
     model_config = SettingsConfigDict(

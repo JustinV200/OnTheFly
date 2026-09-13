@@ -18,6 +18,8 @@ This plan extends plan1. REBID stays the entry point, and plan1's USAspending an
 | Scope format | A common typed core, one row per requirement, and category templates. |
 | Thresholds | At least 10% of keep cost and $25,000 per year in modeled savings, at least 3 distinct suppliers by UEI, 5-year lookback. |
 | Fly | Comes after the splitting path. Every fly-influenced result is labeled where it appears. |
+| Price display for `new` tasks and pieces | Hidden by default; the poster can turn it on at publish. |
+| Rates and market data for the hackathon build | Fixture cost basis rates and a mock market-data source, both labeled demo data, until the public-data branch is wired. Live retrieval means live calls only, with no saved snapshot. |
 
 ## Tasks and ownership
 
@@ -56,7 +58,7 @@ The task owner splits off a piece by choosing requirements and a cut. The piece 
 - Every requirement stays with the task or goes to exactly one active piece.
   - An offer that answered a scope version whose requirements now belong to a piece can't be accepted. The bidder can revise onto the current version.
 - **Undoing a split** is allowed while the piece has no accepted offer and, for a buyer's split, while the parent has no accepted offer. The cut and requirements return, the piece's listing closes, and its offers are retained.
-- **Depth** is unlimited in design but capped by a config value as a safeguard. The screen is the same at every depth.
+- **Depth** is unlimited, and so are manual splits. Ways to save suggests at most 5 active pieces per task (`MAX_SUGGESTED_PIECES_PER_TASK`); manual splits never count toward that. The screen is the same at every depth.
 
 ## Ways to save
 

@@ -8,24 +8,26 @@ from app.models.visibility_audit import VisibilityAudit
 
 
 def write_visibility_audit(
-    expense_id: str,
+    expense_id: str | None,
     account_id: str,
     previous_state: str,
     new_state: str,
     snapshot: str | None,
     db: Session,
+    task_id: str | None = None,
 ) -> None:
     """Record who changed a listing's disclosure, what changed, and the public payload after it.
 
     Publication transitions store listing visibility values in previous_state/new_state.
     Bidding-mode toggles store "bidding_mode:<mode>" so they read apart from publish rows.
     The snapshot is the serialized public projection at that moment; changed_at is stamped
-    by the model default.
+    by the model default. A rebid names its expense; a new task or piece has no expense and is named by task_id.
     """
 
     db.add(
         VisibilityAudit(
             expense_id=expense_id,
+            task_id=task_id,
             account_id=account_id,
             previous_state=previous_state,
             new_state=new_state,

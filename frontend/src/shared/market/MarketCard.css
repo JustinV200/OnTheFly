@@ -132,3 +132,11 @@
 .market-card__action > * {
   flex: 1 1 auto;
 }
+
+/* "Price not disclosed" takes the price's place at a calmer size: a choice the poster made, not a missing number. */
+.market-card__undisclosed {
+  color: var(--color-text-secondary);
+  font-size: var(--text-xl);
+  font-weight: var(--weight-semibold);
+  line-height: 1.2;
+}

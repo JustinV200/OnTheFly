@@ -1,0 +1,33 @@
+/* Task scope form: bordered requirement fieldsets, a wrapping switch row, and a constraint row that stacks on a phone. */
+.task-fields__requirement {
+  border: var(--border-width) solid var(--color-border);
+  border-radius: var(--radius-lg);
+  margin: 0;
+  min-width: 0;
+  padding: var(--space-4);
+}
+
+.task-fields__legend {
+  font-size: var(--text-sm);
+  font-weight: var(--weight-semibold);
+  padding: 0 var(--space-1);
+}
+
+.task-fields__switches {
+  align-items: center;
+  display: flex;
+  flex-wrap: wrap;
+  gap: var(--space-2) var(--space-5);
+}
+
+.task-fields__constraint {
+  display: grid;
+  gap: var(--space-2);
+}
+
+@media (min-width: 640px) {
+  .task-fields__constraint {
+    align-items: center;
+    grid-template-columns: 10rem minmax(0, 1fr) auto;
+  }
+}

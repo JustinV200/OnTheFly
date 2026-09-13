@@ -9,7 +9,9 @@ import { ButtonLink, Drawer, Icon, Skeleton, Stat } from '../../../shared/ui';
 import { EvidenceRecords } from '../evidence/EvidenceRecords';
 import { SavingsBreakdown } from '../savings/SavingsBreakdown';
 import { ScopeCoverage } from '../scope/ScopeCoverage';
-import type { InboxChallenge, OwnerChallengeListResponse } from '../types';
+import { AcceptOfferPanel } from '../../tasks/acceptance/AcceptOfferPanel';
+import type { TaskDetail } from '../../tasks/types';
+import type { InboxChallenge, InboxTaskSummary, OwnerChallengeListResponse } from '../types';
 import { DrawerSection } from './DrawerSection';
 import { OfferHistory } from './sections/OfferHistory';
 import { OfferTerms } from './sections/OfferTerms';
@@ -21,10 +23,15 @@ interface OfferDrawerProps {
   // Full terms and messages, from the owner's offers endpoint, matched to the ranked offer by id.
   ownerOffers: ApiQueryState<OwnerChallengeListResponse>;
   onClose: () => void;
+  // The listing's task; acceptance is offered while no offer on it has been accepted.
+  task: InboxTaskSummary | null;
+  // Whether the listing is a rebid of an expense: only those have a trace from savings down to transactions.
+  hasExpense: boolean;
+  onAccepted: (task: TaskDetail) => void;
 }
 
 /** Render the offer drawer while an offer is selected. */
-export function OfferDrawer({ offer, ownerOffers, onClose }: OfferDrawerProps): JSX.Element | null {
+export function OfferDrawer({ offer, ownerOffers, onClose, task, hasExpense, onAccepted }: OfferDrawerProps): JSX.Element | null {
   if (!offer) {
     return null;
   }
@@ -39,16 +46,26 @@ export function OfferDrawer({ offer, ownerOffers, onClose }: OfferDrawerProps): 
           <ProvenanceBadge kind="offer" value={offer.provenance} />
         </span>
       )}
-      footer={(
-        <ButtonLink iconEnd={<Icon name="arrow-right" size={16} />} to={`/offers/${offer.challenge_id}/trace`} variant="primary">
+      footer={hasExpense ? (
+        <ButtonLink iconEnd={<Icon name="arrow-right" size={16} />} to={`/offers/${offer.challenge_id}/trace`} variant="secondary">
           Where does this number come from?
         </ButtonLink>
-      )}
+      ) : undefined}
       isOpen
       onClose={onClose}
       title={offer.challenger_name}
     >
       <div className="offer-drawer">
+        {task && task.accepted_challenge_id === null ? (
+          <DrawerSection title="Accept this offer">
+            <AcceptOfferPanel bidderName={offer.challenger_name} challengeId={offer.challenge_id} onAccepted={onAccepted} taskId={task.id} />
+          </DrawerSection>
+        ) : null}
+        {task && task.accepted_challenge_id === offer.challenge_id ? (
+          <DrawerSection title="Accepted">
+            <p className="offer-drawer__muted">You accepted this offer. {offer.challenger_name} owns the task now.</p>
+          </DrawerSection>
+        ) : null}
         <DrawerSection title="Scope covered">
           <ScopeCoverage
             addedItems={offer.added_items}

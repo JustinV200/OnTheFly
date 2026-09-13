@@ -13,7 +13,10 @@ from app.models.outreach import (
     ProviderCandidate,
     SandboxOutboxMessage,
 )
+from app.models.savings import CostBasisRate, MarketEvidence, SavingsCard
+from app.models.scope import ChallengeRequirementResponse, Requirement, ScopeConstraint
 from app.models.service_expense import ServiceExpense
+from app.models.tasks import RequirementAssignment, Task, TaskEvent, TaskSplit
 from app.models.transaction import Transaction
 from app.models.vendor_alias_dismissal import VendorAliasDismissal
 from app.models.vendor_correction import VendorCorrection
@@ -22,18 +25,28 @@ from app.models.visibility_audit import VisibilityAudit
 __all__ = [
     "Account",
     "Challenge",
+    "ChallengeRequirementResponse",
     "ChallengeRevision",
     "ChallengerEvidence",
+    "CostBasisRate",
     "DiscoveryRun",
     "FinancialConnection",
     "Invitation",
     "InvitationApproval",
+    "MarketEvidence",
     "OutreachSuppression",
     "ProviderCandidate",
     "PublicListingRecord",
+    "Requirement",
+    "RequirementAssignment",
     "SandboxOutboxMessage",
+    "SavingsCard",
+    "ScopeConstraint",
     "ScopeVersion",
     "ServiceExpense",
+    "Task",
+    "TaskEvent",
+    "TaskSplit",
     "Transaction",
     "VendorAliasDismissal",
     "VendorCorrection",

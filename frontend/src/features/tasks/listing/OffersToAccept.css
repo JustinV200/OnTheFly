@@ -1,0 +1,54 @@
+/* Offers to accept: one hairline-separated item per offer, rank and name, price, and the accept toggle in a row. */
+.offers-to-accept {
+  list-style: none;
+  margin: 0;
+  padding: 0;
+}
+
+.offers-to-accept__item {
+  border-bottom: var(--border-width) solid var(--color-border-subtle);
+  display: grid;
+  gap: var(--space-2);
+  padding: var(--space-3) 0;
+}
+
+.offers-to-accept__item:last-child {
+  border-bottom: 0;
+}
+
+.offers-to-accept__row {
+  align-items: center;
+  display: flex;
+  flex-wrap: wrap;
+  gap: var(--space-2) var(--space-4);
+}
+
+.offers-to-accept__rank {
+  color: var(--color-text-muted);
+  font-variant-numeric: tabular-nums;
+  font-weight: var(--weight-semibold);
+}
+
+.offers-to-accept__who {
+  display: grid;
+  flex: 1 1 12rem;
+  gap: var(--space-1);
+  min-width: 0;
+}
+
+.offers-to-accept__badges {
+  display: flex;
+  flex-wrap: wrap;
+  gap: var(--space-1);
+}
+
+.offers-to-accept__price {
+  font-size: var(--text-lg);
+  font-weight: var(--weight-semibold);
+}
+
+.offers-to-accept__gaps {
+  color: var(--color-warning-text);
+  font-size: var(--text-sm);
+  margin: 0;
+}

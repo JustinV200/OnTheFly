@@ -3,7 +3,7 @@
 import { Link } from 'react-router-dom';
 
 import { BiddingModePill } from '../../../shared/components/BiddingModePill';
-import { MoneyDisplay } from '../../../shared/components/MoneyDisplay';
+import { ListedPrice } from '../../../shared/components/ListedPrice';
 import { categoryLabel } from '../../../shared/format/categoryLabel';
 import { cadenceSuffix, describeClosesIn } from '../../../shared/market';
 import { Badge, Icon, PageHeader } from '../../../shared/ui';
@@ -25,12 +25,12 @@ export function BidPageHeader({ listing }: BidPageHeaderProps): JSX.Element {
           <BiddingModePill mode={listing.bidding_mode} />
           <Badge icon={<Icon name="clock" />} title={closes.exact ?? undefined} tone={closes.isClosed ? 'danger' : 'neutral'}>{closes.label}</Badge>
           <Badge tone="neutral">
-            They pay <MoneyDisplay amountMinor={listing.price_minor} currency={listing.price_currency} /> {cadenceSuffix(listing.billing_cadence)}
+            {listing.price_minor === null ? 'Price not disclosed' : <>Listed at <ListedPrice amountMinor={listing.price_minor} currency={listing.price_currency} /> {cadenceSuffix(listing.billing_cadence)}</>}
           </Badge>
         </>
       )}
       subtitle={listing.service_area_approximate || 'Area not specified'}
-      title={`Bid on ${categoryLabel(listing.category)}`}
+      title={`Bid on ${listing.title || categoryLabel(listing.category)}`}
     />
   );
 }

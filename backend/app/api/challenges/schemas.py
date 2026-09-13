@@ -5,6 +5,8 @@ from typing import Literal
 
 from pydantic import BaseModel, Field
 
+from app.services.challenges.requirement_responses import RequirementResponseInput
+
 # Supported billing frequencies for challenge submissions.
 # Must stay in sync with MONTHLY_FACTORS in app/core/cadence.py.
 BillingFrequency = Literal["weekly", "biweekly", "monthly", "bimonthly", "quarterly", "annual", "yearly"]
@@ -43,6 +45,9 @@ class ChallengeInput(BaseModel):
     availability: str | None = None
     offer_expiry: datetime | None = None
     site_visit_required: bool = False
+    # Required when the listing has requirement rows: include or exclude each one, with an optional note. The
+    # free-text scope fields above stay for conditions (roadmap 12, step 2).
+    requirement_responses: list[RequirementResponseInput] | None = None
 
 
 class ChallengeResponse(BaseModel):
@@ -75,6 +80,8 @@ class ChallengeResponse(BaseModel):
     submitted_at: datetime
     revised_at: datetime | None
     is_active: bool
+    # The current version's per-requirement answers, for the listing's poster; empty without requirement rows.
+    requirement_responses: list[RequirementResponseInput] = []
 
 
 class ChallengeListResponse(BaseModel):
@@ -118,6 +125,8 @@ class OwnOffer(BaseModel):
     # False once the owner re-scopes the listing: this version answered an earlier scope, and a revision
     # attaches to the current one. Scope is versioned so an edit never reframes an existing offer.
     answers_current_scope: bool
+    # This version's answer to each requirement of the scope it answered; empty on a listing without requirement rows.
+    requirement_responses: list[RequirementResponseInput] = []
 
 
 class OwnOfferResponse(BaseModel):

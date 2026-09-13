@@ -43,7 +43,7 @@ export function BidTicket({ listing, closes, ownership }: BidTicketProps): JSX.E
 
 function TicketAction({ listing, closes, ownership }: BidTicketProps): JSX.Element {
   if (ownership.status === 'owner') {
-    return <OwnerTicketActions isClosed={closes.isClosed} listingId={listing.id} />;
+    return <OwnerTicketActions isClosed={closes.isClosed} listingId={listing.id} taskId={ownership.taskId} />;
   }
   if (closes.isClosed) {
     return <p className="bid-ticket__message">This task is closed to new offers. Offers made before the deadline still count.</p>;

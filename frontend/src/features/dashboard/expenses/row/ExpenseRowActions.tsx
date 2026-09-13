@@ -35,6 +35,10 @@ export function ExpenseRowActions({ expense, onVisibilityChanged }: ExpenseRowAc
       <ButtonLink size="sm" to={`/publish?expense=${expense.id}`} variant="primary">
         {expense.listing_id ? 'Publish again…' : 'Publish…'}
       </ButtonLink>
+      {/* REBID scopes the same expense as requirement rows (roadmap 12), which Ways to save and piece splitting read. */}
+      <ButtonLink size="sm" title="Scope it as requirement rows, so bidders price the same work and pieces can be split off" to={`/tasks/new?expense=${expense.id}`}>
+        REBID…
+      </ButtonLink>
       {/* An unpublished listing keeps the offers it received while public; the short label fits the row's action track. */}
       {expense.listing_id ? (
         <ButtonLink size="sm" title="Offers received while it was public are kept" to={`/listings/${expense.listing_id}/inbox`}>

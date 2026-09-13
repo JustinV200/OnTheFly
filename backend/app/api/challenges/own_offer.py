@@ -14,7 +14,9 @@ from app.core.identity import require_acting_account_id
 from app.db.session import get_db
 from app.models.challenge import Challenge
 from app.models.listing import PublicListingRecord
+from app.models.scope import ChallengeRequirementResponse
 from app.services.challenges.own_offer import find_own_active_offer
+from app.services.challenges.requirement_responses import RequirementResponseInput, load_current_responses
 from app.services.listings.bidding_mode import resolve_bidding_mode
 
 router = APIRouter(tags=["challenges"])
@@ -37,10 +39,15 @@ def get_own_offer(listing_id: str, request: Request, db: Session = Depends(get_d
     # Not filtered on visibility: an offer on a since-unpublished listing is still its author's own data,
     # and nothing below reads from the listing except which scope version it currently has.
     listing = db.get(PublicListingRecord, challenge.listing_id)
-    return OwnOfferResponse(offer=build_own_offer(challenge, listing))
+    responses = load_current_responses([challenge.id], db)[challenge.id]
+    return OwnOfferResponse(offer=build_own_offer(challenge, listing, [_response(row) for row in responses]))
 
 
-def build_own_offer(challenge: Challenge, listing: PublicListingRecord | None) -> OwnOffer:
+def build_own_offer(
+    challenge: Challenge,
+    listing: PublicListingRecord | None,
+    requirement_responses: list[RequirementResponseInput] | None = None,
+) -> OwnOffer:
     """Build the author's view of an offer field by field; listing is the offer's listing, if it still exists."""
 
     return OwnOffer(
@@ -66,4 +73,9 @@ def build_own_offer(challenge: Challenge, listing: PublicListingRecord | None) -
         submitted_at=challenge.submitted_at,
         revised_at=challenge.revised_at,
         answers_current_scope=listing is not None and listing.scope_version_id == challenge.scope_version_id,
+        requirement_responses=requirement_responses or [],
     )
+
+
+def _response(row: ChallengeRequirementResponse) -> RequirementResponseInput:
+    return RequirementResponseInput(requirement_key=row.requirement_key, is_included=row.is_included, note=row.note)

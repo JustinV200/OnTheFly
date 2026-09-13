@@ -19,6 +19,20 @@ export interface CoverageRow {
 
 /** Return one row per requested task, the visit frequency, and each included-cost term, in form order. */
 export function listCoverageRows(listing: PublicListingProjection, fields: ChallengeFormFields): CoverageRow[] {
+  const requirements = listing.requirements ?? [];
+  if (requirements.length > 0) {
+    // Requirement-based listings: one row per requirement, echoing the answer given (or not given yet).
+    return requirements.map((requirement) => {
+      const answer = fields.requirementAnswers[requirement.key]?.isIncluded ?? null;
+      return {
+        key: requirement.key,
+        label: requirement.text,
+        requested: requirement.priority === 'should' ? 'Nice to have' : 'Required',
+        answer: answer === null ? 'not_stated' : answer ? 'covered' : 'not_covered',
+        answerText: answer === null ? 'Not answered' : answer ? 'Included' : 'Not included',
+      };
+    });
+  }
   const rows: CoverageRow[] = Array.from(new Set(listing.required_tasks)).map((task) => {
     const isTicked = fields.tasks.includes(task);
     return { key: `task:${task}`, label: task, requested: 'Required', answer: isTicked ? 'covered' : 'not_covered', answerText: isTicked ? 'Covered' : 'Not covered' };

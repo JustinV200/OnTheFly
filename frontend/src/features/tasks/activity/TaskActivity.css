@@ -1,0 +1,26 @@
+/* Audit trail: hairline-separated rows, the sentence first and the time muted beneath it. */
+.task-activity {
+  list-style: none;
+  margin: 0;
+  padding: 0;
+}
+
+.task-activity__item {
+  border-bottom: var(--border-width) solid var(--color-border-subtle);
+  display: grid;
+  gap: var(--space-1);
+  padding: var(--space-3) 0;
+}
+
+.task-activity__item:last-child {
+  border-bottom: 0;
+}
+
+.task-activity__summary {
+  overflow-wrap: anywhere;
+}
+
+.task-activity__when {
+  color: var(--color-text-muted);
+  font-size: var(--text-xs);
+}

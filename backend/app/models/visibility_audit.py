@@ -12,12 +12,14 @@ from app.db.base import Base
 
 
 class VisibilityAudit(Base):
-    """Represents one visibility transition or bidding-mode change for a service expense."""
+    """Represents one visibility transition or bidding-mode change for a listing's expense or task."""
 
     __tablename__ = "visibility_audits"
 
     id: Mapped[str] = mapped_column(String(36), primary_key=True, default=lambda: str(uuid.uuid4()))
-    expense_id: Mapped[str] = mapped_column(String(36), nullable=False, index=True)
+    # The rebid expense, when the listing has one. A new task or piece is identified by task_id instead.
+    expense_id: Mapped[str | None] = mapped_column(String(36), nullable=True, index=True)
+    task_id: Mapped[str | None] = mapped_column(String(36), nullable=True, index=True)
     account_id: Mapped[str] = mapped_column(String(64), nullable=False)
     previous_state: Mapped[str] = mapped_column(String(32), nullable=False)
     new_state: Mapped[str] = mapped_column(String(32), nullable=False)

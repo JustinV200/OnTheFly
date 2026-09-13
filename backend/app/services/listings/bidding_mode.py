@@ -72,6 +72,7 @@ def set_bidding_mode(
         # Taken after the assignment so the latest audit row matches what the public API now serves.
         snapshot=projection_from_record(listing).model_dump_json(),
         db=db,
+        task_id=listing.task_id,
     )
     db.commit()
     db.refresh(listing)
