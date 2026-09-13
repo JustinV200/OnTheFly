@@ -16,6 +16,7 @@ import { describeDeadline } from '../../shared/format/describeDeadline';
 import { ButtonLink, PageHeader, Stack } from '../../shared/ui';
 import type { MarketplaceListing } from '../marketplace/types';
 import { ChallengeForm } from './form/ChallengeForm';
+import { useOwnListingCheck } from './owner/useOwnListingCheck';
 import { ChallengedPriceCard } from './status/ChallengedPriceCard';
 import { ExistingOfferNotice } from './status/ExistingOfferNotice';
 import { ModeChangeAlert } from './status/ModeChangeAlert';
@@ -38,6 +39,7 @@ export function ChallengePage(): JSX.Element {
   // Not polled: AppShell remounts this page when the acting business switches, and after that only this page's
   // own submissions change the offer, which arrive as `submitted`.
   const ownOfferQuery = useApiQuery<OwnOfferResponse>(account ? `/api/listings/${id}/my-offer` : null);
+  const ownListing = useOwnListingCheck(id, account !== null);
   const submitChallenge = useChallenge();
   const [shownMode, setShownMode] = useState<BiddingModeValue | null>(null);
   const [submitted, setSubmitted] = useState<ChallengeResponse | null>(null);
@@ -81,6 +83,33 @@ export function ChallengePage(): JSX.Element {
         {listingQuery.error
           ? <ErrorState error={listingQuery.error} onRetry={listingQuery.reload} title="Couldn’t load this listing" />
           : <LoadingSpinner label="Loading listing terms…" />}
+      </ChallengePageFrame>
+    );
+  }
+  if (ownListing.isOwnListing === null) {
+    // No form until this resolves, so an owner never starts typing an offer the server would refuse.
+    return (
+      <ChallengePageFrame>
+        {ownListing.error
+          ? <ErrorState error={ownListing.error} onRetry={ownListing.reload} title="Couldn’t check whether this is your own listing" />
+          : <LoadingSpinner label="Checking this listing…" />}
+      </ChallengePageFrame>
+    );
+  }
+  if (ownListing.isOwnListing) {
+    return (
+      <ChallengePageFrame>
+        <EmptyState
+          action={(
+            <>
+              <ButtonLink to={`/listings/${id}/inbox`} variant="primary">Manage offers</ButtonLink>
+              <ButtonLink to={`/listings/${id}`}>View the listing</ButtonLink>
+            </>
+          )}
+          title="This is your own listing"
+        >
+          A business can’t bid on its own listing. Offers from other businesses arrive in your offers inbox.
+        </EmptyState>
       </ChallengePageFrame>
     );
   }
