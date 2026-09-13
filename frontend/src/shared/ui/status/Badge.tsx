@@ -6,8 +6,9 @@ import { joinClassNames } from '../joinClassNames';
 import './Badge.css';
 
 // neutral: plain facts. info: open/public-facing terms. success: a positive, confirmed state. warning: needs attention.
-// danger: failed or unlabeled. simulated: demo data. private: owner-only. brand: fly-brain analysis output.
-export type BadgeTone = 'neutral' | 'info' | 'success' | 'warning' | 'danger' | 'simulated' | 'private' | 'brand';
+// danger: failed or unlabeled. simulated: demo data. private: owner-only. brand: a green accent tint (selection, highlights).
+// flybrain: fly-brain analysis output, violet so it never reads as money, state, or an action.
+export type BadgeTone = 'neutral' | 'info' | 'success' | 'warning' | 'danger' | 'simulated' | 'private' | 'brand' | 'flybrain';
 
 interface BadgeProps {
   tone?: BadgeTone;

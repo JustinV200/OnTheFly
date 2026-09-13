@@ -1,108 +1,15 @@
-/* Design tokens for On the Fly: every colour, size, and timing the UI uses, as CSS custom properties.
-   Components read these instead of hard-coding values. This file declares values only; it styles nothing.
-   Contrast: every text/background pair below meets 4.5:1 (checked against the surface it is paired with). */
+/* Design tokens for On the Fly that don't change with the theme: type, spacing, radii, motion, layout.
+   Colour roles and shadows live in themes/light.css and themes/dark.css, so dark mode is a token swap, never a
+   component branch (roadmap 11, "Dark mode is a token swap"). This file declares values only; it styles nothing. */
 
 :root {
-  /* ---- Neutrals: cool grey, used for canvas, surfaces, text, and borders ---- */
-  --gray-0: #ffffff;
-  --gray-25: #fafbfc;
-  --gray-50: #f6f7f9;
-  --gray-100: #eef0f3;
-  --gray-150: #e6e8ec;
-  --gray-200: #dfe2e8;
-  --gray-300: #c9cdd6;
-  --gray-400: #9aa1ae;
-  --gray-500: #6b7280;
-  --gray-600: #5a6270;
-  --gray-700: #3b424e;
-  --gray-800: #262b33;
-  --gray-900: #16191f;
-
-  /* ---- Brand accent: one restrained indigo, for primary actions, links, focus, and fly-brain labels ---- */
-  --brand-50: #f1f0fe;
-  --brand-100: #e3e1fc;
-  --brand-200: #c9c4f8;
-  --brand-300: #a79ff3;
-  --brand-500: #6a5ef0;
-  --brand-600: #5145e0;
-  --brand-700: #4136bf;
-  --brand-800: #332a96;
-
-  /* ---- Semantic roles (use these in components, not the raw scales above) ---- */
-  --color-canvas: var(--gray-50);
-  --color-surface: var(--gray-0);
-  --color-surface-subtle: var(--gray-25);
-  --color-surface-sunken: var(--gray-100);
-  --color-surface-hover: var(--gray-100);
-
-  --color-text: var(--gray-900);
-  --color-text-secondary: var(--gray-700);
-  /* Muted text passes 4.5:1 on both surface and canvas; use it for captions and secondary facts. */
-  --color-text-muted: var(--gray-600);
-  /* Subtle is for placeholders and disabled text only (exempt from contrast minimums). */
-  --color-text-subtle: var(--gray-500);
-  --color-text-inverse: var(--gray-0);
-  --color-text-link: var(--brand-700);
-  --color-text-link-hover: var(--brand-800);
-
-  --color-border-subtle: var(--gray-150);
-  --color-border: var(--gray-200);
-  --color-border-strong: var(--gray-300);
-  --color-border-control: #b9bec8;
-
-  --color-brand: var(--brand-600);
-  --color-brand-hover: var(--brand-700);
-  --color-brand-active: var(--brand-800);
-  --color-brand-soft: var(--brand-50);
-  --color-brand-soft-border: var(--brand-200);
-  --color-brand-text: var(--brand-800);
-
-  --color-focus-ring: var(--brand-600);
-  --color-selection: var(--brand-100);
-
-  /* Status colours are reserved for meaningful states. Each has text / background / border / solid.
-     State is never carried by colour alone: every badge and callout also says it in words. */
-  --color-success-text: #0f6b3f;
-  --color-success-bg: #e8f6ee;
-  --color-success-border: #a9dcbf;
-  --color-success-solid: #14804a;
-
-  --color-warning-text: #8a4b00;
-  --color-warning-bg: #fff5dc;
-  --color-warning-border: #f1cf85;
-  --color-warning-solid: #b25e00;
-
-  --color-danger-text: #a4262c;
-  --color-danger-bg: #fdeeee;
-  --color-danger-border: #f2bcbf;
-  --color-danger-solid: #c8323a;
-  --color-danger-solid-hover: #a9262e;
-
-  --color-info-text: #0b5cad;
-  --color-info-bg: #eaf3fd;
-  --color-info-border: #b3d3f3;
-  --color-info-solid: #1570d1;
-
-  /* "Simulated" marks demo data (fixture transactions, seeded offers). Distinct from warning on purpose. */
-  --color-simulated-text: #9a3d0b;
-  --color-simulated-bg: #fff0e4;
-  --color-simulated-border: #f3bf98;
-  --color-simulated-solid: #c2560f;
-
-  /* "Private" marks things only the owner can see. Strong neutral, never a status hue. */
-  --color-private-text: #1f2430;
-  --color-private-bg: var(--gray-100);
-  --color-private-border: var(--gray-400);
-
-  --color-neutral-text: var(--gray-700);
-  --color-neutral-bg: var(--gray-100);
-  --color-neutral-border: var(--gray-200);
-
   /* ---- Typography ---- */
-  --font-sans: ui-sans-serif, system-ui, -apple-system, "Segoe UI", Roboto, "Helvetica Neue", Arial, sans-serif,
-    "Apple Color Emoji", "Segoe UI Emoji";
+  /* Inter when the machine has it, then the platform UI font: a clean grotesk, like a trading app, with no font request. */
+  --font-sans: "Inter", "Inter var", ui-sans-serif, system-ui, -apple-system, "Segoe UI", Roboto, "Helvetica Neue", Arial,
+    sans-serif, "Apple Color Emoji", "Segoe UI Emoji";
   --font-mono: ui-monospace, SFMono-Regular, "SF Mono", Menlo, Consolas, "Liberation Mono", monospace;
 
+  --text-2xs: 0.6875rem;  /* 11px: chart axes, dense meta */
   --text-xs: 0.75rem;     /* 12px: table headers, eyebrows, badges */
   --text-sm: 0.8125rem;   /* 13px: captions, hints, dense cells */
   --text-md: 0.9375rem;   /* 15px: body */
@@ -111,6 +18,7 @@
   --text-2xl: 1.5rem;     /* 24px: page titles on phone, stats */
   --text-3xl: 1.875rem;   /* 30px: page titles on desktop, headline money */
   --text-4xl: 2.25rem;    /* 36px: the one headline figure on a screen */
+  --text-5xl: 3rem;       /* 48px: the market price on a listing page */
 
   --leading-tight: 1.2;
   --leading-snug: 1.35;
@@ -122,6 +30,7 @@
   --weight-bold: 700;
 
   --tracking-tight: -0.015em;
+  --tracking-tighter: -0.03em;
   --tracking-wide: 0.06em;
 
   /* ---- Spacing: 4px grid ---- */
@@ -138,20 +47,14 @@
   --space-12: 3rem;       /* 48px */
   --space-16: 4rem;       /* 64px */
 
-  /* ---- Radii ---- */
+  /* ---- Radii: soft cards and pill chips, the market-app look ---- */
   --radius-sm: 6px;
-  --radius-md: 8px;
-  --radius-lg: 12px;
-  --radius-xl: 16px;
+  --radius-md: 10px;
+  --radius-lg: 14px;
+  --radius-xl: 18px;
   --radius-pill: 999px;
 
-  /* ---- Borders and shadows ---- */
   --border-width: 1px;
-  --shadow-xs: 0 1px 1px rgb(22 25 31 / 0.04);
-  --shadow-sm: 0 1px 2px rgb(22 25 31 / 0.06), 0 1px 1px rgb(22 25 31 / 0.03);
-  --shadow-md: 0 4px 12px rgb(22 25 31 / 0.08), 0 1px 3px rgb(22 25 31 / 0.05);
-  --shadow-lg: 0 12px 32px rgb(22 25 31 / 0.14), 0 2px 6px rgb(22 25 31 / 0.06);
-  --focus-ring: 0 0 0 3px rgb(81 69 224 / 0.28);
 
   /* ---- Motion (all zeroed under prefers-reduced-motion in base.css) ---- */
   --duration-fast: 120ms;
@@ -160,12 +63,13 @@
   --ease-standard: cubic-bezier(0.2, 0, 0, 1);
 
   /* ---- Layout ---- */
-  --layout-max-width: 1200px;
+  --layout-max-width: 1240px;
   --layout-gutter: var(--space-4);
   --topbar-height: 56px;
-  --control-height: 36px;
+  --control-height: 38px;
   --z-sticky: 20;
-  --z-popover: 30;
+  --z-drawer: 40;
+  --z-popover: 50;
 
   /* ---- Breakpoints (documentation only) ----
      Custom properties can't be read inside @media, so media queries repeat these literals:
@@ -179,13 +83,13 @@
 @media (min-width: 768px) {
   :root {
     --layout-gutter: var(--space-6);
-    --topbar-height: 60px;
+    --topbar-height: 64px;
   }
 }
 
 @media (pointer: coarse) {
   :root {
     /* Larger touch targets for form controls and buttons on phones. */
-    --control-height: 42px;
+    --control-height: 44px;
   }
 }

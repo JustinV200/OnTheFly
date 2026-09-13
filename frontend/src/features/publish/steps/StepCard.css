@@ -38,5 +38,5 @@
 
 .publish-step-card__surface--current .publish-step-card__number {
   background-color: var(--color-brand);
-  color: var(--color-text-inverse);
+  color: var(--color-on-brand);
 }

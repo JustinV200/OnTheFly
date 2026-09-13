@@ -1,7 +1,7 @@
-/* Fly-brain explanation panel: a dashed brand-tinted aside, so "how this was computed" reads as a note, not a result. */
+/* Fly-brain explanation panel: a dashed violet aside, so "how this was computed" reads as a note, not a result. */
 .flybrain-note {
-  background-color: var(--color-brand-soft);
-  border: var(--border-width) dashed var(--color-brand-soft-border);
+  background-color: var(--color-flybrain-bg);
+  border: var(--border-width) dashed var(--color-flybrain-border);
   border-radius: var(--radius-md);
   color: var(--color-text-secondary);
   font-size: var(--text-sm);
@@ -29,6 +29,6 @@
 }
 
 .flybrain-note__disclosure {
-  color: var(--color-brand-text);
+  color: var(--color-flybrain-text);
   margin: var(--space-2) 0 0;
 }

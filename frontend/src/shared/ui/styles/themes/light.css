@@ -1,0 +1,109 @@
+/* Light theme colour roles: a white trading-app canvas, hairline borders, and one green accent for actions.
+   Also the default: it applies before the theme script runs and whenever data-theme is anything but "dark".
+   Contrast: text/background pairs meet 4.5:1, borders and focus rings 3:1 (npm run check:contrast verifies the list). */
+
+:root {
+  color-scheme: light;
+
+  /* ---- Surfaces ---- */
+  --color-canvas: #ffffff;
+  --color-surface: #ffffff;
+  --color-surface-raised: #ffffff;
+  --color-surface-subtle: #f7f8fa;
+  --color-surface-sunken: #f1f3f5;
+  --color-surface-hover: #f3f5f7;
+  --color-surface-selected: #ecf7f1;
+  --color-backdrop: rgb(13 17 22 / 0.42);
+
+  /* ---- Text ---- */
+  --color-text: #0d1116;
+  --color-text-secondary: #39414b;
+  /* Muted passes 4.5:1 on canvas, surface, and the subtle surface; captions and secondary facts. */
+  --color-text-muted: #5b6470;
+  /* Subtle is for placeholders and disabled text only (exempt from contrast minimums). */
+  --color-text-subtle: #8a929c;
+  --color-text-inverse: #ffffff;
+  --color-text-link: #036b48;
+  --color-text-link-hover: #024d34;
+
+  /* The select chevron, drawn in this theme's muted text colour. */
+  --select-chevron: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='16' height='16' viewBox='0 0 24 24' fill='none' stroke='%235b6470' stroke-width='2' stroke-linecap='round' stroke-linejoin='round'%3E%3Cpath d='m6 9 6 6 6-6'/%3E%3C/svg%3E");
+
+  /* ---- Borders ---- */
+  --color-border-subtle: #eef0f3;
+  --color-border: #e2e5e9;
+  --color-border-strong: #c9ced5;
+  /* Controls need 3:1 against the surface so an empty input is still findable. */
+  --color-border-control: #848d98;
+
+  /* ---- Brand: one green accent for primary actions, active navigation, focus, and selection ---- */
+  --color-brand: #037f55;
+  --color-brand-hover: #026a47;
+  --color-brand-active: #01583b;
+  --color-on-brand: #ffffff;
+  --color-brand-soft: #e8f6ef;
+  --color-brand-soft-border: #a6dcc2;
+  --color-brand-text: #02603d;
+
+  --color-focus-ring: #037f55;
+  --color-selection: #c9ecda;
+
+  /* ---- Status tones: text / background / border / solid. State is never colour alone; words always say it. ---- */
+  --color-success-text: #0a6640;
+  --color-success-bg: #e9f7f0;
+  --color-success-border: #a9dcc3;
+  --color-success-solid: #0f8a56;
+
+  --color-warning-text: #8a4b00;
+  --color-warning-bg: #fff5dc;
+  --color-warning-border: #f1cf85;
+  --color-warning-solid: #b25e00;
+
+  --color-danger-text: #b0222d;
+  --color-danger-bg: #fdeeee;
+  --color-danger-border: #f2bcbf;
+  --color-danger-solid: #c8323a;
+  --color-danger-solid-hover: #a9262e;
+
+  --color-info-text: #0b5cad;
+  --color-info-bg: #eaf3fd;
+  --color-info-border: #b3d3f3;
+  --color-info-solid: #1570d1;
+
+  /* "Simulated" marks demo data (fixture transactions, seeded offers). Amber in both themes, distinct from warning. */
+  --color-simulated-text: #9a3d0b;
+  --color-simulated-bg: #fff0e4;
+  --color-simulated-border: #f3bf98;
+  --color-simulated-solid: #c2560f;
+
+  /* "Private" marks things only the owner can see. Strong neutral, never a status hue. */
+  --color-private-text: #1f2430;
+  --color-private-bg: #eef0f3;
+  --color-private-border: #9aa1ae;
+
+  --color-neutral-text: #39414b;
+  --color-neutral-bg: #f1f3f5;
+  --color-neutral-border: #e2e5e9;
+
+  /* Fly-brain analysis output: violet, so it never reads as money, state, or an action. */
+  --color-flybrain-text: #5b21b6;
+  --color-flybrain-bg: #f4f0fe;
+  --color-flybrain-border: #d3c4fb;
+  --color-flybrain-solid: #7c3aed;
+
+  /* ---- Data visualisation ---- */
+  --color-chart-line: #037f55;
+  --color-chart-fill: rgb(3 127 85 / 0.1);
+  --color-chart-reference: #8a929c;
+  --color-chart-grid: #eef0f3;
+  --color-skeleton: #eef0f3;
+  --color-skeleton-highlight: #f7f8fa;
+
+  /* ---- Shadows ---- */
+  --shadow-xs: 0 1px 1px rgb(13 17 22 / 0.04);
+  --shadow-sm: 0 1px 2px rgb(13 17 22 / 0.06), 0 1px 1px rgb(13 17 22 / 0.03);
+  --shadow-md: 0 6px 16px rgb(13 17 22 / 0.08), 0 1px 3px rgb(13 17 22 / 0.05);
+  --shadow-lg: 0 16px 40px rgb(13 17 22 / 0.14), 0 2px 6px rgb(13 17 22 / 0.06);
+  --focus-ring: 0 0 0 3px rgb(3 127 85 / 0.26);
+  --focus-ring-danger: 0 0 0 3px rgb(200 50 58 / 0.22);
+}

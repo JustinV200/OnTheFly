@@ -1,7 +1,7 @@
 /* Skeleton placeholder: a soft shimmer that stops under reduced motion and stays a flat grey block. */
 .ui-skeleton {
   animation: ui-skeleton-shimmer 1.4s ease-in-out infinite;
-  background: linear-gradient(90deg, var(--gray-100) 0%, var(--gray-150) 40%, var(--gray-100) 80%);
+  background: linear-gradient(90deg, var(--color-skeleton) 0%, var(--color-skeleton-highlight) 40%, var(--color-skeleton) 80%);
   background-size: 200% 100%;
   display: block;
 }

@@ -5,8 +5,8 @@ import type { ReactNode } from 'react';
 
 import { Badge, BadgeTone } from '../ui';
 
-// Badge's tones minus "brand", which is reserved for fly-brain labels (FlyBrainBadge).
-export type PillTone = Exclude<BadgeTone, 'brand'>;
+// Badge's tones minus the accent tint and the fly-brain tone, which only FlyBrainBadge uses.
+export type PillTone = Exclude<BadgeTone, 'brand' | 'flybrain'>;
 
 interface PillProps {
   tone: PillTone;

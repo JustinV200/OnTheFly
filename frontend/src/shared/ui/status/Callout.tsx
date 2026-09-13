@@ -6,7 +6,7 @@ import { Icon, IconName } from '../icons/Icon';
 import { joinClassNames } from '../joinClassNames';
 import './Callout.css';
 
-export type CalloutTone = 'neutral' | 'info' | 'success' | 'warning' | 'danger' | 'simulated' | 'private' | 'brand';
+export type CalloutTone = 'neutral' | 'info' | 'success' | 'warning' | 'danger' | 'simulated' | 'private' | 'brand' | 'flybrain';
 
 const TONE_ICONS: Record<CalloutTone, IconName> = {
   neutral: 'info',
@@ -16,7 +16,8 @@ const TONE_ICONS: Record<CalloutTone, IconName> = {
   danger: 'alert-circle',
   simulated: 'alert-triangle',
   private: 'lock',
-  brand: 'fly',
+  brand: 'info',
+  flybrain: 'fly',
 };
 
 interface CalloutProps {

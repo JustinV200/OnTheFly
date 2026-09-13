@@ -126,7 +126,7 @@
 
 :where(button:hover:not(:disabled)) {
   background-color: var(--color-surface-hover);
-  border-color: var(--gray-400);
+  border-color: var(--color-border-strong);
 }
 
 :where(button:disabled) {
@@ -160,7 +160,8 @@
 
 :where(select) {
   appearance: none;
-  background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='16' height='16' viewBox='0 0 24 24' fill='none' stroke='%235a6270' stroke-width='2' stroke-linecap='round' stroke-linejoin='round'%3E%3Cpolyline points='6 9 12 15 18 9'/%3E%3C/svg%3E");
+  /* The chevron is a data URI, which can't read a custom property colour, so each theme supplies its own drawing. */
+  background-image: var(--select-chevron);
   background-position: right var(--space-2) center;
   background-repeat: no-repeat;
   cursor: pointer;
@@ -173,7 +174,7 @@
 
 /* Pseudo-classes sit inside :where() too, so a component's own :hover or :focus rule always wins. */
 :where(input:not([type="checkbox"], [type="radio"]):hover:not(:disabled), select:hover:not(:disabled), textarea:hover:not(:disabled)) {
-  border-color: var(--gray-500);
+  border-color: var(--color-text-subtle);
 }
 
 :where(input:not([type="checkbox"], [type="radio"]):focus, select:focus, textarea:focus) {

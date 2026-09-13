@@ -12,7 +12,7 @@ interface FlyBrainBadgeProps {
 export function FlyBrainBadge({ attribution }: FlyBrainBadgeProps): JSX.Element {
   return (
     // The fly icon is decorative; the text carries the meaning for screen readers.
-    <Badge icon={<Icon name="fly" />} title={attribution.role} tone="brand">
+    <Badge icon={<Icon name="fly" />} title={attribution.role} tone="flybrain">
       Fly brain · {attribution.label}
     </Badge>
   );

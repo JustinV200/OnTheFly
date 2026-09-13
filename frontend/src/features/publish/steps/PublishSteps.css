@@ -42,7 +42,7 @@
 .publish-steps__item--current .publish-steps__marker {
   background-color: var(--color-brand);
   border-color: var(--color-brand);
-  color: var(--color-text-inverse);
+  color: var(--color-on-brand);
 }
 
 .publish-steps__item--complete .publish-steps__marker {

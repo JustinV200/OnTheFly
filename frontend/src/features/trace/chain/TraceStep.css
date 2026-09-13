@@ -39,7 +39,8 @@
   aspect-ratio: 1;
   background-color: var(--color-text);
   border-radius: var(--radius-pill);
-  color: var(--color-text-inverse);
+  /* The canvas colour is the inverse of the text colour in both themes, so the number stays legible on the dark disc. */
+  color: var(--color-canvas);
   display: flex;
   font-size: var(--text-sm);
   font-variant-numeric: tabular-nums;

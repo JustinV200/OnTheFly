@@ -56,3 +56,4 @@
 .ui-badge--simulated { background-color: var(--color-simulated-bg); border-color: var(--color-simulated-border); color: var(--color-simulated-text); }
 .ui-badge--private { background-color: var(--color-private-bg); border-color: var(--color-private-border); color: var(--color-private-text); }
 .ui-badge--brand { background-color: var(--color-brand-soft); border-color: var(--color-brand-soft-border); color: var(--color-brand-text); }
+.ui-badge--flybrain { background-color: var(--color-flybrain-bg); border-color: var(--color-flybrain-border); color: var(--color-flybrain-text); }
