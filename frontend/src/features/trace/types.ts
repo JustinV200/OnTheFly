@@ -1,4 +1,5 @@
 /* Declares the offer trace response (backend app/services/trace/types.py). */
+import type { BrainStimulus } from '../../shared/flybrain/live';
 import type { FlyBrainAttribution } from '../../shared/flybrain/types';
 
 export interface OfferTrace {
@@ -105,4 +106,6 @@ export interface OfferTrace {
   }[];
   // The Compound Eye chose the counted rows; the backend lists it with its reason when it didn't run.
   fly_brain: FlyBrainAttribution[];
+  // What the simulated fly brain view plays alongside the trace; null when the Compound Eye didn't run.
+  brain_stimulus: BrainStimulus | null;
 }

@@ -3,6 +3,7 @@
 import { useEffect, useState } from 'react';
 
 import { ApiError, get } from '../../../shared/api/client';
+import { publishBrainStimulus } from '../../../shared/flybrain/live';
 import type { SimilarListingsResponse } from './types';
 
 interface UseSimilarListingsResult {
@@ -25,6 +26,8 @@ export function useSimilarListings(listingId: string): UseSimilarListingsResult 
         const payload = await get<SimilarListingsResponse>(`/api/marketplace/${listingId}/similar`);
         if (isCurrent) {
           setResponse(payload);
+          // Hands the input to the fly brain view, which plays it separately; the results above are already final.
+          publishBrainStimulus(payload.brain_stimulus);
         }
       } catch (caught) {
         if (isCurrent) {

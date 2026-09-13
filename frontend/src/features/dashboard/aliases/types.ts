@@ -1,4 +1,5 @@
 /* Declares vendor alias suggestion shapes returned by /api/vendor-aliases. */
+import type { BrainStimulus } from '../../../shared/flybrain/live';
 import type { FlyBrainAttribution } from '../../../shared/flybrain/types';
 
 export interface VendorGroupSummary {
@@ -21,6 +22,8 @@ export interface VendorAliasSuggestion {
 export interface VendorAliasListResponse {
   suggestions: VendorAliasSuggestion[];
   fly_brain: FlyBrainAttribution[];
+  // What the simulated fly brain view plays alongside the suggestions; null when the name index didn't run.
+  brain_stimulus: BrainStimulus | null;
 }
 
 export interface VendorAliasPair {

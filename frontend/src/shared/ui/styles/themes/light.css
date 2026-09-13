@@ -91,6 +91,13 @@
   --color-flybrain-border: #d3c4fb;
   --color-flybrain-solid: #7c3aed;
 
+  /* The simulated fly brain view: its backdrop, resting neurons, a neuron that just fired (violet, the fly-brain hue),
+     and a neuron the stimulus drives (cyan, so where input enters is distinct from where activity spreads). */
+  --color-brain-backdrop: #f7f5ff;
+  --color-brain-neuron: #6b7280;
+  --color-brain-spike: #6d28d9;
+  --color-brain-input: #0e7490;
+
   /* ---- Data visualisation ---- */
   --color-chart-line: #037f55;
   --color-chart-fill: rgb(3 127 85 / 0.1);

@@ -3,6 +3,7 @@
 import { useCallback, useEffect, useState } from 'react';
 
 import { ApiError, get, post } from '../../../shared/api/client';
+import { publishBrainStimulus } from '../../../shared/flybrain/live';
 import type { FlyBrainAttribution } from '../../../shared/flybrain/types';
 import type { VendorAliasListResponse, VendorAliasPair, VendorAliasSuggestion } from './types';
 
@@ -27,6 +28,8 @@ export function useVendorAliases(): UseVendorAliasesResult {
       const response = await get<VendorAliasListResponse>('/api/vendor-aliases');
       setSuggestions(response.suggestions);
       setAttributions(response.fly_brain);
+      // Hands the input to the fly brain view, which plays it separately; an unchanged list after a reload isn't replayed.
+      publishBrainStimulus(response.brain_stimulus);
       setError(null);
     } catch (caught) {
       setError(describeError(caught, 'Could not load duplicate-vendor suggestions.'));

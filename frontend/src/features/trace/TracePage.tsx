@@ -9,6 +9,7 @@ import { useApiQuery } from '../../shared/api/useApiQuery';
 import { EmptyState } from '../../shared/components/EmptyState';
 import { ErrorState } from '../../shared/components/ErrorState';
 import { LoadingSpinner } from '../../shared/components/LoadingSpinner';
+import { usePublishBrainStimulus } from '../../shared/flybrain/live';
 import { Badge, ButtonLink, Icon, PageHeader, Stack } from '../../shared/ui';
 import { TraceHeadline } from './headline/TraceHeadline';
 import { ListingStep } from './steps/offer/ListingStep';
@@ -28,6 +29,8 @@ export function TracePage(): JSX.Element {
   const { challengeId = '' } = useParams();
   const { account } = useActingAccount();
   const trace = useApiQuery<OfferTrace>(`/api/challenges/${challengeId}/trace`);
+  // The fly brain view plays alongside; nothing on this page waits for it.
+  usePublishBrainStimulus(trace.data?.brain_stimulus);
 
   if (trace.error?.status === 404 || trace.error?.status === 401) {
     return (

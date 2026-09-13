@@ -1,0 +1,121 @@
+/* The brain panel: a compact card pinned to the bottom corner, or a taller scrolling panel when expanded.
+   Fixed position, above drawers (--z-brain-dock), so it follows the viewer across pages and over the expense drawer. */
+.brain-viewer {
+  background-color: var(--color-surface-raised);
+  border: var(--border-width) solid var(--color-flybrain-border);
+  border-radius: var(--radius-lg);
+  bottom: var(--space-3);
+  box-shadow: var(--shadow-lg);
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-2);
+  left: var(--space-3);
+  max-height: calc(100vh - var(--topbar-height) - var(--space-6));
+  overflow-y: auto;
+  padding: var(--space-3);
+  position: fixed;
+  right: var(--space-3);
+  z-index: var(--z-brain-dock);
+}
+
+.brain-viewer[hidden] {
+  display: none;
+}
+
+@media (min-width: 768px) {
+  .brain-viewer {
+    bottom: var(--space-4);
+    left: auto;
+    right: var(--space-4);
+    width: 22rem;
+  }
+
+  .brain-viewer--expanded {
+    width: min(36rem, calc(100vw - 2 * var(--space-4)));
+  }
+}
+
+.brain-viewer__header {
+  align-items: center;
+  display: flex;
+  gap: var(--space-2);
+}
+
+.brain-viewer__title {
+  flex: 1;
+  font-size: var(--text-md);
+  font-weight: var(--weight-semibold);
+  margin: 0;
+  min-width: 0;
+}
+
+.brain-viewer__actions {
+  display: flex;
+  gap: var(--space-0_5);
+}
+
+.brain-viewer__icon-button {
+  align-items: center;
+  background: none;
+  border: 0;
+  border-radius: var(--radius-sm);
+  color: var(--color-text-muted);
+  cursor: pointer;
+  display: inline-flex;
+  height: 32px;
+  justify-content: center;
+  width: 32px;
+}
+
+.brain-viewer__icon-button:hover {
+  background-color: var(--color-surface-hover);
+  color: var(--color-text);
+}
+
+.brain-viewer__icon-button:focus-visible {
+  box-shadow: var(--focus-ring);
+  outline: none;
+}
+
+.brain-viewer__placeholder {
+  aspect-ratio: 2 / 1;
+  background-color: var(--color-brain-backdrop);
+  border-radius: var(--radius-md);
+}
+
+.brain-viewer__status,
+.brain-viewer__input,
+.brain-viewer__note,
+.brain-viewer__fired {
+  font-size: var(--text-sm);
+  margin: 0;
+}
+
+.brain-viewer__status {
+  color: var(--color-text);
+  font-variant-numeric: tabular-nums;
+}
+
+.brain-viewer__input {
+  color: var(--color-flybrain-text);
+}
+
+.brain-viewer__note,
+.brain-viewer__fired {
+  color: var(--color-text-muted);
+}
+
+.brain-viewer__controls {
+  align-items: center;
+  display: flex;
+  flex-wrap: wrap;
+  gap: var(--space-2);
+  justify-content: space-between;
+}
+
+.brain-viewer__details {
+  border-top: var(--border-width) solid var(--color-border-subtle);
+  display: grid;
+  gap: var(--space-3);
+  padding-top: var(--space-3);
+}

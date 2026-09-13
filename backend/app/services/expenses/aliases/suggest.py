@@ -2,6 +2,8 @@
 FlyHash finds candidate names; deterministic checks decide what is suggested; only the owner merges.
 """
 
+from dataclasses import dataclass
+
 from pydantic import BaseModel
 from sqlalchemy import select
 from sqlalchemy.orm import Session
@@ -53,14 +55,35 @@ class VendorAliasSuggestion(BaseModel):
     shared_words: list[str]
 
 
-def suggest_vendor_aliases(owner_account_id: str, db: Session) -> list[VendorAliasSuggestion]:
+@dataclass(frozen=True, slots=True)
+class VendorAliasScan:
+    """One owner's merge suggestions and the names the FlyHash index compared to find them.
+
+    compared_names maps each indexed expense id to the exact name the index encoded (the
+    vendor key without its Stripe currency suffix), and is empty when the index never ran.
+    It is owner-private like the suggestions and exists so the brain panel can replay
+    those names without a second query; it is never serialized.
+    """
+
+    suggestions: list[VendorAliasSuggestion]
+    compared_names: dict[str, str]
+
+    @property
+    def did_index_run(self) -> bool:
+        """Return True when the index held at least two groups, the fewest a comparison needs."""
+
+        return len(self.compared_names) >= 2
+
+
+def suggest_vendor_aliases(owner_account_id: str, db: Session) -> VendorAliasScan:
     """Return merge suggestions for one owner's stored vendor groups, strongest first.
 
     Never suggests: groups with a hard exclusion or owner ineligibility, groups with
     different known categories or currencies, a currency-keyed Stripe group with another
     provider's group, a pair the owner dismissed, or folding away a group the listing
     flow already references. Each alias appears at most once. Names are compared without
-    the Stripe " [CUR]" key suffix.
+    the Stripe " [CUR]" key suffix. With fewer than two eligible groups nothing is
+    indexed, and the scan has no suggestions and no compared names.
     """
 
     expenses = [
@@ -71,19 +94,21 @@ def suggest_vendor_aliases(owner_account_id: str, db: Session) -> list[VendorAli
         if expense.is_eligible
     ]
     if len(expenses) < 2:
-        return []
+        return VendorAliasScan(suggestions=[], compared_names={})
 
     by_id = {expense.id: expense for expense in expenses}
     listed = listed_expense_ids(list(by_id), db)
     dismissed = _dismissed_pairs(owner_account_id, db)
+    # One name per group for both indexing and querying; the scan hands these exact names on.
+    compared_names = {expense.id: _comparable_name(expense) for expense in expenses}
     index: FlyHashIndex[str] = FlyHashIndex(build_flyhash(VENDOR_NAME_SHAPE))
     for expense in expenses:
-        index.add(expense.id, vendor_name_receptors(_comparable_name(expense), VENDOR_NAME_SHAPE.input_dim))
+        index.add(expense.id, vendor_name_receptors(compared_names[expense.id], VENDOR_NAME_SHAPE.input_dim))
 
     best_by_alias: dict[str, VendorAliasSuggestion] = {}
     for expense in expenses:
         matches = index.query(
-            vendor_name_receptors(_comparable_name(expense), VENDOR_NAME_SHAPE.input_dim),
+            vendor_name_receptors(compared_names[expense.id], VENDOR_NAME_SHAPE.input_dim),
             limit=CANDIDATES_PER_VENDOR,
             min_similarity=CANDIDATE_FLOOR,
             exclude={expense.id},
@@ -103,9 +128,12 @@ def suggest_vendor_aliases(owner_account_id: str, db: Session) -> list[VendorAli
             if current is None or suggestion.name_similarity > current.name_similarity:
                 best_by_alias[alias.id] = suggestion
 
-    return sorted(
-        best_by_alias.values(),
-        key=lambda suggestion: (-suggestion.name_similarity, suggestion.alias.vendor),
+    return VendorAliasScan(
+        suggestions=sorted(
+            best_by_alias.values(),
+            key=lambda suggestion: (-suggestion.name_similarity, suggestion.alias.vendor),
+        ),
+        compared_names=compared_names,
     )
 
 

@@ -19,10 +19,12 @@ from app.services.expenses.signals import (
     NotAssessedReason,
     PriceLevelAnalysis,
     analyze_price_levels,
+    charge_brain_stimulus,
+    did_compound_eye_run,
     not_assessed_price_levels,
     score_charge_novelty,
 )
-from app.services.flybrain import FlyBrainAttribution, FlyBrainComponent, attribute
+from app.services.flybrain import BrainStimulus, FlyBrainAttribution, FlyBrainComponent, attribute
 
 
 class BaselineExplanation(BaseModel):
@@ -60,6 +62,8 @@ class SpendSignalsReport(BaseModel):
     # Pending, void, and credit rows of a Stripe group, listed so the report never implies it read them.
     not_analyzed_transactions: list[NotAnalyzedTransaction]
     fly_brain: list[FlyBrainAttribution]
+    # The charges the circuits above read, replayed by the live brain panel; None when neither circuit ran.
+    brain_stimulus: BrainStimulus | None = None
 
 
 def build_spend_signals(expense: ServiceExpense, db: Session) -> SpendSignalsReport:
@@ -126,6 +130,13 @@ def build_spend_signals(expense: ServiceExpense, db: Session) -> SpendSignalsRep
                 ),
             ),
         ],
+        # The novelty filter always ran by this point: there are charges.
+        brain_stimulus=charge_brain_stimulus(
+            "Spend signals",
+            charge_transactions,
+            did_novelty_run=True,
+            did_compound_eye_run=did_compound_eye_run(price_levels),
+        ),
     )
 
 

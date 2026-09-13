@@ -14,6 +14,8 @@ const PAIRS = [
   ['neutral-text', 'neutral-bg', 4.5], ['flybrain-text', 'flybrain-bg', 4.5], ['text-inverse', 'danger-solid', 4.5],
   ['success-text', 'surface', 4.5], ['danger-text', 'surface', 4.5], ['text', 'surface-selected', 4.5],
   ['border-control', 'surface', 3], ['focus-ring', 'surface', 3], ['focus-ring', 'canvas', 3], ['brand', 'surface', 3],
+  // The brain view's flashes are graphics, so they need the 3:1 non-text contrast against its backdrop.
+  ['brain-spike', 'brain-backdrop', 3], ['brain-input', 'brain-backdrop', 3],
 ];
 
 function readRoles(theme) {

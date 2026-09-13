@@ -1,0 +1,51 @@
+/* The brain view's explanatory text: a role sentence, then provenance and a small colour legend behind a disclosure. */
+.run-description__role {
+  color: var(--color-text-secondary);
+  font-size: var(--text-sm);
+  margin: 0;
+}
+
+.run-description__provenance {
+  color: var(--color-text-secondary);
+  display: grid;
+  font-size: var(--text-sm);
+  gap: var(--space-2);
+}
+
+.run-description__provenance p {
+  margin: 0;
+}
+
+.run-description__legend {
+  display: grid;
+  gap: var(--space-1);
+  list-style: none;
+  margin: 0;
+  padding: 0;
+}
+
+.run-description__swatch {
+  border-radius: var(--radius-pill);
+  display: inline-block;
+  height: 10px;
+  margin-right: var(--space-1);
+  vertical-align: middle;
+  width: 10px;
+}
+
+.run-description__swatch--spike {
+  background-color: var(--color-brain-spike);
+}
+
+.run-description__swatch--input {
+  background-color: var(--color-brain-input);
+}
+
+.run-description__swatch--neuron {
+  background-color: var(--color-brain-neuron);
+}
+
+.run-description__citations {
+  color: var(--color-text-muted);
+  font-size: var(--text-xs);
+}

@@ -2,7 +2,7 @@
 
 from pydantic import BaseModel
 
-from app.services.flybrain import FlyBrainAttribution
+from app.services.flybrain import BrainStimulus, FlyBrainAttribution
 from app.services.listings.types import PublicListingProjection
 
 
@@ -35,3 +35,5 @@ class SimilarListingsResponse(BaseModel):
     listings: list[SimilarListingResponse]
     message: str | None = None
     fly_brain: list[FlyBrainAttribution]
+    # The public scope codes FlyHash compared, replayed by the live brain panel; built from public projections only.
+    brain_stimulus: BrainStimulus | None = None

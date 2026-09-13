@@ -1,0 +1,66 @@
+/* Firing-rate small multiples: label, a thin trace on a recessive baseline, and the row's peak in muted ink. */
+.group-activity {
+  display: grid;
+  gap: var(--space-2);
+}
+
+.group-activity__caption,
+.group-activity__readout {
+  color: var(--color-text-muted);
+  font-size: var(--text-xs);
+  margin: 0;
+}
+
+.group-activity__rows {
+  display: grid;
+  gap: var(--space-1);
+  list-style: none;
+  margin: 0;
+  padding: 0;
+}
+
+.group-activity__row {
+  align-items: center;
+  display: grid;
+  gap: var(--space-2);
+  /* A fixed peak column keeps every trace the same width, so a moment in brain time lines up across rows. */
+  grid-template-columns: minmax(7rem, 11rem) 1fr 5.5rem;
+}
+
+.group-activity__label {
+  color: var(--color-text-secondary);
+  font-size: var(--text-xs);
+}
+
+.group-activity__peak {
+  color: var(--color-text-muted);
+  font-size: var(--text-2xs);
+  font-variant-numeric: tabular-nums;
+  text-align: right;
+}
+
+.group-activity__line {
+  display: block;
+  height: 22px;
+  width: 100%;
+}
+
+.group-activity__baseline {
+  stroke: var(--color-chart-grid);
+  stroke-width: 1;
+  vector-effect: non-scaling-stroke;
+}
+
+.group-activity__trace {
+  fill: none;
+  stroke: var(--color-brain-spike);
+  stroke-linejoin: round;
+  stroke-width: 1.5;
+  vector-effect: non-scaling-stroke;
+}
+
+.group-activity__crosshair {
+  stroke: var(--color-chart-reference);
+  stroke-width: 1;
+  vector-effect: non-scaling-stroke;
+}

@@ -8,14 +8,8 @@ from enum import StrEnum
 from pydantic import BaseModel
 
 from app.models.transaction import Transaction
-from app.services.flybrain import (
-    MushroomBodyShape,
-    NoveltyFilter,
-    build_flyhash,
-    encode_log_magnitude,
-    encode_trigrams,
-    text_words,
-)
+from app.services.expenses.signals.charge_receptors import charge_amount_receptors, charge_description_receptors
+from app.services.flybrain import MushroomBodyShape, NoveltyFilter, build_flyhash
 
 # Charges before this many earlier charges are reported as "not enough history",
 # never as typical. Two is the smallest history where "unlike earlier charges" means
@@ -34,10 +28,6 @@ MEMORY_HALF_LIFE_DAYS = 365.0
 # 1024 hashed receptors, 4000 Kenyon cells, 3 inputs per cell, 5% tag. In tuning
 # this shape kept tag overlap tightly correlated with exact similarity (r = 0.98).
 CHARGE_SHAPE = MushroomBodyShape(input_dim=1024, kenyon_cells=4000, fan_in=3, tag_size=200, seed=20170)
-
-# 2% receptor bands responding two bands either side: nearby amounts share receptors.
-AMOUNT_STEP_RATIO = 1.02
-AMOUNT_SPREAD = 2
 
 
 class ChargeStatus(StrEnum):
@@ -98,8 +88,13 @@ def score_charge_novelty(transactions: list[Transaction], has_stable_pattern: bo
             description_memory.elapse(elapsed_days)
         previous_posted_at = transaction.posted_at
 
-        amount_tag = flyhash.tag(_amount_receptors(transaction)) if transaction.amount_minor > 0 else frozenset()
-        description_tag = flyhash.tag(_description_receptors(transaction))
+        # charge_brain_stimulus replays exactly these two codes; change both together.
+        amount_tag = (
+            flyhash.tag(charge_amount_receptors(transaction, CHARGE_SHAPE.input_dim))
+            if transaction.amount_minor > 0
+            else frozenset()
+        )
+        description_tag = flyhash.tag(charge_description_receptors(transaction, CHARGE_SHAPE.input_dim))
         amount_novelty = amount_memory.novelty(amount_tag) if amount_tag else None
         description_novelty = description_memory.novelty(description_tag) if description_tag else None
         readings.append(
@@ -146,27 +141,6 @@ def _reading(
         description_novelty=_rounded(description_novelty),
         reasons=reasons,
     )
-
-
-def _amount_receptors(transaction: Transaction) -> dict[int, float]:
-    # Currency and direction are part of the channel name, so a refund never reads as
-    # familiar because a charge of the same size was seen, and USD never matches EUR.
-    channel = f"amount:{transaction.direction}:{transaction.currency}"
-    return encode_log_magnitude(
-        float(transaction.amount_minor),
-        channel=channel,
-        receptor_count=CHARGE_SHAPE.input_dim,
-        step_ratio=AMOUNT_STEP_RATIO,
-        spread=AMOUNT_SPREAD,
-    )
-
-
-def _description_receptors(transaction: Transaction) -> dict[int, float]:
-    # Words containing digits are dropped: invoice numbers, store numbers, and dates
-    # change on every charge and would make each one look novel.
-    text = f"{transaction.raw_description} {transaction.memo or ''}"
-    words = [word for word in text_words(text) if not any(character.isdigit() for character in word)]
-    return encode_trigrams(words, channel="description", receptor_count=CHARGE_SHAPE.input_dim)
 
 
 def _rounded(score: float | None) -> float | None:

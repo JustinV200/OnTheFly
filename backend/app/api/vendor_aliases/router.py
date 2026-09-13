@@ -18,6 +18,7 @@ from app.services.expenses.aliases import (
     dismiss_vendor_alias,
     merge_vendor_alias,
     suggest_vendor_aliases,
+    vendor_alias_stimulus,
 )
 from app.services.flybrain import FlyBrainComponent, attribute
 
@@ -31,14 +32,16 @@ def list_vendor_aliases(request: Request, db: Session = Depends(get_db)) -> Vend
     """Return merge suggestions for the acting owner's vendor groups."""
 
     account_id = require_acting_account_id(request)
+    scan = suggest_vendor_aliases(account_id, db)
     return VendorAliasListResponse(
-        suggestions=suggest_vendor_aliases(account_id, db),
+        suggestions=scan.suggestions,
         fly_brain=[
             attribute(
                 FlyBrainComponent.mushroom_body_flyhash,
                 "Found vendor names that look alike; exact name checks decided what to suggest.",
             )
         ],
+        brain_stimulus=vendor_alias_stimulus(scan),
     )
 
 

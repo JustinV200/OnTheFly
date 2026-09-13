@@ -7,7 +7,7 @@ from typing import Literal
 
 from pydantic import BaseModel
 
-from app.services.flybrain import FlyBrainAttribution
+from app.services.flybrain import BrainStimulus, FlyBrainAttribution
 
 
 class TraceSavings(BaseModel):
@@ -153,3 +153,5 @@ class OfferTrace(BaseModel):
     transactions: list[TraceTransaction]
     # Labels the Compound Eye, which chose the counted rows; it is still listed, with its reason, when it didn't run.
     fly_brain: list[FlyBrainAttribution]
+    # The charges the Compound Eye read, replayed by the live brain panel; None when it didn't run.
+    brain_stimulus: BrainStimulus | None = None

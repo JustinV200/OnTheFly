@@ -9,7 +9,7 @@ from pydantic import BaseModel
 from app.models.transaction import Transaction
 from app.services.expenses.baseline import BaselineBasis, compute_baseline
 from app.services.expenses.recurrence import detect_recurrence
-from app.services.expenses.signals import NotAssessedReason, analyze_price_levels
+from app.services.expenses.signals import NotAssessedReason, analyze_price_levels, did_compound_eye_run
 
 
 class BaselineMembership(BaseModel):
@@ -24,6 +24,9 @@ class BaselineMembership(BaseModel):
     basis: BaselineBasis | None
     # Why the Compound Eye found no current price level; None when it found one or never ran.
     not_assessed_reason: NotAssessedReason | None
+    # Whether the detector read the charges at all (it also runs when it finds no stable price); the brain panel
+    # replays the charges as the Compound Eye's input only when it did.
+    did_compound_eye_run: bool
 
 
 def find_baseline_membership(vendor_transactions: Sequence[Transaction]) -> BaselineMembership:
@@ -36,7 +39,12 @@ def find_baseline_membership(vendor_transactions: Sequence[Transaction]) -> Base
 
     charges = _baseline_charges(vendor_transactions)
     if not charges:
-        return BaselineMembership(transaction_ids=set(), basis=None, not_assessed_reason=None)
+        return BaselineMembership(
+            transaction_ids=set(),
+            basis=None,
+            not_assessed_reason=None,
+            did_compound_eye_run=False,
+        )
 
     recurrence = detect_recurrence(charges)
     baseline = compute_baseline(charges, recurrence)
@@ -47,6 +55,7 @@ def find_baseline_membership(vendor_transactions: Sequence[Transaction]) -> Base
         transaction_ids=set(baseline.supporting_transaction_ids),
         basis=baseline.basis,
         not_assessed_reason=price_levels.not_assessed_reason,
+        did_compound_eye_run=did_compound_eye_run(price_levels),
     )
 
 

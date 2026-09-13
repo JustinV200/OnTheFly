@@ -3,7 +3,7 @@
 from pydantic import BaseModel
 
 from app.services.expenses.aliases import VendorAliasSuggestion
-from app.services.flybrain import FlyBrainAttribution
+from app.services.flybrain import BrainStimulus, FlyBrainAttribution
 
 
 class VendorAliasListResponse(BaseModel):
@@ -11,6 +11,8 @@ class VendorAliasListResponse(BaseModel):
 
     suggestions: list[VendorAliasSuggestion]
     fly_brain: list[FlyBrainAttribution]
+    # The name codes FlyHash compared, replayed by the live brain panel; None when there was nothing to compare.
+    brain_stimulus: BrainStimulus | None = None
 
 
 class VendorAliasPairRequest(BaseModel):
