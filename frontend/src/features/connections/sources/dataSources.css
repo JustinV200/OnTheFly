@@ -1,12 +1,12 @@
-/* Data sources card: each source section sits below a hairline, so the connection summary and Stripe read as rows of one list.
-   A row stacks on a phone; from a tablet up its actions sit at the end, centred against the title and description. */
+/* Data sources card: one compact row per source below a hairline. A row stacks on a phone; from a tablet up its
+   actions sit at the end, centred against the name and facts line. */
 .data-source {
   border-top: var(--border-width) solid var(--color-border-subtle);
-  padding-top: var(--space-4);
+  padding-block: var(--space-3);
 }
 
-.data-source + .data-source {
-  margin-top: var(--space-4);
+.data-source:last-child {
+  padding-bottom: 0;
 }
 
 .data-source__row {
@@ -14,22 +14,35 @@
   gap: var(--space-3);
 }
 
+.data-source__main {
+  display: grid;
+  gap: var(--space-1);
+  min-width: 0;
+}
+
 .data-source__title {
   font-size: var(--text-md);
   margin: 0;
 }
 
-.data-source__description {
-  color: var(--color-text-secondary);
+.data-source__facts {
+  color: var(--color-text-muted);
+  font-size: var(--text-sm);
+  margin: 0;
+  overflow-wrap: anywhere;
+}
+
+.data-source__disclosure {
+  margin-top: var(--space-2);
+}
+
+.data-source__disclosure p {
+  margin: 0;
   max-width: 80ch;
   overflow-wrap: anywhere;
 }
 
-.data-source__description > p {
-  margin: 0;
-}
-
-.data-source__description > p + p {
+.data-source__disclosure p + p {
   margin-top: var(--space-1);
 }
 
@@ -52,5 +65,9 @@
     align-items: center;
     gap: var(--space-6);
     grid-template-columns: minmax(0, 1fr) auto;
+  }
+
+  .data-source__actions {
+    justify-content: flex-end;
   }
 }

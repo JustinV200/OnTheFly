@@ -5,6 +5,7 @@ import { Badge, Icon, PageHeader, Stack } from '../../shared/ui';
 import { DataSourcesCard } from '../connections/sources/DataSourcesCard';
 import { StripeConnection } from '../connections/StripeConnection';
 import { ConnectionPanel } from './connection/ConnectionPanel';
+import { describeImportTotals } from './connection/describe/describeImportTotals';
 import { useConnection } from './connection/useConnection';
 import { ImportedSpend } from './ImportedSpend';
 import { useDashboard } from './useDashboard';
@@ -33,7 +34,7 @@ export function OwnerDashboard({ account }: OwnerDashboardProps): JSX.Element {
       />
 
       <Stack gap={6}>
-        <DataSourcesCard>
+        <DataSourcesCard summary={connection.status.data ? describeImportTotals(connection.status.data) : null}>
           <ConnectionPanel
             businessName={account.businessName}
             importState={connection.importState}
