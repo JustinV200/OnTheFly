@@ -1,0 +1,116 @@
+/* Offer chart: recessive hairline grid and muted axis text, solid dots with a surface-coloured ring, a grey dashed
+   current-price line, and a soft halo on the dot in focus. Every colour is a chart or text token. */
+.offer-chart {
+  margin: 0;
+  min-width: 0;
+}
+
+.offer-chart__legend {
+  display: flex;
+  flex-wrap: wrap;
+  gap: var(--space-1) var(--space-4);
+  list-style: none;
+  margin: 0 0 var(--space-2);
+  padding: 0;
+}
+
+.offer-chart__legend-item {
+  align-items: center;
+  color: var(--color-text-secondary);
+  display: inline-flex;
+  font-size: var(--text-xs);
+  gap: var(--space-2);
+}
+
+.offer-chart__key {
+  flex: none;
+  overflow: visible;
+}
+
+.offer-chart__plot {
+  min-width: 0;
+}
+
+.offer-chart__svg {
+  display: block;
+  overflow: visible;
+}
+
+.offer-chart__grid {
+  stroke: var(--color-chart-grid);
+  stroke-width: 1;
+}
+
+.offer-chart__axis-text {
+  fill: var(--color-text-muted);
+  font-size: var(--text-2xs);
+  font-variant-numeric: tabular-nums;
+}
+
+.offer-chart__reference {
+  stroke: var(--color-chart-reference);
+  stroke-dasharray: 6 4;
+  stroke-width: 1.5;
+}
+
+.offer-chart__dot {
+  fill: var(--color-chart-line);
+  stroke: var(--color-surface);
+  stroke-width: 2;
+}
+
+/* Answered an earlier scope version: the grey reference tone, so it recedes behind offers on today's scope. */
+.offer-chart__dot--earlier {
+  fill: var(--color-chart-reference);
+}
+
+.offer-chart__hit {
+  fill: transparent;
+}
+
+.offer-chart__halo {
+  fill: var(--color-chart-fill);
+  opacity: 0;
+  transition: opacity var(--duration-fast) var(--ease-standard);
+}
+
+.offer-chart__point {
+  cursor: pointer;
+}
+
+.offer-chart__point:focus {
+  outline: none;
+}
+
+.offer-chart__point.is-active .offer-chart__halo {
+  opacity: 1;
+}
+
+/* Keyboard focus draws the app's focus colour around the halo instead of a rectangle around the group. */
+.offer-chart__point:focus-visible .offer-chart__halo {
+  opacity: 1;
+  stroke: var(--color-focus-ring);
+  stroke-width: 2;
+}
+
+.offer-chart__readout {
+  align-items: center;
+  border-top: var(--border-width) solid var(--color-border-subtle);
+  display: flex;
+  flex-wrap: wrap;
+  font-size: var(--text-sm);
+  gap: var(--space-1) var(--space-3);
+  margin-top: var(--space-2);
+  min-height: 2.5rem;
+  padding-top: var(--space-2);
+}
+
+.offer-chart__readout-price {
+  font-size: var(--text-md);
+}
+
+.offer-chart__caption {
+  color: var(--color-text-muted);
+  font-size: var(--text-xs);
+  margin-top: var(--space-2);
+}

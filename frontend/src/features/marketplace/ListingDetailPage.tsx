@@ -9,6 +9,7 @@ import { LoadingSpinner } from '../../shared/components/LoadingSpinner';
 import { describeDeadline } from '../../shared/format/describeDeadline';
 import { describeClosesIn } from '../../shared/market';
 import { Stack } from '../../shared/ui';
+import { OfferActivity } from './detail/activity/OfferActivity';
 import { ChallengePanel } from './detail/ChallengePanel';
 import { MarketHeader } from './detail/header/MarketHeader';
 import { PriceHeadline } from './detail/header/PriceHeadline';
@@ -54,6 +55,7 @@ export function ListingDetailPage(): JSX.Element {
         <aside aria-label="Bid on this task" className="market-page__ticket">
           <ChallengePanel deadline={describeDeadline(listing.challenge_deadline)} listing={listing} />
         </aside>
+        <OfferActivity board={board} className="market-page__activity" listing={listing} offerCount={offerCount} />
         <MarketTabs board={board} className="market-page__tabs" closes={closes} listing={listing} />
       </div>
 
