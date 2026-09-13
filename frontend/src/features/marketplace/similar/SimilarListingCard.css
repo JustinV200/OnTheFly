@@ -1,0 +1,5 @@
+/* Similar listing card: long scope strings wrap inside the card instead of widening it. */
+.similar-listing__scope {
+  color: var(--color-text-secondary);
+  overflow-wrap: anywhere;
+}
