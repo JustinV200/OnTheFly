@@ -3,12 +3,12 @@
    switches business (or to the public visitor) and closes the list. */
 import { useCallback, useEffect, useId, useRef, useState } from 'react';
 
-import { useActingAccount } from '../../shared/account/ActingAccountContext';
-import { Icon } from '../../shared/ui';
-import { AccountAvatar } from './AccountAvatar';
-import { accountOptions } from './accountOptions';
+import { useActingAccount } from '../../../shared/account/ActingAccountContext';
+import { Icon } from '../../../shared/ui';
+import { AccountAvatar } from '../AccountAvatar';
+import { accountOptions } from '../accountOptions';
 import { useMenuDismiss } from './useMenuDismiss';
-import './account.css';
+import './AccountMenu.css';
 
 /** Render the identity trigger and, while open, the switch list. */
 export function AccountMenu(): JSX.Element {

@@ -1,30 +1,4 @@
-/* Styles for the account avatar, the top-bar identity menu, and the desktop switch band.
-   Business colours come from demoAccounts; every one carries white initials at >= 4.5:1. */
-
-/* ---- Avatar ---- */
-.account-avatar {
-  align-items: center;
-  background-color: var(--avatar-color);
-  border-radius: var(--radius-pill);
-  color: var(--color-text-inverse);
-  display: inline-flex;
-  flex: none;
-  font-weight: var(--weight-bold);
-  justify-content: center;
-  letter-spacing: 0.02em;
-  line-height: 1;
-}
-
-.account-avatar--dot { height: 10px; width: 10px; }
-.account-avatar--sm { font-size: 0.625rem; height: 22px; width: 22px; }
-.account-avatar--md { font-size: var(--text-xs); height: 32px; width: 32px; }
-.account-avatar--lg { font-size: var(--text-md); height: 44px; width: 44px; }
-
-@media (min-width: 1024px) {
-  .account-menu .account-avatar--md { font-size: var(--text-sm); height: 40px; width: 40px; }
-}
-
-/* ---- Identity menu (top bar) ---- */
+/* Top-bar identity menu: the trigger showing who is acting, and the switch list it opens. */
 .account-menu {
   min-width: 0;
   position: relative;
@@ -200,60 +174,7 @@
   font-weight: var(--weight-regular);
 }
 
-/* ---- Desktop switch band ---- */
-.account-band {
-  display: none;
-}
-
-@media (min-width: 768px) {
-  .account-band {
-    align-items: center;
-    display: flex;
-    flex-wrap: wrap;
-    gap: var(--space-2) var(--space-3);
-    padding: var(--space-3) 0;
-  }
-}
-
-.account-band__prompt {
-  color: var(--color-text-muted);
-  font-size: var(--text-sm);
-  margin: 0;
-}
-
-.account-band__options {
-  display: flex;
-  flex-wrap: wrap;
-  gap: 6px;
-}
-
-.account-option {
-  align-items: center;
-  background-color: var(--color-surface);
-  border: var(--border-width) solid var(--color-border);
-  border-radius: var(--radius-pill);
-  box-shadow: var(--shadow-xs);
-  color: var(--color-text-secondary);
-  cursor: pointer;
-  display: inline-flex;
-  font-size: var(--text-sm);
-  font-weight: var(--weight-medium);
-  gap: 6px;
-  min-height: 36px;
-  padding: var(--space-1) 10px;
-  white-space: nowrap;
-}
-
-.account-option:hover {
-  background-color: var(--color-surface-hover);
-  border-color: var(--color-border-strong);
-  color: var(--color-text);
-}
-
-/* The acting business: filled in its own colour, bold, with a check in place of the dot. aria-pressed tells assistive tech. */
-.account-option[aria-pressed="true"] {
-  background-color: var(--account-color);
-  border-color: var(--account-color);
-  color: var(--color-text-inverse);
-  font-weight: var(--weight-bold);
+/* A larger avatar beside the larger desktop name. */
+@media (min-width: 1024px) {
+  .account-menu .account-avatar--md { font-size: var(--text-sm); height: 40px; width: 40px; }
 }

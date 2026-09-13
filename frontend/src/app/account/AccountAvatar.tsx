@@ -5,7 +5,7 @@ import type { CSSProperties } from 'react';
 import type { DemoAccount } from '../../shared/account/demoAccounts';
 import { Icon } from '../../shared/ui';
 import { PUBLIC_VISITOR_COLOR } from './accountOptions';
-import './account.css';
+import './AccountAvatar.css';
 
 interface AccountAvatarProps {
   account: DemoAccount | null;

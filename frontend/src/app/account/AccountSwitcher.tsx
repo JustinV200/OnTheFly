@@ -8,7 +8,7 @@ import { useActingAccount } from '../../shared/account/ActingAccountContext';
 import { Icon } from '../../shared/ui';
 import { AccountAvatar } from './AccountAvatar';
 import { accountOptions, PUBLIC_VISITOR_COLOR } from './accountOptions';
-import './account.css';
+import './AccountSwitcher.css';
 
 /** Render the row of switch buttons; the acting one is filled in its business colour, checked, and marked pressed. */
 export function AccountSwitcher(): JSX.Element {

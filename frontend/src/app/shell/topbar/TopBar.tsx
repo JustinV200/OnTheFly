@@ -5,7 +5,7 @@ import type { CSSProperties } from 'react';
 import { Link } from 'react-router-dom';
 
 import { useActingAccount } from '../../../shared/account/ActingAccountContext';
-import { AccountMenu } from '../../account/AccountMenu';
+import { AccountMenu } from '../../account/menu/AccountMenu';
 import { PUBLIC_VISITOR_COLOR } from '../../account/accountOptions';
 import { BrandMark } from './BrandMark';
 import { NavBar } from './NavBar';
