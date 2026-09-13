@@ -1,14 +1,16 @@
 /* Loads and renders a public business profile, the page a stranger sees, whoever is acting.
    It shows only the additive public listing projection; the empty state is the end of the privacy proof. */
-import { Link, useParams } from 'react-router-dom';
+import { useParams } from 'react-router-dom';
 
 import { useActingAccount } from '../../shared/account/ActingAccountContext';
 import { useApiQuery } from '../../shared/api/useApiQuery';
 import { EmptyState } from '../../shared/components/EmptyState';
 import { ErrorState } from '../../shared/components/ErrorState';
 import { LoadingSpinner } from '../../shared/components/LoadingSpinner';
+import { ButtonLink, Callout, Cluster, PageHeader, Stack } from '../../shared/ui';
 import { PublicListingCard } from './PublicListingCard';
 import type { ProfileResponse } from './types';
+import './ProfilePage.css';
 
 /** Render the public profile page for a business handle. */
 export function ProfilePage(): JSX.Element {
@@ -17,10 +19,14 @@ export function ProfilePage(): JSX.Element {
   const profile = useApiQuery<ProfileResponse>(`/api/profiles/${handle}`);
 
   if (profile.error?.status === 404) {
+    // A page of its own, with an h1, so a mistyped handle reads as a defined outcome rather than a broken profile.
     return (
-      <EmptyState action={<Link to="/marketplace">Browse the marketplace</Link>} title="No business has this profile address">
-        Check the link for typos.
-      </EmptyState>
+      <Stack gap={5}>
+        <PageHeader eyebrow="Public profile" subtitle="Check the link for typos." title="No business has this profile address" />
+        <Cluster>
+          <ButtonLink to="/marketplace" variant="primary">Browse the marketplace</ButtonLink>
+        </Cluster>
+      </Stack>
     );
   }
   if (!profile.data) {
@@ -29,29 +35,54 @@ export function ProfilePage(): JSX.Element {
       : <LoadingSpinner label="Loading public profile…" />;
   }
 
+  const { business_name: businessName, listings } = profile.data;
   const isOwnProfile = account?.handle === profile.data.handle;
   return (
-    <section>
-      <p style={{ backgroundColor: '#f1f5f9', borderRadius: '8px', margin: '0 0 1rem', padding: '0.5rem 0.8rem' }}>
-        👁 Public view: this page is identical for everyone, signed in or not.
-        {isOwnProfile ? ' Your private expenses are on your dashboard, not here.' : ''}
-      </p>
-      <h2 style={{ margin: 0 }}>{profile.data.business_name}</h2>
-      <p style={{ color: '#475569', marginTop: '0.25rem' }}>{profile.data.service_area}</p>
+    <Stack gap={6}>
+      <PageHeader
+        eyebrow="Public profile"
+        subtitle={profile.data.service_area}
+        title={
+          <span className="profile-page__identity">
+            {/* Decorative initials; the heading's accessible name stays the business name alone. */}
+            <span aria-hidden="true" className="profile-page__monogram">{initials(businessName)}</span>
+            <span>{businessName}</span>
+          </span>
+        }
+      />
 
-      {profile.data.listings.length === 0 ? (
-        <EmptyState title="No public listings right now">
-          {profile.data.business_name} hasn’t published any expenses. Everything it pays for is private until it chooses to publish
-          one.
-        </EmptyState>
-      ) : (
-        <>
-          <h3>
-            {profile.data.listings.length} public {profile.data.listings.length === 1 ? 'listing' : 'listings'}
-          </h3>
-          {profile.data.listings.map((listing) => <PublicListingCard key={listing.id} listing={listing} />)}
-        </>
-      )}
-    </section>
+      <Callout icon="eye" role="note" title="Public view" tone="neutral">
+        <p>
+          This page is identical for everyone, signed in or not.
+          {isOwnProfile ? ' Your private expenses are on your dashboard, not here.' : ''}
+        </p>
+      </Callout>
+
+      <Stack as="section" gap={3}>
+        {/* With no listings the empty state below says so; a "0 public listings" label beside it would just repeat it. */}
+        <h2 className="ui-eyebrow">
+          {listings.length === 0 ? 'Public listings' : `${listings.length} public ${listings.length === 1 ? 'listing' : 'listings'}`}
+        </h2>
+        {listings.length === 0 ? (
+          <EmptyState title="No public listings right now">
+            {businessName} hasn’t published any expenses. Everything it pays for is private until it chooses to publish one.
+          </EmptyState>
+        ) : (
+          <div className="profile-page__listings">
+            {listings.map((listing) => <PublicListingCard key={listing.id} listing={listing} />)}
+          </div>
+        )}
+      </Stack>
+    </Stack>
   );
+}
+
+function initials(businessName: string): string {
+  // First letters of the first two words ("Apex Facilities Group" → "AF"); a one-word name gives one letter.
+  return businessName
+    .split(/\s+/)
+    .filter(Boolean)
+    .slice(0, 2)
+    .map((word) => word[0].toUpperCase())
+    .join('');
 }
