@@ -1,0 +1,4 @@
+/* Marketplace page: the category filter keeps a readable width inside the header's action slot. */
+.marketplace-page__filter {
+  min-width: 14rem;
+}

@@ -1,0 +1,34 @@
+/* Feed card details: the card fills its grid cell, keeps actions at the bottom, and gives phone thumbs full-width buttons. */
+.listing-card {
+  display: flex;
+  flex-direction: column;
+}
+
+.listing-card__body {
+  flex: 1;
+}
+
+.listing-card__scope {
+  color: var(--color-text-secondary);
+  overflow-wrap: anywhere;
+}
+
+.listing-card__meta {
+  color: var(--color-text-muted);
+}
+
+/* Pushes the actions to the card's bottom edge, so buttons line up across a row of cards of different heights. */
+.listing-card__actions {
+  margin-top: auto;
+}
+
+/* Each button takes a full row on a phone and sits side by side once the card is wide enough. */
+.listing-card__actions > * {
+  flex: 1 1 10rem;
+}
+
+@media (min-width: 768px) {
+  .listing-card__actions > * {
+    flex: 0 0 auto;
+  }
+}
