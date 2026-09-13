@@ -8,6 +8,7 @@ from fastapi import APIRouter, Depends, HTTPException, Request, status
 from sqlalchemy import select
 from sqlalchemy.orm import Session
 
+from app.api.challenges.own_offer import router as own_offer_router
 from app.api.challenges.schemas import (
     ChallengeInput,
     ChallengeListResponse,
@@ -26,6 +27,8 @@ from app.services.challenges.submit import revise_challenge, submit_challenge
 from app.services.listings.bidding_mode import BiddingMode, resolve_bidding_mode
 
 router = APIRouter(tags=["challenges"])
+# A challenger's own-offer route lives in its own module; including it here keeps api/router.py's wiring unchanged.
+router.include_router(own_offer_router)
 
 
 @router.post("/api/listings/{listing_id}/challenges", response_model=ChallengeResponse)

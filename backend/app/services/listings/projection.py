@@ -26,6 +26,11 @@ def build_public_listing(
         expense_id=expense.id,
         category=expense.category or "commercial_cleaning",
         scope_summary=_build_scope_summary(scope),
+        required_tasks=_parse_tasks(scope.required_tasks),
+        visit_frequency=scope.visit_frequency,
+        supplies_included=scope.supplies_included,
+        equipment_included=scope.equipment_included,
+        taxes_included=scope.taxes_included,
         price_minor=current_price.amount.amount,
         price_currency=current_price.amount.currency,
         billing_cadence=current_price.cadence,
@@ -50,6 +55,11 @@ def projection_from_record(record: PublicListingRecord) -> PublicListingProjecti
         expense_id=record.expense_id,
         category=record.category,
         scope_summary=record.scope_summary,
+        required_tasks=_parse_tasks(record.required_tasks),
+        visit_frequency=record.visit_frequency,
+        supplies_included=record.supplies_included,
+        equipment_included=record.equipment_included,
+        taxes_included=record.taxes_included,
         price_minor=record.price_minor,
         price_currency=record.price_currency,
         billing_cadence=record.billing_cadence,
@@ -77,8 +87,13 @@ def _build_scope_summary(scope: ScopeVersion) -> str:
         f"{scope.square_footage} sq ft" if scope.square_footage else "Square footage not specified",
         scope.visit_frequency or "Visit frequency not specified",
     ]
-    # Stored as a JSON array (validated at the listings API boundary); challengers read prose.
-    required_tasks = json.loads(scope.required_tasks) if scope.required_tasks else []
+    required_tasks = _parse_tasks(scope.required_tasks)
     if required_tasks:
         parts.append(", ".join(required_tasks))
     return " · ".join(parts)
+
+
+def _parse_tasks(stored_tasks: str | None) -> list[str]:
+    # Stored as a JSON array (validated at the listings API boundary); a record from before the
+    # column existed has None, which reads as no tasks recorded.
+    return json.loads(stored_tasks) if stored_tasks else []

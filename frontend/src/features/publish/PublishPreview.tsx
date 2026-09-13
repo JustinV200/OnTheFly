@@ -2,6 +2,7 @@
    It renders the backend's JSON verbatim beside a readable summary and invents no field (roadmap 09, step 2). */
 import { MoneyDisplay } from '../../shared/components/MoneyDisplay';
 import { categoryLabel } from '../../shared/format/categoryLabel';
+import { describeScopeExpectations } from '../../shared/format/describeScopeExpectations';
 import type { ListingPreviewResponse } from './types';
 
 const NEVER_PUBLIC = [
@@ -34,6 +35,7 @@ export function PublishPreview({ preview }: PublishPreviewProps): JSX.Element | 
             <MoneyDisplay amountMinor={listing.price_minor} currency={listing.price_currency} /> / {listing.billing_cadence}
           </p>
           <p style={{ margin: '0 0 0.25rem' }}>{listing.scope_summary}</p>
+          <p style={{ margin: '0 0 0.25rem' }}>Requested terms: {describeScopeExpectations(listing)}</p>
           <p style={{ margin: '0 0 0.25rem' }}>Area: {listing.service_area_approximate || 'not specified'}</p>
           <p style={{ margin: '0 0 0.25rem' }}>Bidding: {listing.bidding_mode}</p>
           <p style={{ margin: 0 }}>Current vendor: {listing.incumbent_vendor_name ?? 'hidden'}</p>

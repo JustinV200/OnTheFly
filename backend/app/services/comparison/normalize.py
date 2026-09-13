@@ -55,7 +55,10 @@ def is_scope_complete(challenge: Challenge, scope: ScopeVersion) -> ScopeComplet
     breakdown: dict[str, float] = {}
 
     expected_tasks = json.loads(scope.required_tasks) if scope.required_tasks else []
-    missing_tasks = [task for task in expected_tasks if task not in included]
+    # Owners and challengers type tasks freely, so "Vacuum " and "vacuum" are the same task; a
+    # capitalization difference must not turn an honest full-scope offer into a scope gap.
+    included_tasks = {item.strip().casefold() for item in included}
+    missing_tasks = [task for task in expected_tasks if task.strip().casefold() not in included_tasks]
     if missing_tasks:
         missing_items.extend([f"task:{task}" for task in missing_tasks])
         breakdown["required_tasks"] = 0.0

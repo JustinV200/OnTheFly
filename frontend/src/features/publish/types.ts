@@ -28,6 +28,12 @@ export interface PublicListingProjection {
   expense_id: string;
   category: string;
   scope_summary: string;
+  // The structured requirements offers are scored against; null expectations were not stated by the owner.
+  required_tasks: string[];
+  visit_frequency: string | null;
+  supplies_included: boolean | null;
+  equipment_included: boolean | null;
+  taxes_included: boolean | null;
   price_minor: number;
   price_currency: string;
   billing_cadence: string;

@@ -12,6 +12,8 @@ from app.cli.demo_seed.ledger import GenuineOfferLedger, LedgerEntry
 from app.models.account import Account
 from app.models.challenge import Challenge
 from app.models.listing import PublicListingRecord
+from app.services.challenges.amounts import find_offer_amount_problem
+from app.services.challenges.currency import find_offer_currency_problem
 from app.services.challenges.provenance import SEEDED_ACCOUNT_IDS
 from app.services.evidence.refresh import get_or_refresh_challenger_evidence
 
@@ -63,6 +65,13 @@ def _skip_reason(entry: LedgerEntry, listing: PublicListingRecord, db: Session) 
         return "the listing owner cannot bid on their own listing"
     if db.get(Account, entry.account.id) is None:
         return "account was not restored"
+    # Offers are written directly here, so the amount rule submit_challenge enforces is checked again.
+    amount_problem = find_offer_amount_problem(entry.offer.price_minor, entry.offer.setup_fee_minor)
+    if amount_problem is not None:
+        return amount_problem
+    currency_problem = find_offer_currency_problem(entry.offer.price_currency, listing.price_currency)
+    if currency_problem is not None:
+        return currency_problem
     existing = db.scalar(
         select(Challenge.id).where(
             Challenge.listing_id == listing.id,
@@ -84,7 +93,8 @@ def _challenge_from(entry: LedgerEntry, listing: PublicListingRecord) -> Challen
         # The mode in force when it was really made, never the listing's mode today.
         bidding_mode_at_submission=offer.bidding_mode_at_submission,
         price_minor=offer.price_minor,
-        price_currency=offer.price_currency,
+        # _skip_reason already matched the codes ignoring case; store the listing's exact spelling.
+        price_currency=listing.price_currency,
         billing_frequency=offer.billing_frequency,
         scope_included=json.dumps(offer.scope_included),
         scope_excluded=json.dumps(offer.scope_excluded),

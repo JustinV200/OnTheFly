@@ -2,7 +2,7 @@
 
 from datetime import datetime
 
-from pydantic import BaseModel
+from pydantic import BaseModel, Field, field_validator
 
 from app.services.listings.types import PublicListingProjection
 
@@ -24,11 +24,32 @@ class ScopeVersionInput(BaseModel):
     start_date: str | None = None
     minimum_term: str | None = None
     cancellation_terms: str | None = None
-    current_price_minor: int | None = None
+    # Unstated stays None; a stated price must be positive, since savings are this baseline
+    # minus each offer and a zero or negative baseline would misstate every comparison.
+    current_price_minor: int | None = Field(default=None, gt=0)
     current_price_currency: str = "USD"
     billing_cadence: str | None = None
     challenge_deadline: datetime | None = None
     incumbent_vendor_name: str | None = None
+
+    @field_validator("required_tasks")
+    @classmethod
+    def _tasks_are_named(cls, value: list[str] | None) -> list[str] | None:
+        # Tasks are published verbatim and every one is scored, so a blank entry would become an
+        # unnamed requirement no challenger could see or meet. Surrounding spaces carry no meaning.
+        if value is None:
+            return None
+        return [task.strip() for task in value if task.strip()]
+
+    @field_validator("current_price_currency")
+    @classmethod
+    def _currency_is_a_code(cls, value: str) -> str:
+        # With a stated price, this code becomes the listing's currency and so every offer's. Money
+        # compares codes exactly, so "usd" and "USD" must not both reach the database.
+        code = value.strip().upper()
+        if len(code) != 3 or not code.isascii() or not code.isalpha():
+            raise ValueError("current_price_currency must be a three-letter currency code such as USD")
+        return code
 
 
 class PublishChoicesInput(BaseModel):

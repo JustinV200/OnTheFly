@@ -11,8 +11,10 @@ interface SubmittedOfferProps {
   onReviseAgain: () => void;
 }
 
-/** Render the stored offer: price, bidding mode at submission, provenance, and time. */
+/** Render the stored offer: price, the bidding mode this version was recorded under, provenance, time, and scope.
+    onReviseAgain reopens the form, which starts from this version's terms. */
 export function SubmittedOffer({ offer, onReviseAgain }: SubmittedOfferProps): JSX.Element {
+  const article = offer.bidding_mode_at_submission === 'open' ? 'an' : 'a';
   return (
     <section role="status" style={{ backgroundColor: '#ecfdf5', border: '2px solid #047857', borderRadius: '12px', padding: '1rem' }}>
       <h2 style={{ marginTop: 0 }}>{offer.revised_at ? 'Offer revised' : 'Offer submitted'}</h2>
@@ -20,9 +22,15 @@ export function SubmittedOffer({ offer, onReviseAgain }: SubmittedOfferProps): J
         <MoneyDisplay amountMinor={offer.price_minor} currency={offer.price_currency} /> / {offer.billing_frequency}
       </p>
       <p style={{ margin: '0 0 0.5rem' }}>
-        Recorded as a <strong>{offer.bidding_mode_at_submission}</strong> offer at{' '}
-        {formatTimestamp(offer.revised_at ?? offer.submitted_at)}. That mode stays with this offer even if the owner changes the
-        listing later. <ProvenanceBadge kind="offer" value={offer.provenance} />
+        Recorded as {article} <strong>{offer.bidding_mode_at_submission}</strong> offer at{' '}
+        {formatTimestamp(offer.revised_at ?? offer.submitted_at)}. That mode stays with this version even if the owner changes the
+        listing later; a revision is recorded under the terms in force when you make it.{' '}
+        <ProvenanceBadge kind="offer" value={offer.provenance} />
+      </p>
+      {/* The stored scope, so a revision that dropped terms is visible here and not first in the owner's inbox. */}
+      <p style={{ margin: '0 0 0.5rem' }}>
+        Includes: {offer.scope_included.length > 0 ? offer.scope_included.join(', ') : 'nothing stated'}.
+        {offer.scope_excluded.length > 0 ? ` Excludes: ${offer.scope_excluded.join(', ')}.` : ''}
       </p>
       <p style={{ margin: 0 }}>
         You can revise it until the deadline; earlier versions are kept.{' '}
