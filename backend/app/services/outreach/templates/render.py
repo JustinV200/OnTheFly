@@ -2,8 +2,8 @@
 Headers are accurate by construction: From is the platform, To is the candidate's published address, and List-Unsubscribe is always set.
 """
 
-from email.utils import formataddr
 import re
+from email.utils import formataddr
 
 from pydantic import BaseModel
 
@@ -11,12 +11,17 @@ from app.core.config import Settings
 from app.models.outreach.provider_candidate import ProviderCandidate
 from app.services.listings.category_label import category_label
 from app.services.listings.types import PublicListingProjection
+from app.services.outreach.rate import implied_rate_from_projection
 from app.services.outreach.templates.body import build_invitation_body
 from app.services.outreach.templates.footer import build_compliance_footer
-from app.services.outreach.templates.links import opt_out_url, public_listing_url, public_profile_url
+from app.services.outreach.templates.links import (
+    opt_out_url,
+    public_listing_url,
+    public_profile_url,
+)
 
 # Bump when the wording or headers change, so an approval records which template it approved.
-TEMPLATE_VERSION = "invitation-v1"
+TEMPLATE_VERSION = "invitation-v2"
 
 # Control characters (CR/LF above all) in a name would let text become a second header line.
 _CONTROL_CHARACTERS = re.compile(r"[\x00-\x1f\x7f]+")
@@ -64,6 +69,7 @@ def render_invitation(
         listing_url=listing_link,
         profile_url=public_profile_url(settings.public_app_base_url, business_handle),
         footer=build_compliance_footer(safe_sender, settings.outreach_postal_address, unsubscribe_link),
+        implied_rate=implied_rate_from_projection(projection),
     )
     headers = {
         "From": formataddr((safe_sender, settings.outreach_from_email.strip())),

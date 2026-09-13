@@ -8,6 +8,8 @@ from app.core.timestamps import as_utc
 from app.services.listings.bidding_mode import BiddingMode, resolve_bidding_mode
 
 _CADENCE_PHRASES: dict[str, str] = {
+    "hour": "per hour",
+    "hourly": "per hour",
     "weekly": "per week",
     "biweekly": "every two weeks",
     "monthly": "per month",
@@ -18,16 +20,25 @@ _CADENCE_PHRASES: dict[str, str] = {
 }
 
 
-def describe_price(price_minor: int, currency: str, billing_cadence: str) -> str:
-    """Return e.g. "$2,400.00 per month"; a non-USD amount is shown with its code, never converted."""
+def describe_price(price_minor: int | None, currency: str, billing_cadence: str) -> str:
+    """Return e.g. "$2,400.00 per month"; a hidden price is stated rather than formatted."""
+
+    if price_minor is None:
+        return "Not disclosed"
 
     sign = "-" if price_minor < 0 else ""
     units, cents = divmod(abs(price_minor), 100)
     amount = f"{units:,}.{cents:02d}"
     code = currency.strip().upper()
     money = f"{sign}${amount}" if code == "USD" else f"{sign}{amount} {code}"
+    return f"{money} {describe_period(billing_cadence)}"
+
+
+def describe_period(billing_cadence: str) -> str:
+    """Return plain period words without converting an amount or number of hours."""
+
     cadence = billing_cadence.strip().casefold()
-    return f"{money} {_CADENCE_PHRASES.get(cadence, f'({cadence})')}"
+    return _CADENCE_PHRASES.get(cadence, f"per {cadence} period")
 
 
 def describe_bidding_mode(bidding_mode: str) -> str:

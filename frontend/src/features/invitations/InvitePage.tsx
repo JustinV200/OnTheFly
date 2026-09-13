@@ -1,7 +1,7 @@
 /* "Invite suppliers" for one of the owner's listings (roadmap 08): find suppliers, choose, review the exact email,
    approve, then track each invitation. Strictly secondary: an invited supplier lands on the same public listing as
    everyone else, and nothing sends except the approve click in the review drawer. */
-import { useState } from 'react';
+import { useEffect, useRef, useState } from 'react';
 import { Link, useParams } from 'react-router-dom';
 
 import { useActingAccount } from '../../shared/account/ActingAccountContext';
@@ -15,6 +15,7 @@ import { AddCandidateDrawer } from './candidates/AddCandidateDrawer';
 import { CandidateList } from './candidates/CandidateList';
 import { DiscoveryCard } from './discovery/DiscoveryCard';
 import { outreachOverviewPath } from './outreachApi';
+import { ImpliedRateCard } from './rate/ImpliedRateCard';
 import { ApprovalResult } from './status/ApprovalResult';
 import { InvitationList } from './status/InvitationList';
 import { OutreachFunnel } from './status/OutreachFunnel';
@@ -31,7 +32,17 @@ export function InvitePage(): JSX.Element {
   const overview = useApiQuery<OutreachOverview>(account ? outreachOverviewPath(id) : null, { pollIntervalMs: POLL_INTERVAL_MS });
   const [selectedIds, setSelectedIds] = useState<Set<string>>(new Set());
   const [isAdding, setIsAdding] = useState(false);
+  const recommendedRunId = overview.data?.discovery.last_run?.id ?? null;
+  const recommendedIdsKey = (overview.data?.recommended_candidate_ids ?? []).join('|');
+  const appliedRecommendationRun = useRef<string | null>(null);
   const actions = useOutreachActions(id, overview.reload, () => setSelectedIds(new Set()));
+
+  useEffect(() => {
+    if (!recommendedRunId || appliedRecommendationRun.current === recommendedRunId) return;
+    appliedRecommendationRun.current = recommendedRunId;
+    // Apply one default wave per discovery run. Polling or clearing after approval must not select another batch.
+    setSelectedIds(new Set(recommendedIdsKey ? recommendedIdsKey.split('|') : []));
+  }, [recommendedIdsKey, recommendedRunId]);
 
   const header = (
     <PageHeader
@@ -100,6 +111,8 @@ export function InvitePage(): JSX.Element {
       {actions.lastApproval ? <ApprovalResult channel={data.channel} result={actions.lastApproval} /> : null}
       {data.invitations.length > 0 ? <OutreachFunnel channel={data.channel} summary={data.summary} /> : null}
 
+      <ImpliedRateCard rate={data.implied_rate} />
+
       <DiscoveryCard
         discovery={data.discovery}
         isListingPublic={data.listing_is_public}
@@ -115,7 +128,9 @@ export function InvitePage(): JSX.Element {
         onPreview={() => void actions.openPreview([...eligibleSelection])}
         onRemove={(candidateId) => void actions.remove(candidateId)}
         onSelectAll={(ids) => setSelectedIds(new Set(ids))}
+        onSelectRecommended={(ids) => setSelectedIds(new Set(ids))}
         onToggle={toggle}
+        recommendedCandidateIds={data.recommended_candidate_ids}
         removingId={actions.removingId}
         selectedIds={eligibleSelection}
       />
