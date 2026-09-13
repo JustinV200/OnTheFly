@@ -1,10 +1,35 @@
 # Phase 11 — Usability redesign and dark mode
 
-> Status — 2026-09-12: Not started. Planned from a walkthrough of the running staged demo at desktop (1280px) and phone (390px) widths. This is the detailed specification behind roadmap 09's "Establish the visual system and application shell" and "Redesign the five core screens"; 09's provenance audit, privacy proof and rehearsal steps are unchanged.
+> Status — 2026-09-13: In progress on `feat/task-market-ui`: theme tokens, dark mode, primitives, the compact shell and the market card are built; screens are being moved onto them. Planned from a walkthrough of the running staged demo at desktop (1280px) and phone (390px) widths. This is the detailed specification behind roadmap 09's "Establish the visual system and application shell" and "Redesign the five core screens"; 09's provenance audit, privacy proof and rehearsal steps are unchanged.
 >
 > Follow [the current P0/P1/P2 roadmap](README.md) and [current product plan](../plan/plan1.md).
 
 **Goal:** on any screen, a first-time user can tell within a few seconds what they are looking at, whether it is private or public, and what to do next. This must work in light and dark mode without dropping any honesty label.
+
+## Task market direction (update 2026-09-13)
+
+The visual reference moves from Robinhood/Supabase to a prediction-market app (Kalshi): On the Fly is a **task market**. Each public listing is a market for one task a business pays for; other businesses bid to do it for less. The goal is Kalshi-level intuitiveness: a board you can scan, a big price, and one obvious action. Every rule in CLAUDE.md and every honesty label below still applies.
+
+**Added to this plan**
+
+- **Market board.** The marketplace is a grid of market cards (shared `MarketCard`): category tile and area, the current price as the big number with a short period, one line of scope, and badges for bidding mode, offer count and time left. The whole card opens the listing; its one button is **Bid**. A search field (reads `?q=`), category chips built from the categories in the feed, and sort chips (Most offers, Closing soon, Newest).
+- **Market page.** A listing page reads like a market: price headline, an offer chart for open bidding (public, anonymous offer prices over time from the leaderboard, with a current-price reference line only when the listing is billed monthly, since the frontend never converts periods) or a sealed panel with the offer count, tabs for Scope, Leaderboard and How bidding works, and a sticky **bid ticket** on the right. The ticket takes a price and billing period and continues to the full offer form prefilled (`?price=&billing=`), where scope coverage is confirmed before submitting.
+- **My listings.** A portfolio-style page of everything the acting business has put up for bids: status, current price, offer count, and actions (Offers, Invite suppliers, Unpublish). Never shown to a public visitor.
+- **Invite suppliers** (roadmap 08) lives on My listings and the offers inbox: find suppliers, preview the exact email, approve, and track per-supplier status.
+- **Dark mode** as a real token swap: `themes/light.css` and `themes/dark.css`, `npm run check:colors`, and `npm run check:contrast` (28 role pairs, both themes).
+- New shared primitives: SegmentedControl, FilterChips, Tabs, Disclosure, Drawer, CopyButton.
+
+**Changed or removed**
+
+- The desktop switch band is gone; the account menu is the switcher (businesses, then Public visitor set apart, then the public profile link and the full theme choice).
+- The top bar carries a one-click light/dark flip; Light / Dark / System lives in the account menu, so the bar stays one row with the full business name.
+- The demo-data strip is a chip that still states both facts ("Fixture spend · 2 simulated offers") and is never truncated.
+- Header search only on very wide screens; the market board has its own search.
+- "Our public profile" leaves primary navigation for the account menu. Navigation is **Markets · Spend · My listings**.
+- Fly-brain labels move to their own violet tone; green is the action accent.
+- Market cards never show a derived "best offer": the feed only has counts, and prices depend on the bidding mode.
+
+User-facing words: **Bid** is the action, an **offer** is what a bid creates, and the owner's page is **Offers**.
 
 **Depends on:** nothing on the backend for the foundation. Screen steps land alongside the P0/P1 work that changes those screens. **Size:** L. **Critical path:** P1. Theme tokens and primitives can start in parallel with P0.
 
