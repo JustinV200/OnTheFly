@@ -8,6 +8,8 @@ export interface PublishableExpense {
   amount_minor_per_period: number;
   currency: string;
   visibility: string;
+  // Financial provenance of the transactions behind the baseline: production | sandbox | imported | fixture.
+  provenance: string[];
 }
 
 export interface PublishChoices {

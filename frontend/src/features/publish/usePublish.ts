@@ -8,13 +8,14 @@ import { ApiQueryState, useApiQuery } from '../../shared/api/useApiQuery';
 import type { ExpenseListResponse } from '../dashboard/types';
 import type { ListingDraftResponse, ListingPreviewResponse } from './types';
 
-type Step = 'editing' | 'drafting' | 'previewing' | 'publishing' | 'published';
+// Exported so the step indicator and step cards can show where the owner is; only this hook sets it.
+export type PublishStep = 'editing' | 'drafting' | 'previewing' | 'publishing' | 'published';
 
 interface UsePublishResult {
   expenses: ApiQueryState<ExpenseListResponse>;
   draft: ListingDraftResponse | null;
   preview: ListingPreviewResponse | null;
-  step: Step;
+  step: PublishStep;
   errorMessage: string | null;
   createDraft: (payload: Record<string, unknown>) => Promise<void>;
   invalidatePreview: () => void;
@@ -26,7 +27,7 @@ export function usePublish(): UsePublishResult {
   const expenses = useApiQuery<ExpenseListResponse>('/api/expenses');
   const [draft, setDraft] = useState<ListingDraftResponse | null>(null);
   const [preview, setPreview] = useState<ListingPreviewResponse | null>(null);
-  const [step, setStep] = useState<Step>('editing');
+  const [step, setStep] = useState<PublishStep>('editing');
   const [errorMessage, setErrorMessage] = useState<string | null>(null);
   // Bumped by every form edit and every new draft. A request only applies its answer while the
   // generation it started under is still current, so an edit made mid-request always wins.

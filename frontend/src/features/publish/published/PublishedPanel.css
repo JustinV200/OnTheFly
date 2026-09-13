@@ -1,0 +1,10 @@
+/* The public profile address: large enough to read off a projector, and free to wrap on a phone. */
+.published-panel__url {
+  background-color: var(--color-surface);
+  border: var(--border-width) solid var(--color-success-border);
+  border-radius: var(--radius-sm);
+  color: var(--color-text);
+  font-size: var(--text-md);
+  overflow-wrap: anywhere;
+  padding: var(--space-1) var(--space-2);
+}

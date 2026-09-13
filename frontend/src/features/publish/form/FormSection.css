@@ -1,0 +1,44 @@
+/* Form sections: hairline dividers between groups; a two-column heading/controls layout on laptops and up. */
+.publish-form-section {
+  display: grid;
+  gap: var(--space-4);
+  min-width: 0;
+}
+
+.publish-form-section + .publish-form-section {
+  border-top: var(--border-width) solid var(--color-border-subtle);
+  padding-top: var(--space-6);
+}
+
+.publish-form-section__header {
+  min-width: 0;
+}
+
+.publish-form-section__title {
+  font-size: var(--text-md);
+  letter-spacing: normal;
+  margin: 0;
+}
+
+.publish-form-section__description {
+  color: var(--color-text-muted);
+  font-size: var(--text-sm);
+  line-height: var(--leading-snug);
+  margin-top: var(--space-1);
+  max-width: 60ch;
+}
+
+.publish-form-section__description > p:last-child {
+  margin-bottom: 0;
+}
+
+.publish-form-section__body {
+  min-width: 0;
+}
+
+@media (min-width: 1024px) {
+  .publish-form-section {
+    gap: var(--space-8);
+    grid-template-columns: minmax(0, 15rem) minmax(0, 1fr);
+  }
+}
