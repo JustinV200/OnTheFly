@@ -1,0 +1,6 @@
+/* The gap buttons wrap as a row of chips under the sentence. */
+.publish-questions__list {
+  list-style: none;
+  margin: var(--space-3) 0 0;
+  padding: 0;
+}

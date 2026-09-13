@@ -1,0 +1,18 @@
+/* The baseline note reads as a small label over the price pair; the included-cost block gets its own quiet heading. */
+.publish-pay__baseline {
+  align-items: center;
+  color: var(--color-text-muted);
+  display: flex;
+  flex-wrap: wrap;
+  font-size: var(--text-sm);
+  font-weight: var(--weight-medium);
+  gap: var(--space-1);
+  margin: 0;
+}
+
+.publish-pay__included-title {
+  font-size: var(--text-sm);
+  font-weight: var(--weight-semibold);
+  letter-spacing: normal;
+  margin: 0 0 var(--space-1);
+}

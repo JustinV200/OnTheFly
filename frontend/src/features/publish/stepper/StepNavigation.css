@@ -1,0 +1,45 @@
+/* From 768px: Back on the left, the note and the primary action on the right, in DOM order.
+   On a phone the primary action moves to the top and spans the width, where the thumb is. */
+.publish-step-nav {
+  border-top: var(--border-width) solid var(--color-border-subtle);
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-3);
+  padding-top: var(--space-5);
+}
+
+.publish-step-nav__next {
+  order: -1;
+}
+
+.publish-step-nav__next > * {
+  width: 100%;
+}
+
+.publish-step-nav__note {
+  color: var(--color-text-muted);
+  font-size: var(--text-sm);
+  margin: 0;
+}
+
+@media (min-width: 768px) {
+  .publish-step-nav {
+    align-items: center;
+    flex-direction: row;
+    gap: var(--space-4);
+  }
+
+  .publish-step-nav__next {
+    margin-left: auto;
+    order: 0;
+  }
+
+  .publish-step-nav__next > * {
+    width: auto;
+  }
+
+  .publish-step-nav__note {
+    flex: 1 1 auto;
+    text-align: right;
+  }
+}

@@ -1,0 +1,108 @@
+/* Stepper: three segments joined by a rule, marker beside the title. Brand marks done and current steps;
+   a discarded preview is warning-toned. The words under each title carry the state; colour only echoes it. */
+.publish-stepper {
+  display: grid;
+  gap: var(--space-2);
+  grid-template-columns: repeat(3, minmax(0, 1fr));
+  list-style: none;
+  margin: 0;
+  padding: 0;
+}
+
+.publish-stepper__item {
+  align-items: center;
+  border-top: 3px solid var(--color-border);
+  display: flex;
+  gap: var(--space-2);
+  min-width: 0;
+  padding-top: var(--space-3);
+}
+
+.publish-stepper__item--complete,
+.publish-stepper__item--current {
+  border-top-color: var(--color-brand);
+}
+
+.publish-stepper__item--redo {
+  border-top-color: var(--color-warning-border);
+}
+
+.publish-stepper__marker {
+  align-items: center;
+  background-color: var(--color-surface);
+  border: var(--border-width) solid var(--color-border-strong);
+  border-radius: var(--radius-pill);
+  color: var(--color-text-muted);
+  display: inline-flex;
+  flex: none;
+  font-size: var(--text-sm);
+  font-weight: var(--weight-semibold);
+  height: 1.75rem;
+  justify-content: center;
+  width: 1.75rem;
+}
+
+.publish-stepper__item--current .publish-stepper__marker {
+  background-color: var(--color-brand);
+  border-color: var(--color-brand);
+  color: var(--color-on-brand);
+}
+
+.publish-stepper__item--complete .publish-stepper__marker {
+  background-color: var(--color-brand-soft);
+  border-color: var(--color-brand-soft-border);
+  color: var(--color-brand-text);
+}
+
+.publish-stepper__item--redo .publish-stepper__marker {
+  background-color: var(--color-warning-bg);
+  border-color: var(--color-warning-border);
+  color: var(--color-warning-text);
+}
+
+.publish-stepper__text {
+  display: flex;
+  flex-direction: column;
+  min-width: 0;
+}
+
+.publish-stepper__title {
+  color: var(--color-text);
+  font-size: var(--text-sm);
+  font-weight: var(--weight-semibold);
+  line-height: var(--leading-snug);
+}
+
+.publish-stepper__item--upcoming .publish-stepper__title {
+  color: var(--color-text-secondary);
+}
+
+.publish-stepper__state {
+  color: var(--color-text-muted);
+  font-size: var(--text-xs);
+  line-height: var(--leading-snug);
+}
+
+.publish-stepper__item--current .publish-stepper__state {
+  color: var(--color-brand-text);
+  font-weight: var(--weight-semibold);
+}
+
+.publish-stepper__item--redo .publish-stepper__state {
+  color: var(--color-warning-text);
+  font-weight: var(--weight-semibold);
+}
+
+@media (min-width: 768px) {
+  .publish-stepper {
+    gap: var(--space-4);
+  }
+
+  .publish-stepper__item {
+    gap: var(--space-3);
+  }
+
+  .publish-stepper__title {
+    font-size: var(--text-md);
+  }
+}

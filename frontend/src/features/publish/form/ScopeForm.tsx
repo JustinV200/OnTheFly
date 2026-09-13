@@ -1,96 +1,81 @@
-/* Collects scope confirmation and disclosure choices for a draft listing.
-   It gathers owner input only; submission side effects live in the publish hook. */
-import { FormEvent, useEffect, useState } from 'react';
+/* Step 1, Scope: the four field groups, the gaps list, and "Next: preview". It renders the draft the flow holds and
+   reports submit; validation, drafting, and the step change live in the flow, so this stays a presentational form. */
+import type { FormEvent } from 'react';
 
 import { ErrorState } from '../../../shared/components/ErrorState';
-import { formatMinorForInput } from '../../../shared/format/formatMinorForInput';
-import { parseDollarsToMinor } from '../../../shared/format/parseDollarsToMinor';
-import { Button, Callout, Cluster, Stack } from '../../../shared/ui';
-import type { PublishableExpense, PublishChoices } from '../types';
-import { buildDraftPayload } from './buildDraftPayload';
-import { DisclosureChoices } from './disclosure/DisclosureChoices';
-import { ExpensePicker } from './fields/ExpensePicker';
-import { PriceFields } from './fields/PriceFields';
-import { ScopeDetailsFields } from './fields/ScopeDetailsFields';
-import { INITIAL_SCOPE_FORM_VALUES, ScopeFormValues } from './scopeFormValues';
+import { Button, Callout, Card, Icon, Stack } from '../../../shared/ui';
+import { StepNavigation } from '../stepper/StepNavigation';
+import { BiddingFields } from './bidding/BiddingFields';
+import { DemoTemplateBar } from './DemoTemplateBar';
+import { WhatYouBuyFields } from './fields/WhatYouBuyFields';
+import { WhatYouPayFields } from './fields/WhatYouPayFields';
+import { WhereFields } from './fields/WhereFields';
+import { listUnansweredQuestions } from './questions/listUnansweredQuestions';
+import { UnansweredQuestions } from './questions/UnansweredQuestions';
+import type { ScopeDraft } from './state/useScopeDraft';
+import type { ScopeFormErrors } from './state/validateScopeForm';
 
 interface ScopeFormProps {
-  expenses: PublishableExpense[];
-  initialExpenseId: string | null;
-  isPublishing: boolean;
+  draft: ScopeDraft;
+  errors: ScopeFormErrors;
+  // The server's reason the last draft was refused, shown by the Next button so the owner can fix the form.
+  serverError: string | null;
   isSubmitting: boolean;
-  // A fresh preview is on screen, so Publish (not Preview) is the step's main action.
+  // Re-drafting while a publish is on the wire would race it on the server.
+  isPublishing: boolean;
+  // An edit discarded a preview the owner had; say so instead of letting it vanish silently.
+  isPreviewStale: boolean;
+  // A fresh preview still matches this form, so Next only moves on without drafting again.
   hasFreshPreview: boolean;
-  // The server's reason a draft or publish failed, shown by the preview button so the owner can fix the form.
-  errorMessage: string | null;
-  // Called on every owner edit, in the same update as the new value, so a preview of the old values can't be published.
-  onEdit: () => void;
-  onSubmit: (payload: Record<string, unknown>) => Promise<void>;
+  onSubmit: () => void;
 }
 
-/** Render the scope-confirmation form for creating a draft listing; every edit is reported through onEdit. */
-export function ScopeForm({ expenses, initialExpenseId, isPublishing, isSubmitting, hasFreshPreview, errorMessage, onEdit, onSubmit }: ScopeFormProps): JSX.Element {
-  const [expenseId, setExpenseId] = useState<string>('');
-  const [values, setValues] = useState<ScopeFormValues>(INITIAL_SCOPE_FORM_VALUES);
-  const [choices, setChoices] = useState<PublishChoices>({ bidding_mode: 'sealed', show_exact_address: false, show_incumbent_vendor: false });
-  const [validationError, setValidationError] = useState<string | null>(null);
-
-  const changeValues = (patch: Partial<ScopeFormValues>): void => setValues((current) => ({ ...current, ...patch }));
-
-  const selectExpense = (expense: PublishableExpense): void => {
-    setExpenseId(expense.id);
-    // Prefill the transaction baseline so the owner confirms or corrects it (roadmap 04, publish
-    // step 2). The server publishes this price and cadence as a pair.
-    changeValues({ currentPrice: formatMinorForInput(expense.amount_minor_per_period), billingCadence: expense.cadence });
-  };
-
-  // Expenses load asynchronously; select the one the dashboard linked to, else the first.
-  useEffect(() => {
-    if (!expenseId && expenses.length > 0) {
-      selectExpense(expenses.find((expense) => expense.id === initialExpenseId) ?? expenses[0]);
-    }
-  }, [expenses, expenseId, initialExpenseId]);
-
-  const selected = expenses.find((expense) => expense.id === expenseId);
+/** Render the scope form. Every control writes through the draft, which invalidates any preview in the same update. */
+export function ScopeForm({ draft, errors, serverError, isSubmitting, isPublishing, isPreviewStale, hasFreshPreview, onSubmit }: ScopeFormProps): JSX.Element {
+  const { values, fieldSet, choices, selectedExpense, changeValues, changeChoices, fillDemoTemplate } = draft;
+  const hasFieldErrors = Object.keys(errors).length > 0;
 
   const submit = (event: FormEvent<HTMLFormElement>): void => {
     event.preventDefault();
-    const priceMinor = parseDollarsToMinor(values.currentPrice);
-    if (priceMinor === null) {
-      setValidationError('Enter the current price as dollars, for example 2400 or 2,400.00.');
-      return;
-    }
-    setValidationError(null);
-    void onSubmit(buildDraftPayload({ expenseId, currency: selected?.currency ?? 'USD', priceMinor, values, choices }));
+    onSubmit();
   };
 
   return (
-    // React change events bubble, so this one handler hears every input, select, and checkbox below,
-    // DisclosureChoices included. New controls must stay native inputs inside this form to be covered.
-    <form onChange={onEdit} onSubmit={submit}>
-      <Stack gap={6}>
-        <ExpensePicker expenses={expenses} onSelect={selectExpense} selected={selected} />
-        <ScopeDetailsFields onChange={changeValues} values={values} />
-        <PriceFields onChange={changeValues} priceError={validationError ? 'Not a dollar amount.' : null} values={values} />
-        <DisclosureChoices
-          choices={choices}
-          incumbentVendorName={values.incumbentVendorName}
-          onChange={setChoices}
-          onIncumbentVendorNameChange={(name) => changeValues({ incumbentVendorName: name })}
-        />
+    <Card description="What you buy, where, and what you pay. Only you see this form." title="Scope">
+      <form noValidate onSubmit={submit}>
+        <Stack gap={6}>
+          {isPreviewStale ? (
+            <Callout role="status" title="You changed the scope — preview again" tone="warning">
+              <p>The earlier preview no longer matches this form, so it was discarded. Nothing was published.</p>
+            </Callout>
+          ) : null}
+          <DemoTemplateBar onFill={fillDemoTemplate} />
+          <WhatYouBuyFields
+            bathroomCountError={errors.bathroomCount}
+            fieldSet={fieldSet}
+            onChange={changeValues}
+            squareFootageError={errors.squareFootage}
+            values={values}
+          />
+          <WhereFields examples={fieldSet.examples} onChange={changeValues} values={values} />
+          <WhatYouPayFields cadenceError={errors.billingCadence} expense={selectedExpense} onChange={changeValues} priceError={errors.currentPrice} values={values} />
+          <BiddingFields choices={choices} onChange={changeValues} onChoicesChange={changeChoices} values={values} />
 
-        <Stack gap={3}>
-          {validationError ? <Callout role="alert" title="Check the current price" tone="danger">{validationError}</Callout> : null}
-          {errorMessage ? <ErrorState error={null} title={errorMessage} /> : null}
-          <Cluster gap={3} justify="start">
-            {/* Re-drafting while a publish is on the wire would race it on the server. */}
-            <Button disabled={isPublishing || !expenseId} isBusy={isSubmitting} size="lg" type="submit" variant={hasFreshPreview ? 'secondary' : 'primary'}>
-              {isSubmitting ? 'Preparing preview…' : 'Preview exactly what goes public'}
-            </Button>
-            <span className="ui-text-muted ui-text-sm">Previewing publishes nothing. It saves a private draft and shows you the payload.</span>
-          </Cluster>
+          <Stack gap={3}>
+            <UnansweredQuestions questions={listUnansweredQuestions(values, fieldSet)} />
+            {hasFieldErrors ? <Callout role="alert" title="Check the highlighted fields" tone="danger" /> : null}
+            {serverError ? <ErrorState error={null} title={serverError} /> : null}
+            <StepNavigation
+              next={(
+                <Button disabled={isPublishing || !selectedExpense} iconEnd={<Icon name="arrow-right" />} isBusy={isSubmitting} size="lg" type="submit" variant="primary">
+                  {isSubmitting ? 'Preparing preview…' : hasFreshPreview ? 'Next: preview' : 'Preview what goes public'}
+                </Button>
+              )}
+              note="Previewing publishes nothing."
+            />
+          </Stack>
         </Stack>
-      </Stack>
-    </form>
+      </form>
+    </Card>
   );
 }

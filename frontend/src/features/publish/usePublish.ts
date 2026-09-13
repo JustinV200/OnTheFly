@@ -11,7 +11,7 @@ import type { ListingDraftResponse, ListingPreviewResponse } from './types';
 // Exported so the stepper and step bodies can show where the owner is; only this hook sets it.
 export type PublishStep = 'editing' | 'drafting' | 'previewing' | 'publishing' | 'published';
 
-interface UsePublishResult {
+export interface UsePublishResult {
   expenses: ApiQueryState<ExpenseListResponse>;
   draft: ListingDraftResponse | null;
   preview: ListingPreviewResponse | null;

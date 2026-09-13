@@ -15,10 +15,10 @@ export function PublishHeader({ publishedListing }: PublishHeaderProps): JSX.Ele
   if (publishedListing) {
     return (
       <PageHeader
-        eyebrow="Publish an expense"
+        eyebrow="Put an expense up for bids"
         meta={
           <>
-            <Badge icon={<Icon name="check" />} size="md" tone="success">Public</Badge>
+            <Badge icon={<Icon name="globe" />} size="md" tone="success">Public</Badge>
             <BiddingModePill mode={publishedListing.bidding_mode} />
           </>
         }
@@ -30,8 +30,9 @@ export function PublishHeader({ publishedListing }: PublishHeaderProps): JSX.Ele
 
   return (
     <PageHeader
+      eyebrow="Put an expense up for bids"
       meta={<Badge icon={<Icon name="lock" />} size="md" tone="private">Private until you publish</Badge>}
-      subtitle="Confirm the scope, preview exactly what goes public, then publish. Nothing is public until you click Publish this listing."
+      subtitle="Confirm the scope, preview exactly what a stranger will see, then publish."
       title="Publish an expense"
     />
   );

@@ -1,0 +1,28 @@
+/* Success layout: share actions beside the unpublish card from 768px; the public link wraps on a phone. */
+.published-screen__grid {
+  display: grid;
+  gap: var(--space-5);
+  grid-template-columns: minmax(0, 1fr);
+}
+
+@media (min-width: 768px) {
+  .published-screen__grid {
+    align-items: start;
+    grid-template-columns: minmax(0, 2fr) minmax(0, 1fr);
+  }
+}
+
+.published-screen__url {
+  background-color: var(--color-surface-sunken);
+  border: var(--border-width) solid var(--color-border);
+  border-radius: var(--radius-sm);
+  color: var(--color-text);
+  display: block;
+  font-size: var(--text-sm);
+  overflow-wrap: anywhere;
+  padding: var(--space-2) var(--space-3);
+}
+
+.published-screen__card {
+  max-width: 24rem;
+}

@@ -1,0 +1,18 @@
+/* A dashed, simulated-toned strip: visibly a demo action, not part of the listing's scope. Wraps under the text on a phone. */
+.publish-demo-bar {
+  align-items: center;
+  background-color: var(--color-simulated-bg);
+  border: var(--border-width) dashed var(--color-simulated-border);
+  border-radius: var(--radius-md);
+  display: flex;
+  flex-wrap: wrap;
+  gap: var(--space-2) var(--space-3);
+  padding: var(--space-2) var(--space-3);
+}
+
+.publish-demo-bar__text {
+  color: var(--color-simulated-text);
+  flex: 1 1 16rem;
+  font-size: var(--text-sm);
+  margin: 0;
+}

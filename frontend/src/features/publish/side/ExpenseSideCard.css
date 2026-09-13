@@ -1,0 +1,15 @@
+/* The vendor reads as the card's subject; the category sits under it in muted type. */
+.publish-side-card__vendor {
+  font-size: var(--text-xl);
+  font-weight: var(--weight-semibold);
+  letter-spacing: var(--tracking-tight);
+  line-height: var(--leading-tight);
+  margin: 0;
+  overflow-wrap: anywhere;
+}
+
+.publish-side-card__category {
+  color: var(--color-text-muted);
+  font-size: var(--text-sm);
+  margin: var(--space-1) 0 0;
+}
