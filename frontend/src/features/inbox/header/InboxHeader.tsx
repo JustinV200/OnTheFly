@@ -1,5 +1,6 @@
 /* The top of the Offers page, read like a market from the owner's side: back to My listings, the category tile, the
-   page's h1, area and scope in one line, and the listing's state (visibility, bidding mode, time left) before any action. */
+   page's h1, area and scope in one line, and the listing's state (visibility, bidding mode, and time left while public)
+   before any action. */
 import { Link } from 'react-router-dom';
 
 import { BiddingModePill } from '../../../shared/components/BiddingModePill';
@@ -42,9 +43,12 @@ export function InboxHeader({ listing }: { listing: PublicListingProjection | nu
             <>
               <ListingVisibilityBadge visibility={listing.visibility} />
               <BiddingModePill mode={listing.bidding_mode} />
-              <Badge icon={<Icon name="clock" />} title={closes.exact ?? undefined} tone={closes.isClosed ? 'danger' : 'neutral'}>
-                {closes.label}
-              </Badge>
+              {/* Time left only means something while strangers can bid; a private listing takes no offers. */}
+              {listing.visibility === 'public' ? (
+                <Badge icon={<Icon name="clock" />} title={closes.exact ?? undefined} tone={closes.isClosed ? 'danger' : 'neutral'}>
+                  {closes.label}
+                </Badge>
+              ) : null}
             </>
           )}
           subtitle={`${area} · ${listing.scope_summary}`}

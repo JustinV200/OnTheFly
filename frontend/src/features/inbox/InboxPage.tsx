@@ -67,7 +67,7 @@ export function InboxPage(): JSX.Element {
         offers={challenges}
         onOpenOffer={setOpenOfferId}
       />
-      <GenuineOfferCallout offers={ownerOffers} />
+      <GenuineOfferCallout offers={ownerOffers} onOpenOffer={setOpenOfferId} />
 
       {challenges.length === 0 ? (
         <NoOffersState listing={listing} />

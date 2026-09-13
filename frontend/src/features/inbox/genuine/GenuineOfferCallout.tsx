@@ -1,10 +1,11 @@
-/* Puts any genuine counteroffer front and centre: real amount, terms, timestamp, and how it arrived.
-   Shown only for offers whose stored provenance is genuine; simulated offers never appear here (roadmap 09, "The real counteroffer, front and centre"). */
+/* Puts any genuine counteroffer front and centre: real amount, terms, timestamp, and how it arrived, with a button to the
+   same offer's drawer in the ranked list. Shown only for offers whose stored provenance is genuine; simulated offers never
+   appear here (roadmap 09, "The real counteroffer, front and centre"). */
 import { ApiQueryState } from '../../../shared/api/useApiQuery';
 import { MoneyDisplay } from '../../../shared/components/MoneyDisplay';
 import { formatTimestamp } from '../../../shared/format/formatTimestamp';
 import { ProvenanceBadge } from '../../../shared/provenance/ProvenanceBadge';
-import { Card, Icon, Stack, Stat } from '../../../shared/ui';
+import { Button, Card, Icon, Stack, Stat } from '../../../shared/ui';
 import type { OwnerChallenge, OwnerChallengeListResponse } from '../types';
 import './GenuineOfferCallout.css';
 
@@ -15,22 +16,24 @@ const CHANNEL = new Map<string, string>([
 
 interface GenuineOfferCalloutProps {
   offers: ApiQueryState<OwnerChallengeListResponse>;
+  // Opens the offer drawer; an owner offer's id is the ranked list's challenge id.
+  onOpenOffer: (challengeId: string) => void;
 }
 
 /** Render one highlighted card per genuine offer, or nothing when every offer is simulated. */
-export function GenuineOfferCallout({ offers }: GenuineOfferCalloutProps): JSX.Element | null {
+export function GenuineOfferCallout({ offers, onOpenOffer }: GenuineOfferCalloutProps): JSX.Element | null {
   const genuine = (offers.data?.challenges ?? []).filter((offer) => CHANNEL.has(offer.provenance));
   if (genuine.length === 0) {
     return null;
   }
   return (
     <Stack gap={3}>
-      {genuine.map((offer) => <GenuineOfferCard key={offer.id} offer={offer} />)}
+      {genuine.map((offer) => <GenuineOfferCard key={offer.id} offer={offer} onOpen={() => onOpenOffer(offer.id)} />)}
     </Stack>
   );
 }
 
-function GenuineOfferCard({ offer }: { offer: OwnerChallenge }): JSX.Element {
+function GenuineOfferCard({ offer, onOpen }: { offer: OwnerChallenge; onOpen: () => void }): JSX.Element {
   const terms = [
     offer.scope_included.length ? `includes ${offer.scope_included.join(', ')}` : null,
     offer.scope_excluded.length ? `excludes ${offer.scope_excluded.join(', ')}` : null,
@@ -43,6 +46,11 @@ function GenuineOfferCard({ offer }: { offer: OwnerChallenge }): JSX.Element {
 
   return (
     <Card
+      actions={(
+        <Button aria-haspopup="dialog" iconEnd={<Icon name="chevron-right" size={16} />} onClick={onOpen} size="sm">
+          Details
+        </Button>
+      )}
       as="article"
       className="genuine-offer"
       title={(
