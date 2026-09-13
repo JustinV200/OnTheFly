@@ -90,7 +90,9 @@ export function OwnerPublishFlow({ account }: OwnerPublishFlowProps): JSX.Elemen
           isPublishing={step === 'publishing'}
           isSubmitting={step === 'drafting'}
           onEdit={invalidatePreview}
-          onSubmit={createDraft}
+          onSubmit={async (payload) => {
+            await createDraft(payload);
+          }}
         />
       </StepCard>
       <StepCard
