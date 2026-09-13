@@ -6,7 +6,7 @@ both query through here.
 from app.services.market_data.usaspending.awards import UsaSpendingAward
 from app.services.market_data.usaspending.client import UsaSpendingClient, UsaSpendingError
 from app.services.market_data.usaspending.place_of_performance import states_in_area
-from app.services.market_data.usaspending.search import AwardSearch
+from app.services.market_data.usaspending.search import AwardSearch, lookback_start
 from app.services.market_data.usaspending.subawards import UsaSpendingSubaward
 
 __all__ = [
@@ -15,5 +15,6 @@ __all__ = [
     "UsaSpendingClient",
     "UsaSpendingError",
     "UsaSpendingSubaward",
+    "lookback_start",
     "states_in_area",
 ]

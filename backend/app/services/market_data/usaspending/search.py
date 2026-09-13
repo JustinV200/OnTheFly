@@ -52,6 +52,16 @@ def search_filters(search: AwardSearch) -> dict[str, object]:
     return filters
 
 
+def lookback_start(today: date, years: int) -> date:
+    """Return the same calendar day `years` earlier, the start of a search window ending today."""
+
+    try:
+        return today.replace(year=today.year - years)
+    except ValueError:
+        # 29 February minus whole years can land on a date that doesn't exist.
+        return today.replace(year=today.year - years, day=28)
+
+
 def dollars_to_minor(amount: Decimal | None) -> int | None:
     """Return a dollar amount parsed from the response as integer cents, rounded half up once; None stays None."""
 

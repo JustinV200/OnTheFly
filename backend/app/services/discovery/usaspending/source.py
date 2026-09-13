@@ -2,7 +2,7 @@
 Only award recipients with a UEI become providers; Tavily adds context to that fixed shortlist and never adds one.
 """
 
-from datetime import date, datetime, timezone
+from datetime import datetime, timezone
 
 import httpx
 
@@ -12,7 +12,13 @@ from app.services.discovery.types import DiscoveredProvider, DiscoveryQuery, Dis
 from app.services.discovery.usaspending.classification import naics_codes_for
 from app.services.discovery.usaspending.enrich import enrich_supplier
 from app.services.discovery.usaspending.shortlist import shortlist_suppliers
-from app.services.market_data.usaspending import AwardSearch, UsaSpendingClient, UsaSpendingError, states_in_area
+from app.services.market_data.usaspending import (
+    AwardSearch,
+    UsaSpendingClient,
+    UsaSpendingError,
+    lookback_start,
+    states_in_area,
+)
 
 # Roadmap 12, step 8 queries a 5-year lookback; discovery uses the same window so both read the same market.
 LOOKBACK_YEARS = 5
@@ -60,7 +66,7 @@ class UsaSpendingTavilyDiscoverySource(DiscoverySource):
         search = AwardSearch(
             naics_codes=list(naics_codes),
             place_of_performance_states=states,
-            start_date=_years_before(today, LOOKBACK_YEARS),
+            start_date=lookback_start(today, LOOKBACK_YEARS),
             end_date=today,
         )
         try:
@@ -108,11 +114,3 @@ def _search_note(search: AwardSearch, award_count: int, supplier_count: int, ser
         f"(NAICS {', '.join(search.naics_codes)}; {where}; since {search.start_date.isoformat()}). "
         "Subawards not searched."
     )
-
-
-def _years_before(day: date, years: int) -> date:
-    try:
-        return day.replace(year=day.year - years)
-    except ValueError:
-        # 29 February minus whole years can land on a date that doesn't exist.
-        return day.replace(year=day.year - years, day=28)
