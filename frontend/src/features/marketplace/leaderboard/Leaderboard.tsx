@@ -1,16 +1,12 @@
 /* Loads a public listing's anonymized offers and picks the view for its bidding mode.
    Sealed listings show only a count. Open listings rank published prices by scope completeness before price.
    Sealed-at-submission offers are counted but never priced, even after the owner opens bidding. */
-import { useApiQuery } from '../../../shared/api/useApiQuery';
 import { ErrorState } from '../../../shared/components/ErrorState';
 import { LoadingSpinner } from '../../../shared/components/LoadingSpinner';
 import { Card } from '../../../shared/ui';
-import type { LeaderboardResponse } from '../types';
 import { OpenLeaderboard } from './OpenLeaderboard';
 import { SealedOfferCount } from './SealedOfferCount';
-
-// Fast enough that an underbid shows up while the audience is still watching.
-const POLL_INTERVAL_MS = 4000;
+import { useLeaderboard } from './useLeaderboard';
 
 interface LeaderboardProps {
   listingId: string;
@@ -18,7 +14,7 @@ interface LeaderboardProps {
 
 /** Render the offers section for one public listing, polling for new offers. */
 export function Leaderboard({ listingId }: LeaderboardProps): JSX.Element {
-  const board = useApiQuery<LeaderboardResponse>(`/api/listings/${listingId}/leaderboard`, { pollIntervalMs: POLL_INTERVAL_MS });
+  const board = useLeaderboard(listingId);
 
   if (!board.data) {
     return (

@@ -6,6 +6,7 @@ import { EmptyState } from '../../../shared/components/EmptyState';
 import { Callout, Card, Stack } from '../../../shared/ui';
 import type { LeaderboardResponse } from '../types';
 import { LeaderboardTable } from './LeaderboardTable';
+import { sealedOfferNote } from './sealedOfferNote';
 
 interface OpenLeaderboardProps {
   board: LeaderboardResponse;
@@ -42,9 +43,4 @@ export function OpenLeaderboard({ board, staleNotice }: OpenLeaderboardProps): J
       </Stack>
     </Card>
   );
-}
-
-function sealedOfferNote(sealedCount: number): string {
-  const isOne = sealedCount === 1;
-  return `${sealedCount} ${isOne ? 'offer was' : 'offers were'} made while bidding was sealed and ${isOne ? 'stays' : 'stay'} sealed: counted, never priced here.`;
 }
