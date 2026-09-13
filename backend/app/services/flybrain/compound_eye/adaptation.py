@@ -10,7 +10,7 @@ import math
 class SampleResponse(StrEnum):
     """How the detector responded to one sample."""
 
-    # The first sample the detector adapts to; nothing to compare against yet.
+    # The first sample of the opening level; no established level before it to compare against.
     initial = "initial"
     # Within the contrast threshold of the adapted level.
     adapted = "adapted"
@@ -20,11 +20,19 @@ class SampleResponse(StrEnum):
     shift = "shift"
     # A large contrast at the end of the sequence with too few samples after it to judge.
     pending = "pending"
+    # An opening sample whose level a confirmed step replaced before enough samples held it.
+    # Not a step (its level was never established) and not a flash (a real level that
+    # changed right after the sequence began looks the same), so it is neither.
+    unconfirmed = "unconfirmed"
+
+
+# Responses that count a sample as a member of the level it sits in.
+LEVEL_MEMBER_RESPONSES = frozenset({SampleResponse.initial, SampleResponse.adapted, SampleResponse.shift})
 
 
 @dataclass(frozen=True, slots=True)
 class LevelShift:
-    """One confirmed step to a new level."""
+    """One confirmed step from an established level to a new one."""
 
     index: int
     contrast: float
@@ -34,8 +42,10 @@ class LevelShift:
 class AdaptationTrace:
     """The detector's full response to a sequence.
 
-    current_level_start is where the latest confirmed level begins. A trailing
-    pending run is excluded from that level until it is confirmed or refuted.
+    current_level_start is where the latest level begins. Every level after the
+    opening one is confirmed; the opening level may still be short of
+    confirmations + 1 samples if no step followed it, so callers check its size.
+    A trailing pending run is excluded from that level until it is confirmed or refuted.
     """
 
     responses: tuple[SampleResponse, ...]
@@ -109,8 +119,23 @@ class ContrastAdaptation:
             held_for = run_end - index - 1
 
             if held_for >= self.confirmations:
-                shifts.append(LevelShift(index=index, contrast=math.expm1(candidate_level - adapted_level)))
-                responses.append(SampleResponse.shift)
+                level_members = [
+                    position
+                    for position in range(current_level_start, index)
+                    if responses[position] in LEVEL_MEMBER_RESPONSES
+                ]
+                # A step needs an established level to step from: confirmations + 1
+                # samples, the same standard the new level just met. Every level after
+                # the opening one starts that way, so only the opening level falls short.
+                if len(level_members) > self.confirmations:
+                    shifts.append(LevelShift(index=index, contrast=math.expm1(candidate_level - adapted_level)))
+                    responses.append(SampleResponse.shift)
+                else:
+                    # Reporting a change here would measure it from a level nothing held.
+                    # Flashes inside the opening stay flashes; they were judged on their own.
+                    for position in level_members:
+                        responses[position] = SampleResponse.unconfirmed
+                    responses.append(SampleResponse.initial)
                 responses.extend([SampleResponse.adapted] * held_for)
                 # Re-adapt fully to the new level: mean of the confirming run in log space.
                 adapted_level = sum(log_samples[index:run_end]) / (run_end - index)

@@ -1,9 +1,11 @@
 """Segments a recurring vendor's charges into price levels with the Compound Eye detector.
-It finds confirmed price changes, one-off charges, and an unconfirmed latest jump; it never guesses between them.
+It finds confirmed price changes, one-off charges, an unconfirmed latest jump, and an earlier price
+that was never established; it never guesses between them.
 """
 
 from datetime import datetime
 from enum import StrEnum
+import math
 
 from pydantic import BaseModel
 
@@ -17,12 +19,26 @@ RECURRING_CADENCES = frozenset({"weekly", "biweekly", "monthly", "bimonthly", "q
 
 # Same minimum as detect_recurrence: fewer than three charges can't establish a level.
 MIN_CHARGES = 3
-# A price level must be held by at least two charges, and most charges must sit in
-# some level. Otherwise amounts vary too much for a "current price" to exist (office
-# supplies bought on a schedule), and taking the first charge as the price would be
-# worse than the plain average.
+# A price level must be held by at least two charges, and a strict majority of charges
+# must sit in some level. Otherwise amounts vary too much for a "current price" to exist
+# (office supplies bought on a schedule), and taking the first charge as the price would
+# be worse than the plain average. At exactly half, which amount counts as "the price"
+# depends only on which one came first.
 MIN_CURRENT_LEVEL_CHARGES = 2
 MIN_SHARE_IN_LEVELS = 0.5
+
+# Charges the detector kept out of every level: one-offs, an unconfirmed trailing jump, and
+# opening charges whose amount no charge repeated before the price moved.
+OFF_LEVEL_RESPONSES = frozenset({SampleResponse.transient, SampleResponse.pending, SampleResponse.unconfirmed})
+
+# The off-level charges the two stability guards in analyze_price_levels hold against a price:
+# one-offs and an unconfirmed trailing jump. Unestablished opening charges are left out on
+# purpose. A history that opens with a prorated month or a setup fee says nothing about
+# whether the charges after it hold a price, so the opening neither lowers the share of
+# charges at a price nor forms a recurring second price. Counting it would drop such a series
+# to the plain average, which averages that partial charge into the baseline. The opening
+# still stays out of every level and out of the baseline through OFF_LEVEL_RESPONSES.
+STABILITY_GUARD_OFF_LEVEL_RESPONSES = frozenset({SampleResponse.transient, SampleResponse.pending})
 
 # 5% contrast: a smaller move is billing noise absorbed into the level, a larger one
 # is a response. Tuning showed the Mushroom Body amount channel also crosses its
@@ -60,6 +76,20 @@ class PendingPriceChange(BaseModel):
     change_basis_points: int
 
 
+class UnconfirmedEarlierPrice(BaseModel):
+    """The price moved away from the first charge(s) before enough charges repeated their amount.
+
+    Not a confirmed change, which needs an established price to change from, and not a
+    one-off, since a real price that changed after one period looks the same. Reported
+    as an earlier price that was never established and left out of the baseline.
+    """
+
+    transaction_ids: list[str]
+    first_seen_at: datetime
+    # Median of those charges; with one confirmation it is the single opening charge.
+    amount_minor: int
+
+
 class PriceLevelAnalysis(BaseModel):
     """The Compound Eye's reading of one vendor's charge history."""
 
@@ -72,6 +102,7 @@ class PriceLevelAnalysis(BaseModel):
     one_off_transaction_ids: list[str]
     shifts: list[PriceLevelShift]
     pending_change: PendingPriceChange | None
+    unconfirmed_earlier_price: UnconfirmedEarlierPrice | None
 
 
 def analyze_price_levels(transactions: list[Transaction], cadence: str) -> PriceLevelAnalysis:
@@ -80,6 +111,12 @@ def analyze_price_levels(transactions: list[Transaction], cadence: str) -> Price
     Assumes the transactions are one vendor group. Credits (refunds) are not charges
     and are left out of the levels. Every amount reported is an integer median of
     real charges, never a value reconstructed from the detector's log-space state.
+    Opening charges whose amount no charge repeated before the price moved come back as
+    unconfirmed_earlier_price, never as a shift or a one-off. Returns not assessed
+    (amounts_too_variable) when the one-offs and a pending jump leave no strict majority
+    of charges at a price, or when those charges recur at one amount, so the baseline
+    falls back to the labelled plain average. An unestablished opening counts against
+    neither check.
     """
 
     charges = sorted(
@@ -97,10 +134,23 @@ def analyze_price_levels(transactions: list[Transaction], cadence: str) -> Price
     trace = PRICE_LEVEL_DETECTOR.run([float(charge.amount_minor) for charge in charges])
     level_starts = [0] + [shift.index for shift in trace.shifts]
     current_members = _level_members(trace.responses, level_starts, len(level_starts) - 1)
-    in_level_count = sum(
-        1 for response in trace.responses if response not in (SampleResponse.transient, SampleResponse.pending)
-    )
-    if len(current_members) < MIN_CURRENT_LEVEL_CHARGES or in_level_count / len(charges) < MIN_SHARE_IN_LEVELS:
+    # Unestablished opening charges are not held against a stable price here; see
+    # STABILITY_GUARD_OFF_LEVEL_RESPONSES. They count with the charges at a price for the share.
+    off_level_amounts = [
+        charges[index].amount_minor
+        for index, response in enumerate(trace.responses)
+        if response in STABILITY_GUARD_OFF_LEVEL_RESPONSES
+    ]
+    in_level_count = len(charges) - len(off_level_amounts)
+    # The detector confirms a level only when the very next charge holds it, so an amount
+    # that keeps coming back every other period (500, 700, 500, 700) is marked a one-off
+    # each time. Off-level charges that recur at one amount are a second price, not
+    # one-offs: calling them one-offs would drop real spend from the baseline.
+    if (
+        len(current_members) < MIN_CURRENT_LEVEL_CHARGES
+        or in_level_count / len(charges) <= MIN_SHARE_IN_LEVELS
+        or _largest_similar_amount_group(off_level_amounts) >= MIN_CURRENT_LEVEL_CHARGES
+    ):
         return _not_assessed(NotAssessedReason.amounts_too_variable)
 
     shifts: list[PriceLevelShift] = []
@@ -132,6 +182,7 @@ def analyze_price_levels(transactions: list[Transaction], cadence: str) -> Price
         ],
         shifts=shifts,
         pending_change=_pending_change(charges, trace.responses, current_amount),
+        unconfirmed_earlier_price=_unconfirmed_earlier_price(charges, trace.responses),
     )
 
 
@@ -140,15 +191,28 @@ def _level_members(
     level_starts: list[int],
     level_number: int,
 ) -> list[int]:
-    # A level runs from its start to the next level's start. One-offs and an unconfirmed
-    # trailing jump sit inside that span but are not charges at this price.
+    # A level runs from its start to the next level's start. One-offs, an unconfirmed
+    # trailing jump, and unestablished opening charges sit inside that span but are not
+    # charges at this price.
     start = level_starts[level_number]
     end = level_starts[level_number + 1] if level_number + 1 < len(level_starts) else len(responses)
-    return [
-        index
-        for index in range(start, end)
-        if responses[index] not in (SampleResponse.transient, SampleResponse.pending)
-    ]
+    return [index for index in range(start, end) if responses[index] not in OFF_LEVEL_RESPONSES]
+
+
+def _largest_similar_amount_group(amounts: list[int]) -> int:
+    # Size of the largest set of amounts all within the detector's contrast threshold of
+    # each other, measured in log space exactly as the detector compares charges. Once
+    # sorted, a window whose first and last amounts are within the threshold is such a
+    # set, so two pointers find the largest one. Amounts are positive charges.
+    threshold = math.log1p(PRICE_LEVEL_DETECTOR.contrast_threshold)
+    log_amounts = sorted(math.log(amount) for amount in amounts)
+    largest = 0
+    end = 0
+    for start, lowest in enumerate(log_amounts):
+        while end < len(log_amounts) and log_amounts[end] - lowest < threshold:
+            end += 1
+        largest = max(largest, end - start)
+    return largest
 
 
 def _level_amounts(
@@ -158,6 +222,21 @@ def _level_amounts(
     level_number: int,
 ) -> list[int]:
     return [charges[index].amount_minor for index in _level_members(responses, level_starts, level_number)]
+
+
+def _unconfirmed_earlier_price(
+    charges: list[Transaction],
+    responses: tuple[SampleResponse, ...],
+) -> UnconfirmedEarlierPrice | None:
+    # No change basis points: a percentage beside it would read as a price change.
+    unconfirmed_indices = [index for index, response in enumerate(responses) if response is SampleResponse.unconfirmed]
+    if not unconfirmed_indices:
+        return None
+    return UnconfirmedEarlierPrice(
+        transaction_ids=[charges[index].id for index in unconfirmed_indices],
+        first_seen_at=charges[unconfirmed_indices[0]].posted_at,
+        amount_minor=median_minor([charges[index].amount_minor for index in unconfirmed_indices]),
+    )
 
 
 def _pending_change(
@@ -189,4 +268,5 @@ def _not_assessed(reason: NotAssessedReason) -> PriceLevelAnalysis:
         one_off_transaction_ids=[],
         shifts=[],
         pending_change=None,
+        unconfirmed_earlier_price=None,
     )

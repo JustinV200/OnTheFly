@@ -14,6 +14,7 @@ from app.services.expenses.signals.price_levels import (
     PendingPriceChange,
     PriceLevelAnalysis,
     PriceLevelShift,
+    UnconfirmedEarlierPrice,
     analyze_price_levels,
 )
 
@@ -25,6 +26,7 @@ __all__ = [
     "PendingPriceChange",
     "PriceLevelAnalysis",
     "PriceLevelShift",
+    "UnconfirmedEarlierPrice",
     "analyze_price_levels",
     "change_basis_points",
     "median_minor",

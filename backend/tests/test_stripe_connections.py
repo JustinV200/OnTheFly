@@ -206,3 +206,28 @@ def test_refresh_failure_is_visible_and_does_not_import(client, db_session, stri
     stripe_api["status"] = "failed"
     assert client.post(BASE + "/sync", headers=OWNER).status_code == 400
     assert db_session.scalar(select(func.count()).select_from(Transaction)) == 0
+
+
+def test_connection_summary_reads_the_same_link_as_the_stripe_panel(
+    client, stripe_api, monkeypatch
+):
+    # Stripe mode has no demo link, so before this fix the summary said "not connected" beside a connected
+    # Stripe panel, then called the live link "a past connection" after the import.
+    monkeypatch.setenv("TRANSACTION_SOURCE", "stripe")
+    get_settings.cache_clear()
+    connect(client)
+    stripe_api["status"] = "pending"
+    assert client.post(BASE + "/sync", headers=OWNER).json()["status"] == "pending"
+    pending = client.get("/api/connection", headers=OWNER).json()
+    assert client.get(BASE, headers=OWNER).json()["connected"] is True
+    assert pending["status"] == "connected_not_imported"
+    assert [link["provider"] for link in pending["connections"]] == ["stripe"]
+
+    stripe_api["status"] = "succeeded"
+    assert client.post(BASE + "/sync", headers=OWNER).json()["status"] == "succeeded"
+    imported = client.get("/api/connection", headers=OWNER).json()
+    assert [
+        (source["provider"], source["source_type"], source["transaction_count"], source["is_connected"])
+        for source in imported["sources"]
+    ] == [("stripe", "sandbox", 2, True)]
+    assert client.post("/api/connection/import", headers=OWNER).status_code == 400

@@ -1,9 +1,15 @@
 /* Presents sandbox connection controls without handling provider requests. */
 import { useStripeConnection } from './useStripeConnection';
 
+interface StripeConnectionProps {
+  onImported: () => void;
+  // Called once consent is stored, so the dashboard's connection summary stops reading "not connected".
+  onConnected: () => void;
+}
+
 /** Show consent/import controls and an explicit sandbox data label. */
-export function StripeConnection({ onImported }: { onImported: () => void }): JSX.Element {
-  const { connection, transactions, busy, message, connect, refresh } = useStripeConnection(onImported);
+export function StripeConnection({ onImported, onConnected }: StripeConnectionProps): JSX.Element {
+  const { connection, transactions, busy, message, connect, refresh } = useStripeConnection(onImported, onConnected);
   return <section aria-label="Stripe sandbox connection" style={{ margin: '1rem 0' }}>
     <strong>Stripe sandbox</strong>
     <p>Connect one simulated checking account. Imported transactions stay private.</p>

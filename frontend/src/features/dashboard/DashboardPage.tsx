@@ -49,6 +49,7 @@ function OwnerDashboard({ account }: { account: DemoAccount }): JSX.Element {
           keep showing the previous business's connection and imported transactions. */}
       <StripeConnection
         key={account.id}
+        onConnected={connection.status.reload}
         onImported={() => {
           // The expense list shows once the connection status reads "imported", which counts
           // stored transactions, so refresh the status as well as the list after a Stripe import.

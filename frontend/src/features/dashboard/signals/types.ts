@@ -40,6 +40,13 @@ export interface PendingPriceChange {
   change_basis_points: number;
 }
 
+/** Opening charge(s) whose amount no charge repeated before the price moved: not a confirmed change, not a one-off. */
+export interface UnconfirmedEarlierPrice {
+  transaction_ids: string[];
+  first_seen_at: string;
+  amount_minor: number;
+}
+
 export interface PriceLevelAnalysis {
   is_assessed: boolean;
   not_assessed_reason: NotAssessedReason | null;
@@ -50,6 +57,7 @@ export interface PriceLevelAnalysis {
   one_off_transaction_ids: string[];
   shifts: PriceLevelShift[];
   pending_change: PendingPriceChange | null;
+  unconfirmed_earlier_price: UnconfirmedEarlierPrice | null;
 }
 
 export interface ChargeNovelty {
