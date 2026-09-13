@@ -1,0 +1,37 @@
+/* The seams strip: full-bleed, small type, tinted by what the data is. The two facts sit on one line when they fit. */
+.seams-strip {
+  border-bottom: var(--border-width) solid;
+  font-size: var(--text-sm);
+  line-height: var(--leading-snug);
+}
+
+.seams-strip__inner {
+  align-items: flex-start;
+  display: flex;
+  gap: var(--space-2);
+  margin: 0 auto;
+  max-width: var(--layout-max-width);
+  padding: var(--space-1) var(--layout-gutter);
+}
+
+.seams-strip__icon {
+  flex: none;
+  /* Optically centre a 14px icon on the first 13px line. */
+  margin-top: 0.15rem;
+}
+
+.seams-strip__items {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 0 var(--space-5);
+  min-width: 0;
+}
+
+.seams-strip__item strong {
+  font-weight: var(--weight-bold);
+}
+
+.seams-strip--loading { background-color: var(--color-surface-sunken); border-color: var(--color-border); color: var(--color-text-muted); }
+.seams-strip--neutral { background-color: var(--color-surface-sunken); border-color: var(--color-border); color: var(--color-text-secondary); }
+.seams-strip--simulated { background-color: var(--color-simulated-bg); border-color: var(--color-simulated-border); color: var(--color-simulated-text); }
+.seams-strip--danger { background-color: var(--color-danger-bg); border-color: var(--color-danger-border); color: var(--color-danger-text); }

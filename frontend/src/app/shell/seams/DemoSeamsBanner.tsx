@@ -1,9 +1,12 @@
 /* States the demo's seams on every screen: what the financial data is and whether any offer is genuine.
-   Driven by stored records, and shown as a warning when unavailable, never hidden (roadmap 09, "Honest labeling of the demo's seams"). */
+   Driven by stored records, and shown as a warning when unavailable, never hidden (roadmap 09, "Honest labeling of the demo's seams").
+   A compact full-width strip above the top bar: small type, but the full sentences, never an abbreviation. */
 import type { ReactNode } from 'react';
 
-import { useApiQuery } from '../../shared/api/useApiQuery';
+import { useApiQuery } from '../../../shared/api/useApiQuery';
+import { Icon, IconName, Spinner } from '../../../shared/ui';
 import type { DemoStatus } from './demoStatusTypes';
+import './DemoSeamsBanner.css';
 
 // The endpoint is a few counts, so a short poll is cheap and keeps the label current right after
 // an offer lands (a stale "none yet" beside a fresh offer would undercut the label).
@@ -14,25 +17,27 @@ export function DemoSeamsBanner(): JSX.Element {
   const { data, error } = useApiQuery<DemoStatus>('/api/demo/status', { pollIntervalMs: POLL_INTERVAL_MS });
 
   if (!data) {
-    return (
-      <Strip tone={error ? 'danger' : 'neutral'}>
-        {error
-          ? `Demo data labels unavailable (${error.message}). Treat every figure as unverified.`
-          : 'Checking where this demo’s data comes from…'}
+    return error ? (
+      <Strip tone="danger">
+        <span className="seams-strip__item">Demo data labels unavailable ({error.message}). Treat every figure as unverified.</span>
+      </Strip>
+    ) : (
+      <Strip tone="loading">
+        <span className="seams-strip__item">Checking where this demo’s data comes from…</span>
       </Strip>
     );
   }
 
   return (
     <Strip tone={data.offers.all_simulated || !data.financial.has_production_data ? 'simulated' : 'neutral'}>
-      <div>
+      <span className="seams-strip__item">
         <strong>Financial data: </strong>
         {describeFinancial(data.financial.provenance)}
-      </div>
-      <div>
+      </span>
+      <span className="seams-strip__item">
         <strong>Counteroffers: </strong>
         {describeOffers(data.offers)}
-      </div>
+      </span>
     </Strip>
   );
 }
@@ -58,31 +63,26 @@ function describeOffers(offers: DemoStatus['offers']): string {
   return `${offers.genuine} genuine (${offers.captured_off_platform} captured off-platform)${simulated}.`;
 }
 
+type StripTone = 'loading' | 'neutral' | 'simulated' | 'danger';
+
+const TONE_ICONS: Record<Exclude<StripTone, 'loading'>, IconName> = {
+  neutral: 'info',
+  simulated: 'alert-triangle',
+  danger: 'alert-circle',
+};
+
 interface StripProps {
-  tone: 'neutral' | 'simulated' | 'danger';
+  tone: StripTone;
   children: ReactNode;
 }
 
 function Strip({ tone, children }: StripProps): JSX.Element {
-  const colors = {
-    neutral: { background: '#f1f5f9', border: '#cbd5e1', color: '#0f172a' },
-    simulated: { background: '#fff7ed', border: '#fdba74', color: '#7c2d12' },
-    danger: { background: '#fef2f2', border: '#fecaca', color: '#7f1d1d' },
-  }[tone];
   return (
-    <aside
-      aria-label="Demo data labels"
-      style={{
-        backgroundColor: colors.background,
-        border: `1px solid ${colors.border}`,
-        borderRadius: '10px',
-        color: colors.color,
-        fontSize: '0.9rem',
-        marginTop: '0.75rem',
-        padding: '0.5rem 0.9rem',
-      }}
-    >
-      {children}
+    <aside aria-label="Demo data labels" className={`seams-strip seams-strip--${tone}`}>
+      <div className="seams-strip__inner">
+        {tone === 'loading' ? <Spinner className="seams-strip__icon" size="sm" /> : <Icon className="seams-strip__icon" name={TONE_ICONS[tone]} size={14} />}
+        <div className="seams-strip__items">{children}</div>
+      </div>
     </aside>
   );
 }
