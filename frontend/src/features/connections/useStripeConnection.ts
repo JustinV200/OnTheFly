@@ -11,6 +11,17 @@ interface ConnectionState {
   status: string;
 }
 
+/** What the hook exposes. The Spend page owns one of these and hands it to both the Stripe sandbox row and its
+    "no financial account connected" state, so either place starts the same connect. */
+export interface StripeConnectionController {
+  connection: ConnectionState | null;
+  transactions: ExpenseTransaction[];
+  busy: boolean;
+  message: string;
+  connect: () => Promise<void>;
+  refresh: () => Promise<void>;
+}
+
 // Thrown only by the sync whose own timer fired, so an earlier run's timeout can't relabel a later failure.
 class ImportTimeoutError extends Error {
   public constructor() {
@@ -21,7 +32,7 @@ class ImportTimeoutError extends Error {
 
 /** Connect one sandbox checking account and persist imported transactions through the API.
     onConnected runs once consent is stored, before any import, so sibling panels re-read the same link. */
-export function useStripeConnection(onImported: () => void, onConnected: () => void) {
+export function useStripeConnection(onImported: () => void, onConnected: () => void): StripeConnectionController {
   const [connection, setConnection] = useState<ConnectionState | null>(null);
   const [busy, setBusy] = useState(false);
   const [transactions, setTransactions] = useState<ExpenseTransaction[]>([]);

@@ -1,24 +1,23 @@
 /* Presents the Stripe sandbox row in Spend's Data sources: consent and import controls, progress, and imported rows.
-   Provider requests and polling live in useStripeConnection; this file only renders that hook's state. */
+   Provider requests and polling live in useStripeConnection. The Spend page owns that hook, because its "no financial
+   account connected" state starts the same connect; this file only renders the hook's state. */
 import { formatTimestamp } from '../../shared/format/formatTimestamp';
 import { ProvenanceBadge } from '../../shared/provenance/ProvenanceBadge';
 import { Badge, Button, Icon } from '../../shared/ui';
 import { DataSourceSection } from './sources/DataSourceSection';
 import { stripeMessageKind } from './stripe/stripeMessageKind';
-import { STRIPE_CONNECT_BUTTON_ID } from './stripe/stripeRowElementId';
 import { StripeStatusNotice } from './stripe/StripeStatusNotice';
 import { StripeTransactionList } from './stripe/StripeTransactionList';
-import { useStripeConnection } from './useStripeConnection';
+import type { StripeConnectionController } from './useStripeConnection';
 
 interface StripeConnectionProps {
-  onImported: () => void;
-  // Called once consent is stored, so the dashboard's connection summary stops reading "not connected".
-  onConnected: () => void;
+  // The page's one useStripeConnection result, shared with the empty state that also offers to connect.
+  stripe: StripeConnectionController;
 }
 
 /** Show consent/import controls, labelled as sandbox data, as one row of the Data sources card. */
-export function StripeConnection({ onImported, onConnected }: StripeConnectionProps): JSX.Element {
-  const { connection, transactions, busy, message, connect, refresh } = useStripeConnection(onImported, onConnected);
+export function StripeConnection({ stripe }: StripeConnectionProps): JSX.Element {
+  const { connection, transactions, busy, message, connect, refresh } = stripe;
   const isConnected = connection?.connected === true;
   // The hook has no loading flag. Before its first status response lands, nothing is connected, running, or reported;
   // once that request settles, either the connection is set or its failure message is.
@@ -28,9 +27,8 @@ export function StripeConnection({ onImported, onConnected }: StripeConnectionPr
     <DataSourceSection
       actions={
         <>
-          {/* Only a first connect can be running while nothing is connected, so the spinner goes on this button then.
-              The id is how Spend's "no financial account connected" state jumps an owner down to this row. */}
-          <Button disabled={busy} id={STRIPE_CONNECT_BUTTON_ID} isBusy={busy && !isConnected} onClick={() => void connect()}>
+          {/* Only a first connect can be running while nothing is connected, so the spinner goes on this button then. */}
+          <Button disabled={busy} isBusy={busy && !isConnected} onClick={() => void connect()}>
             {isConnected ? 'Reconnect Stripe' : 'Connect Stripe sandbox'}
           </Button>
           {isConnected ? (

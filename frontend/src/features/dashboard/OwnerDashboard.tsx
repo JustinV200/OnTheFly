@@ -6,6 +6,7 @@ import type { DemoAccount } from '../../shared/account/demoAccounts';
 import { Badge, Icon, PageHeader, Stack } from '../../shared/ui';
 import { DataSourcesCard } from '../connections/sources/DataSourcesCard';
 import { StripeConnection } from '../connections/StripeConnection';
+import { useStripeConnection } from '../connections/useStripeConnection';
 import { ConnectionPanel } from './connection/ConnectionPanel';
 import { describeImportTotals } from './connection/describe/describeImportTotals';
 import { SourcesSummary } from './connection/SourcesSummary';
@@ -17,10 +18,23 @@ interface OwnerDashboardProps {
   account: DemoAccount;
 }
 
-/** Render the acting business's Spend page; the headline and expense list appear only after an import. */
+/** Render the acting business's Spend page; the headline and expense list appear only after an import.
+    DashboardPage keys this component by account: the Stripe hook loads once on mount, so without a remount a switch
+    would keep showing the previous business's connection and imported transactions. */
 export function OwnerDashboard({ account }: OwnerDashboardProps): JSX.Element {
   const dashboard = useDashboard();
   const connection = useConnection(dashboard.reload);
+  // One Stripe hook for the page: the Stripe sandbox row renders it, and the "no financial account connected" state's
+  // primary action starts the same connect, so neither can drift from the other.
+  const stripe = useStripeConnection(
+    () => {
+      // The expense list shows once the connection status reads "imported", which counts
+      // stored transactions, so refresh the status as well as the list after a Stripe import.
+      connection.status.reload();
+      dashboard.reload();
+    },
+    connection.status.reload,
+  );
   const status = connection.status.data;
   const hasImported = status?.status === 'imported';
   // The rows open when they hold the next step or a result: a failed status, nothing imported yet, or an import that ran.
@@ -51,21 +65,12 @@ export function OwnerDashboard({ account }: OwnerDashboardProps): JSX.Element {
           <ConnectionPanel
             businessName={account.businessName}
             importState={connection.importState}
+            isConnectingStripe={stripe.busy}
+            onConnectStripe={() => void stripe.connect()}
             onImport={() => void connection.runImport()}
             status={connection.status}
           />
-          {/* Keyed by account: the Stripe hook loads once on mount, so without a remount a switch would
-              keep showing the previous business's connection and imported transactions. */}
-          <StripeConnection
-            key={account.id}
-            onConnected={connection.status.reload}
-            onImported={() => {
-              // The expense list shows once the connection status reads "imported", which counts
-              // stored transactions, so refresh the status as well as the list after a Stripe import.
-              connection.status.reload();
-              dashboard.reload();
-            }}
-          />
+          <StripeConnection stripe={stripe} />
         </DataSourcesCard>
       </Stack>
     </section>
