@@ -12,8 +12,6 @@ import { ListingsSummary } from './ListingsSummary';
 import { OwnerListing, useOwnerListings } from './useOwnerListings';
 import './MyListingsPage.css';
 
-const SUBTITLE = 'What this business has put up for bids, with the offers each one received.';
-
 /** Render My listings for the acting business, or the public-visitor state. */
 export function MyListingsPage(): JSX.Element {
   const { account } = useActingAccount();
@@ -52,7 +50,7 @@ function OwnerListings({ businessName }: { businessName: string }): JSX.Element 
             Only {businessName} can see this page
           </Badge>
         }
-        subtitle={SUBTITLE}
+        subtitle="What this business has put up for bids, with the offers each one received."
         title="My listings"
       />
       <OwnerListingsBody expenses={expenses} listings={listings} onRetry={retryListing} onUnpublished={reload} />

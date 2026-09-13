@@ -37,7 +37,7 @@ export function ListingsSummary({ listings }: ListingsSummaryProps): JSX.Element
           }
           label={<span className="listings-summary__label"><Icon name="users" size={14} />Offers received</span>}
           size="md"
-          value={missingCount === 0 ? offerTotal : `${offerTotal}+`}
+          value={missingCount === 0 ? offerTotal : isLoading ? '…' : `${offerTotal}+`}
         />
       </div>
     </div>
