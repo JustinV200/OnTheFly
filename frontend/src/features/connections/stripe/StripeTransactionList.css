@@ -1,0 +1,10 @@
+/* Imported Stripe rows: a disclosure whose table sits a step below the summary; descriptions keep the statement's mono text. */
+.stripe-transactions__content {
+  margin-top: var(--space-3);
+}
+
+.stripe-transactions__description {
+  font-family: var(--font-mono);
+  font-size: var(--text-sm);
+  overflow-wrap: anywhere;
+}

@@ -1,0 +1,67 @@
+/* Expense row: the vendor disclosure button, emphasized per-period figure, provenance badges, and right-aligned actions.
+   Selectors start at tr.expense-row so they outrank the system table's phone stack rules, which right-align every cell. */
+tr.expense-row > td.expense-row__vendor {
+  min-width: 11rem;
+  text-align: left;
+}
+
+tr.expense-row > td.expense-row__actions-cell {
+  text-align: right;
+}
+
+.expense-row__toggle {
+  align-items: flex-start;
+  background: none;
+  border: 0;
+  border-radius: var(--radius-sm);
+  box-shadow: none;
+  color: var(--color-text);
+  cursor: pointer;
+  display: inline-flex;
+  font-size: var(--text-md);
+  font-weight: var(--weight-semibold);
+  gap: var(--space-2);
+  line-height: var(--leading-snug);
+  min-height: 0;
+  padding: 0;
+  text-align: left;
+}
+
+.expense-row__toggle:hover .expense-row__vendor-name {
+  text-decoration: underline;
+  text-underline-offset: 0.18em;
+}
+
+.expense-row__vendor-name {
+  overflow-wrap: anywhere;
+}
+
+/* Points right while collapsed and down while open; aria-expanded is the source of truth for both. */
+.expense-row__chevron {
+  color: var(--color-text-muted);
+  flex: none;
+  margin-top: 0.15em;
+  transform: rotate(-90deg);
+  transition: transform var(--duration-fast) var(--ease-standard);
+}
+
+.expense-row__toggle[aria-expanded="true"] .expense-row__chevron {
+  color: var(--color-brand);
+  transform: none;
+}
+
+/* Lines the category up under the vendor name, past the chevron and its gap. */
+.expense-row__category {
+  padding-left: calc(var(--space-4) + var(--space-2));
+}
+
+.expense-row__figure {
+  font-weight: var(--weight-semibold);
+}
+
+.expense-row__badges {
+  display: inline-flex;
+  flex-wrap: wrap;
+  gap: var(--space-1);
+  justify-content: flex-end;
+}

@@ -1,8 +1,9 @@
 /* States which charges the dashboard baseline came from and which were left out.
    The owner sees this before publishing, because the baseline pre-fills the listing price. */
-import { MoneyDisplay } from '../../../shared/components/MoneyDisplay';
-import { formatPostedDate } from './formatSignals';
-import type { BaselineExplanation } from './types';
+import { MoneyDisplay } from '../../../../shared/components/MoneyDisplay';
+import { Stack } from '../../../../shared/ui';
+import { formatPostedDate } from '../formatSignals';
+import type { BaselineExplanation } from '../types';
 
 interface BaselineBasisSummaryProps {
   baseline: BaselineExplanation;
@@ -15,13 +16,13 @@ export function BaselineBasisSummary({ baseline }: BaselineBasisSummaryProps): J
   const chargeCount = baseline.supporting_transaction_ids.length;
 
   return (
-    <div>
-      <p style={{ margin: '0.25rem 0' }}>
+    <Stack gap={1}>
+      <p>
         <strong>
           Baseline: <MoneyDisplay amountMinor={baseline.amount_minor} currency={baseline.currency} /> / {baseline.cadence}
         </strong>
       </p>
-      <p style={{ color: '#475569', margin: '0.25rem 0' }}>
+      <p className="ui-text-sm ui-text-muted">
         {baseline.basis === 'current_price_level'
           ? `Median of the ${chargeCount} ${plural(chargeCount, 'charge')} at the current price, since ${formatPostedDate(baseline.basis_started_at)}.`
           : `Average of all ${chargeCount} ${plural(chargeCount, 'charge')}.`}
@@ -30,7 +31,7 @@ export function BaselineBasisSummary({ baseline }: BaselineBasisSummaryProps): J
           ? ` Left out until confirmed: the latest ${plural(unconfirmedCount, 'charge')} at a different price.`
           : ''}
       </p>
-    </div>
+    </Stack>
   );
 }
 

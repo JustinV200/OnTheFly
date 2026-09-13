@@ -1,0 +1,9 @@
+/* Stripe progress line: a small spinner beside the words, in muted caption type. */
+.stripe-status__progress {
+  align-items: center;
+  color: var(--color-text-muted);
+  display: flex;
+  font-size: var(--text-sm);
+  gap: var(--space-2);
+  margin: 0;
+}

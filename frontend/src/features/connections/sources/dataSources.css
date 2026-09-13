@@ -1,0 +1,56 @@
+/* Data sources card: each source section sits below a hairline, so the connection summary and Stripe read as rows of one list.
+   A row stacks on a phone; from a tablet up its actions sit at the end, centred against the title and description. */
+.data-source {
+  border-top: var(--border-width) solid var(--color-border-subtle);
+  padding-top: var(--space-4);
+}
+
+.data-source + .data-source {
+  margin-top: var(--space-4);
+}
+
+.data-source__row {
+  display: grid;
+  gap: var(--space-3);
+}
+
+.data-source__title {
+  font-size: var(--text-md);
+  margin: 0;
+}
+
+.data-source__description {
+  color: var(--color-text-secondary);
+  max-width: 80ch;
+  overflow-wrap: anywhere;
+}
+
+.data-source__description > p {
+  margin: 0;
+}
+
+.data-source__description > p + p {
+  margin-top: var(--space-1);
+}
+
+/* Two classes of specificity, so this spacing wins over a child's own margin (callouts, page states). */
+.data-source__details > :not(:empty) {
+  margin-block: var(--space-3) 0;
+}
+
+/* A bare slot holds whole states (a loading box, a failure, an empty state), spaced a step apart. */
+.data-source--bare > :not(:empty) {
+  margin-block: 0;
+}
+
+.data-source--bare > :not(:empty) + :not(:empty) {
+  margin-top: var(--space-4);
+}
+
+@media (min-width: 768px) {
+  .data-source__row {
+    align-items: center;
+    gap: var(--space-6);
+    grid-template-columns: minmax(0, 1fr) auto;
+  }
+}

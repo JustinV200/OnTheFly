@@ -1,0 +1,43 @@
+/* Supporting transactions: hairline-divided rows, statement text left and amount right, facts in a muted line below. */
+.supporting-transactions {
+  list-style: none;
+  margin: 0;
+  padding: 0;
+}
+
+.supporting-transactions__item {
+  padding-block: var(--space-2);
+}
+
+.supporting-transactions__item + .supporting-transactions__item {
+  border-top: var(--border-width) solid var(--color-border-subtle);
+}
+
+.supporting-transactions__main {
+  align-items: baseline;
+  display: flex;
+  gap: var(--space-3);
+  justify-content: space-between;
+}
+
+.supporting-transactions__description {
+  color: var(--color-text);
+  font-size: var(--text-sm);
+  min-width: 0;
+  overflow-wrap: anywhere;
+}
+
+.supporting-transactions__amount {
+  flex: none;
+  font-weight: var(--weight-semibold);
+}
+
+.supporting-transactions__meta {
+  align-items: center;
+  color: var(--color-text-muted);
+  display: flex;
+  flex-wrap: wrap;
+  font-size: var(--text-xs);
+  gap: var(--space-1) var(--space-2);
+  margin-top: var(--space-1);
+}
