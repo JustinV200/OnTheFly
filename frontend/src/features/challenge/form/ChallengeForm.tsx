@@ -79,8 +79,8 @@ export function ChallengeForm(props: ChallengeFormProps): JSX.Element {
   };
 
   return (
-    <div className="bid-ticket">
-      <form aria-label="Your bid" className="bid-form bid-ticket__form" id={formId} noValidate onSubmit={submit}>
+    <div className="bid-form-layout">
+      <form aria-label="Your bid" className="bid-offer-form bid-form-layout__form" id={formId} noValidate onSubmit={submit}>
         <Stack gap={5}>
           {intro}
           <PriceFields
@@ -103,7 +103,7 @@ export function ChallengeForm(props: ChallengeFormProps): JSX.Element {
           <MessageField message={fields.message} onChange={(message) => update({ message })} />
         </Stack>
       </form>
-      <div className="bid-ticket__summary">
+      <div className="bid-form-layout__summary">
         <OfferSummary
           acknowledgedMode={acknowledgedMode}
           currentMode={currentMode}
