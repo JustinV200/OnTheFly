@@ -1,0 +1,5 @@
+/* Hairline between the headline price and the scope it buys, lighter than a card border. */
+.listing-overview__divider {
+  border-top-color: var(--color-border-subtle);
+  margin: var(--space-5) 0;
+}
