@@ -1,5 +1,10 @@
-/* Offer activity states: the sealed panel (lock tile beside the count), the single-offer row, the empty and loading
-   blocks. The chart styles itself in chart/OfferChart.css. */
+/* Offer activity states: the sealed line (no offers yet), the sealed panel (lock tile beside the count), the
+   single-offer row, the empty and loading blocks. The chart styles itself in chart/OfferChart.css. */
+.sealed-offers__line {
+  color: var(--color-text-muted);
+  margin: 0;
+}
+
 .sealed-offers {
   align-items: center;
   background-color: var(--color-private-bg);

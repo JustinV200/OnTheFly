@@ -17,8 +17,8 @@ export function SignedOutDashboard(): JSX.Element {
         title="Pick a business to see its spend"
       >
         <p>
-          Choose a business in the account menu to see what it pays for. As a public visitor you see only what businesses
-          chose to publish, which is exactly what a stranger on the internet sees.
+          Choose one from the business switcher in the top bar, or browse the markets. As a public visitor you see only
+          what businesses chose to publish, which is exactly what a stranger on the internet sees.
         </p>
       </EmptyState>
     </section>

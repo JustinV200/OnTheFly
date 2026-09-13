@@ -71,7 +71,7 @@ export function WaysToSavePanel(props: WaysToSavePanelProps): JSX.Element {
   const isCapReached = data.active_suggested_pieces >= data.max_suggested_pieces;
   const heroBlockReason = !canSplit
     ? splitBlockReason ?? 'Splitting isn’t available on this task right now.'
-    : isCapReached ? 'Suggestion cap reached: split off manually instead.' : null;
+    : isCapReached ? 'Suggestion cap reached: split off a piece yourself instead.' : null;
   const dismiss = (card: SavingsCardView): void => void act(() => post(`/api/savings-cards/${card.id}/dismiss`));
 
   return (
@@ -85,11 +85,11 @@ export function WaysToSavePanel(props: WaysToSavePanelProps): JSX.Element {
       />
 
       {live.length === 0 ? (
-        <EmptyState action={canSplit ? <Button onClick={onSplitManually}>Split off manually</Button> : undefined} title="Nothing left to price">
+        <EmptyState action={canSplit ? <Button onClick={onSplitManually}>Split off a piece</Button> : undefined} title="Nothing left to price">
           {data.untagged_requirements.length > 0
             ? 'Every requirement still with this task needs confirmed labor category, PSC and NAICS tags before it can be priced.'
             : requirementCount === 0
-              ? 'This task has no requirement rows yet, so there is nothing to price. You can still split off a piece manually and add its requirements there.'
+              ? 'This task has no requirement rows yet, so there is nothing to price. You can still split off a piece yourself and add its requirements there.'
               : 'Every requirement already went to a piece.'}
         </EmptyState>
       ) : (

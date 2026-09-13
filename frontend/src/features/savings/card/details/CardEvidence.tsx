@@ -1,7 +1,8 @@
 /* The evidence behind a card, inside its "How we got this" disclosure: the rate sample and its matched categories, every
-   award with its UEI, the sources that were not checked (listed, never omitted), each source's limitations, and the
-   thresholds in force. Award links appear only when the source gave one; demo data has none, so no made-up award ever
-   looks like a real record. */
+   award with its UEI, the sources that were not checked (listed, never omitted), and each source's limitations. The
+   thresholds themselves are printed once per card, on its pass line, and once per screen in the header's disclosure, so
+   they are not repeated here. Award links appear only when the source gave one; demo data has none, so no made-up award
+   ever looks like a real record. */
 import { MoneyDisplay } from '../../../../shared/components/MoneyDisplay';
 import { formatMoneyText } from '../../../../shared/format/formatMoneyText';
 import { formatTimestamp } from '../../../../shared/format/formatTimestamp';
@@ -12,7 +13,6 @@ import './details.css';
 /** Render the evidence sections for one card. */
 export function CardEvidence({ card }: { card: SavingsCardView }): JSX.Element {
   const { cut_basis: rates, suppliers } = card.inputs;
-  const { thresholds } = card;
 
   return (
     <Stack gap={4}>
@@ -58,14 +58,6 @@ export function CardEvidence({ card }: { card: SavingsCardView }): JSX.Element {
         {card.sources_not_checked.length === 0
           ? <p className="ui-text-sm">Every source this card uses answered.</p>
           : <ul className="ui-text-sm">{card.sources_not_checked.map((item) => <li key={item}>{item}</li>)}</ul>}
-      </section>
-
-      <section>
-        <h5 className="savings-details__heading">Thresholds used</h5>
-        <p className="ui-text-sm">
-          ≥ {(thresholds.min_basis_points / 100).toFixed(0)}% of keep cost · ≥ {formatMoneyText(thresholds.min_annual_minor, card.currency)} a year ·
-          ≥ {thresholds.min_suppliers} suppliers by UEI · {thresholds.lookback_years}-year lookback · at most {thresholds.max_suggested_pieces_per_task} suggested pieces per task.
-        </p>
       </section>
     </Stack>
   );

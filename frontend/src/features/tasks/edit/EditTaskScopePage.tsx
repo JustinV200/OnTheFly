@@ -50,7 +50,11 @@ export function EditTaskScopePage(): JSX.Element {
   }, [task?.listing?.bidding_mode]);
 
   if (!account) {
-    return <EmptyState action={<ButtonLink to="/marketplace">Browse markets</ButtonLink>} title="Pick a business to edit its tasks">Choose one in the account menu.</EmptyState>;
+    return (
+      <EmptyState action={<ButtonLink to="/marketplace">Browse markets</ButtonLink>} title="Pick a business to edit its tasks">
+        Choose one from the business switcher in the top bar, or browse the markets.
+      </EmptyState>
+    );
   }
   if (taskQuery.error?.status === 404) {
     return <EmptyState action={<ButtonLink to="/work">Go to My work</ButtonLink>} title="This task isn’t yours to see">Only a task’s poster and its current owner can open it.</EmptyState>;
@@ -99,9 +103,10 @@ export function EditTaskScopePage(): JSX.Element {
   return (
     <form noValidate onSubmit={(event) => void submit(event)}>
       <Stack gap={6}>
+        {/* The badge says "Private until you publish" in the same words as the new-task form, so the two never differ. */}
         <PageHeader
           actions={back}
-          meta={<Badge tone="private">Not public until you publish</Badge>}
+          meta={<Badge tone="private">Private until you publish</Badge>}
           subtitle="Add, change or remove requirement rows by hand. Saving writes a new scope version; offers already received keep the version they answered."
           title={`Edit scope: ${task.title ?? 'untitled task'}`}
         />

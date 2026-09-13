@@ -27,12 +27,12 @@ export function MarketSearch(): JSX.Element {
   return (
     <form className="market-search" onSubmit={submit} role="search">
       <Icon className="market-search__icon" name="search" size={16} />
-      <label className="ui-visually-hidden" htmlFor="market-search-input">Search open tasks</label>
+      <label className="ui-visually-hidden" htmlFor="market-search-input">Search markets</label>
       <input
         className="market-search__input"
         id="market-search-input"
         onChange={(event) => setQuery(event.target.value)}
-        placeholder="Search open tasks"
+        placeholder="Search markets"
         type="search"
         value={query}
       />

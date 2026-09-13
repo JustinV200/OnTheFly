@@ -30,7 +30,7 @@ export function OwnerMoney({ money }: OwnerMoneyProps): JSX.Element {
   ];
 
   return (
-    <Card actions={<Badge tone="private">Only you see this</Badge>} title="Your money on this task">
+    <Card actions={<Badge tone="private">Only you see this</Badge>} title="What you earn on this task">
       <Stack gap={5}>
         <Grid minItemWidth="11rem">
           <Stat

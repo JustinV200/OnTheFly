@@ -12,7 +12,7 @@ export interface StageEntry {
 }
 
 export const STAGES: StageEntry[] = [
-  { name: 'start', label: 'Start: ledger, rates, one new task', stepsDone: 0 },
+  { name: 'start', label: 'Start over: ledger, rates, nothing posted', stepsDone: 0 },
   { name: 'rebid_published', label: 'GovCon’s REBID is public', stepsDone: 1 },
   { name: 'prime_offer', label: 'Prime A has bid', stepsDone: 2 },
   { name: 'prime_owns', label: 'Prime A owns the task', stepsDone: 3 },
@@ -28,14 +28,22 @@ export function findStage(name: string): StageEntry | null {
   return STAGES.find((stage) => stage.name === name) ?? null;
 }
 
-/** The button text: the step a stage lands on, then what is true there, e.g. "Step 2 · GovCon’s REBID is public". */
-export function describeStage(name: string, stepCount: number): string {
+/** The button text: what is true at that point, e.g. "GovCon’s REBID is public". The step numbers stay off the buttons:
+    two stages replay two steps each, so numbering them read as a gap in the sequence. */
+export function describeStage(name: string): string {
+  return findStage(name)?.label ?? name;
+}
+
+/** The steps a stage leaves done, in words for a hint, e.g. "after step 3" or "every step done". */
+export function describeStageProgress(name: string, stepCount: number): string | null {
   const stage = findStage(name);
   if (stage === null) {
-    return name;
+    return null;
   }
-  const landsOn = stage.stepsDone >= stepCount ? 'Chain complete' : `Step ${stage.stepsDone + 1}`;
-  return `${landsOn} · ${stage.label}`;
+  if (stage.stepsDone === 0) {
+    return 'before step 1';
+  }
+  return stage.stepsDone >= stepCount ? 'every step done' : `after step ${stage.stepsDone}`;
 }
 
 /** The furthest stage the live progress has reached, counting only leading done steps. Null when nothing is known. */

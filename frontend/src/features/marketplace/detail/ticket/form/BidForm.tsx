@@ -67,10 +67,9 @@ export function BidForm({ listingId, listingCadence }: BidFormProps): JSX.Elemen
           </Select>
         </Field>
       </div>
-      <Button isFullWidth size="lg" type="submit" variant="primary">
-        {trimmed === '' ? 'Bid on this task' : 'Continue to your offer'}
-      </Button>
-      <p className="bid-form__note">Nothing is sent yet: the next page asks what your offer covers before you submit.</p>
+      {/* Above the button, and one fixed label: a label that changed as the price was typed read as a state change. */}
+      <p className="bid-form__note">Nothing is sent yet. The next page asks what your offer covers.</p>
+      <Button isFullWidth size="lg" type="submit" variant="primary">Continue to your offer</Button>
     </form>
   );
 }

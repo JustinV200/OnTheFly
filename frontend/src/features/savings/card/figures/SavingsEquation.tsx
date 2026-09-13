@@ -40,7 +40,7 @@ export function SavingsEquation({ card, size }: SavingsEquationProps): JSX.Eleme
       <Operator symbol="=" words="equals" />
       <Term
         caption={savingsCaption(card)}
-        label="Potential savings"
+        label={<TermHint hint={MONEY_TERM_HINTS.potentialSavings}>Potential savings</TermHint>}
         tone={savingsTone}
         value={figure(savings, 'not computed')}
       />

@@ -1,14 +1,18 @@
 /* The acting business's own connection inside Data sources: loading or failed status, no account connected, a connection
    with nothing to import here, or the Hackathon demo ledger's row. It reads the same records as StripeConnection and only
-   imports demo links; Stripe links import from the Stripe sandbox row. */
+   imports demo links; Stripe links import from the Stripe sandbox row, which the empty state's own action jumps to.
+   Privacy is stated once per page (the Spend header badge and each row's Visibility), so it is not repeated here. */
+import { useState } from 'react';
+
 import { ApiQueryState } from '../../../shared/api/useApiQuery';
 import { EmptyState } from '../../../shared/components/EmptyState';
 import { ErrorState } from '../../../shared/components/ErrorState';
 import { LoadingSpinner } from '../../../shared/components/LoadingSpinner';
-import { ButtonLink } from '../../../shared/ui';
+import { Button, ButtonLink, Cluster } from '../../../shared/ui';
 import { DataSourceSection } from '../../connections/sources/DataSourceSection';
 import { DemoLedgerRow } from './DemoLedgerRow';
 import { describeConnections } from './describe/describeConnections';
+import { focusStripeRow } from './focusStripeRow';
 import type { ConnectionStatus, ImportState } from './types';
 
 interface ConnectionPanelProps {
@@ -20,6 +24,9 @@ interface ConnectionPanelProps {
 
 /** Render the connection state for Spend; nothing when only a Stripe link has already imported. */
 export function ConnectionPanel({ businessName, status, importState, onImport }: ConnectionPanelProps): JSX.Element | null {
+  // Set only when the jump below found no Stripe row, so a press that did nothing says why instead of looking broken.
+  const [isStripeRowMissing, setIsStripeRowMissing] = useState(false);
+
   if (!status.data) {
     return (
       <DataSourceSection>
@@ -47,17 +54,25 @@ export function ConnectionPanel({ businessName, status, importState, onImport }:
     <DataSourceSection>
       {connection.status === 'not_connected' ? (
         <EmptyState
-          action={<ButtonLink to="/marketplace" variant="primary">Browse markets</ButtonLink>}
+          action={(
+            <Cluster gap={2}>
+              {/* The next step is connecting, so it is the primary action and it goes where it says: the Stripe row. */}
+              <Button onClick={() => setIsStripeRowMissing(!focusStripeRow())} variant="primary">
+                Connect a Stripe sandbox
+              </Button>
+              <ButtonLink to="/marketplace">Browse markets</ButtonLink>
+            </Cluster>
+          )}
           title="No financial account connected"
         >
-          {businessName} hasn’t connected a financial account, so it has no private expenses to show. Connect a Stripe
-          sandbox account below to import transactions, or browse markets and bid on other businesses’ public listings.
+          {businessName} hasn’t connected a financial account, so it has no private expenses to show. Import transactions
+          to see its spend here, or bid on other businesses’ public listings instead.
+          {isStripeRowMissing ? ' The Stripe sandbox row isn’t on this page; open Data sources below to connect one.' : ''}
         </EmptyState>
       ) : (
         <EmptyState title="Connected, but nothing imported yet">
           Connected: {describeConnections(connection.connections)}.
-          {hasStripeLink ? ' Stripe sandbox transactions import from the Stripe sandbox row below.' : ''} Every expense
-          arrives private; nothing is published by importing.
+          {hasStripeLink ? ' Stripe sandbox transactions import from the Stripe sandbox row below.' : ''}
         </EmptyState>
       )}
     </DataSourceSection>

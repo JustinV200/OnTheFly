@@ -26,9 +26,11 @@ export function DemoLedgerRow({ connection, ledger, importState, onImport }: Dem
   const isOnlySource = connection.sources.length === 1 && stored !== undefined;
   const hasStripeLink = connection.connections.some((link) => link.imported_through === 'stripe_sync');
 
+  // Privacy is stated once per page (the Spend header badge, each row's Visibility, and the import's own outcome
+  // notice), so this line only says what the row has and hasn't done.
   const facts = hasImported
     ? `${stored?.transaction_count} transactions${isOnlySource && connection.last_imported_at ? ` · Last imported ${formatTimestamp(connection.last_imported_at)}` : ''}`
-    : 'Ready to import. Every expense arrives private; nothing is published by importing.';
+    : 'Ready to import.';
 
   return (
     <DataSourceSection

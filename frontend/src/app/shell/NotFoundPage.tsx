@@ -10,7 +10,7 @@ export function NotFoundPage(): JSX.Element {
         subtitle="The link may be mistyped, or it pointed at something that no longer exists."
         title="There’s no page at this address"
       />
-      <ButtonLink to="/marketplace" variant="primary">Browse the marketplace</ButtonLink>
+      <ButtonLink to="/marketplace" variant="primary">Browse markets</ButtonLink>
     </section>
   );
 }

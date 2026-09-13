@@ -1,12 +1,13 @@
 /* One task on My work, read like a position: title and badges, the one figure that matters for this business's side (its
    remainder on a task it won, the accepted or listed amount on one it posted), and the next step, worded like the task
-   page's next-step callout. */
+   page's next-step callout. The viewer's relationship isn't badged here: the section heading it sits under ("Tasks you
+   won" / "Tasks you posted") already says it, and the badge row shares a row with the money column. */
 import { MoneyDisplay } from '../../shared/components/MoneyDisplay';
 import { categoryLabel } from '../../shared/format/categoryLabel';
 import { formatMoneyText } from '../../shared/format/formatMoneyText';
 import { cadenceSuffix, CategoryTile } from '../../shared/market';
 import { Badge, ButtonLink, Icon } from '../../shared/ui';
-import { originLabel, relationshipLabel, stateLabel } from '../tasks/labels/taskLabels';
+import { originLabel, stateLabel } from '../tasks/labels/taskLabels';
 import type { WorkItem } from '../tasks/types';
 import { workNextStep } from './workNextStep';
 
@@ -14,10 +15,10 @@ import { workNextStep } from './workNextStep';
 export function WorkItemCard({ item }: { item: WorkItem }): JSX.Element {
   const origin = originLabel(item.origin);
   const state = stateLabel(item.state);
-  const relationship = relationshipLabel(item.relationship);
   const unit = cadenceSuffix(item.billing_period);
   const figure = headline(item);
   const next = workNextStep(item);
+  const taskHref = `/tasks/${item.task_id}`;
 
   return (
     <article className="work-item">
@@ -39,15 +40,19 @@ export function WorkItemCard({ item }: { item: WorkItem }): JSX.Element {
         {figure.caption ? <span className="work-item__caption">{figure.caption}</span> : null}
       </div>
       <div className="work-item__badges">
-        <Badge tone={relationship.tone}>{relationship.text}</Badge>
         <Badge tone={state.tone}>{state.text}</Badge>
         <Badge tone={origin.tone}>{origin.text}</Badge>
         {item.is_subcontract ? <Badge tone="warning">Subcontract</Badge> : null}
         {item.offer_count > 0 ? <Badge icon={<Icon name="users" />} tone="neutral">{item.offer_count === 1 ? '1 offer' : `${item.offer_count} offers`}</Badge> : null}
       </div>
       <footer className="work-item__footer">
-        {next ? <span className="work-item__next"><Icon name="arrow-right" size={14} /> {next}</span> : <span />}
-        <ButtonLink size="sm" to={`/tasks/${item.task_id}`} variant="primary">Open task</ButtonLink>
+        {/* The next step is the same destination as Open task, so it acts like one: reading it and acting on it are one move. */}
+        {next ? (
+          <ButtonLink className="work-item__next" iconStart={<Icon name="arrow-right" size={14} />} size="sm" to={taskHref} variant="link">
+            {next}
+          </ButtonLink>
+        ) : <span />}
+        <ButtonLink size="sm" to={taskHref} variant="primary">Open task</ButtonLink>
       </footer>
     </article>
   );

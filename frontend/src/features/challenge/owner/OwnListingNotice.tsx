@@ -6,19 +6,19 @@ interface OwnListingNoticeProps {
   listingId: string;
 }
 
-/** Render the owner's empty state with Manage offers and View the listing. */
+/** Render the owner's empty state with Offers and View the listing. */
 export function OwnListingNotice({ listingId }: OwnListingNoticeProps): JSX.Element {
   return (
     <EmptyState
       action={(
         <>
-          <ButtonLink to={`/listings/${listingId}/inbox`} variant="primary">Manage offers</ButtonLink>
+          <ButtonLink to={`/listings/${listingId}/inbox`} variant="primary">Offers</ButtonLink>
           <ButtonLink to={`/listings/${listingId}`}>View the listing</ButtonLink>
         </>
       )}
       title="This is your own listing"
     >
-      A business can’t bid on its own listing. Offers from other businesses arrive in your offers inbox.
+      A business can’t bid on its own listing. Offers from other businesses arrive on your Offers page.
     </EmptyState>
   );
 }

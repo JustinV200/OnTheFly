@@ -20,6 +20,10 @@ interface TaskScopeFieldsProps {
 /** Render the scope form's cards. */
 export function TaskScopeFields({ form, pricing, isBillingPeriodLocked = false, onChange }: TaskScopeFieldsProps): JSX.Element {
   const typedRows = form.requirements.filter((row) => row.text.trim() !== '');
+  // Open the AI panel where typing rows first is unlikely (a task with no rows yet), but never on a REBID: there the
+  // owner is confirming work they already pay for, and an open panel would sit above the rows they came to fill in.
+  const isAiDraftOpen = typedRows.length === 0 && pricing !== 'rebid';
+
   return (
     <>
       <Card title="Basics">
@@ -40,7 +44,7 @@ export function TaskScopeFields({ form, pricing, isBillingPeriodLocked = false, 
               purpose: pricing === 'cut' ? 'piece' : 'task',
               existingRequirements: typedRows.map((row) => row.text.trim()),
             }}
-            isDefaultOpen={typedRows.length === 0}
+            isDefaultOpen={isAiDraftOpen}
             onDrafted={(drafted) => onChange({ requirements: withDraftedRows(form.requirements, drafted) })}
           />
           <RequirementRowsEditor billingPeriod={form.billingPeriod} onChange={(requirements) => onChange({ requirements })} rows={form.requirements} />

@@ -1,6 +1,8 @@
 /* The top of a task page: back to My work (and, for a piece, to the task it was split from), the task's title and
-   category, the facts a participant reads first (its origin and state, the viewer's own relationship to it, a
-   Subcontract label), and the ownership line saying who owns it now and who its one direct counterparty is. */
+   category, the facts a participant reads first (the viewer's own relationship to it, its state, its origin or a
+   Subcontract label), and the ownership line saying who owns it now and who its one direct counterparty is.
+   At most four badges: the origin's meaning goes in the subtitle in plain words, a Subcontract piece drops the "Piece"
+   badge it implies, and the depth stays in the hover text rather than a "Level N" badge nobody could decode. */
 import { Link } from 'react-router-dom';
 
 import { categoryLabel } from '../../../shared/format/categoryLabel';
@@ -42,18 +44,22 @@ export function TaskHeader({ task }: TaskHeaderProps): JSX.Element {
             <>
               <Badge size="md" title={relationship.explanation} tone={relationship.tone}>{relationship.text}</Badge>
               <Badge title={state.explanation} tone={state.tone}>{state.text}</Badge>
-              <Badge title={origin.explanation} tone={origin.tone}>{origin.text}</Badge>
               {task.is_subcontract ? (
-                <Badge icon={<Icon name="users" />} title="Split off a task its poster won: payment depends on the business above." tone="warning">
+                <Badge
+                  icon={<Icon name="users" />}
+                  title={`Split off a task its poster won (level ${task.depth}): payment depends on the business above.`}
+                  tone="warning"
+                >
                   Subcontract
                 </Badge>
-              ) : null}
-              {task.depth > 0 ? <Badge tone="neutral">Level {task.depth}</Badge> : null}
+              ) : (
+                <Badge title={origin.explanation} tone={origin.tone}>{origin.text}</Badge>
+              )}
             </>
           )}
           subtitle={(
             <span className="task-header__subtitle">
-              {categoryLabel(task.category)} · priced per {task.billing_period} period in {task.currency}
+              {categoryLabel(task.category)} · {origin.explanation}
             </span>
           )}
           title={task.title ?? categoryLabel(task.category)}

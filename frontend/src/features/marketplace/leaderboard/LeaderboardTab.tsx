@@ -1,6 +1,6 @@
 /* The market page's Leaderboard tab: the priced, anonymized offers of an open-bidding listing, ranked by the server.
-   The ranking rule sits above the table (one line, details on demand) so nobody reads the order as "cheapest first".
-   Offers made while sealed are counted but never priced here, even after the owner opens bidding. */
+   The ranking rule sits above the table under "How ranking works", stated once, so nobody reads the order as
+   "cheapest first". Offers made while sealed are counted but never priced here, even after the owner opens bidding. */
 import type { ApiQueryState } from '../../../shared/api/useApiQuery';
 import { EmptyState } from '../../../shared/components/EmptyState';
 import { ErrorState } from '../../../shared/components/ErrorState';
@@ -36,14 +36,12 @@ export function LeaderboardTab({ board, isClosed }: LeaderboardTabProps): JSX.El
       {isOpen ? (
         <>
           <div>
-            <p className="ui-text-sm">Ranked by scope covered, then by price, compared per month. Bidders are anonymous to each other.</p>
+            <p className="ui-text-sm">Bidders are anonymous to each other.</p>
             {/* The per-month wording mirrors the backend's ranking (services/comparison/normalize.py), whatever the listing's period. */}
             <Disclosure summary="How ranking works">
               <p>
-                Offers that cover more of the requested scope rank above cheaper offers that cover less, so quietly doing less
-                never wins. To compare prices billed on different periods, the server restates each one per month before
-                ranking; the listing’s own period doesn’t change. Offers that answered an earlier scope version, or that are
-                priced in another currency, are listed in their own groups and aren’t ranked against the rest.
+                Ranked by scope covered first, then by price compared per month. A cheaper offer that covers less scope never
+                ranks above one that covers more.
               </p>
             </Disclosure>
           </div>
@@ -58,7 +56,7 @@ export function LeaderboardTab({ board, isClosed }: LeaderboardTabProps): JSX.El
         </>
       ) : (
         <Callout role="note" title="Bidding is sealed now" tone="private">
-          <p>Offer prices are no longer public on this listing. Only the business sees them.</p>
+          <p>Offer prices are no longer public on this market. Only the business sees them.</p>
         </Callout>
       )}
 

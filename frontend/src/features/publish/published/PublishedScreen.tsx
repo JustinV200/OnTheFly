@@ -42,7 +42,7 @@ export function PublishedScreen({ vendorName, profileHandle, published, onUnpubl
               Public visitor.
             </p>
             <Cluster gap={4}>
-              <ButtonLink size="sm" to={`${listingPath}/inbox`} variant="link">Offers inbox</ButtonLink>
+              <ButtonLink size="sm" to={`${listingPath}/inbox`} variant="link">Offers</ButtonLink>
               <ButtonLink size="sm" to={`/p/${profileHandle}`} variant="link">Your public profile</ButtonLink>
             </Cluster>
           </Stack>

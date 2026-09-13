@@ -24,7 +24,6 @@ interface OfferSummaryProps {
   listing: PublicListingProjection;
   acknowledgedMode: BiddingModeValue | null;
   currentMode: BiddingModeValue;
-  onConfirmMode: () => void;
   isRevision: boolean;
   isSubmitting: boolean;
   validationError: string | null;
@@ -34,7 +33,7 @@ interface OfferSummaryProps {
 
 /** Render the summary card; its submit button submits the form identified by formId. */
 export function OfferSummary(props: OfferSummaryProps): JSX.Element {
-  const { formId, fields, listing, acknowledgedMode, currentMode, onConfirmMode, isRevision, isSubmitting, validationError, submitProblem } = props;
+  const { formId, fields, listing, acknowledgedMode, currentMode, isRevision, isSubmitting, validationError, submitProblem } = props;
   // Display formatting only: a parseable amount reads like every other price ("$1,298,000.00"); anything else is shown as
   // typed, without doubling a leading "$", so the bidder sees exactly what the form will reject.
   const typedPrice = fields.price.trim().replace(/^\$/, '');
@@ -70,7 +69,8 @@ export function OfferSummary(props: OfferSummaryProps): JSX.Element {
         <CoverageSummary fields={fields} idPrefix={formId} listing={listing} />
 
         <Stack gap={3}>
-          <ModeMeaning acknowledgedMode={acknowledgedMode} currentMode={currentMode} onConfirmMode={onConfirmMode} />
+          {/* States what the mode means; confirming a change is ModeChangeAlert's button at the top of the form. */}
+          <ModeMeaning acknowledgedMode={acknowledgedMode} currentMode={currentMode} />
           {validationError ? <Callout role="alert" title="Not submitted yet" tone="danger"><p>{validationError}</p></Callout> : null}
           {submitProblem}
           <Button disabled={acknowledgedMode === null} form={formId} isBusy={isSubmitting} isFullWidth size="lg" type="submit" variant="primary">

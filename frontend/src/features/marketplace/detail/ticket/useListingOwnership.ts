@@ -1,4 +1,4 @@
-/* Works out whether the acting business posted a listing, so the ticket can offer "Manage offers" instead of a bid.
+/* Works out whether the acting business posted a listing, so the ticket can offer "Offers" instead of a bid.
    The public listing projection deliberately doesn't name its poster, so this asks GET /api/listings/{id}/relationship,
    which answers only for the acting business and works for every task origin (a rebid, new work, or a piece). The backend
    still rejects a poster's bid; this only keeps the page from inviting one. Until the answer is known the ticket shows no

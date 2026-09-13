@@ -56,7 +56,7 @@ export function ExistingOfferNotice({ offer, isOnCurrentScope, revisionMode }: E
         {isOnCurrentScope ? null : (
           <Callout role="note" tone="warning">
             <p>
-              Your current offer answered an earlier version of this listing’s scope. A revision answers the scope shown below, so check
+              Your current offer answered an earlier version of this task’s scope. A revision answers the scope shown below, so check
               that your terms still cover what is requested.
             </p>
           </Callout>

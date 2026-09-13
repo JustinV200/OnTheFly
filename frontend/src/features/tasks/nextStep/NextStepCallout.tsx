@@ -12,6 +12,7 @@ export interface StepHandlers {
   onReviewOffers: () => void;
   onWaysToSave: () => void;
   onSplitManually: () => void;
+  onDetails: () => void;
 }
 
 interface NextStepCalloutProps {
@@ -56,6 +57,8 @@ function ActionControl({ action, handlers, isPrimary }: { action: StepAction; ha
       return <Button onClick={handlers.onWaysToSave} variant={variant}>{action.label}</Button>;
     case 'splitManually':
       return <Button onClick={handlers.onSplitManually} variant={variant}>{action.label}</Button>;
+    case 'details':
+      return <Button onClick={handlers.onDetails} variant={variant}>{action.label}</Button>;
     case 'splitBlocked':
       return (
         <span className="next-step__blocked">

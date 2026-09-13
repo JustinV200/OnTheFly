@@ -1,5 +1,6 @@
 /* The drawer's full account of one offer's potential savings: the server's label and figures, why it is provisional
-   (each assumption in plain words), and the baseline it is measured against. Every amount is the server's. */
+   (each assumption in plain words), and the baseline it is measured against. Every amount is the server's. The
+   "potential until you switch" sentence belongs to the page's one caveat line (RankedOffersSection), not here. */
 import { MoneyDisplay } from '../../../shared/components/MoneyDisplay';
 import { Badge, Grid, Stat } from '../../../shared/ui';
 import type { InboxChallenge } from '../types';
@@ -29,10 +30,10 @@ export function SavingsBreakdown({ offer }: { offer: InboxChallenge }): JSX.Elem
       <p className="savings-breakdown__text">
         {/* A savings figure exists only with a baseline, so the null branch reads as a plain fact rather than a zero. */}
         Measured against {offer.baseline_monthly_minor === null ? 'no stated price' : money(offer.baseline_monthly_minor)} / month:{' '}
+        {/* The "potential until you switch" caveat is stated once per screen, by RankedOffersSection. */}
         {offer.is_current_scope_version
           ? 'this listing’s price, restated per month.'
-          : `the price you confirmed on scope v${offer.answered_scope_version_number}, the version this offer answered, restated per month.`}{' '}
-        Savings are potential until you actually switch.
+          : `the price you confirmed on scope v${offer.answered_scope_version_number}, the version this offer answered, restated per month.`}
       </p>
       {savings.assumptions.length > 0 ? (
         <div>

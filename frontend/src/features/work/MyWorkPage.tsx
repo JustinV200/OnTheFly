@@ -24,7 +24,7 @@ export function MyWorkPage(): JSX.Element {
       <Stack gap={5}>
         <PageHeader title="My work" />
         <EmptyState action={<ButtonLink to="/marketplace">Browse markets</ButtonLink>} title="Pick a business to see its work">
-          My work lists the tasks a business won or posted. Choose one in the account menu.
+          My work lists the tasks a business won or posted. Choose one from the business switcher in the top bar.
         </EmptyState>
       </Stack>
     );

@@ -73,7 +73,7 @@ export function TaskListingSection(props: TaskListingSectionProps): JSX.Element 
             <Cluster gap={2}>
               {canPublish && !isPublishInCallout ? (
                 <Button iconStart={<Icon name="eye" />} onClick={onPublish} variant="primary">
-                  {task.origin !== 'rebid' && listing.visibility !== 'scope_confirmed' ? 'Confirm, preview and publish' : 'Preview and publish'}
+                  Preview and publish
                 </Button>
               ) : null}
               {!isAccepted ? (

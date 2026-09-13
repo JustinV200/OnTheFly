@@ -4,7 +4,7 @@ import { FormEvent, useId, useState } from 'react';
 
 import { ApiError, post } from '../../shared/api/client';
 import { parseDollarsToMinor } from '../../shared/format/parseDollarsToMinor';
-import { Button, Callout, Card, Field, Grid, Input, Select, Stack } from '../../shared/ui';
+import { Button, Callout, Card, Cluster, Field, Grid, Input, Select, Stack } from '../../shared/ui';
 import type { RateKind } from './types';
 
 interface AddRateFormProps {
@@ -15,10 +15,12 @@ interface AddRateFormProps {
   // True when the owner chose a missing category above: the cursor goes straight to the dollars field.
   isRateFocusedOnMount: boolean;
   onAdded: () => void;
+  // Closes the form without adding anything; the panel only mounts the form on request, so it needs a way back out.
+  onCancel: () => void;
 }
 
 /** Render the add-rate form. */
-export function AddRateForm({ defaultKind, laborCategories, initialCategory, isRateFocusedOnMount, onAdded }: AddRateFormProps): JSX.Element {
+export function AddRateForm({ defaultKind, laborCategories, initialCategory, isRateFocusedOnMount, onAdded, onCancel }: AddRateFormProps): JSX.Element {
   const listId = useId();
   const [category, setCategory] = useState(initialCategory);
   const [kind, setKind] = useState<RateKind>(defaultKind);
@@ -79,9 +81,10 @@ export function AddRateForm({ defaultKind, laborCategories, initialCategory, isR
             {laborCategories.map((option) => <option key={option} value={option} />)}
           </datalist>
           {error ? <Callout role="alert" title="Not added" tone="danger"><p>{error}</p></Callout> : null}
-          <div>
+          <Cluster gap={2}>
             <Button isBusy={isSaving} type="submit">{isSaving ? 'Adding…' : 'Add rate'}</Button>
-          </div>
+            <Button onClick={onCancel} variant="ghost">Cancel</Button>
+          </Cluster>
         </Stack>
       </form>
     </Card>

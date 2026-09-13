@@ -1,4 +1,5 @@
-/* Ownership line: avatars and names in one wrapping row, with the connecting words muted. */
+/* Ownership line: avatars and names in one wrapping row. Labels ("Client:") are muted; the transfer itself
+   ("ownership moved to") is in the brand colour so it reads from across the room. */
 .ownership-line {
   align-items: center;
   display: flex;
@@ -8,7 +9,11 @@
   margin: 0;
 }
 
-.ownership-line__muted,
-.ownership-line__arrow {
+.ownership-line__muted {
   color: var(--color-text-muted);
+}
+
+.ownership-line__arrow,
+.ownership-line__moved {
+  color: var(--color-brand-text);
 }

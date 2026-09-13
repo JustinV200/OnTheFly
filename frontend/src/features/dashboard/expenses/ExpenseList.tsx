@@ -1,5 +1,6 @@
-/* The Spend expense list: a header that states shared provenance once, column labels on a laptop, publishable rows by
-   annual cost, then payroll, tax, and transfer rows grouped at the bottom and dimmed. Rows are cards on a phone.
+/* The Spend expense list: a header that states shared provenance once and explains the row action once, column labels on
+   a laptop, publishable rows by annual cost, then payroll, tax, and transfer rows grouped at the bottom and dimmed. Rows
+   are cards on a phone. This header is the page's only provenance badge; the Data sources card below holds the detail.
    Presentation only: it receives loaded expenses and reports which one the owner opened. */
 import { useId } from 'react';
 
@@ -56,6 +57,11 @@ export function ExpenseList({ expenses, selectedExpenseId, onOpen, onVisibilityC
           <span className="ui-text-sm ui-text-muted">Sources differ: each row shows its own</span>
         )}
       </Cluster>
+
+      {/* What the row action does, said once for the whole list instead of on every row's button. */}
+      <p className="expense-list__intro ui-text-sm ui-text-muted">
+        REBID an expense to get new bids on work you already pay for. Nothing goes public until you preview and publish it.
+      </p>
 
       <Card as="div" className="expense-list__card" padding="none">
         <div aria-hidden="true" className="expense-list__columns">

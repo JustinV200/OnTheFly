@@ -10,6 +10,7 @@ export type StepAction =
   | { kind: 'reviewOffers'; label: string }
   | { kind: 'waysToSave'; label: string }
   | { kind: 'splitManually'; label: string }
+  | { kind: 'details'; label: string }
   | { kind: 'link'; label: string; to: string }
   | { kind: 'splitBlocked'; label: string; reason: string };
 
@@ -37,7 +38,8 @@ function clientStep(task: TaskDetail): NextStep {
   return {
     title: ownerName ? `${ownerName} owns this task now` : 'Ownership moved to your accepted bidder',
     body: `You stay the client. ${ownerName ?? 'The bidder'} is responsible for the work and is the only one who can split it; you see nothing of the pieces they split off.`,
-    primary: pieceLink,
+    // Nothing is left for the client to do here, so the enabled action shows the proof: the audit trail on Details.
+    primary: pieceLink ?? { kind: 'details', label: 'See the audit trail' },
     secondary: [{
       kind: 'splitBlocked',
       label: 'Split off',
@@ -48,7 +50,7 @@ function clientStep(task: TaskDetail): NextStep {
 
 function ownerStep(task: TaskDetail): NextStep {
   const pending = firstPieceNeedingAction(task.pieces);
-  const splitManually: StepAction[] = task.can_split ? [{ kind: 'splitManually', label: 'Split off manually' }] : [];
+  const splitManually: StepAction[] = task.can_split ? [{ kind: 'splitManually', label: 'Split off a piece' }] : [];
   if (pending) {
     const isReview = pending.action.kind === 'review_offers';
     return {

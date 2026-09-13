@@ -1,7 +1,8 @@
 /* The bid page's one explanation of the bidding mode, right above the submit button, where the bidder decides. The mode
    itself is named by the card's pill and the submit label; this says in one sentence what it means for this offer. While
-   a mode change awaits re-confirmation it becomes the warning with the confirm action. */
-import { Button, Callout } from '../../../shared/ui';
+   a mode change awaits re-confirmation it becomes a warning that points at ModeChangeAlert's confirm button: the one
+   confirm action for a change lives at the top of the form, so the same decision isn't offered twice. */
+import { Callout } from '../../../shared/ui';
 import { describeModeChange } from '../status/describeModeChange';
 import type { BiddingModeValue } from '../types';
 
@@ -9,20 +10,14 @@ interface ModeMeaningProps {
   // null while the business's mode change hasn't been re-confirmed.
   acknowledgedMode: BiddingModeValue | null;
   currentMode: BiddingModeValue;
-  onConfirmMode: () => void;
 }
 
-/** Render the sealed or open consequence, or the changed-terms warning with its confirm button. */
-export function ModeMeaning({ acknowledgedMode, currentMode, onConfirmMode }: ModeMeaningProps): JSX.Element {
+/** Render the sealed or open consequence, or the changed-terms warning pointing at the alert's confirm button. */
+export function ModeMeaning({ acknowledgedMode, currentMode }: ModeMeaningProps): JSX.Element {
   if (acknowledgedMode === null) {
     return (
-      <Callout
-        actions={<Button onClick={onConfirmMode} size="sm">Continue with {currentMode} bidding</Button>}
-        role="note"
-        title={`Bidding changed to ${currentMode}`}
-        tone="warning"
-      >
-        <p>{describeModeChange(currentMode)} Nothing has been submitted.</p>
+      <Callout role="note" title={`Bidding changed to ${currentMode}`} tone="warning">
+        <p>{describeModeChange(currentMode)} Nothing has been submitted. Confirm the new terms above to submit.</p>
       </Callout>
     );
   }

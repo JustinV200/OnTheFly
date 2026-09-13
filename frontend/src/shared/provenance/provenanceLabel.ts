@@ -22,8 +22,10 @@ const FINANCIAL_LABELS: Record<string, ProvenanceLabel> = {
 };
 
 const OFFER_LABELS: Record<string, ProvenanceLabel> = {
+  // The stored value is still `challenger_submitted`; the visible words follow the product's vocabulary ("bidder",
+  // "offer"), which is what the reader has to understand.
   challenger_submitted: {
-    text: 'challenger-submitted',
+    text: 'submitted by the bidder',
     tone: 'success',
     explanation: 'Submitted through the platform by a real business.',
   },

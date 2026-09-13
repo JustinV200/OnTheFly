@@ -35,7 +35,7 @@ export function TracePage(): JSX.Element {
   if (trace.error?.status === 404 || trace.error?.status === 401) {
     return (
       <TracePageFrame>
-        <EmptyState action={<ButtonLink to="/marketplace">Back to the marketplace</ButtonLink>} title="Only the listing owner can trace this offer">
+        <EmptyState action={<ButtonLink to="/marketplace">Browse markets</ButtonLink>} title="Only the listing owner can trace this offer">
           {account ? `You're acting as ${account.businessName}.` : 'Pick the owning business in the bar above.'} The trace includes private
           transactions, so nobody else can open it.
         </EmptyState>

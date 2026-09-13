@@ -39,11 +39,10 @@ export function PieceRow({ piece, currency, billingPeriod, isNew, isUndoable, is
         </div>
         <div className="task-pieces__figures">
           <span>Cut <MoneyDisplay amountMinor={piece.cut_minor} currency={currency} /> {cadenceSuffix(billingPeriod)}</span>
-          <span>
-            {piece.accepted_price_minor === null
-              ? 'Not accepted yet'
-              : <>Accepted at <MoneyDisplay amountMinor={piece.accepted_price_minor} currency={currency} /> {cadenceSuffix(billingPeriod)}</>}
-          </span>
+          {/* Before acceptance the state badge and the action already say so; a third "not yet" line added nothing. */}
+          {piece.accepted_price_minor === null ? null : (
+            <span>Accepted at <MoneyDisplay amountMinor={piece.accepted_price_minor} currency={currency} /> {cadenceSuffix(billingPeriod)}</span>
+          )}
         </div>
         <div className="task-pieces__actions">
           {action.isNeeded ? (

@@ -69,9 +69,10 @@
   flex: 1 1 100%;
 }
 
+/* Wide screens: the "You're here" instruction gets twice the spare width of the title, so it stays on one line. */
 @media (min-width: 1024px) {
   .demo-rail__detail {
-    flex-basis: 20rem;
+    flex: 2 1 26rem;
   }
 }
 

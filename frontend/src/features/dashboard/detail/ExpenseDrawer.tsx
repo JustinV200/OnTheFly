@@ -31,7 +31,8 @@ export function ExpenseDrawer({ expense, detail, taskId, onClose, onVisibilityCh
   return (
     <Drawer
       description={categoryLabel(expense.category)}
-      footer={<ExpenseRowActions expense={expense} onVisibilityChanged={onVisibilityChanged} taskId={taskId} />}
+      // Full-size buttons here: the footer is the drawer's own action bar, not a dense list row.
+      footer={<ExpenseRowActions expense={expense} onVisibilityChanged={onVisibilityChanged} size="md" taskId={taskId} />}
       isOpen
       onClose={onClose}
       title={expense.vendor}

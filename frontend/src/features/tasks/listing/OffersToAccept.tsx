@@ -1,6 +1,7 @@
 /* The poster's offers on its task, in the server's ranking (scope covered first, then price compared per month), each
    shown at the price its bidder submitted and with an "Accept…" control that opens the acceptance check directly.
-   Names are shown because only the poster sees this; the full comparison stays on the Offers page. */
+   The top-ranked offer's Accept is the card's primary action; the Offers page (evidence, savings, revisions) is a quiet
+   link. Names are shown because only the poster sees this. */
 import { useRef, useState } from 'react';
 
 import { useApiQuery } from '../../../shared/api/useApiQuery';
@@ -44,8 +45,8 @@ export function OffersToAccept({ taskId, listingId, onAccepted, isFocusRequested
         inbox.error ? <ErrorState error={inbox.error} onRetry={inbox.reload} title="Couldn’t load offers" /> : <LoadingSpinner label="Loading offers…" />
       ) : (
         <Card
-          actions={<ButtonLink size="sm" to={`/listings/${listingId}/inbox`}>Full comparison</ButtonLink>}
-          description="Ranked by the server: scope covered first, then price compared per month. Each price shows as its bidder submitted it."
+          actions={<ButtonLink size="sm" to={`/listings/${listingId}/inbox`} variant="ghost">Compare all offers</ButtonLink>}
+          description="Ranked by scope covered first, then by price. Each price shows as its bidder submitted it."
           title={offers.length === 1 ? '1 offer' : `${offers.length} offers`}
         >
           {offers.length === 0 ? (
@@ -68,7 +69,11 @@ export function OffersToAccept({ taskId, listingId, onAccepted, isFocusRequested
                         </span>
                       </div>
                       <OfferPrice offer={offer} submitted={submittedById.get(offer.challenge_id)} />
-                      <Button onClick={() => setReviewingId(isReviewing ? null : offer.challenge_id)} size="sm" variant={isReviewing ? 'ghost' : 'secondary'}>
+                      <Button
+                        onClick={() => setReviewingId(isReviewing ? null : offer.challenge_id)}
+                        size="sm"
+                        variant={isReviewing ? 'ghost' : index === 0 ? 'primary' : 'secondary'}
+                      >
                         {isReviewing ? 'Close' : 'Accept…'}
                       </Button>
                     </div>

@@ -1,5 +1,6 @@
-/* One expense in the Spend list: vendor and category, annual cost with the per-period amount beneath, the payment
-   pattern in words, visibility, and the owner's action. A card on a phone, a single grid row on a laptop.
+/* One expense in the Spend list: vendor and its category (unless that only repeats the vendor), annual cost with the
+   per-period amount beneath, the payment pattern in words, visibility, and the owner's action.
+   A card on a phone, a single grid row on a laptop.
    The vendor name is a real button that opens the detail, so the row works from the keyboard; a click anywhere else on
    the row does the same for pointer users. Owner-only: never reused on public pages. */
 import { MoneyDisplay } from '../../../../shared/components/MoneyDisplay';
@@ -28,6 +29,10 @@ interface ExpenseRowProps {
 /** Render one expense row; payroll, tax, and transfer rows render dimmed with their reason in place of an action. */
 export function ExpenseRow({ expense, isSelected, shouldShowProvenance, taskId, onOpen, onVisibilityChanged }: ExpenseRowProps): JSX.Element {
   const pattern = describePattern(expense);
+  // Several GovCon ledger rows are categorized under their own vendor name ("Program Management / Program Management").
+  // Repeating it reads as two facts where there is one, so the sub-label drops out when it only echoes the vendor.
+  const category = categoryLabel(expense.category);
+  const isCategoryRepeated = category.trim().toLowerCase() === expense.vendor.trim().toLowerCase();
 
   return (
     <li
@@ -47,7 +52,7 @@ export function ExpenseRow({ expense, isSelected, shouldShowProvenance, taskId, 
         >
           {expense.vendor}
         </button>
-        <span className="expense-row__category">{categoryLabel(expense.category)}</span>
+        {isCategoryRepeated ? null : <span className="expense-row__category">{category}</span>}
         {shouldShowProvenance ? (
           <span className="expense-row__provenance">
             {expense.provenance.map((value) => <ProvenanceBadge key={value} kind="financial" value={value} />)}

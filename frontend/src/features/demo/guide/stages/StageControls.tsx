@@ -7,7 +7,7 @@ import { ApiError, post } from '../../../../shared/api/client';
 import { useApiQuery } from '../../../../shared/api/useApiQuery';
 import { Badge, Button, Callout, Card, Cluster, Stack } from '../../../../shared/ui';
 import type { ChainStep } from '../../progress/chainSteps';
-import { currentStageName, describeStage, STAGES } from './stageCatalog';
+import { currentStageName, describeStage, describeStageProgress, STAGES } from './stageCatalog';
 import { StageMessage, stageMessageStore } from './stageMessageStore';
 
 interface StageControlsProps {
@@ -24,7 +24,7 @@ export function StageControls({ steps, isProgressLoaded, onStaged }: StageContro
   const [isWorking, setIsWorking] = useState(false);
   const [message, setMessageState] = useState<StageMessage | null>(stageMessageStore.read);
   const currentStage = isProgressLoaded ? currentStageName(steps) : null;
-  const describe = (name: string): string => describeStage(name, steps.length);
+  const describe = describeStage;
 
   const setMessage = (next: StageMessage | null): void => {
     stageMessageStore.write(next);
@@ -55,13 +55,21 @@ export function StageControls({ steps, isProgressLoaded, onStaged }: StageContro
   }
 
   return (
-    <Card actions={<Badge tone="simulated">Rebuilds the GovCon chain</Badge>} description="Every step before the one you pick is replayed through the real services, with demo-data offers." title="Jump to a point in the story">
+    <Card actions={<Badge tone="simulated">Rebuilds the GovCon chain</Badge>} description="Pick what should already be true. Every earlier step is replayed through the real services, with demo-data offers." title="Jump to a point in the story">
       <Stack gap={3}>
         <Cluster gap={2}>
           {(controls.data?.stages ?? STAGES.map((entry) => entry.name)).map((name) => {
             const isCurrent = name === currentStage;
+            const progress = describeStageProgress(name, steps.length);
             return (
-              <Button aria-current={isCurrent ? 'step' : undefined} key={name} onClick={() => setPending(name)} size="sm" variant={pending === name ? 'primary' : 'secondary'}>
+              <Button
+                aria-current={isCurrent ? 'step' : undefined}
+                key={name}
+                onClick={() => setPending(name)}
+                size="sm"
+                title={progress ? `Lands ${progress}` : undefined}
+                variant={pending === name ? 'primary' : 'secondary'}
+              >
                 {describe(name)}
                 {isCurrent ? <> <Badge tone="brand">Current</Badge></> : null}
               </Button>

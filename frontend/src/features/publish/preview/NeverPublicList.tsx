@@ -5,7 +5,7 @@ const NEVER_PUBLIC = [
   'Raw transaction history',
   'Account and connection details',
   'Your other expenses, public or private',
-  'Who has challenged you (challenger identities)',
+  'Who has bid (bidder identities)',
   'Offer prices, unless you choose open bidding',
   'Exact street address',
 ];

@@ -1,5 +1,6 @@
 /* The Details tab: the reference material behind a task, stacked rather than split across tabs. Requirements and
-   constraints (the requirements component, rendered as-is), the owner's own cost basis rates, then the audit trail. */
+   constraints (the requirements component, rendered as-is), then the audit trail (the proof that ownership moved, kept
+   above the fold of this tab), then the owner's own cost basis rates. */
 import { Stack } from '../../../shared/ui';
 import { RatesPanel } from '../../rates/RatesPanel';
 import { TaskActivity } from '../activity/TaskActivity';
@@ -16,6 +17,7 @@ export function TaskDetails({ task, onChanged }: TaskDetailsProps): JSX.Element 
   return (
     <Stack gap={6}>
       <TaskRequirements task={task} />
+      <TaskActivity events={task.events} />
       {task.is_owned_by_you ? (
         <RatesPanel
           currency={task.currency}
@@ -25,7 +27,6 @@ export function TaskDetails({ task, onChanged }: TaskDetailsProps): JSX.Element 
           taskId={task.id}
         />
       ) : null}
-      <TaskActivity events={task.events} />
     </Stack>
   );
 }

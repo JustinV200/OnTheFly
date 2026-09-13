@@ -1,4 +1,4 @@
-/* Puts any genuine counteroffer front and centre: real amount, terms, timestamp, and how it arrived, with a button to the
+/* Puts any genuine offer front and centre: real amount, terms, timestamp, and how it arrived, with a button to the
    same offer's drawer in the ranked list. Shown only for offers whose stored provenance is genuine; simulated offers never
    appear here (roadmap 09, "The real counteroffer, front and centre"). */
 import { ApiQueryState } from '../../../shared/api/useApiQuery';
@@ -56,7 +56,7 @@ function GenuineOfferCard({ offer, onOpen }: { offer: OwnerChallenge; onOpen: ()
       title={(
         <span className="genuine-offer__title">
           <Icon name="check-circle" size={18} />
-          Genuine counteroffer from a real business
+          Genuine offer from a real business
         </span>
       )}
     >

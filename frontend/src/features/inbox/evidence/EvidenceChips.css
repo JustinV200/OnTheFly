@@ -1,22 +1,4 @@
-/* Evidence chips: a tight column in the desktop row, wrapping into a row on a phone card. The source name is set lighter
-   by weight only, so the chip keeps its tone's full text contrast. */
+/* The evidence coverage chip: one inline badge in the row's evidence cell, on its own line on a phone card. */
 .evidence-chips {
-  display: flex;
-  flex-direction: column;
-  align-items: flex-start;
-  gap: var(--space-1);
-  list-style: none;
-  margin: 0;
-  padding: 0;
-}
-
-.evidence-chips__source {
-  font-weight: var(--weight-regular);
-}
-
-@media (max-width: 639px) {
-  .evidence-chips {
-    flex-direction: row;
-    flex-wrap: wrap;
-  }
+  display: inline-flex;
 }

@@ -1,7 +1,8 @@
 /* Shows public listings whose scope resembles the one being viewed, found by the Mushroom Body FlyHash circuit, as
-   market cards, folded under a disclosure so the market above stays the page's focus. Every field shown comes from the
-   public listing projection; price is displayed but never used to match. The fly-brain badges sit in the always-visible
-   summary line, so the label is where the result appears even while folded, and the body ends with FlyBrainNote. */
+   market cards under a disclosure: open once there is a match to show, folded while there is none so the market above
+   stays the page's focus. Every field shown comes from the public listing projection; price is displayed but never used
+   to match. The fly-brain badges sit in the always-visible summary line, so the label is where the result appears even
+   while folded, and the body ends with FlyBrainNote. */
 import { EmptyState } from '../../../shared/components/EmptyState';
 import { LoadingSpinner } from '../../../shared/components/LoadingSpinner';
 import { FlyBrainBadge } from '../../../shared/flybrain/FlyBrainBadge';
@@ -23,10 +24,13 @@ export function SimilarListings({ listingId }: SimilarListingsProps): JSX.Elemen
   // The backend lists every circuit, including one that couldn't run, so a loaded response always carries its labels.
   // Before it loads no fly-brain result is on screen, so there is nothing yet to label.
   const attributions = response?.fly_brain ?? [];
+  // Open once there is something to show: an empty or still-loading section stays folded so it costs no attention.
+  const isDefaultOpen = (response?.listings.length ?? 0) > 0;
 
   return (
     <section aria-label="Similar listings" className="similar-listings">
       <Disclosure
+        isDefaultOpen={isDefaultOpen}
         summary={(
           <span className="similar-listings__summary">
             <span className="similar-listings__title">Similar listings</span>

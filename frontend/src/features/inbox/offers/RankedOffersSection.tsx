@@ -1,5 +1,6 @@
-/* The ranked list's section: a heading with the ranking rule in one line, the full rule behind "How ranking works",
-   a visible failure if the baseline figure couldn't load, then the table. */
+/* The ranked list's section: a heading, the screen's single savings caveat, the ranking rule behind "How ranking
+   works", a visible failure if the baseline figure couldn't load, then the table. The caveat is stated once here and
+   nowhere else on this screen; the per-row Provisional badges stay. */
 import type { ApiError } from '../../../shared/api/client';
 import { ErrorState } from '../../../shared/components/ErrorState';
 import { Disclosure } from '../../../shared/ui';
@@ -20,22 +21,20 @@ interface RankedOffersSectionProps {
   onRetry: () => void;
 }
 
-/** Render the heading, ranking rule, and ranked table. */
+/** Render the heading, the savings caveat, the ranking rule, and the ranked table. */
 export function RankedOffersSection({ listing, offers, offerTerms, currentScopeVersionNumber, incumbent, comparisonError, onOpenOffer, onRetry }: RankedOffersSectionProps): JSX.Element {
   return (
     <section aria-labelledby="ranked-offers-heading" className="ranked-offers-section">
       <div className="ranked-offers-section__head">
         <h2 className="ranked-offers-section__title" id="ranked-offers-heading">Offers, ranked</h2>
+        {/* The screen's one savings caveat. The rows keep their Provisional badges; no other prose repeats this. */}
         <p className="ranked-offers-section__rule">
-          Most scope covered first, then lowest price, compared per month. Savings are potential until you switch. New offers appear automatically.
+          Savings are potential until you switch. New offers appear automatically.
         </p>
         <Disclosure summary="How ranking works">
           <p>
-            Prices show in the period they are billed on. To compare offers billed on different periods, the server restates each
-            price per month. An offer that covers less of your scope ranks below one that covers more,
-            even when it is cheaper, because it isn’t the same work. Offers made on an earlier version of your scope are ranked
-            separately, each scored against the scope and price it answered. An offer in another currency can’t be compared and is
-            listed last, unranked. Savings are provisional while costs such as setup or switching fees are unknown.
+            Ranked by scope covered first, then by price compared per month. A cheaper offer that covers less scope never ranks
+            above one that covers more.
           </p>
         </Disclosure>
       </div>

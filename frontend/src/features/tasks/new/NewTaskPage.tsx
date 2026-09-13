@@ -1,7 +1,8 @@
 /* Posting work as a task: /tasks/new for new work with no current vendor, /tasks/new?expense=<id> to REBID an expense with
    requirement rows. Both write a scope version the owner confirmed; nothing is public until the task page's exact preview
    is published. A demo shortcut fills the form from the server's example scope, for rehearsal, and is labeled as such.
-   A REBID starts "What you pay now" from the expense's observed spend, which the owner can change before confirming. */
+   A REBID prefills the title, category and "What you pay now" from the expense, all of which the owner can change before
+   confirming. A failed demo fill reports itself beside that shortcut; "Not saved" is only ever a failed submit. */
 import { FormEvent, useEffect, useRef, useState } from 'react';
 import { useNavigate, useSearchParams } from 'react-router-dom';
 
@@ -20,6 +21,7 @@ import { buildTaskDraftPayload } from './draft/buildTaskDraftPayload';
 import { draftFromTemplate } from './draft/draftFromTemplate';
 import { emptyTaskDraft, TaskDraftForm, TaskScopeDraftPayload } from './draft/draftTypes';
 import { observedPriceForPeriod } from './draft/observedPriceForPeriod';
+import { prefillFromExpense } from './draft/prefillFromExpense';
 import { TaskScopeFields } from './fields/TaskScopeFields';
 
 /** Render the new-task or REBID form for the acting business. */
@@ -31,26 +33,37 @@ export function NewTaskPage(): JSX.Element {
   const expense = useApiQuery<ExpenseDetail>(account && expenseId ? `/api/expenses/${expenseId}` : null);
   const [form, setForm] = useState<TaskDraftForm>(() => emptyTaskDraft());
   const [biddingMode, setBiddingMode] = useState<'sealed' | 'open'>('sealed');
+  // A failed submit only; the demo shortcut reports its own failure in fillError, beside the button that caused it.
   const [error, setError] = useState<string | null>(null);
+  const [fillError, setFillError] = useState<string | null>(null);
   const [isSaving, setIsSaving] = useState(false);
   // True while the price shown is the observed spend rather than something the owner typed or a template supplied.
   const [isPriceObserved, setIsPriceObserved] = useState(false);
-  const hasOfferedObservedPrice = useRef(false);
+  const hasPrefilledFromExpense = useRef(false);
   const isRebid = expenseId !== null;
 
-  // Once the expense loads, start a blank price from its observed spend. Once only: a later refetch must never overwrite
-  // a price the owner has since typed.
+  // Once the expense loads, prefill what it can answer: its vendor and category (prefillFromExpense) and a blank price
+  // from its observed spend. Once only, and only into a field still holding its blank or default value, so neither a
+  // later refetch nor a demo fill can overwrite what the owner has since typed.
   useEffect(() => {
-    if (!expense.data || hasOfferedObservedPrice.current) {
+    if (!expense.data || hasPrefilledFromExpense.current) {
       return;
     }
-    hasOfferedObservedPrice.current = true;
+    hasPrefilledFromExpense.current = true;
+    const patch = prefillFromExpense(expense.data, form);
     const observed = observedPriceForPeriod(expense.data, form.billingPeriod);
-    if (observed !== null && form.price.trim() === '') {
-      setForm((current) => ({ ...current, price: formatMinorForInput(observed) }));
+    const isObserved = observed !== null && form.price.trim() === '';
+    if (isObserved) {
+      patch.price = formatMinorForInput(observed);
+    }
+    if (Object.keys(patch).length === 0) {
+      return;
+    }
+    setForm((current) => ({ ...current, ...patch }));
+    if (isObserved) {
       setIsPriceObserved(true);
     }
-  }, [expense.data, form.billingPeriod, form.price]);
+  }, [expense.data, form]);
 
   const update = (patch: Partial<TaskDraftForm>): void => {
     let next = patch;
@@ -69,13 +82,13 @@ export function NewTaskPage(): JSX.Element {
   if (!account) {
     return (
       <EmptyState action={<ButtonLink to="/marketplace">Browse markets</ButtonLink>} title="Pick a business to post work">
-        Tasks are posted by a business. Choose one in the account menu.
+        Tasks are posted by a business. Choose one from the business switcher in the top bar, or browse the markets.
       </EmptyState>
     );
   }
 
   const fillDemo = async (): Promise<void> => {
-    setError(null);
+    setFillError(null);
     try {
       const template = await get<TaskScopeDraftPayload>(`/api/demo/task-chain/${isRebid ? 'rebid-template' : 'new-task-template'}`);
       setForm(draftFromTemplate(template));
@@ -85,7 +98,7 @@ export function NewTaskPage(): JSX.Element {
       if (!(caught instanceof ApiError)) {
         throw caught;
       }
-      setError(`Couldn’t load the demo scope: ${caught.message}`);
+      setFillError(caught.message);
     }
   };
 
@@ -137,18 +150,27 @@ export function NewTaskPage(): JSX.Element {
           </Card>
         ) : null}
 
-        <Callout
-          actions={(
-            <Button onClick={() => void fillDemo()} variant="primary">
-              {isRebid ? 'Fill with GovCon’s demo scope' : 'Fill with the example task'}
-            </Button>
-          )}
-          role="note"
-          title="Rehearsing the demo?"
-          tone="simulated"
-        >
-          <p>One click fills every field from the demo scope. Review it before confirming: its hours and tags are illustrative demo figures.</p>
-        </Callout>
+        {/* A rehearsal shortcut, never the screen's main action: the real submit below stays the only primary button.
+            A failed fill reports itself right here, so it is never read as a failed save. */}
+        <Stack gap={2}>
+          <Callout
+            actions={(
+              <Button onClick={() => void fillDemo()} size="sm" variant="secondary">
+                {isRebid ? 'Fill with GovCon’s demo scope' : 'Fill with the example task'}
+              </Button>
+            )}
+            role="note"
+            title="Rehearsing the demo?"
+            tone="simulated"
+          >
+            <p>
+              {isRebid
+                ? 'Fills every field from GovCon’s demo scope: five requirement rows with illustrative hours and tags, already marked confirmed as demo figures, so you can go straight to Confirm scope.'
+                : 'Fills every field from the example task: requirement rows with illustrative hours and tags, already marked confirmed as demo figures, so you can go straight to Create the task.'}
+            </p>
+          </Callout>
+          {fillError ? <Callout role="alert" title="Couldn’t load the demo scope" tone="danger"><p>{fillError}</p></Callout> : null}
+        </Stack>
 
         <TaskScopeFields form={form} onChange={update} pricing={isRebid ? 'rebid' : 'budget'} />
         {isRebid ? (

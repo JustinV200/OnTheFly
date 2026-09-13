@@ -1,5 +1,5 @@
 /* The market page's sticky bid ticket. It always states the bidding terms and the deadline first, then gives this
-   viewer their one action: a bid form, "Manage offers" for the owner (who can never bid on their own listing), a
+   viewer their one action: a bid form, "Offers" for the poster (who can never bid on their own listing), a
    closed notice, or how a public visitor can bid. A bidder reads what becomes public before any button
    (CLAUDE.md, "Marketplace mechanics"). */
 import { ErrorState } from '../../../../shared/components/ErrorState';
@@ -15,10 +15,12 @@ interface BidTicketProps {
   listing: PublicListingProjection;
   closes: ClosesIn;
   ownership: ListingOwnership;
+  // The public offer count, used only to number the poster's Offers button; it says nothing about prices.
+  offerCount: number;
 }
 
 /** Render the ticket for the acting viewer. */
-export function BidTicket({ listing, closes, ownership }: BidTicketProps): JSX.Element {
+export function BidTicket({ listing, closes, ownership, offerCount }: BidTicketProps): JSX.Element {
   // Anything but an explicit "open" is sealed, the same safe fallback BiddingModePill uses.
   const isOpen = listing.bidding_mode === 'open';
   const isOwner = ownership.status === 'owner';
@@ -31,19 +33,19 @@ export function BidTicket({ listing, closes, ownership }: BidTicketProps): JSX.E
             {termsSentence(isOpen, isOwner)}
           </TermRow>
           <TermRow icon="clock" title={closes.label}>
-            {closes.exact ? (closes.isClosed ? `Since ${closes.exact}` : `Until ${closes.exact}`) : 'No deadline set. Offers are accepted while the listing is public.'}
+            {closes.exact ? (closes.isClosed ? `Since ${closes.exact}` : `Until ${closes.exact}`) : 'No deadline set. Offers are accepted while the market is public.'}
           </TermRow>
         </div>
 
-        <TicketAction closes={closes} listing={listing} ownership={ownership} />
+        <TicketAction closes={closes} listing={listing} offerCount={offerCount} ownership={ownership} />
       </Stack>
     </Card>
   );
 }
 
-function TicketAction({ listing, closes, ownership }: BidTicketProps): JSX.Element {
+function TicketAction({ listing, closes, ownership, offerCount }: BidTicketProps): JSX.Element {
   if (ownership.status === 'owner') {
-    return <OwnerTicketActions isClosed={closes.isClosed} listingId={listing.id} taskId={ownership.taskId} />;
+    return <OwnerTicketActions isClosed={closes.isClosed} listingId={listing.id} offerCount={offerCount} taskId={ownership.taskId} />;
   }
   if (closes.isClosed) {
     return <p className="bid-ticket__message">This task is closed to new offers. Offers made before the deadline still count.</p>;
@@ -51,7 +53,7 @@ function TicketAction({ listing, closes, ownership }: BidTicketProps): JSX.Eleme
   if (ownership.status === 'visitor') {
     return (
       <p className="bid-ticket__message">
-        Offers come from a business. Choose one in the account menu to bid; you can read everything here without one.
+        Offers come from a business. Choose one from the business switcher in the top bar to bid; you can read everything here without one.
       </p>
     );
   }

@@ -1,5 +1,6 @@
 /* The task scope form's state and the API draft it becomes (backend services/tasks/scope/types.py TaskScopeDraft).
    Text fields hold what was typed; buildTaskDraftPayload parses and validates them into the API shape. */
+import { DEFAULT_TASK_CATEGORY } from './taskCategories';
 
 export interface RequirementDraft {
   // Local row id for React keys; key is the server's stable requirement key when editing an existing row.
@@ -84,7 +85,7 @@ export function emptyRequirement(): RequirementDraft {
 export function emptyTaskDraft(billingPeriod = 'annual'): TaskDraftForm {
   return {
     title: '',
-    category: 'devsecops',
+    category: DEFAULT_TASK_CATEGORY,
     serviceArea: '',
     price: '',
     billingPeriod,

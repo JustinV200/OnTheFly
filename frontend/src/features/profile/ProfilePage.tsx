@@ -25,7 +25,7 @@ export function ProfilePage(): JSX.Element {
       <Stack gap={5}>
         <PageHeader eyebrow="Public profile" subtitle="Check the link for typos." title="No business has this profile address" />
         <Cluster>
-          <ButtonLink to="/marketplace" variant="primary">Browse the markets</ButtonLink>
+          <ButtonLink to="/marketplace" variant="primary">Browse markets</ButtonLink>
         </Cluster>
       </Stack>
     );

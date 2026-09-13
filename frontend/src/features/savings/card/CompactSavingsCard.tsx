@@ -1,6 +1,6 @@
 /* A group that isn't a suggestion (specialist market, needs rates, didn't qualify), kept small: the same equation and
-   pass line showing what failed, the server's reasons in words, the honesty label, and "Split off manually" / Dismiss.
-   A manual split from here is never sent as a suggestion (splitPrefill.isSuggestion is false for these tiers). */
+   pass line showing what failed, the server's reasons in words, the honesty label, and "Split off a piece" / Dismiss.
+   A split from here is never sent as a suggestion (splitPrefill.isSuggestion is false for these tiers). */
 import { Badge, Button, Card, Stack } from '../../../shared/ui';
 import type { SavingsCardView } from '../types';
 import { CardDetails } from './details/CardDetails';
@@ -39,7 +39,7 @@ export function CompactSavingsCard({ card, canSplit, onSplitOff, onDismiss, onOv
         <HonestyLabel card={card} />
         <ProvisionalNote card={card} />
         <div className="savings-actions">
-          {canSplit ? <Button onClick={onSplitOff} size="sm">Split off manually</Button> : null}
+          {canSplit ? <Button onClick={onSplitOff} size="sm">Split off a piece</Button> : null}
           <Button onClick={onDismiss} size="sm" variant="ghost">Dismiss</Button>
         </div>
         <CardDetails card={card} onOversightSaved={onOversightSaved} />

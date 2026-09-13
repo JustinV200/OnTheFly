@@ -5,6 +5,7 @@ import { ProvenanceBadge } from '../../shared/provenance/ProvenanceBadge';
 import { Badge, Button, Icon } from '../../shared/ui';
 import { DataSourceSection } from './sources/DataSourceSection';
 import { stripeMessageKind } from './stripe/stripeMessageKind';
+import { STRIPE_CONNECT_BUTTON_ID } from './stripe/stripeRowElementId';
 import { StripeStatusNotice } from './stripe/StripeStatusNotice';
 import { StripeTransactionList } from './stripe/StripeTransactionList';
 import { useStripeConnection } from './useStripeConnection';
@@ -27,8 +28,9 @@ export function StripeConnection({ onImported, onConnected }: StripeConnectionPr
     <DataSourceSection
       actions={
         <>
-          {/* Only a first connect can be running while nothing is connected, so the spinner goes on this button then. */}
-          <Button disabled={busy} isBusy={busy && !isConnected} onClick={() => void connect()}>
+          {/* Only a first connect can be running while nothing is connected, so the spinner goes on this button then.
+              The id is how Spend's "no financial account connected" state jumps an owner down to this row. */}
+          <Button disabled={busy} id={STRIPE_CONNECT_BUTTON_ID} isBusy={busy && !isConnected} onClick={() => void connect()}>
             {isConnected ? 'Reconnect Stripe' : 'Connect Stripe sandbox'}
           </Button>
           {isConnected ? (

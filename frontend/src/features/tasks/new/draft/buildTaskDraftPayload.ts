@@ -16,7 +16,7 @@ export function buildTaskDraftPayload(form: TaskDraftForm, isPriceRequired: bool
   const priceText = form.price.trim();
   const priceMinor = priceText === '' ? null : parseDollarsToMinor(priceText);
   if (priceText !== '' && (priceMinor === null || priceMinor === 0)) {
-    return { error: 'Enter the price in dollars above $0, for example 1,416,000.' };
+    return { error: 'Enter the price in dollars above $0, for example 120,000.' };
   }
   if (isPriceRequired && priceMinor === null) {
     return { error: 'Confirm what you pay now: a REBID’s starting price is your observed spend.' };

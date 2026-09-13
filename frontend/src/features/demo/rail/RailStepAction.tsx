@@ -29,9 +29,10 @@ export function RailStepAction({ step }: RailStepActionProps): JSX.Element {
   // Pages under the step's page count (a listing's bid form, a task's inbox), and so do the step's own extra pages.
   const isOnStepPage = pathname === path || pathname.startsWith(`${path}/`) || step.herePrefixes.some((prefix) => pathname.startsWith(prefix));
   if (account?.id === step.actorId && isOnStepPage) {
+    // The short form: the rail is one line, and the guide carries the full instruction.
     return (
       <p className="demo-rail__detail">
-        <Badge tone="brand">You’re here</Badge> {step.detail}
+        <Badge tone="brand">You’re here</Badge> {step.railDetail}
       </p>
     );
   }

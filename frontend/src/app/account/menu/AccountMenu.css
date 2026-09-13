@@ -76,6 +76,7 @@
     display: block;
     font-size: var(--text-md);
     max-width: 18ch;
+    overflow: visible;
   }
 }
 

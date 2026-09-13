@@ -1,5 +1,5 @@
-/* Bid form: price beside billing period in equal columns (so "Every 2 months" fits), the full-width primary button,
-   and a quiet note. The "$" sits inside the input's left padding and takes no pointer events, so a click still focuses. */
+/* Bid form: price beside billing period in equal columns (so "Every 2 months" fits), a quiet note, then the full-width
+   primary button. The "$" sits inside the input's left padding and takes no pointer events, so a click still focuses. */
 .bid-form {
   display: flex;
   flex-direction: column;

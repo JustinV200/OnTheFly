@@ -27,7 +27,7 @@ export function MarketplacePage(): JSX.Element {
       <PageHeader
         subtitle={
           // Said once here rather than on every card: each price is what that business published, not a platform estimate.
-          `Prices are published by each business. ${account ? 'Your own listings aren’t shown here.' : 'Choose a business in the account menu to bid.'}`
+          `Prices are published by each business. ${account ? 'Your own listings aren’t shown here.' : 'Choose a business from the switcher in the top bar to bid.'}`
         }
         title="Markets"
       />

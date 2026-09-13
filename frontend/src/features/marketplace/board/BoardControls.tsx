@@ -33,7 +33,7 @@ export function BoardControls({ searchText, onSearchTextChange, categoryChips, c
           className="board-controls__search-input"
           id="market-board-search"
           onChange={(event) => onSearchTextChange(event.target.value)}
-          placeholder="Search title, category, area or scope"
+          placeholder="Search markets"
           type="search"
           value={searchText}
         />

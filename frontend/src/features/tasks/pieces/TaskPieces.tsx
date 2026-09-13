@@ -72,7 +72,7 @@ export function TaskPieces({ task, onChanged, onSplit, highlightedPieceId }: Tas
             </li>
           ))}
         </ul>
-        {task.can_split ? <div><Button onClick={onSplit}>Split off another piece</Button></div> : null}
+        {task.can_split ? <div><Button onClick={onSplit}>Split off a piece</Button></div> : null}
       </Stack>
     </Card>
   );

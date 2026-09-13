@@ -7,7 +7,7 @@ import { FormEvent, useEffect, useRef, useState } from 'react';
 import { ApiError, post } from '../../shared/api/client';
 import { formatMinorForInput } from '../../shared/format/formatMinorForInput';
 import { parseDollarsToMinor } from '../../shared/format/parseDollarsToMinor';
-import { Button, Callout, Drawer, Field, Input, Stack } from '../../shared/ui';
+import { Badge, Button, Callout, Drawer, Field, Input, Stack } from '../../shared/ui';
 import { buildRequirementRows } from '../tasks/new/draft/buildRequirementRows';
 import { emptyRequirement, RequirementDraft } from '../tasks/new/draft/draftTypes';
 import type { TaskDetail } from '../tasks/types';
@@ -117,7 +117,9 @@ export function SplitDrawer({ task, isOpen, onClose, prefill, onSplit }: SplitDr
   const formId = `split-form-${task.id}`;
   return (
     <Drawer
-      description={prefill ? prefill.label : 'Split off requirements as their own task, priced as a cut of your starting price.'}
+      // The description says what this piece is worth on the market; the card's honesty label sits by the Cut input, on
+      // the figure it qualifies, rather than heading the whole drawer.
+      description={prefill?.cutRangeText ?? 'Split off requirements as their own task, priced as a cut of your starting price.'}
       footer={(
         <Button form={formId} isBusy={isWorking} size="lg" type="submit" variant="primary">
           {isWorking ? 'Splitting…' : 'Split off this piece'}
@@ -143,12 +145,21 @@ export function SplitDrawer({ task, isOpen, onClose, prefill, onSplit }: SplitDr
           </Field>
           <RequirementPicker onChange={setSelectedKeys} selectedKeys={selectedKeys} task={task} />
           <AddedRequirements isSuggestion={prefill?.isSuggestion ?? false} onChange={setAddedRows} rows={addedRows} task={task} />
-          <Field
-            hint={prefill?.cutRangeText ?? `Per ${task.billing_period} period, in ${task.currency}. The piece is listed at this cut; its price stays hidden unless you choose to show it.`}
-            label="Cut"
-          >
-            <Input inputMode="decimal" onChange={(event) => setCutText(event.target.value)} placeholder="e.g. 224,640" value={cutText} />
-          </Field>
+          <Stack gap={2}>
+            <Field
+              hint={`Per ${task.billing_period} period, in ${task.currency}. The piece is listed at this cut; its price stays hidden unless you choose to show it.`}
+              label="Cut"
+            >
+              <Input inputMode="decimal" onChange={(event) => setCutText(event.target.value)} placeholder="e.g. 224,640" value={cutText} />
+            </Field>
+            {/* The prefilled figure is modeled, so its label stays on screen right beside it. Simulated tone is the
+                design system's mark for demo data; public evidence keeps a plain muted line. */}
+            {prefill ? (
+              prefill.isLabelDemoData
+                ? <div><Badge tone="simulated">{prefill.label}</Badge></div>
+                : <p className="ui-text-xs ui-text-muted">{prefill.label}</p>
+            ) : null}
+          </Stack>
           <CutSummary cutMinor={cutMinor} task={task} />
           <ConstraintFlowDown
             constraints={task.constraints}

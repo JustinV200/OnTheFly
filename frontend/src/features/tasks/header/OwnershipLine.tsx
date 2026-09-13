@@ -1,5 +1,5 @@
 /* Who owns the task, in one line under its title, so a transfer is visible rather than implied:
-   client after acceptance: "[GI] GovCon Industries → [PA] Prime A Federal Systems · owns it now";
+   client after acceptance: "[GI] GovCon Industries → ownership moved to [PA] Prime A Federal Systems";
    owner: "Client: [GI] GovCon Industries · [PA] You own it". A poster that still owns its task gets no line: there is no
    counterparty yet, and the header's "You posted and own this" badge already says so.
    Names come only from what the API returned (buyer_money.accepted_bidder, owner_money.client) plus the acting business
@@ -24,10 +24,10 @@ export function OwnershipLine({ task }: { task: TaskDetail }): JSX.Element | nul
       <p className="ownership-line">
         {you}
         <span>{account?.businessName ?? 'You'}</span>
-        <Icon className="ownership-line__arrow" name="arrow-right" size={14} />
-        <span className="ui-visually-hidden">ownership moved to</span>
+        <Icon className="ownership-line__arrow" name="arrow-right" size={16} />
+        {/* The transfer is the whole point of the page, so the connecting words are visible, not just an arrow. */}
+        <strong className="ownership-line__moved">ownership moved to</strong>
         {bidder ? <Party party={bidder} /> : <span>the accepted bidder</span>}
-        <span className="ownership-line__muted">· owns it now</span>
       </p>
     );
   }

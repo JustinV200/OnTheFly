@@ -30,7 +30,7 @@ export function InboxPage(): JSX.Element {
     // Same message whether the listing is missing or belongs to someone else, so ids can't be probed.
     return (
       <InboxPageFrame>
-        <EmptyState action={<ButtonLink to="/marketplace">Back to the marketplace</ButtonLink>} title="Only this listing’s owner can see its offers">
+        <EmptyState action={<ButtonLink to="/marketplace">Browse markets</ButtonLink>} title="Only this listing’s owner can see its offers">
           {account ? `You're acting as ${account.businessName}, which doesn't own this listing.` : 'Pick the owning business in the bar above.'}{' '}
           Other bidders never see who made an offer.
         </EmptyState>

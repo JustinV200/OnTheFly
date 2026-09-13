@@ -20,7 +20,7 @@ export function TaskScreen({ taskId }: { taskId: string }): JSX.Element {
   if (!account) {
     return (
       <EmptyState action={<ButtonLink to="/marketplace">Browse markets</ButtonLink>} title="Pick a business to see its tasks">
-        A task is visible only to the business that posted it and the business that owns it. Choose one in the account menu.
+        A task is visible only to the business that posted it and the business that owns it. Choose one from the business switcher in the top bar.
       </EmptyState>
     );
   }

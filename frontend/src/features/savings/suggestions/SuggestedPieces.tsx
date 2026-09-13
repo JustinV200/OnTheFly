@@ -1,5 +1,5 @@
 /* The suggested pieces as hero cards, or, when none qualifies, a plain "No piece clears the thresholds on these numbers"
-   with a manual split. The list is the focus target of the task page's "Ways to save" button: once cards load, it
+   with "Split off a piece". The list is the focus target of the task page's "Ways to save" button: once cards load, it
    scrolls into view and takes focus, so that button always visibly does something. */
 import { useRef } from 'react';
 
@@ -32,12 +32,12 @@ export function SuggestedPieces(props: SuggestedPiecesProps): JSX.Element {
       {cards.length === 0 ? (
         <Callout
           // Secondary: the page's next-step callout already holds the one primary action.
-          actions={canSplitManually ? <Button onClick={onSplitManually}>Split off manually</Button> : undefined}
+          actions={canSplitManually ? <Button onClick={onSplitManually}>Split off a piece</Button> : undefined}
           role="status"
           title="No piece clears the thresholds on these numbers"
           tone="info"
         >
-          <p>Nothing here is cheaper to split off at the configured thresholds. You can still split off a piece by hand; the groups below say why each didn’t qualify.</p>
+          <p>Nothing here is cheaper to split off at the configured thresholds. You can still split off a piece yourself; the groups below say why each didn’t clear them.</p>
         </Callout>
       ) : (
         <Stack gap={4}>

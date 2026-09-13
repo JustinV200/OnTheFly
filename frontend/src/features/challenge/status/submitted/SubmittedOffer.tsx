@@ -6,7 +6,7 @@ import { MoneyDisplay } from '../../../../shared/components/MoneyDisplay';
 import { formatTimestamp } from '../../../../shared/format/formatTimestamp';
 import { cadenceSuffix } from '../../../../shared/market';
 import { ProvenanceBadge } from '../../../../shared/provenance/ProvenanceBadge';
-import { Button, ButtonLink, Callout, Card, Cluster, Stack, Stat } from '../../../../shared/ui';
+import { Button, Callout, Card, Cluster, Stack, Stat } from '../../../../shared/ui';
 import type { PublicRequirement } from '../../../publish/types';
 import type { ChallengeResponse } from '../../types';
 import { SubmittedRequirementAnswers } from './SubmittedRequirementAnswers';
@@ -36,7 +36,7 @@ export function SubmittedOffer({ offer, requirements, onReviseAgain }: Submitted
         <p>
           Recorded as {article} <strong>{offer.bidding_mode_at_submission}</strong> offer at{' '}
           {formatTimestamp(offer.revised_at ?? offer.submitted_at)}. That mode stays with this version even if the business changes
-          the listing later; a revision is recorded under the terms in force when you make it.
+          the task later; a revision is recorded under the terms in force when you make it.
         </p>
       </Callout>
 
@@ -68,9 +68,10 @@ export function SubmittedOffer({ offer, requirements, onReviseAgain }: Submitted
             </dl>
           ) : null}
           <p className="ui-text-muted">You can revise it until the deadline; earlier versions are kept.</p>
+          {/* The only action here. The page's primary action and its way back to the board are in WhatHappensNext,
+              so the confirmation offers one obvious next step rather than four competing exits. */}
           <Cluster gap={3}>
-            <Button onClick={onReviseAgain}>Revise</Button>
-            <ButtonLink to={`/listings/${offer.listing_id}`} variant="ghost">Back to the listing</ButtonLink>
+            <Button onClick={onReviseAgain}>Revise your offer</Button>
           </Cluster>
         </Stack>
       </Card>

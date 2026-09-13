@@ -57,7 +57,7 @@ export function OfferDetailsFields({ fields, onChange, currency, isRequirementLi
         ) : null}
         {/* Kept a single-line input: a textarea would start sending line breaks the owner's views don't render.
             Only the poster reads it; the public leaderboard carries no messages in either bidding mode. */}
-        <Field hint="Only the business that posted this listing sees it." label="Message to the business">
+        <Field hint="Only the business that posted this task sees it." label="Message to the business">
           <Input onChange={(event) => onChange({ message: event.target.value })} placeholder="e.g. How you’d staff it, or relevant past work" value={fields.message} />
         </Field>
       </Stack>

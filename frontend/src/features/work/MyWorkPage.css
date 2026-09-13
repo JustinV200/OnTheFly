@@ -107,13 +107,11 @@
   padding-top: var(--space-3);
 }
 
+/* The next step is a link-styled ButtonLink going to the same task as "Open task". Only its alignment differs from the
+   primitive: a sentence reads left, not centred. Colour, weight and underline stay the design system's. */
 .work-item__next {
-  align-items: center;
-  color: var(--color-brand-text);
-  display: inline-flex;
-  font-size: var(--text-sm);
-  font-weight: var(--weight-medium);
-  gap: var(--space-1);
+  justify-content: flex-start;
+  text-align: left;
 }
 
 @media (min-width: 768px) {

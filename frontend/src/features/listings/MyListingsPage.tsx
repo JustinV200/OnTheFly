@@ -32,7 +32,7 @@ export function MyListingsPage(): JSX.Element {
           title="Pick a business to see its listings"
         >
           <p>
-            Listings and their offers belong to the business that published them. Choose a business in the account menu to
+            Listings and their offers belong to the business that published them. Choose a business from the switcher in the top bar to
             see its listings. As a public visitor you can browse the markets strangers see.
           </p>
         </EmptyState>

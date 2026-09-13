@@ -34,7 +34,7 @@ export function thresholdChecks(card: SavingsCardView): ThresholdCheck[] {
       // The threshold is an annual amount by definition, so "/yr" is its own unit, not a conversion.
       label: `≥ ${wholeMoneyText(thresholds.min_annual_minor, card.currency)}/yr`,
       outcome: annual === null ? 'not_computed' : annual >= thresholds.min_annual_minor ? 'met' : 'not_met',
-      detail: null,
+      detail: annual === null ? null : wholeMoneyText(annual, card.currency),
     },
     {
       key: 'suppliers',
@@ -47,7 +47,8 @@ export function thresholdChecks(card: SavingsCardView): ThresholdCheck[] {
     {
       key: 'fits',
       label: 'Cut fits your remainder',
-      outcome: remainder === null ? 'not_met' : cut === null ? 'not_computed' : cut <= remainder ? 'met' : 'not_met',
+      // No starting price means no remainder to compare against: a missing figure is never a pass or a fail.
+      outcome: remainder === null || cut === null ? 'not_computed' : cut <= remainder ? 'met' : 'not_met',
       detail: remainder === null ? 'no starting price' : null,
     },
   ];

@@ -6,7 +6,6 @@ import { ErrorState } from '../../shared/components/ErrorState';
 import { LoadingSpinner } from '../../shared/components/LoadingSpinner';
 import { Stack } from '../../shared/ui';
 import { DuplicateVendors } from './aliases/DuplicateVendors';
-import type { ImportedSource } from './connection/types';
 import { ExpenseDrawer } from './detail/ExpenseDrawer';
 import { ExpenseList } from './expenses/ExpenseList';
 import { SpendOverview } from './overview/SpendOverview';
@@ -15,12 +14,10 @@ import { useDashboard } from './useDashboard';
 interface ImportedSpendProps {
   businessName: string;
   dashboard: ReturnType<typeof useDashboard>;
-  // Stored transactions per provider, for the data-source tile.
-  sources: ImportedSource[];
 }
 
 /** Render the headline and expense list, or the state that stands in for them. */
-export function ImportedSpend({ businessName, dashboard, sources }: ImportedSpendProps): JSX.Element {
+export function ImportedSpend({ businessName, dashboard }: ImportedSpendProps): JSX.Element {
   if (!dashboard.list.data) {
     return dashboard.list.error
       ? <ErrorState error={dashboard.list.error} onRetry={dashboard.list.reload} title="Couldn’t load expenses" />
@@ -40,7 +37,7 @@ export function ImportedSpend({ businessName, dashboard, sources }: ImportedSpen
   const selectedExpense = expenses.find((expense) => expense.id === selectedExpenseId) ?? null;
   return (
     <Stack gap={6}>
-      <SpendOverview expenses={expenses} sources={sources} />
+      <SpendOverview expenses={expenses} />
       {dashboard.list.error ? (
         <ErrorState error={dashboard.list.error} onRetry={dashboard.list.reload} title="Showing the last loaded expenses; a refresh failed" />
       ) : null}

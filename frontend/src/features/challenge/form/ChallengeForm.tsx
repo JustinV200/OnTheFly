@@ -27,7 +27,8 @@ const TEMPLATE_TASKS = ['vacuum', 'trash', 'restrooms'];
 interface ChallengeFormProps {
   // null while the business has changed the mode and the bidder hasn't re-confirmed: the draft stays, submitting doesn't.
   acknowledgedMode: BiddingModeValue | null;
-  // The listing's mode now, and how the bidder re-confirms it; the mode-change alert and the summary need both.
+  // The listing's mode now, and how the bidder re-confirms it. ModeChangeAlert owns the one confirm button; the
+  // summary beside the submit button only says what the mode means.
   currentMode: BiddingModeValue;
   onConfirmMode: () => void;
   // The bidder's stored offer, when it has one. The form starts from its terms, because submitting replaces all of them.
@@ -123,7 +124,6 @@ export function ChallengeForm(props: ChallengeFormProps): JSX.Element {
           isRevision={initialOffer !== null}
           isSubmitting={isSubmitting}
           listing={listing}
-          onConfirmMode={onConfirmMode}
           submitProblem={submitProblem}
           validationError={validationError}
         />

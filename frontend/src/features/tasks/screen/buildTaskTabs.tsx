@@ -25,10 +25,10 @@ interface TaskTabsInput {
 /** Return the tabs the viewer may see, in page order. */
 export function buildTaskTabs(input: TaskTabsInput): TabItem[] {
   const { task, reload, openSplit, focusTarget, clearFocus } = input;
+  // Only the offer count gets a tab pill: it is the one number that means someone is waiting on the viewer.
   const tabs: TabItem[] = [{
     id: 'overview',
     label: 'Overview',
-    meta: task.pieces.length > 0 ? task.pieces.length : undefined,
     content: <TaskOverview highlightedPieceId={input.highlightedPieceId} onChanged={reload} onSplit={() => openSplit(null)} task={task} />,
   }];
 
@@ -55,7 +55,7 @@ export function buildTaskTabs(input: TaskTabsInput): TabItem[] {
     tabs.push({
       id: 'listing',
       label: 'Listing & offers',
-      meta: task.listing?.offer_count,
+      meta: task.listing && task.listing.offer_count > 0 ? task.listing.offer_count : undefined,
       content: (
         <TaskListingSection
           isOffersFocusRequested={focusTarget === 'offers'}

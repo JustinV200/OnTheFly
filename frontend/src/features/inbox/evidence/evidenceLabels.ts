@@ -1,7 +1,7 @@
-/* Plain names for evidence sources and statuses, shared by the compact row chips and the full records in the drawer.
+/* Plain names for evidence sources and statuses, shared by the row's coverage chip and the full records in the drawer.
    "Not checked" and "no match found in this source" never read as verified (CLAUDE.md, evidence and claims), and an
    unknown status or source is shown as itself, never hidden. Implementation names ("registry stub") stay visible in the
-   drawer's full record; the chips use the plain name (roadmap 11, "Copy and density pass"). */
+   drawer's full record; the plain names are used everywhere else (roadmap 11, "Copy and density pass"). */
 import type { PillTone } from '../../../shared/components/Pill';
 
 export interface EvidenceLabel {
@@ -35,9 +35,19 @@ const REGISTRY_STUB_NOT_CHECKED: Omit<EvidenceLabel, 'source'> = {
   tone: 'neutral',
 };
 
+// The statuses that mean a lookup actually ran. Everything else — not checked, unavailable, an unrecognized status —
+// counts as not checked, so a source that failed or was never connected can never be summarized as covered
+// (CLAUDE.md, "Evidence and claims").
+const RAN_STATUSES = new Set(['matched', 'no_match_found', 'uncertain']);
+
 /** Return the plain name for a source, or the server's own name when there is no plainer one. */
 export function evidenceSourceName(source: string): string {
   return SOURCE_NAMES[source] ?? source;
+}
+
+/** True when this status means the source was actually queried. Unknown statuses are false, never assumed checked. */
+export function hasCheckRun(status: string): boolean {
+  return RAN_STATUSES.has(status);
 }
 
 /** Return the plain labels for one check's source and status. */

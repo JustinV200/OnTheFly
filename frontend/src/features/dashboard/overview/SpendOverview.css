@@ -1,5 +1,5 @@
-/* Spend headline: the total sits on the canvas like a portfolio value, with small bordered tiles beside it on a laptop
-   and underneath on a phone (two across, the data-source tile full width). */
+/* Spend headline: the total sits on the canvas like a portfolio value, with two small bordered tiles beside it on a
+   laptop and underneath on a phone. */
 .spend-overview {
   align-items: end;
   display: grid;
@@ -20,31 +20,10 @@
   padding: var(--space-3) var(--space-4);
 }
 
-.spend-overview__tile--wide {
-  grid-column: 1 / -1;
-}
-
 .spend-overview__label {
   align-items: center;
   display: inline-flex;
   gap: var(--space-1);
-}
-
-/* A source name is words, not a figure: normal tracking, and it may wrap. */
-.spend-overview__source {
-  font-size: var(--text-lg);
-  letter-spacing: normal;
-  overflow-wrap: anywhere;
-}
-
-@media (min-width: 768px) {
-  .spend-overview__tiles {
-    grid-template-columns: repeat(3, minmax(0, 1fr));
-  }
-
-  .spend-overview__tile--wide {
-    grid-column: auto;
-  }
 }
 
 @media (min-width: 1024px) {

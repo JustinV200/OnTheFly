@@ -54,7 +54,7 @@ export function InvitePage(): JSX.Element {
       <Stack gap={6}>
         {header}
         <EmptyState action={<ButtonLink to="/marketplace">Browse markets</ButtonLink>} title="Pick a business to invite suppliers">
-          Only a listing’s owner can invite suppliers. Choose the business in the account menu.
+          Only a listing’s owner can invite suppliers. Choose it from the business switcher in the top bar.
         </EmptyState>
       </Stack>
     );

@@ -43,7 +43,7 @@ export function ListingDetailPage(): JSX.Element {
       <Stack gap={4}>
         <BackToMarketsLink />
         {query.error
-          ? <ErrorState error={query.error} onRetry={query.reload} title="Couldn’t load this listing" />
+          ? <ErrorState error={query.error} onRetry={query.reload} title="Couldn’t load this market" />
           : <LoadingSpinner label="Loading market…" />}
       </Stack>
     );
@@ -56,14 +56,16 @@ export function ListingDetailPage(): JSX.Element {
     <Stack gap={10}>
       {/* A failed poll keeps the last listing visible, but never silently: its price or terms may have changed. */}
       {query.error ? (
-        <ErrorState error={query.error} onRetry={query.reload} title="Showing the last loaded listing; a refresh failed" />
+        <ErrorState error={query.error} onRetry={query.reload} title="Showing the last loaded market; a refresh failed" />
       ) : null}
 
       <div className="market-page">
         <MarketHeader className="market-page__header" closes={closes} listing={listing} offerCount={offerCount} />
         <PriceHeadline className="market-page__price" listing={listing} />
-        <aside aria-label="Bid on this task" className="market-page__ticket">
-          <BidTicket closes={closes} listing={listing} ownership={ownership} />
+        {/* The label matches the ticket's own title, so a screen reader hears the region named once and correctly:
+            the poster gets their listing, everyone else gets the bid. */}
+        <aside aria-label={ownership.status === 'owner' ? 'Your listing' : 'Bid on this task'} className="market-page__ticket">
+          <BidTicket closes={closes} listing={listing} offerCount={offerCount} ownership={ownership} />
         </aside>
         <OfferActivity board={board} className="market-page__activity" closes={closes} listing={listing} offerCount={offerCount} />
         <MarketTabs board={board} className="market-page__tabs" closes={closes} listing={listing} />

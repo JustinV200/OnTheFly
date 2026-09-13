@@ -1,6 +1,6 @@
 /* A suggested piece, full width: the labor category, the requirements it covers, the savings equation, the pass line,
-   the honesty label, why it is provisional, and one large Split off with a quiet Dismiss. Everything behind the figures
-   is in "How we got this". Only potential_savings cards the server suggested render here. */
+   the honesty label, why it is provisional, and one large "Split off this piece" with a quiet Dismiss. Everything behind
+   the figures is in "How we got this". Only potential_savings cards the server suggested render here. */
 import { Badge, Button, Card, Stack } from '../../../shared/ui';
 import type { SavingsCardView } from '../types';
 import { CardDetails } from './details/CardDetails';
@@ -43,7 +43,7 @@ export function HeroSavingsCard({ card, splitBlockReason, onSplitOff, onDismiss,
         <HonestyLabel card={card} />
         <ProvisionalNote card={card} />
         <div className="savings-actions">
-          <Button disabled={splitBlockReason !== null} onClick={onSplitOff} size="lg" variant="primary">Split off</Button>
+          <Button disabled={splitBlockReason !== null} onClick={onSplitOff} size="lg" variant="primary">Split off this piece</Button>
           <Button onClick={onDismiss} variant="ghost">Dismiss</Button>
           {splitBlockReason ? <span className="ui-text-sm ui-text-muted">{splitBlockReason}</span> : null}
         </div>

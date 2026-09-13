@@ -30,7 +30,7 @@ export function AddedRequirements({ task, rows, isSuggestion, onChange }: AddedR
       </p>
       {isSuggestion && rows.length > 0 ? (
         <Callout role="note" title="This becomes a manual split" tone="info">
-          <p>The suggestion was priced on the card’s requirements only, so a piece with added requirements is split off manually.</p>
+          <p>The suggestion was priced on the card’s requirements only, so adding a requirement records this as a manual split, not a suggested one.</p>
         </Callout>
       ) : null}
       <AiRequirementDraft

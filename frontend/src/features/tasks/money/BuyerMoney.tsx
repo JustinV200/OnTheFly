@@ -31,7 +31,7 @@ export function BuyerMoney({ money }: BuyerMoneyProps): JSX.Element {
   ];
 
   return (
-    <Card actions={<Badge tone="private">Only you see this</Badge>} title="Your money on this task">
+    <Card actions={<Badge tone="private">Only you see this</Badge>} title="What you pay for this task">
       <Stack gap={5}>
         <Grid minItemWidth="11rem">
           <Stat label={money.baseline_label} size="lg" unit={money.baseline_minor === null ? undefined : unit} value={money.baseline_minor === null ? <span className="ui-text-muted">No budget stated</span> : amount(money.baseline_minor)} />

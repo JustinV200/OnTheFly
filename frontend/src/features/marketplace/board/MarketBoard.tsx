@@ -54,8 +54,10 @@ export function MarketBoard({ feed, visibleListings, isFiltered, onClearFilters,
         <MarketGrid>
           {visibleListings.map((item) => (
             <MarketCard
+              // Bid leads to the market page, not straight to the offer form: a bidder reads the scope and the
+              // bidding terms before naming a price (CLAUDE.md, "Marketplace mechanics").
               action={canBid && !describeClosesIn(item.listing.challenge_deadline).isClosed ? (
-                <ButtonLink to={`/listings/${item.listing.id}/challenge`} variant="primary">Bid</ButtonLink>
+                <ButtonLink to={`/listings/${item.listing.id}`} variant="primary">Bid</ButtonLink>
               ) : undefined}
               href={`/listings/${item.listing.id}`}
               key={item.listing.id}

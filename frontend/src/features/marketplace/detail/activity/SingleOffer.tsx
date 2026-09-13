@@ -33,7 +33,7 @@ export function SingleOffer({ entry, currentScopeVersion, listingCadence }: Sing
       <p className="ui-text-muted ui-text-sm">
         Submitted {formatTimestamp(entry.submitted_at)}
         {entry.is_current_scope_version ? '' : ` · ${answeredScopeLabel(entry.answered_scope_version_number, currentScopeVersion)}`}
-        .{listingCadence === 'monthly' ? '' : ` The server restates every offer per month to compare them; this listing is priced ${perPeriodWords(listingCadence)}.`}
+        .{listingCadence === 'monthly' ? '' : ` The server restates every offer per month to compare them; this market is priced ${perPeriodWords(listingCadence)}.`}
         {' '}The chart starts when a second offer arrives.
       </p>
     </div>

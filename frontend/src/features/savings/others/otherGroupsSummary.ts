@@ -1,5 +1,5 @@
-/* The one-line summary on the collapsed "other groups" disclosure, e.g. "3 other groups checked: 2 specialist market
-   (no modeled savings), 1 didn't qualify on these numbers". Counts only; tiers are the server's. */
+/* The one-line summary on the collapsed "other groups" disclosure, e.g. "3 other groups checked · 2 have no modeled
+   savings (specialist market) · 1 didn't clear the thresholds". Counts only; tiers are the server's. */
 import { tierWords } from '../card/tierWords';
 import type { SavingsCardView, SavingsTier } from '../types';
 
@@ -11,7 +11,11 @@ export function otherGroupsSummary(cards: SavingsCardView[], hasSuggestions: boo
   const parts = OTHER_TIER_ORDER
     .map((tier) => ({ tier, count: cards.filter((card) => card.tier === tier).length }))
     .filter((entry) => entry.count > 0)
-    .map((entry) => `${entry.count} ${tierWords(entry.tier).counted}`);
+    .map((entry) => {
+      const words = tierWords(entry.tier);
+      return `${entry.count} ${entry.count === 1 ? words.countedOne : words.counted}`;
+    });
   const noun = cards.length === 1 ? 'group' : 'groups';
-  return `${cards.length} ${hasSuggestions ? 'other ' : ''}${noun} checked${parts.length > 0 ? `: ${parts.join(', ')}` : ''}`;
+  // Middot separators, so each count reads as its own short clause rather than one comma-spliced sentence.
+  return [`${cards.length} ${hasSuggestions ? 'other ' : ''}${noun} checked`, ...parts].join(' · ');
 }

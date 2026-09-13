@@ -1,7 +1,8 @@
 /* The alert at the top of the bid form when the business changes the bidding mode while the bidder is still typing.
    The steady-state mode is not explained here (the header pill and the summary beside the submit button do that once);
-   this renders only for a change, with the confirm action, since a revision is recorded under the mode in force now.
-   The summary card repeats the warning and its confirm button beside the submit button. */
+   this renders only for a change, and owns the one confirm action, since a revision is recorded under the mode in force
+   now. The summary beside the submit button repeats the warning and points back here rather than offering a second
+   button for the same decision. */
 import { Button, Callout } from '../../../shared/ui';
 import { describeModeChange } from '../status/describeModeChange';
 import type { BiddingModeValue } from '../types';
@@ -23,7 +24,7 @@ export function ModeChangeAlert({ acknowledgedMode, currentMode, onConfirmMode, 
   }
   const replacement = isRevision
     ? 'Submitting replaces your current offer with this revision.'
-    : 'If you already have an offer on this listing, this one replaces it.';
+    : 'If you already have an offer on this task, this one replaces it.';
 
   return (
     <Callout

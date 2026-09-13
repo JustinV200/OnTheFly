@@ -35,7 +35,7 @@ export function BiddingRules({ biddingMode, closes }: BiddingRulesProps): JSX.El
         <Rule icon="clock" title="Deadline">
           {deadlineSentence(closes)}
         </Rule>
-        <Rule icon="x" title="No bidding on your own listing">
+        <Rule icon="x" title="No bidding on your own task">
           A business can’t make an offer on a task it published itself.
         </Rule>
         <Rule icon="check-circle" title="Scope before price">
@@ -75,7 +75,7 @@ function deadlineSentence(closes: ClosesIn): string {
     return `Closed to new offers since ${closes.exact}. Offers made before then still count.`;
   }
   if (closes.exact === null) {
-    return 'No deadline is set. You can revise your offer while the listing is public.';
+    return 'No deadline is set. You can revise your offer while the market is public.';
   }
   return `Offers close ${closes.exact}. You can revise yours until then; later offers are rejected.`;
 }

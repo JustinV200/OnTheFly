@@ -57,8 +57,8 @@ export function ChallengePage(): JSX.Element {
   if (!account) {
     return (
       <BidPageFrame>
-        <EmptyState action={<ButtonLink to={`/listings/${id}`}>View the listing</ButtonLink>} title="Pick a business to bid as">
-          Offers come from a business on the platform. Choose one in the account menu. Visitors can still view the listing.
+        <EmptyState action={<ButtonLink to={`/listings/${id}`}>View the market</ButtonLink>} title="Pick a business to bid as">
+          Offers come from a business on the platform. Choose one from the business switcher in the top bar. Visitors can still read the market.
         </EmptyState>
       </BidPageFrame>
     );
@@ -66,7 +66,7 @@ export function ChallengePage(): JSX.Element {
   if (listingQuery.error?.status === 404) {
     return (
       <BidPageFrame>
-        <EmptyState action={<ButtonLink to="/marketplace">Back to Markets</ButtonLink>} title="This listing is no longer public">
+        <EmptyState action={<ButtonLink to="/marketplace">Browse markets</ButtonLink>} title="This market is no longer public">
           {submitted
             ? 'Its owner unpublished it after your offer was recorded. Your offer is kept with the owner.'
             : ownOfferQuery.data?.offer
@@ -80,8 +80,8 @@ export function ChallengePage(): JSX.Element {
     return (
       <BidPageFrame>
         {listingQuery.error
-          ? <ErrorState error={listingQuery.error} onRetry={listingQuery.reload} title="Couldn’t load this listing" />
-          : <LoadingSpinner label="Loading listing terms…" />}
+          ? <ErrorState error={listingQuery.error} onRetry={listingQuery.reload} title="Couldn’t load this market" />
+          : <LoadingSpinner label="Loading bidding terms…" />}
       </BidPageFrame>
     );
   }
@@ -91,7 +91,7 @@ export function ChallengePage(): JSX.Element {
       <BidPageFrame>
         {ownListing.error
           ? <ErrorState error={ownListing.error} onRetry={ownListing.reload} title="Couldn’t check whether this is your own listing" />
-          : <LoadingSpinner label="Checking this listing…" />}
+          : <LoadingSpinner label="Checking this market…" />}
       </BidPageFrame>
     );
   }
@@ -168,7 +168,7 @@ export function ChallengePage(): JSX.Element {
         <SubmittedOffer offer={submitted} onReviseAgain={() => setIsConfirmationShown(false)} requirements={listing.requirements ?? []} />
       ) : null}
       {!isConfirmationShown && deadline.isClosed ? (
-        <EmptyState action={<ButtonLink to="/marketplace">Back to Markets</ButtonLink>} title="Closed to new offers">
+        <EmptyState action={<ButtonLink to="/marketplace">Browse markets</ButtonLink>} title="Closed to new offers">
           {deadline.text}. Offers and revisions are no longer accepted; offers already made still count.
         </EmptyState>
       ) : null}

@@ -59,6 +59,7 @@ export function TaskView({ task, reload, refreshError }: TaskViewProps): JSX.Ele
       setFocusTarget('savings');
     },
     onSplitManually: () => split.open(null),
+    onDetails: () => setActiveTab('details'),
   };
 
   const tabs = buildTaskTabs({
@@ -84,8 +85,9 @@ export function TaskView({ task, reload, refreshError }: TaskViewProps): JSX.Ele
       {refreshError ? <ErrorState error={refreshError} onRetry={reload} title="Showing the last loaded task; a refresh failed" /> : null}
       <TaskNoticeCallout notice={notice} onDismiss={() => setNotice(null)} />
       <ParentScopeNotice onReviewed={reload} task={task} />
-      {/* A split notice already carries the next step (open the piece to publish); repeating it would add a second primary. */}
-      {notice?.kind === 'split' ? null : <NextStepCallout handlers={handlers} step={step} />}
+      {/* A notice already says what just happened and what follows; a second banner under it read as a duplicate.
+          The next step returns as soon as the notice is dismissed. */}
+      {notice ? null : <NextStepCallout handlers={handlers} step={step} />}
       <Tabs
         activeId={activeTab ?? defaultTabId(task)}
         label="Task details"

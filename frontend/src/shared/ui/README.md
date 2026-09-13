@@ -81,7 +81,7 @@ Button emphasis: one `primary` per view (publish, submit offer, challenge). Ever
 
 - Every figure and offer shows `ProvenanceBadge` (`shared/provenance/ProvenanceBadge`) right beside it: in the Stat `caption`, in the same table row, or in the card header `actions`. Never behind a disclosure, never removed to save space.
 - The `simulated` tone (orange) means demo data. Don't use it for anything else.
-- Fly-brain output always carries `FlyBrainBadge`, and a panel built from it ends with `FlyBrainNote`. The `brand` tone is reserved for these.
+- Fly-brain output always carries `FlyBrainBadge`, and a panel built from it ends with `FlyBrainNote`. Its tone is `flybrain` (violet), never `brand`. The `brand` tone is reserved for the page's single next-step callout and the "you" relationship badges ("You own this", "You posted and own this").
 
 ### Visibility and bidding status
 

@@ -8,10 +8,11 @@ interface Label {
   explanation: string;
 }
 
+// Explanations read the same for every viewer (poster, owner, client), since the header shows them under the title.
 const ORIGINS: Record<string, Label> = {
-  rebid: { text: 'REBID', tone: 'neutral', explanation: 'Work this business already pays for, put up for bids.' },
-  new: { text: 'New work', tone: 'neutral', explanation: 'Work with no current vendor.' },
-  split: { text: 'Piece', tone: 'neutral', explanation: 'Split off another task by its owner.' },
+  rebid: { text: 'REBID', tone: 'neutral', explanation: 'Work its poster already pays for, put up for new bids.' },
+  new: { text: 'New work', tone: 'neutral', explanation: 'New work with no current vendor.' },
+  split: { text: 'Piece', tone: 'neutral', explanation: 'A piece split off a larger task by that task’s owner.' },
 };
 
 const STATES: Record<string, Label> = {

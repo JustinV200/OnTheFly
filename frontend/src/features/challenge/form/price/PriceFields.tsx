@@ -33,7 +33,7 @@ export function PriceFields({ fields, onChange, currency, listingCadence, origin
   // listing's is named too, since nothing converts it and the business compares offers on its own terms.
   const periodHint = fields.billingFrequency === listingCadence
     ? `${unitWords}, ${perPeriodWords(fields.billingFrequency)}`
-    : `${unitWords}, ${perPeriodWords(fields.billingFrequency)}. The listing is priced ${perPeriodWords(listingCadence)}.`;
+    : `${unitWords}, ${perPeriodWords(fields.billingFrequency)}. The task is priced ${perPeriodWords(listingCadence)}.`;
 
   return (
     <Card title="Price">

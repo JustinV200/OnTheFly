@@ -41,7 +41,7 @@ def _summary(event: TaskEvent, task: Task, names: dict[str, str]) -> str:
         )
     if event.kind == "accepted":
         amount = _money(detail.get("accepted_price_minor"), task.currency)
-        return f"{actor} accepted an offer at {amount} per {task.billing_period} period"
+        return f"{actor} accepted an offer at {amount} {_per_period(task.billing_period)}"
     if event.kind == "ownership_transferred":
         new_owner = names.get(str(detail.get("new_owner_account_id")), "the bidder")
         return f"Task ownership moved to {new_owner}"
@@ -56,5 +56,20 @@ def _summary(event: TaskEvent, task: Task, names: dict[str, str]) -> str:
     return f"{actor}: {event.kind.replace('_', ' ')}"
 
 
+_PERIOD_WORDS = {"annual": "a year", "monthly": "a month", "quarterly": "a quarter", "weekly": "a week"}
+
+
+def _per_period(billing_period: str) -> str:
+    return _PERIOD_WORDS.get(billing_period, f"per {billing_period} period")
+
+
 def _money(amount: object, currency: str) -> str:
-    return Money(amount=amount, currency=currency).to_display() if isinstance(amount, int) else "an amount"
+    """Format for a sentence read aloud: thousands separators, so $1,298,000.00 doesn't read as a raw number."""
+
+    if not isinstance(amount, int):
+        return "an amount"
+    money = Money(amount=amount, currency=currency)
+    sign = "-" if money.amount < 0 else ""
+    absolute = abs(money.amount)
+    symbol = "$" if currency.upper() == "USD" else f"{currency.upper()} "
+    return f"{sign}{symbol}{absolute // 100:,}.{absolute % 100:02d}"

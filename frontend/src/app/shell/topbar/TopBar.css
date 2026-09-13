@@ -1,6 +1,7 @@
 /* Top bar: sticky, translucent over the canvas, with content aligned to the page container.
    Phone (grid): brand and account on the first row, the demo-data chip across the second. From 768px: one flex row
-   with the theme flip. 1024px: navigation moves inline. 1440px: the search field joins. */
+   with the theme flip. 1024px: navigation moves inline and the acting business stops shrinking, so its name is never
+   clipped on a projector. 1600px: the search field joins (below that the markets page's own search box is enough). */
 .top-bar {
   background-color: color-mix(in srgb, var(--color-canvas) 90%, transparent);
   border-bottom: var(--border-width) solid var(--color-border);
@@ -90,9 +91,14 @@
     padding-bottom: 0;
     padding-top: 0;
   }
+
+  /* The chip is an honesty label and the name must read across the room: neither gives up width to the others. */
+  .top-bar__account {
+    flex: none;
+  }
 }
 
-@media (min-width: 1440px) {
+@media (min-width: 1600px) {
   .top-bar__search {
     display: flex;
     flex: 1 1 auto;

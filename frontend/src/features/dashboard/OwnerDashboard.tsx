@@ -42,7 +42,7 @@ export function OwnerDashboard({ account }: OwnerDashboardProps): JSX.Element {
       />
 
       <Stack gap={8}>
-        {hasImported ? <ImportedSpend businessName={account.businessName} dashboard={dashboard} sources={status?.sources ?? []} /> : null}
+        {hasImported ? <ImportedSpend businessName={account.businessName} dashboard={dashboard} /> : null}
         <DataSourcesCard
           shouldOpen={shouldOpenSources}
           summary={status && hasImported ? <SourcesSummary connection={status} /> : null}

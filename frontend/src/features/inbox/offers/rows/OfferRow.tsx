@@ -1,7 +1,7 @@
 /* One offer in the owner's ranked list: who (visible only to the owner), how it arrived, scope covered, the price as
-   offered in its own billing period, potential savings, and a chip per evidence check. The whole row opens the offer
-   drawer; the name and the Details button are the keyboard targets for the same action. Every figure is the server's,
-   measured on the scope version it answered. */
+   offered in its own billing period, potential savings, and how many evidence sources were checked. The whole row opens
+   the offer drawer, where each source's own result lives; the name and the Details button are the keyboard targets for
+   the same action. Every figure is the server's, measured on the scope version it answered. */
 import { BiddingModePill } from '../../../../shared/components/BiddingModePill';
 import { Pill } from '../../../../shared/components/Pill';
 import { formatTimestamp } from '../../../../shared/format/formatTimestamp';

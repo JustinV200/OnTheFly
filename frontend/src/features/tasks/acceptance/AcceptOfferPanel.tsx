@@ -93,8 +93,8 @@ export function AcceptOfferPanel({ taskId, challengeId, bidderName, onAccepted, 
       ) : (
         <Callout role="note" title={`Accept ${bidderName}’s offer?`} tone="info">
           <p>
-            <strong><MoneyDisplay amountMinor={check.offer_price_minor} currency={check.currency} /> {cadenceSuffix(check.billing_period)}</strong>{' '}
-            (restated {perPeriodWords(check.billing_period)} by the server). Bidding closes, and {bidderName} becomes the task owner:
+            <strong><MoneyDisplay amountMinor={check.offer_price_minor} currency={check.currency} /> {cadenceSuffix(check.billing_period)}</strong>
+            {' '}({perPeriodWords(check.billing_period)}, as the server restates it). Bidding closes and {bidderName} becomes the task owner;
             only they can split it from then on. This is a marketplace record, not a contract.
           </p>
           {check.remainder_after_minor !== null ? (
