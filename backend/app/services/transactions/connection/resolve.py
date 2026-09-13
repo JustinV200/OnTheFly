@@ -15,7 +15,8 @@ class DemoConnection(BaseModel):
 
 # Keyed by transaction source, then by platform account. Only the fixture source has fixed
 # provider accounts. Stripe accounts are linked per company through the consent flow and stored
-# as FinancialConnection rows (api/connections/router.py), so they don't appear in this map.
+# as FinancialConnection rows (api/connections/router.py), so they don't appear in this map;
+# linked.py reports both kinds of link side by side.
 DEMO_CONNECTIONS: dict[str, dict[str, str]] = {
     "fixture": {"acc_owner_1": "fixture_apex_main", "acc_owner_2": "fixture_tidewater_main"},
 }
