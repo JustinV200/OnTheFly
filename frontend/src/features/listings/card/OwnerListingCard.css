@@ -1,0 +1,115 @@
+/* My listings card. Phone: heading, price, status badges, then actions, stacked. Tablet and up: heading, price, and
+   badges share one row, with the actions along the bottom and Unpublish pushed to the end. */
+.owner-listing {
+  background-color: var(--color-surface);
+  border: var(--border-width) solid var(--color-border);
+  border-radius: var(--radius-lg);
+  box-shadow: var(--shadow-xs);
+  display: grid;
+  gap: var(--space-3);
+  grid-template-areas:
+    "heading"
+    "price"
+    "status"
+    "failure"
+    "actions";
+  min-width: 0;
+  padding: var(--space-4);
+}
+
+.owner-listing__heading {
+  align-items: center;
+  display: flex;
+  gap: var(--space-3);
+  grid-area: heading;
+  min-width: 0;
+}
+
+.owner-listing__names {
+  min-width: 0;
+}
+
+.owner-listing__title {
+  font-size: var(--text-lg);
+  margin: 0;
+}
+
+.owner-listing__subtitle {
+  color: var(--color-text-muted);
+  font-size: var(--text-sm);
+  margin: 0;
+  overflow-wrap: anywhere;
+}
+
+.owner-listing__price {
+  display: flex;
+  flex-direction: column;
+  grid-area: price;
+  min-width: 0;
+}
+
+.owner-listing__amount {
+  font-size: var(--text-3xl);
+  font-weight: var(--weight-bold);
+  letter-spacing: var(--tracking-tighter);
+  line-height: 1.1;
+}
+
+.owner-listing__period {
+  color: var(--color-text-muted);
+  font-size: var(--text-md);
+  font-weight: var(--weight-semibold);
+  letter-spacing: normal;
+  margin-left: var(--space-1);
+}
+
+.owner-listing__caption {
+  color: var(--color-text-muted);
+  font-size: var(--text-xs);
+}
+
+.owner-listing__status {
+  align-content: flex-start;
+  display: flex;
+  flex-wrap: wrap;
+  gap: var(--space-1);
+  grid-area: status;
+}
+
+.owner-listing__failure {
+  grid-area: failure;
+}
+
+.owner-listing__failure > * {
+  margin: 0;
+}
+
+.owner-listing__actions {
+  border-top: var(--border-width) solid var(--color-border-subtle);
+  display: flex;
+  flex-wrap: wrap;
+  gap: var(--space-2);
+  grid-area: actions;
+  padding-top: var(--space-3);
+}
+
+@media (min-width: 768px) {
+  .owner-listing {
+    align-items: center;
+    column-gap: var(--space-6);
+    grid-template-areas:
+      "heading price status"
+      "failure failure failure"
+      "actions actions actions";
+    grid-template-columns: minmax(0, 1.2fr) minmax(0, 0.9fr) minmax(0, 1.6fr);
+    padding: var(--space-5);
+  }
+
+  .owner-listing__status {
+    justify-content: flex-end;
+  }
+
+  .owner-listing__unpublish {
+    margin-left: auto;
+  }
+}

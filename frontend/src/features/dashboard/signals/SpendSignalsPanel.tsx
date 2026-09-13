@@ -1,14 +1,14 @@
-/* Shows the fly-brain spend signals for one private expense: baseline basis, price changes, unusual charges.
-   Each section carries the badge of the circuit that produced it, and the panel ends with FlyBrainNote.
+/* Shows the fly-brain spend signals for one private expense: baseline basis, price changes, unusual charges (all charges on request).
+   Each section carries a plain-words fly-brain badge; circuit names and the no-AI-model note sit in one disclosure at the end.
    Owner-only data; this panel is never reused on public pages. */
 import { ReactNode, useId } from 'react';
 
 import { LoadingSpinner } from '../../../shared/components/LoadingSpinner';
-import { FlyBrainBadge } from '../../../shared/flybrain/FlyBrainBadge';
-import { FlyBrainNote } from '../../../shared/flybrain/FlyBrainNote';
 import type { FlyBrainAttribution, FlyBrainComponent } from '../../../shared/flybrain/types';
-import { Badge, Callout, Card, Cluster, Icon, Stack } from '../../../shared/ui';
-import { ChargeReviewList } from './charges/ChargeReviewList';
+import { Badge, Callout, Cluster, Icon, Stack } from '../../../shared/ui';
+import { FlyBrainDisclosure } from '../flybrain/FlyBrainDisclosure';
+import { PlainFlyBrainBadge } from '../flybrain/PlainFlyBrainBadge';
+import { ChargeSignals } from './charges/ChargeSignals';
 import { formatNotAnalyzedSummary } from './formatSignals';
 import { BaselineBasisSummary } from './price/BaselineBasisSummary';
 import { PriceChangeList } from './price/PriceChangeList';
@@ -19,19 +19,17 @@ interface SpendSignalsPanelProps {
   expenseId: string;
 }
 
-/** Render the spend-signals card for one expense: loading, unavailable, or the labelled report. */
+/** Render the spend signals for one expense (the drawer's Signals tab): loading, unavailable, or the labelled report. */
 export function SpendSignalsPanel({ expenseId }: SpendSignalsPanelProps): JSX.Element {
   const { report, isLoading, error } = useSpendSignals(expenseId);
 
-  return (
-    <Card title="Spend signals" titleLevel={4}>
-      {isLoading ? <LoadingSpinner label="Loading spend signals…" /> : null}
-      {!isLoading && (error || !report) ? (
-        <Callout role="alert" tone="danger">{error ?? 'Spend signals are unavailable.'}</Callout>
-      ) : null}
-      {!isLoading && report ? <SpendSignalsReportBody report={report} /> : null}
-    </Card>
-  );
+  if (isLoading) {
+    return <LoadingSpinner label="Loading spend signals…" />;
+  }
+  if (error || !report) {
+    return <Callout role="alert" tone="danger">{error ?? 'Spend signals are unavailable.'}</Callout>;
+  }
+  return <SpendSignalsReportBody report={report} />;
 }
 
 function SpendSignalsReportBody({ report }: { report: SpendSignalsReport }): JSX.Element {
@@ -43,7 +41,7 @@ function SpendSignalsReportBody({ report }: { report: SpendSignalsReport }): JSX
         // The transaction list shows every stored row; say which ones these signals skipped.
         <p className="ui-text-sm ui-text-muted">
           Only posted charges are analyzed. Left out: {formatNotAnalyzedSummary(report.not_analyzed_transactions)} (listed
-          with their status under Supporting transactions).
+          with their status under Transactions).
         </p>
       ) : null}
 
@@ -70,10 +68,10 @@ function SpendSignalsReportBody({ report }: { report: SpendSignalsReport }): JSX
         }
         title="Charges"
       >
-        <ChargeReviewList charges={report.charges} />
+        <ChargeSignals charges={report.charges} />
       </SignalSection>
 
-      <FlyBrainNote attributions={report.fly_brain} />
+      <FlyBrainDisclosure attributions={report.fly_brain} />
     </Stack>
   );
 }
@@ -92,9 +90,9 @@ function SignalSection({ title, attribution, status, children }: SignalSectionPr
     <section aria-labelledby={headingId}>
       <Stack gap={2}>
         <Cluster gap={2}>
-          <h5 id={headingId}>{title}</h5>
+          <h3 id={headingId}>{title}</h3>
           {status}
-          {attribution ? <FlyBrainBadge attribution={attribution} /> : null}
+          {attribution ? <PlainFlyBrainBadge attribution={attribution} /> : null}
         </Cluster>
         {children}
       </Stack>

@@ -1,4 +1,4 @@
-/* Lists an account's live financial links for dashboard copy, e.g. "fixture account fixture_apex_main and Stripe sandbox account". */
+/* Lists an account's live financial links for dashboard copy, e.g. "Hackathon demo ledger account fixture_apex_main and Stripe sandbox account". */
 import type { LinkedConnection } from '../types';
 import { sourceLabel } from './sourceLabel';
 

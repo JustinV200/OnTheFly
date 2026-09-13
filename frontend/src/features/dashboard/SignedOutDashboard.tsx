@@ -1,23 +1,26 @@
-/* The dashboard route for a public visitor: there is no private data to show, so it says why and where to go instead.
+/* The Spend route for a public visitor: there is no private data to show, so it says why and where to go instead.
    It makes no API request, because a signed-out visitor has no business whose expenses could be loaded. */
+import { EmptyState } from '../../shared/components/EmptyState';
 import { Badge, ButtonLink, Icon, PageHeader } from '../../shared/ui';
 
-/** Render the signed-out dashboard state with its own h1 and the marketplace as the next step. */
+/** Render the signed-out Spend state with its own h1 and the market board as the next step. */
 export function SignedOutDashboard(): JSX.Element {
   return (
     <section>
       <PageHeader
-        actions={<ButtonLink to="/marketplace" variant="primary">Browse the marketplace as a visitor</ButtonLink>}
-        eyebrow="Private dashboard"
         meta={<Badge icon={<Icon name="eye" />} size="md" tone="neutral">Public visitor</Badge>}
-        subtitle={
-          <p>
-            Pick a business in the bar above to see its private expenses. As a public visitor you see only what businesses have
-            chosen to publish, which is exactly what a stranger on the internet sees.
-          </p>
-        }
-        title="Signed out: no private dashboard"
+        subtitle="Each business’s spend is private to that business."
+        title="Spend"
       />
+      <EmptyState
+        action={<ButtonLink iconEnd={<Icon name="arrow-right" />} to="/marketplace" variant="primary">Browse markets</ButtonLink>}
+        title="Pick a business to see its spend"
+      >
+        <p>
+          Choose a business in the account menu to see what it pays for. As a public visitor you see only what businesses
+          chose to publish, which is exactly what a stranger on the internet sees.
+        </p>
+      </EmptyState>
     </section>
   );
 }

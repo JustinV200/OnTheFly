@@ -1,8 +1,8 @@
 /* One suggested vendor pair: how alike the names are, both groups' facts, what merging does, and the owner's two choices.
    The match figure only ranks candidates (CLAUDE.md, fly-brain circuits); the owner decides whether two vendors are one. */
-import { MoneyDisplay } from '../../../shared/components/MoneyDisplay';
-import { Badge, Button, Cluster, Stack } from '../../../shared/ui';
-import type { VendorAliasSuggestion, VendorGroupSummary } from './types';
+import { MoneyDisplay } from '../../../../shared/components/MoneyDisplay';
+import { Badge, Button, Cluster, Stack } from '../../../../shared/ui';
+import type { VendorAliasSuggestion, VendorGroupSummary } from '../types';
 import './AliasSuggestionRow.css';
 
 interface AliasSuggestionRowProps {

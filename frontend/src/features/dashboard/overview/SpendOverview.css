@@ -1,0 +1,55 @@
+/* Spend headline: the total sits on the canvas like a portfolio value, with small bordered tiles beside it on a laptop
+   and underneath on a phone (two across, the data-source tile full width). */
+.spend-overview {
+  align-items: end;
+  display: grid;
+  gap: var(--space-5);
+}
+
+.spend-overview__tiles {
+  display: grid;
+  gap: var(--space-3);
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+}
+
+.spend-overview__tile {
+  background-color: var(--color-surface);
+  border: var(--border-width) solid var(--color-border);
+  border-radius: var(--radius-lg);
+  min-width: 0;
+  padding: var(--space-3) var(--space-4);
+}
+
+.spend-overview__tile--wide {
+  grid-column: 1 / -1;
+}
+
+.spend-overview__label {
+  align-items: center;
+  display: inline-flex;
+  gap: var(--space-1);
+}
+
+/* A source name is words, not a figure: normal tracking, and it may wrap. */
+.spend-overview__source {
+  font-size: var(--text-lg);
+  letter-spacing: normal;
+  overflow-wrap: anywhere;
+}
+
+@media (min-width: 768px) {
+  .spend-overview__tiles {
+    grid-template-columns: repeat(3, minmax(0, 1fr));
+  }
+
+  .spend-overview__tile--wide {
+    grid-column: auto;
+  }
+}
+
+@media (min-width: 1024px) {
+  .spend-overview {
+    gap: var(--space-8);
+    grid-template-columns: minmax(0, 1fr) minmax(0, 1.5fr);
+  }
+}

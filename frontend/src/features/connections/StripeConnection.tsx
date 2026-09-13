@@ -1,4 +1,4 @@
-/* Presents the Stripe sandbox source on the dashboard: consent and import controls, progress, and imported rows.
+/* Presents the Stripe sandbox row in Spend's Data sources: consent and import controls, progress, and imported rows.
    Provider requests and polling live in useStripeConnection; this file only renders that hook's state. */
 import { formatTimestamp } from '../../shared/format/formatTimestamp';
 import { ProvenanceBadge } from '../../shared/provenance/ProvenanceBadge';
@@ -15,7 +15,7 @@ interface StripeConnectionProps {
   onConnected: () => void;
 }
 
-/** Show consent/import controls, labelled as sandbox data, as one section of the Data sources card. */
+/** Show consent/import controls, labelled as sandbox data, as one row of the Data sources card. */
 export function StripeConnection({ onImported, onConnected }: StripeConnectionProps): JSX.Element {
   const { connection, transactions, busy, message, connect, refresh } = useStripeConnection(onImported, onConnected);
   const isConnected = connection?.connected === true;
@@ -38,18 +38,16 @@ export function StripeConnection({ onImported, onConnected }: StripeConnectionPr
           ) : null}
         </>
       }
+      details={<p>One simulated checking account from Stripe’s sandbox, not a live bank account. Imported transactions stay private.</p>}
+      facts={
+        connection?.last_synced_at
+          ? `Last imported ${formatTimestamp(connection.last_synced_at)}`
+          : isConnected ? 'Connected, nothing imported yet.' : 'Connect one simulated checking account. Imported transactions stay private.'
+      }
       meta={
         <>
           <ProvenanceBadge kind="financial" value="sandbox" />
           <ConnectionStateBadge connection={connection} message={message} />
-        </>
-      }
-      description={
-        <>
-          <p>Connect one simulated checking account. Imported transactions stay private.</p>
-          {connection?.last_synced_at ? (
-            <p className="ui-text-sm ui-text-muted">Last imported: {formatTimestamp(connection.last_synced_at)}</p>
-          ) : null}
         </>
       }
       title="Stripe sandbox"

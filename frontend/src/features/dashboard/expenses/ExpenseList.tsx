@@ -1,85 +1,84 @@
-/* The expenses half of the private dashboard: its loading, failure, and empty states, then the spend summary, the
-   expense table, and duplicate-vendor suggestions. Rendered only once the business has imported transactions. */
+/* The Spend expense list: a header that states shared provenance once, column labels on a laptop, publishable rows by
+   annual cost, then payroll, tax, and transfer rows grouped at the bottom and dimmed. Rows are cards on a phone.
+   Presentation only: it receives loaded expenses and reports which one the owner opened. */
 import { useId } from 'react';
 
-import { EmptyState } from '../../../shared/components/EmptyState';
-import { ErrorState } from '../../../shared/components/ErrorState';
-import { LoadingSpinner } from '../../../shared/components/LoadingSpinner';
-import { Cluster, Stack } from '../../../shared/ui';
-import { VendorAliasPanel } from '../aliases/VendorAliasPanel';
+import { ProvenanceBadge } from '../../../shared/provenance/ProvenanceBadge';
+import { Card, Cluster } from '../../../shared/ui';
+import { sharedProvenance } from '../provenance/sharedProvenance';
 import type { Expense } from '../types';
-import { useDashboard } from '../useDashboard';
-import { ExpenseSummary } from './ExpenseSummary';
-import { ExpenseTable } from './ExpenseTable';
+import { isNeverPublishable } from '../visibility/notPublishableReason';
+import { arrangeExpenses } from './arrangeExpenses';
+import { ExpenseRow } from './row/ExpenseRow';
+import './ExpenseList.css';
 
 interface ExpenseListProps {
-  businessName: string;
-  dashboard: ReturnType<typeof useDashboard>;
-}
-
-/** Render the "Your expenses" section and, when there are expenses, the vendor alias suggestions after it. */
-export function ExpenseList({ businessName, dashboard }: ExpenseListProps): JSX.Element {
-  const headingId = useId();
-  const expenses = dashboard.list.data?.expenses ?? [];
-  const hasExpenses = expenses.length > 0;
-
-  return (
-    <>
-      <section aria-labelledby={headingId}>
-        <Stack gap={4}>
-          <Cluster align="baseline" gap={2} justify="between">
-            <h2 id={headingId}>Your expenses</h2>
-            {hasExpenses ? <p className="ui-text-sm ui-text-muted">Select an expense to see the transactions behind its figures.</p> : null}
-          </Cluster>
-          <ExpenseListContent businessName={businessName} dashboard={dashboard} expenses={expenses} />
-        </Stack>
-      </section>
-      {hasExpenses ? (
-        <VendorAliasPanel
-          onMerged={() => {
-            // A merge deletes the alias expense row, so drop a selection that would now 404.
-            dashboard.selectExpense(null);
-            dashboard.reload();
-          }}
-        />
-      ) : null}
-    </>
-  );
-}
-
-interface ExpenseListContentProps extends ExpenseListProps {
   expenses: Expense[];
+  selectedExpenseId: string | null;
+  onOpen: (expenseId: string) => void;
+  onVisibilityChanged: () => void;
 }
 
-function ExpenseListContent({ businessName, dashboard, expenses }: ExpenseListContentProps): JSX.Element {
-  if (!dashboard.list.data) {
-    return dashboard.list.error
-      ? <ErrorState error={dashboard.list.error} onRetry={dashboard.list.reload} title="Couldn’t load expenses" />
-      : <LoadingSpinner label="Grouping transactions into expenses…" />;
-  }
-  if (expenses.length === 0) {
-    return (
-      <EmptyState title="No expenses found in the imported transactions">
-        {dashboard.list.data.message ?? `${businessName}'s transactions didn't group into any recurring or one-off expenses.`}
-      </EmptyState>
-    );
-  }
+/** Render the "Expenses" section with its grouped, sorted rows. Assumes at least one expense. */
+export function ExpenseList({ expenses, selectedExpenseId, onOpen, onVisibilityChanged }: ExpenseListProps): JSX.Element {
+  const headingId = useId();
+  const groupHeadingId = useId();
+  const { publishable, notPublishable } = arrangeExpenses(expenses);
+  // When every row has the same provenance it is stated once here; otherwise each row carries its own badge.
+  const commonProvenance = sharedProvenance(expenses.map((expense) => expense.provenance));
+  const isAllNever = notPublishable.every((expense) => isNeverPublishable(expense.eligibility_reason));
 
-  const selectedExpenseId = dashboard.selectedExpenseId;
+  const renderRow = (expense: Expense): JSX.Element => (
+    <ExpenseRow
+      expense={expense}
+      isSelected={expense.id === selectedExpenseId}
+      key={expense.id}
+      onOpen={onOpen}
+      onVisibilityChanged={onVisibilityChanged}
+      shouldShowProvenance={commonProvenance === null}
+    />
+  );
+
   return (
-    <>
-      <ExpenseSummary expenses={expenses} />
-      {dashboard.list.error ? (
-        <ErrorState error={dashboard.list.error} onRetry={dashboard.list.reload} title="Showing the last loaded expenses; a refresh failed" />
-      ) : null}
-      <ExpenseTable
-        detail={dashboard.detail}
-        expenses={expenses}
-        // Opening the open row again closes it, so the owner can get back to scanning rows without scrolling past a detail.
-        onToggle={(expenseId) => dashboard.selectExpense(expenseId === selectedExpenseId ? null : expenseId)}
-        onVisibilityChanged={dashboard.reload}
-        selectedExpenseId={selectedExpenseId}
-      />
-    </>
+    <section aria-labelledby={headingId} className="expense-list">
+      <Cluster align="baseline" className="expense-list__header" gap={3} justify="between">
+        <Cluster align="baseline" gap={2}>
+          <h2 className="expense-list__title" id={headingId}>Expenses</h2>
+          <span className="ui-text-sm ui-text-muted">{expenses.length} · largest first</span>
+        </Cluster>
+        {commonProvenance ? (
+          <Cluster gap={2}>
+            <span className="ui-text-sm ui-text-muted">All figures:</span>
+            {commonProvenance.map((value) => <ProvenanceBadge key={value} kind="financial" value={value} />)}
+          </Cluster>
+        ) : (
+          <span className="ui-text-sm ui-text-muted">Sources differ: each row shows its own</span>
+        )}
+      </Cluster>
+
+      <Card as="div" className="expense-list__card" padding="none">
+        <div aria-hidden="true" className="expense-list__columns">
+          <span>Vendor</span>
+          <span className="expense-list__column--end">Annual cost</span>
+          <span>Pattern</span>
+          <span>Visibility</span>
+          <span className="expense-list__column--end">Action</span>
+        </div>
+
+        {publishable.length > 0 ? <ul className="expense-list__rows">{publishable.map(renderRow)}</ul> : null}
+
+        {notPublishable.length > 0 ? (
+          <section aria-labelledby={groupHeadingId} className="expense-list__group">
+            <div className="expense-list__group-header">
+              <h3 className="expense-list__group-title" id={groupHeadingId}>
+                {isAllNever ? 'Never publishable' : 'Not publishable'}
+              </h3>
+              <span className="ui-text-sm ui-text-muted">Payroll, taxes, and transfers never go public. The reason is on each row.</span>
+            </div>
+            <ul className="expense-list__rows">{notPublishable.map(renderRow)}</ul>
+          </section>
+        ) : null}
+      </Card>
+    </section>
   );
 }

@@ -1,0 +1,11 @@
+/* A suggestion row inside the merge drawer: the explanation first, then the two buttons underneath. The drawer is narrow
+   at every viewport width, so the row never splits into columns. */
+.alias-suggestion {
+  display: grid;
+  gap: var(--space-3);
+}
+
+.alias-suggestion__claim {
+  margin: 0;
+  overflow-wrap: anywhere;
+}

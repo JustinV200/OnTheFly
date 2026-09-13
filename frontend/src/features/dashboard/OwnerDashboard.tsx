@@ -1,19 +1,21 @@
-/* Composes one business's private dashboard: the page header, its data sources, then its expenses once imported.
-   Data sources come first on every state, so an import's result appears beside the button that started it. */
+/* Composes one business's Spend page: the header, then (once imported) the headline and expense list, then Data sources.
+   The answer comes first and where it came from follows (roadmap 11, step 4). Before anything is imported, Data sources
+   is the only content, so the import button and its result are still the first thing on the page. */
 import type { DemoAccount } from '../../shared/account/demoAccounts';
 import { Badge, Icon, PageHeader, Stack } from '../../shared/ui';
 import { DataSourcesCard } from '../connections/sources/DataSourcesCard';
 import { StripeConnection } from '../connections/StripeConnection';
 import { ConnectionPanel } from './connection/ConnectionPanel';
+import { describeImportTotals } from './connection/describe/describeImportTotals';
 import { useConnection } from './connection/useConnection';
-import { ExpenseList } from './expenses/ExpenseList';
+import { ImportedSpend } from './ImportedSpend';
 import { useDashboard } from './useDashboard';
 
 interface OwnerDashboardProps {
   account: DemoAccount;
 }
 
-/** Render the acting business's dashboard; the expense list appears only after an import. */
+/** Render the acting business's Spend page; the headline and expense list appear only after an import. */
 export function OwnerDashboard({ account }: OwnerDashboardProps): JSX.Element {
   const dashboard = useDashboard();
   const connection = useConnection(dashboard.reload);
@@ -23,18 +25,18 @@ export function OwnerDashboard({ account }: OwnerDashboardProps): JSX.Element {
     // A section root rather than one Stack: PageHeader brings its own bottom margin, and a gap on top of it doubles the space.
     <section>
       <PageHeader
-        eyebrow={account.businessName}
         meta={
           <Badge icon={<Icon name="lock" />} size="md" tone="private">
             Only {account.businessName} can see this page
           </Badge>
         }
-        subtitle="Every expense arrives private. Nothing goes public unless you publish that one expense yourself."
-        title="Private dashboard"
+        subtitle="Everything imports private. Nothing goes public unless you publish that one expense."
+        title="Spend"
       />
 
-      <Stack gap={6}>
-        <DataSourcesCard>
+      <Stack gap={8}>
+        {hasImported ? <ImportedSpend businessName={account.businessName} dashboard={dashboard} sources={connection.status.data?.sources ?? []} /> : null}
+        <DataSourcesCard summary={connection.status.data ? describeImportTotals(connection.status.data) : null}>
           <ConnectionPanel
             businessName={account.businessName}
             importState={connection.importState}
@@ -54,8 +56,6 @@ export function OwnerDashboard({ account }: OwnerDashboardProps): JSX.Element {
             }}
           />
         </DataSourcesCard>
-
-        {hasImported ? <ExpenseList businessName={account.businessName} dashboard={dashboard} /> : null}
       </Stack>
     </section>
   );
