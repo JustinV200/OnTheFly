@@ -18,7 +18,13 @@ class DemoConnection(BaseModel):
 # as FinancialConnection rows (api/connections/router.py), so they don't appear in this map;
 # linked.py reports both kinds of link side by side.
 DEMO_CONNECTIONS: dict[str, dict[str, str]] = {
-    "fixture": {"acc_owner_1": "fixture_apex_main", "acc_owner_2": "fixture_tidewater_main"},
+    "fixture": {
+        "acc_owner_1": "fixture_apex_main",
+        "acc_owner_2": "fixture_tidewater_main",
+        # GovCon uses its own explicitly synthetic ledger. A separately linked Stripe sandbox
+        # account may coexist with it, and the dashboard reports each source independently.
+        "acc_govcon_1": "fixture_govcon_main",
+    },
 }
 
 

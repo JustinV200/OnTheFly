@@ -6,14 +6,14 @@ count is labelled by the provider of the stored rows rather than by the configur
 from datetime import UTC, datetime
 
 import pytest
+from app.core.config import get_settings
+from app.models import FinancialConnection, Transaction
 from sqlalchemy import func, select
 from sqlalchemy.orm import Session
 
-from app.core.config import get_settings
-from app.models import FinancialConnection, Transaction
-
 OWNER = {"X-Account-ID": "acc_owner_1"}
 CHALLENGER = {"X-Account-ID": "acc_challenger_1"}
+GOVCON = {"X-Account-ID": "acc_govcon_1"}
 
 
 def _link_stripe(db: Session, account_id: str, bank_account_id: str | None = "fca_linked") -> None:
@@ -80,6 +80,23 @@ def test_fixture_only_business_reports_its_fixture_link_and_rows(client) -> None
         ("fixture", "fixture", True)
     ]
     assert summary["sources"][0]["transaction_count"] == summary["transaction_count"]
+
+
+def test_govcon_fixture_and_stripe_can_coexist_without_blending_provenance(client, db_session) -> None:
+    """The buyer reads its synthetic ledger normally and can add separate sandbox rows."""
+
+    response = client.post("/api/connection/import", headers=GOVCON)
+    assert response.status_code == 202
+    _link_stripe(db_session, "acc_govcon_1")
+    _store_stripe_rows(db_session, "acc_govcon_1", 2)
+
+    summary = client.get("/api/connection", headers=GOVCON).json()
+
+    assert [connection["provider"] for connection in summary["connections"]] == ["fixture", "stripe"]
+    assert [
+        (source["provider"], source["source_type"], source["transaction_count"])
+        for source in summary["sources"]
+    ] == [("fixture", "fixture", 30), ("stripe", "sandbox", 2)]
 
 
 def test_stripe_link_counts_as_connected_before_any_rows_arrive(client, db_session) -> None:

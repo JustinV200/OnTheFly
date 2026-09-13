@@ -2,12 +2,10 @@
 
 from datetime import date
 
-from sqlalchemy import func, select
-
 from app.models.transaction import Transaction
 from app.services.transactions.fixture.source import FixtureSource
 from app.services.transactions.import_run import run_import
-
+from sqlalchemy import func, select
 
 PROVIDER_ACCOUNT_ID = "fixture_apex_main"
 
@@ -22,6 +20,22 @@ def test_fixture_source_loads_expected_account_data() -> None:
 
     assert len(transactions) >= 20
     assert all(transaction.provider_account_id == PROVIDER_ACCOUNT_ID for transaction in transactions)
+    assert all(transaction.source_type == "fixture" for transaction in transactions)
+
+
+def test_fixture_source_selects_the_govcon_ledger_by_provider_account() -> None:
+    """GovCon imports its dedicated ledger without mixing in the cleaning fixture."""
+
+    provider_account_id = "fixture_govcon_main"
+    transactions = FixtureSource().list_transactions(
+        provider_account_id=provider_account_id,
+        since=date(2026, 1, 1),
+        until=date(2026, 12, 31),
+    )
+
+    assert len(transactions) == 30
+    assert all(transaction.provider_account_id == provider_account_id for transaction in transactions)
+    assert all(transaction.provider == "fixture" for transaction in transactions)
     assert all(transaction.source_type == "fixture" for transaction in transactions)
 
 

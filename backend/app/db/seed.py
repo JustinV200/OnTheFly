@@ -6,7 +6,6 @@ from sqlalchemy.orm import Session
 
 from app.models.account import Account
 
-
 SEEDED_ACCOUNTS = [
     {
         "id": "acc_owner_1",
@@ -39,6 +38,14 @@ SEEDED_ACCOUNTS = [
         "handle": "tidewater-architecture",
         "business_name": "Tidewater Architecture Studio",
         "service_area": "San Francisco Bay Area",
+    },
+    # The hackathon buyer can import its synthetic ledger and independently link Stripe sandbox.
+    # Keeping both sources on one account exercises the same mixed-provenance dashboard path.
+    {
+        "id": "acc_govcon_1",
+        "handle": "govcon-industries",
+        "business_name": "GovCon Industries",
+        "service_area": "Northern Virginia",
     },
 ]
 
