@@ -15,26 +15,28 @@ Don't start P0 until each one has a recorded answer. Write the answer under its 
     - March–August 2026, with six monthly invoices for each of five services.
     - Variation is −1.5% to +1.5%, with zero average offset.
     - The annualized total is **$4,044,000**, not $4.03M. Use the computed figure everywhere.
-- [ ] **2. Fixture cost basis rates.**
+- [x] **2. Fixture cost basis rates.**
   - What labor categories and hourly rates does GovCon's current DevSecOps contract bill?
   - What internal loaded costs do Prime A and Sub B carry?
   - These decide whether any Ways to save card qualifies, so set them before seeing results, never by working back from a wanted outcome.
-  - Proposal: none yet.
-  - Blocks: [12](12-task-ownership-and-splitting.md) steps 7 and 9, and the demo.
-- [ ] **3. USAspending subaward data.**
+  - **Answer (user, 2026-09-13):** mock numbers for now. Public-data pulling is being built on another branch and will be wired in later.
+    - Fixture rates are labeled demo data, in `backend/app/services/demo/task_chain/fixture_rates.py`.
+    - Market rates and suppliers come from a mock market-data source labeled demo data (`MARKET_DATA_SOURCE=mock`).
+- [x] **3. USAspending subaward data.**
   - Do award and subaward records for DevSecOps PSC/NAICS codes in Northern Virginia return enough distinct suppliers by UEI to meet the 3-supplier threshold?
   - Answer with a short API check that writes no product code. Record the query, date and counts.
-  - Proposal: prime awards alone, if subawards are too thin.
-  - Blocks: [12](12-task-ownership-and-splitting.md) steps 8 and 9.
-- [ ] **4. Depth cap.**
+  - **Answer (user, 2026-09-13):** live calls only, with no saved snapshot; each refresh queries the source.
+    - The USAspending client is being built on another branch.
+    - Until it's wired, `MARKET_DATA_SOURCE=live` reports the source unavailable, which renders "not checked".
+- [x] **4. Depth cap.**
   - How many levels of splitting does `MAX_TASK_DEPTH` allow?
-  - Proposal: 5. The demo uses 2.
-  - Blocks: [12](12-task-ownership-and-splitting.md) step 1.
-- [ ] **5. Price display default for `new` tasks and pieces.**
+  - **Answer (user, 2026-09-13):** no depth cap, and no limit on manual splits.
+    - The limit is at most 5 active *suggested* pieces per task (`MAX_SUGGESTED_PIECES_PER_TASK=5`).
+    - Manual splits never count toward it, so a task can be broken up indefinitely.
+- [x] **5. Price display default for `new` tasks and pieces.**
   - Hidden by default (plan2) protects the poster's budget and cut. It leaves market cards showing "Price not disclosed" on a price-first board.
   - Shown by default makes the board consistent, but discloses each piece's cut.
-  - Proposal: hidden.
-  - Blocks: [12](12-task-ownership-and-splitting.md) steps 3 and 6.
+  - **Answer (user, 2026-09-13):** hidden by default.
 - [ ] **6. Fly Scout runtime.**
   - Which implementation runs Fly Scout, what does it take as input, and what run record does it produce?
   - Proposal: none yet. No neuron-count or connectome claim without runtime evidence.
@@ -48,22 +50,31 @@ Don't start P0 until each one has a recorded answer. Write the answer under its 
 
 | Capability | Evidence in repository | Status |
 |---|---|---|
-| App foundation | React features, FastAPI routes, SQLAlchemy models, Alembic migrations 0001–0012 | Implemented locally |
+| App foundation | React features, FastAPI routes, SQLAlchemy models, Alembic migrations 0001–0013 | Implemented locally |
 | Stripe sandbox ingestion | `transactions/stripe/`, `api/connections/`, frontend connection controls, mocked HTTP tests | Implemented; real sandbox consent unverified |
 | Expense pipeline | Fixture source, normalization, recurrence, baseline and expense API; GovCon ledger via `app.cli.seed_govcon_demo` and `test_govcon_seed.py` | Implemented; GovCon totals and privacy covered by tests; on-screen display and labels not yet checked |
-| Publishing and profiles | Publish stepper, exact preview, public projections and visibility tests | Reuse; scope moves onto requirements and category templates ([12](12-task-ownership-and-splitting.md), step 2) |
-| Offers/comparison | Submission/revisions, sealed/open rules, Offers inbox and deterministic math | Reuse; per-requirement responses and acceptance pending ([12](12-task-ownership-and-splitting.md), steps 2 and 4) |
+| Publishing and profiles | Publish stepper, exact preview, public projections and visibility tests; requirement rows and category templates (cleaning, DevSecOps) | Implemented; the cleaning scope columns remain in place |
+| Offers/comparison | Submission/revisions, sealed/open rules, Offers inbox, deterministic math, per-requirement responses and acceptance | Implemented ([12](12-task-ownership-and-splitting.md), steps 2 and 4) |
 | Task-market UI | Markets board, market page with bid ticket, bid form, Spend, My listings, Offers, trace, light/dark/system themes ([11](11-usability-and-dark-mode.md)) | Built and merged; keyboard focus and honesty-label audit open |
 | Evidence/outreach | Local evidence logic; registry stub; outreach backend (fixture/Tavily discovery, approval gate, sandbox/allowlisted SMTP queue, opt-out) and Invite suppliers UI | Registry missing; Tavily and SMTP unverified live; delivery tracking not built |
-| REBID experience | No GovCon/REBID/USAspending/public-rate implementation found | Not started |
-| Task ownership and splitting | No task, acceptance, requirement, split, cost basis, market evidence, Ways to save or money view implementation found | Not started ([12](12-task-ownership-and-splitting.md)) |
+| REBID experience | REBID… on a Spend expense opens a private DevSecOps task with requirements and constraints (`features/tasks/new/`); no USAspending discovery, public-rate pricing or Progress → Market → Bid orchestration | Partial: scope entry only |
+| Task ownership and splitting | `models/tasks/`, `services/tasks/`, `services/splitting/`, `services/rates/`, `services/market_data/`, `services/savings/`, tests in `tests/tasks/` and `tests/savings/`; screens in `features/tasks/`, `split/`, `savings/`, `rates/`, `work/` and the `/demo` guide | Steps 1–10 implemented against a mock market-data source labeled demo data; the live source isn't wired yet ([12](12-task-ownership-and-splitting.md)) |
 | Fly Scout | `flybrain` circuits label their results on Spend and similar listings; no Fly Scout runtime | Not started; after splitting |
 
-Last verified result (2026-09-13, after merging the task-market UI, outreach and the GovCon ledger): **365 backend tests passed; frontend build passed with the colour and contrast checks.** This is not an end-to-end acceptance run for the current plan. Existing checklists must not be marked complete merely because routes or files exist.
+Last verified result (2026-09-13, on `feat/task-ownership-splitting`): **469 backend tests passed; `tsc`, the frontend build, and the colour and contrast checks passed.**
+
+The GovCon → Prime A → Sub B chain was also driven through the real UI in headless Chrome against a scratch database. That run covered:
+- REBID from Spend, preview and publish
+- Prime A's offer accepted, and ownership moved
+- a suggested split, then the piece published
+- Sub B's offer accepted
+- all three money views reconciling on `/demo`
+
+It used mock market data, so it is not the acceptance run for "Ways to save from real public evidence", and it ran on one device, not three. Existing checklists must not be marked complete merely because routes or files exist.
 
 ## P0 — The splitting path
 
-Start once open questions 2–5 have recorded answers (1 is answered).
+Open questions 1–5 have recorded answers.
 
 **Prerequisites carried from plan1**
 
@@ -76,7 +87,9 @@ Start once open questions 2–5 have recorded answers (1 is answered).
   - Transactions are `fixture`, and Data sources has a Hackathon demo ledger row.
   - Not yet checked on screen for GovCon alongside a Stripe sandbox connection.
 - [ ] Add REBID action and persisted/recoverable progress for one DevSecOps expense.
-- [ ] Draft/confirm scope as tagged requirements with hours, location, clearance and classification ([12](12-task-ownership-and-splitting.md), step 2).
+  - The REBID… action creates a private task whose scope and state persist.
+  - The Progress → Market → Bid orchestration isn't built.
+- [x] Draft/confirm scope as tagged requirements with hours, location, clearance and classification ([12](12-task-ownership-and-splitting.md), step 2). Owner-entered, with a labeled demo fill; LLM drafting is P1.
 - [ ] Connect USAspending awards and subawards behind the shared market-data interface. Preserve award identifiers and source evidence ([12](12-task-ownership-and-splitting.md), step 8).
 - [ ] Apply deterministic qualification, deduplicating suppliers by UEI.
 - [ ] Integrate one usable public labor-rate path, saving the labor-category mapping and percentiles.
@@ -84,16 +97,20 @@ Start once open questions 2–5 have recorded answers (1 is answered).
 
 **Task ownership and splitting ([12](12-task-ownership-and-splitting.md))**
 
-- [ ] Tasks with poster and task owner; backfill existing listings (step 1).
-- [ ] Requirements, category templates and per-requirement offer responses (step 2).
-- [ ] `new` tasks with the price display toggle (step 3).
-- [ ] Accepting an offer and transferring ownership (step 4).
-- [ ] Cuts, remainder and undo (step 5).
-- [ ] Manual split, piece projection, Subcontract label, payer chain and direct-counterparty visibility (step 6).
-- [ ] Cost basis rates, with labeled fixture rates for GovCon, Prime A and Sub B (step 7).
+- [x] Tasks with poster and task owner; backfill existing listings (step 1). Migration `0013_task_ownership`; no depth cap (question 4).
+- [x] Requirements, category templates and per-requirement offer responses (step 2).
+- [x] `new` tasks with the price display toggle, hidden by default (step 3).
+- [x] Accepting an offer and transferring ownership (step 4).
+- [x] Cuts, remainder and undo (step 5).
+- [x] Manual split, piece projection, Subcontract label, payer chain and direct-counterparty visibility (step 6). Requirements are picked by hand; the LLM-proposed requirement mapping is P1.
+- [x] Cost basis rates, with labeled fixture rates for GovCon, Prime A and Sub B (step 7).
 - [ ] Market evidence records (step 8).
+  - The `MarketDataSource` interface, UEI dedupe, integer percentiles and `market_evidence` rows are implemented and tested against the mock source.
+  - The live USAspending and labor-rate clients are on another branch and not wired.
 - [ ] Ways to save cards with thresholds from config (step 9).
-- [ ] Money views and My work (step 10).
+  - Cards, tiers, config thresholds, the 5-suggested-pieces limit, dismiss/restore and oversight are implemented.
+  - The demo cards come from mock data ("Modeled cut from demo market data — not an offer"), not saved live evidence.
+- [x] Money views and My work (step 10).
 
 **Gate:** rebid → accept → ownership transfers → Ways to save from real public evidence → piece split off and published → piece's offer accepted → the new owner can split → every money view reconciles.
 
@@ -103,7 +120,7 @@ Start once open questions 2–5 have recorded answers (1 is answered).
 - [ ] LLM scope drafting for `new` tasks from owner-provided detail only.
 - [ ] Enrich shortlisted suppliers through Tavily and source-backed LLM summaries.
 - [ ] Fly Scout on qualified suppliers for a published piece, and FlyHash ordering of retrieved awards. Label each at the result ([12](12-task-ownership-and-splitting.md), step 12).
-- [ ] Build My work, the split drawer and Ways to save on the task-market system ([11](11-usability-and-dark-mode.md)).
+- [x] Build My work, the split drawer and Ways to save on the task-market system ([11](11-usability-and-dark-mode.md)). Built with the P0 steps, plus a `/demo` guide that stages the chain.
 - [ ] Finish roadmap 11's keyboard-focus and screen-by-screen honesty-label audit, including the new screens.
 - [ ] Distinguish a teammate demo offer from a genuine supplier quote.
 - [ ] Rehearse three accounts on three devices in fresh browsers, exercise API failure states, and record a backup.

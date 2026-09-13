@@ -5,12 +5,15 @@ Public on purpose: a logged-out viewer must see the same seams as the presenter.
 from fastapi import APIRouter, Depends
 from sqlalchemy.orm import Session
 
+from app.api.demo.task_chain_router import router as task_chain_router
 from app.core.config import get_settings
 from app.db.session import get_db
 from app.services.demo.status import DemoStatus, get_demo_status
 from app.services.outreach import describe_channel, get_outreach_sender
 
 router = APIRouter(prefix="/api/demo", tags=["demo"])
+# The task-chain presenter controls keep their own module; including them here keeps api/router.py unchanged.
+router.include_router(task_chain_router)
 
 
 @router.get("/status", response_model=DemoStatus)

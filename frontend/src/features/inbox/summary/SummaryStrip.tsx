@@ -2,7 +2,7 @@
    the listing's controls as a band underneath. Tiles show server figures only; the price keeps the period it is billed on. */
 import type { ReactNode } from 'react';
 
-import { MoneyDisplay } from '../../../shared/components/MoneyDisplay';
+import { ListedPrice } from '../../../shared/components/ListedPrice';
 import { cadenceSuffix } from '../../../shared/market';
 import { Card, Stat } from '../../../shared/ui';
 import type { PublicListingProjection } from '../../publish/types';
@@ -25,11 +25,11 @@ export function SummaryStrip({ listing, offers, onOpenOffer, controls }: Summary
       <div className="inbox-summary__tiles">
         <Card as="div" className="inbox-summary__tile">
           <Stat
-            caption="Your confirmed current price"
-            label="What you pay now"
+            caption={listing.expense_id ? 'Your confirmed current price' : listing.price_minor === null ? 'Hidden on the public listing' : 'Shown on the public listing'}
+            label={listing.expense_id ? 'What you pay now' : 'Listed price'}
             size="xl"
-            unit={cadenceSuffix(listing.billing_cadence)}
-            value={<MoneyDisplay amountMinor={listing.price_minor} currency={listing.price_currency} />}
+            unit={listing.price_minor === null ? undefined : cadenceSuffix(listing.billing_cadence)}
+            value={<ListedPrice amountMinor={listing.price_minor} currency={listing.price_currency} />}
           />
         </Card>
         <Card as="div" className="inbox-summary__tile">

@@ -4,6 +4,7 @@ import type { ReactNode } from 'react';
 
 import { Badge } from '../../../../shared/ui';
 import type { PublicListingProjection } from '../../../publish/types';
+import { RequirementScope } from './RequirementScope';
 import './ScopeRequirements.css';
 
 interface ScopeRequirementsProps {
@@ -12,6 +13,10 @@ interface ScopeRequirementsProps {
 
 /** Render the listing's summary, tasks, frequency, supplies/equipment/taxes expectations, area, and any disclosed vendor. */
 export function ScopeRequirements({ listing }: ScopeRequirementsProps): JSX.Element {
+  // A listing scoped as requirement rows (a DevSecOps REBID, a new task, a piece) has its own view; cleaning keeps this one.
+  if ((listing.requirements ?? []).length > 0) {
+    return <RequirementScope listing={listing} />;
+  }
   return (
     <div className="scope-requirements">
       <p className="scope-requirements__intro">

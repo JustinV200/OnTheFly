@@ -35,8 +35,9 @@ export interface InboxChallenge {
   // Scope figures and savings are measured against the version this offer answered, not the newest one.
   answered_scope_version_number: number;
   is_current_scope_version: boolean;
-  // The monthly price this offer's savings use: the one confirmed on its answered scope version.
-  baseline_monthly_minor: number;
+  // The monthly price this offer's savings use: the one confirmed on its answered scope version. Null for a new task
+  // with no budget, where there is nothing to compare against.
+  baseline_monthly_minor: number | null;
   baseline_currency: string;
   // Null only for an unranked offer; unranked_reason then says why there is no figure.
   savings: SavingsResponse | null;
@@ -53,19 +54,31 @@ export interface InboxChallenge {
   revised_at: string | null;
 }
 
+// The task behind the listing, as its poster sees it (backend api/inbox/schemas.py InboxTaskSummary).
+export interface InboxTaskSummary {
+  id: string;
+  origin: 'rebid' | 'new' | 'split';
+  state: string;
+  accepted_challenge_id: string | null;
+  // False once the poster accepted an offer: the bidder owns the task.
+  is_owned_by_you: boolean;
+}
+
 export interface InboxResponse {
   challenges: InboxChallenge[];
   bidding_mode: string;
   current_scope_version_number: number;
   // The stored listing record; visibility is "private" once unpublished, while its offers are kept.
   listing: PublicListingProjection;
+  task?: InboxTaskSummary | null;
 }
 
 export interface ComparisonRow {
   challenge_id: string | null;
   challenger_name: string;
   is_incumbent: boolean;
-  normalized_price_minor: number;
+  // Null only on the baseline row of a new task with no budget.
+  normalized_price_minor: number | null;
   price_currency: string;
   scope_completeness: number;
   missing_items: string[];
@@ -74,7 +87,7 @@ export interface ComparisonRow {
   // The incumbent row reports the current version; an offer reports the version it answered.
   answered_scope_version_number: number;
   is_current_scope_version: boolean;
-  baseline_monthly_minor: number;
+  baseline_monthly_minor: number | null;
   baseline_currency: string;
   // Null for the incumbent row and for unranked offers; unranked_reason explains the latter.
   savings: SavingsResponse | null;

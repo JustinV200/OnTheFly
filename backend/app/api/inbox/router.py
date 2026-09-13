@@ -12,6 +12,7 @@ from app.api.inbox.schemas import (
     EvidenceCheckSummary,
     InboxChallengeResponse,
     InboxResponse,
+    InboxTaskSummary,
     SavingsResponse,
 )
 from app.core.identity import require_acting_account_id
@@ -20,8 +21,11 @@ from app.models.account import Account
 from app.models.challenge import Challenge
 from app.models.listing import PublicListingRecord, ScopeVersion
 from app.models.service_expense import ServiceExpense
+from app.models.tasks import Task
 from app.services.comparison.answered_scopes import load_answered_scopes
-from app.services.comparison.rank import rank_challenges
+from app.services.comparison.rank import RankedChallenge, rank_challenges
+from app.services.comparison.requirement_completeness import load_requirement_context
+from app.services.tasks.comparison_label import savings_label_for
 from app.services.evidence.check import CheckResult
 from app.services.evidence.refresh import get_or_refresh_challenger_evidence
 from app.services.evidence.status import rollup_evidence
@@ -39,13 +43,13 @@ def get_inbox(
     """Return ranked owner-visible challenges for one owned listing."""
 
     acting_account_id = require_acting_account_id(request)
-    listing, current_scope, expense = _get_owner_listing_context(listing_id, acting_account_id, db)
+    listing, current_scope, expense, task = _get_owner_listing_context(listing_id, acting_account_id, db)
     challenges = db.scalars(
         select(Challenge)
         .where(Challenge.listing_id == listing.id)
         .where(Challenge.is_active.is_(True))
     ).all()
-    ranked_rows = rank_challenges(challenges, current_scope, expense, load_answered_scopes(challenges, db))[1:]
+    ranked_rows = _rank(list(challenges), current_scope, expense, task, db)[1:]
     responses = []
     challenge_lookup = {challenge.id: challenge for challenge in challenges}
     for row in ranked_rows:
@@ -62,16 +66,17 @@ def get_inbox(
             InboxChallengeResponse(
                 challenge_id=row.challenge_id,
                 challenger_name=challenger.business_name,
-                normalized_price_minor=row.normalized_price.amount,
-                price_currency=row.normalized_price.currency,
+                # Offer rows always carry a normalized price; only the baseline row of a budgetless task lacks one.
+                normalized_price_minor=row.normalized_price.amount if row.normalized_price else 0,
+                price_currency=row.normalized_price.currency if row.normalized_price else listing.price_currency,
                 scope_completeness=row.scope_completeness,
                 missing_items=row.missing_items,
                 added_items=row.added_items,
                 unstated_items=row.unstated_items,
                 answered_scope_version_number=row.answered_scope_version_number,
                 is_current_scope_version=row.is_current_scope_version,
-                baseline_monthly_minor=row.baseline_monthly.amount,
-                baseline_currency=row.baseline_monthly.currency,
+                baseline_monthly_minor=row.baseline_monthly.amount if row.baseline_monthly else None,
+                baseline_currency=row.baseline_monthly.currency if row.baseline_monthly else listing.price_currency,
                 savings=_serialize_savings(row.savings) if row.savings else None,
                 unranked_reason=row.unranked_reason,
                 evidence_rollup=rollup_evidence([platform_check, identity_check, registry_check]),
@@ -93,6 +98,7 @@ def get_inbox(
         bidding_mode=listing.bidding_mode or "sealed",
         current_scope_version_number=current_scope.version_number,
         listing=projection_from_record(listing),
+        task=_task_summary(task, acting_account_id),
     )
 
 
@@ -105,14 +111,14 @@ def get_comparison(
     """Return the incumbent baseline row plus ranked challenges for one listing."""
 
     acting_account_id = require_acting_account_id(request)
-    listing, current_scope, expense = _get_owner_listing_context(listing_id, acting_account_id, db)
+    listing, current_scope, expense, task = _get_owner_listing_context(listing_id, acting_account_id, db)
     challenges = db.scalars(
         select(Challenge)
         .where(Challenge.listing_id == listing.id)
         .where(Challenge.is_active.is_(True))
     ).all()
     rows = []
-    for row in rank_challenges(challenges, current_scope, expense, load_answered_scopes(challenges, db)):
+    for row in _rank(list(challenges), current_scope, expense, task, db):
         challenger_name = "Incumbent baseline"
         if row.challenger_account_id:
             challenger = db.get(Account, row.challenger_account_id)
@@ -122,16 +128,16 @@ def get_comparison(
                 challenge_id=row.challenge_id,
                 challenger_name=challenger_name,
                 is_incumbent=row.is_incumbent,
-                normalized_price_minor=row.normalized_price.amount,
-                price_currency=row.normalized_price.currency,
+                normalized_price_minor=row.normalized_price.amount if row.normalized_price else None,
+                price_currency=row.normalized_price.currency if row.normalized_price else listing.price_currency,
                 scope_completeness=row.scope_completeness,
                 missing_items=row.missing_items,
                 added_items=row.added_items,
                 unstated_items=row.unstated_items,
                 answered_scope_version_number=row.answered_scope_version_number,
                 is_current_scope_version=row.is_current_scope_version,
-                baseline_monthly_minor=row.baseline_monthly.amount,
-                baseline_currency=row.baseline_monthly.currency,
+                baseline_monthly_minor=row.baseline_monthly.amount if row.baseline_monthly else None,
+                baseline_currency=row.baseline_monthly.currency if row.baseline_monthly else listing.price_currency,
                 savings=_serialize_savings(row.savings) if row.savings else None,
                 unranked_reason=row.unranked_reason,
                 provenance=row.provenance,
@@ -144,7 +150,8 @@ def _get_owner_listing_context(
     listing_id: str,
     acting_account_id: str,
     db: Session,
-) -> tuple[PublicListingRecord, ScopeVersion, ServiceExpense]:
+) -> tuple[PublicListingRecord, ScopeVersion, ServiceExpense | None, Task | None]:
+    # "Owner" here is the listing's POSTER: it reviews offers and accepts one, even after task ownership moved.
     listing = db.scalar(
         select(PublicListingRecord).where(
             PublicListingRecord.id == listing_id,
@@ -154,10 +161,42 @@ def _get_owner_listing_context(
     if listing is None:
         raise HTTPException(status_code=status.HTTP_404_NOT_FOUND, detail="Listing not found")
     scope = db.get(ScopeVersion, listing.scope_version_id)
-    expense = db.get(ServiceExpense, listing.expense_id)
-    if scope is None or expense is None:
+    # A new task or a piece has no expense; its baseline is its own stated budget or cut.
+    expense = db.get(ServiceExpense, listing.expense_id) if listing.expense_id else None
+    task = db.get(Task, listing.task_id) if listing.task_id else None
+    if scope is None or (listing.expense_id is not None and expense is None):
         raise HTTPException(status_code=status.HTTP_404_NOT_FOUND, detail="Listing context not found")
-    return listing, scope, expense
+    return listing, scope, expense, task
+
+
+def _rank(
+    challenges: list[Challenge],
+    current_scope: ScopeVersion,
+    expense: ServiceExpense | None,
+    task: Task | None,
+    db: Session,
+) -> list[RankedChallenge]:
+    answered_scopes = load_answered_scopes(challenges, db)
+    return rank_challenges(
+        challenges,
+        current_scope,
+        expense,
+        answered_scopes,
+        requirement_context=load_requirement_context(challenges, answered_scopes, db),
+        savings_label=savings_label_for(task),
+    )
+
+
+def _task_summary(task: Task | None, acting_account_id: str) -> InboxTaskSummary | None:
+    if task is None:
+        return None
+    return InboxTaskSummary(
+        id=task.id,
+        origin=task.origin,
+        state=task.state,
+        accepted_challenge_id=task.accepted_challenge_id,
+        is_owned_by_you=task.owner_account_id == acting_account_id,
+    )
 
 
 def _summarize_check(check: CheckResult) -> EvidenceCheckSummary:

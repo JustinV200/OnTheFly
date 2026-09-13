@@ -16,6 +16,7 @@ import type { BiddingModeValue, ChallengePayload, StoredOffer } from '../types';
 import { BiddingTermsCallout } from './BiddingTermsCallout';
 import { CoverageFields } from './scope/CoverageFields';
 import { PriceFields } from './price/PriceFields';
+import { RequirementAnswersFields } from './requirements/RequirementAnswersFields';
 import { MessageField } from './terms/MessageField';
 import { TermsFields } from './terms/TermsFields';
 import './ChallengeForm.css';
@@ -50,10 +51,12 @@ export function ChallengeForm(props: ChallengeFormProps): JSX.Element {
   const { acknowledgedMode, currentMode, onConfirmMode, initialOffer, ticket, listing, isSubmitting, onSubmit, submitProblem, intro } = props;
   const formId = useId();
   const requested = fullRequestedScope(listing);
+  // A listing scoped as requirement rows is answered requirement by requirement; cleaning keeps its coverage fields.
+  const requirements = listing.requirements ?? [];
   const isTemplateTasks = requested.tasks.length === 0;
   const taskChoices = isTemplateTasks ? TEMPLATE_TASKS : requested.tasks;
 
-  const [seeded] = useState(() => seedOfferFields(initialOffer, taskChoices, ticket));
+  const [seeded] = useState(() => seedOfferFields(initialOffer, taskChoices, ticket, listing.billing_cadence));
   const [fields, setFields] = useState<ChallengeFormFields>(seeded.fields);
   const [validationError, setValidationError] = useState<string | null>(null);
   const update = (patch: Partial<ChallengeFormFields>): void => setFields((current) => ({ ...current, ...patch }));
@@ -69,7 +72,7 @@ export function ChallengeForm(props: ChallengeFormProps): JSX.Element {
       // The submit button is disabled too; this also covers pressing Enter in a field.
       return;
     }
-    const result = buildChallengePayload(fields, acknowledgedMode);
+    const result = buildChallengePayload(fields, acknowledgedMode, requirements);
     if ('error' in result) {
       setValidationError(result.error);
       return;
@@ -91,14 +94,22 @@ export function ChallengeForm(props: ChallengeFormProps): JSX.Element {
             // Shown before the price field: a challenger must never find out afterwards that their price went public.
             terms={<BiddingTermsCallout acknowledgedMode={acknowledgedMode} currentMode={currentMode} isRevision={initialOffer !== null} onConfirmMode={onConfirmMode} />}
           />
-          <CoverageFields
-            fields={fields}
-            isTemplateTasks={isTemplateTasks}
-            listing={listing}
-            onChange={update}
-            onMatchRequestedScope={matchRequestedScope}
-            taskChoices={taskChoices}
-          />
+          {requirements.length > 0 ? (
+            <RequirementAnswersFields
+              answers={fields.requirementAnswers}
+              listing={listing}
+              onChange={(requirementAnswers) => update({ requirementAnswers })}
+            />
+          ) : (
+            <CoverageFields
+              fields={fields}
+              isTemplateTasks={isTemplateTasks}
+              listing={listing}
+              onChange={update}
+              onMatchRequestedScope={matchRequestedScope}
+              taskChoices={taskChoices}
+            />
+          )}
           <TermsFields fields={fields} onChange={update} />
           <MessageField message={fields.message} onChange={(message) => update({ message })} />
         </Stack>

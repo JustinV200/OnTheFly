@@ -1,6 +1,16 @@
 # Phase 12 — Task ownership and splitting
 
-> Status — 2026-09-13: Not started. Steps 1–10 are P0 and steps 11–12 are P1 on the [current roadmap](README.md).
+> Status — 2026-09-13: Steps 1–10 are implemented on `feat/task-ownership-splitting`. Steps 11–12 (P1) aren't started.
+>
+> - **Steps 8–9** run against a mock market-data source labeled demo data. The live USAspending and labor-rate clients are being built on another branch.
+> - **Decisions recorded in the [roadmap](README.md) open questions:**
+>   - fixture rates and mock market data for now
+>   - live calls only, with no snapshot
+>   - no depth cap, with at most 5 active suggested pieces per task and unlimited manual splits
+>   - prices hidden by default for `new` tasks and pieces
+> - **Not built:** the LLM-proposed requirement mapping in the split drawer and LLM hour drafting (both P1).
+>
+> Steps 1–10 are P0 and steps 11–12 are P1 on the [current roadmap](README.md).
 >
 > Product reasoning is in [plan2](../plan/plan2.md), and the rules are in CLAUDE.md under "Task ownership and splitting". This file is the build order and acceptance checks.
 
@@ -31,7 +41,7 @@
   - `currency`, `billing_period`, timestamps
 - **Links:** add a nullable `task_id` to `scope_versions` and `public_listings`. Backfill each existing listing as a `rebid` task whose poster and task owner are the listing's current `owner_account_id`.
 - **Poster vs. task owner:** `public_listings.owner_account_id` keeps its meaning (the poster). Comment both columns so nobody reads "owner" as the task owner.
-- **Depth cap:** `MAX_TASK_DEPTH` is read once in config.
+- **Depth:** no cap (open question 4). `depth` is recorded. The only limit is `MAX_SUGGESTED_PIECES_PER_TASK` (5 active suggested pieces per task, read once in config); manual splits never count toward it.
 
 **Done when:** existing listing, offer and comparison tests pass unchanged against backfilled tasks. Every listing resolves to exactly one task.
 

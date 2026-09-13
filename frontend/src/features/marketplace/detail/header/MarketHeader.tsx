@@ -25,12 +25,19 @@ export function MarketHeader({ listing, offerCount, closes, className }: MarketH
       <div className="market-header__identity">
         <CategoryTile category={listing.category} size="lg" />
         <div className="market-header__heading">
-          <h1 className="market-header__title">{categoryLabel(listing.category)}</h1>
-          <p className="market-header__area">{listing.service_area_approximate || 'Area not specified'}</p>
+          <h1 className="market-header__title">{listing.title || categoryLabel(listing.category)}</h1>
+          <p className="market-header__area">
+            {listing.title ? `${categoryLabel(listing.category)} · ` : ''}{listing.service_area_approximate || 'Area not specified'}
+          </p>
         </div>
       </div>
 
       <div className="market-header__meta">
+        {listing.is_subcontract ? (
+          <Badge icon={<Icon name="users" />} title="Split off a task its poster won through an accepted offer: payment depends on the business above." tone="warning">
+            Subcontract
+          </Badge>
+        ) : null}
         <BiddingModePill mode={listing.bidding_mode} />
         <Badge icon={<Icon name="users" />} tone="neutral">{offerCount === 1 ? '1 offer' : `${offerCount} offers`}</Badge>
         {/* The relative words fit a badge; the exact time is on hover and in the ticket. */}

@@ -3,7 +3,7 @@
    this click is the moment of disclosure. Only a fresh preview reaches this step (the flow falls back to Scope otherwise). */
 import { BiddingModePill } from '../../../shared/components/BiddingModePill';
 import { ErrorState } from '../../../shared/components/ErrorState';
-import { MoneyDisplay } from '../../../shared/components/MoneyDisplay';
+import { ListedPrice } from '../../../shared/components/ListedPrice';
 import { categoryLabel } from '../../../shared/format/categoryLabel';
 import { cadenceSuffix } from '../../../shared/market';
 import { Button, Callout, Card, Icon, Stack } from '../../../shared/ui';
@@ -34,7 +34,7 @@ export function PublishStep({ vendorName, preview, isPublishing, errorMessage, o
             <Icon name="globe" size={18} />
             <span>
               Your <strong>{vendorName}</strong> expense goes public as a <strong>{categoryLabel(projection.category)}</strong> listing at{' '}
-              <strong><MoneyDisplay amountMinor={projection.price_minor} currency={projection.price_currency} /> {cadenceSuffix(projection.billing_cadence)}</strong>,
+              <strong><ListedPrice amountMinor={projection.price_minor} currency={projection.price_currency} /> {cadenceSuffix(projection.billing_cadence)}</strong>,
               exactly as previewed.
             </span>
           </li>

@@ -4,6 +4,7 @@ import { RouteObject } from 'react-router-dom';
 
 import { ChallengePage } from '../features/challenge/ChallengePage';
 import { DashboardPage } from '../features/dashboard/DashboardPage';
+import { DemoGuidePage } from '../features/demo/DemoGuidePage';
 import { InboxPage } from '../features/inbox/InboxPage';
 import { InvitePage } from '../features/invitations/InvitePage';
 import { OptOutPage } from '../features/invitations/optout/OptOutPage';
@@ -12,13 +13,21 @@ import { ListingDetailPage } from '../features/marketplace/ListingDetailPage';
 import { MarketplacePage } from '../features/marketplace/MarketplacePage';
 import { ProfilePage } from '../features/profile/ProfilePage';
 import { PublishFlow } from '../features/publish/PublishFlow';
+import { NewTaskPage } from '../features/tasks/new/NewTaskPage';
+import { TaskPage } from '../features/tasks/TaskPage';
 import { TracePage } from '../features/trace/TracePage';
+import { MyWorkPage } from '../features/work/MyWorkPage';
 import { NotFoundPage } from './shell/NotFoundPage';
 
 export const routes: RouteObject[] = [
   { path: '/', element: <DashboardPage /> },
   { path: '/publish', element: <PublishFlow /> },
   { path: '/my-listings', element: <MyListingsPage /> },
+  // Roadmap 12: tasks a business won or posted, a task's own page, posting new work or a REBID, and the presenter's guide.
+  { path: '/work', element: <MyWorkPage /> },
+  { path: '/tasks/new', element: <NewTaskPage /> },
+  { path: '/tasks/:id', element: <TaskPage /> },
+  { path: '/demo', element: <DemoGuidePage /> },
   { path: '/marketplace', element: <MarketplacePage /> },
   { path: '/listings/:id', element: <ListingDetailPage /> },
   { path: '/listings/:id/challenge', element: <ChallengePage /> },

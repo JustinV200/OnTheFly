@@ -52,7 +52,7 @@ export function InboxHeader({ listing }: { listing: PublicListingProjection | nu
             </>
           )}
           subtitle={`${area} · ${listing.scope_summary}`}
-          title={`Offers on your ${categoryLabel(listing.category).toLowerCase()} listing`}
+          title={listing.title ? `Offers on “${listing.title}”` : `Offers on your ${categoryLabel(listing.category).toLowerCase()} listing`}
         />
       </div>
     </div>

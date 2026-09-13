@@ -1,7 +1,14 @@
 /* Converts the challenge form's fields into the API payload, in the vocabulary scope comparison scores.
    Tasks, "Nx weekly", and "equipment" are the strings backend comparison/normalize.py looks for. */
 import { parseDollarsToMinor } from '../../shared/format/parseDollarsToMinor';
+import type { PublicRequirement } from '../publish/types';
 import type { BiddingModeValue, ChallengePayload } from './types';
+
+// The challenger's answer to one requirement; isIncluded null means not answered yet, which can't be submitted.
+export interface RequirementAnswer {
+  isIncluded: boolean | null;
+  note: string;
+}
 
 export interface ChallengeFormFields {
   price: string;
@@ -18,12 +25,19 @@ export interface ChallengeFormFields {
   availability: string;
   siteVisitRequired: boolean;
   message: string;
+  // Keyed by requirement key; used only when the listing is scoped as requirement rows.
+  requirementAnswers: Record<string, RequirementAnswer>;
 }
 
 export type BuildResult = { payload: ChallengePayload } | { error: string };
 
-/** Validate the fields and build the payload, or return the first problem as a sentence. */
-export function buildChallengePayload(fields: ChallengeFormFields, acknowledgedMode: BiddingModeValue): BuildResult {
+/** Validate the fields and build the payload, or return the first problem as a sentence.
+    requirements are the listing's requirement rows; when there are any, every one must be answered included or not. */
+export function buildChallengePayload(
+  fields: ChallengeFormFields,
+  acknowledgedMode: BiddingModeValue,
+  requirements: PublicRequirement[] = [],
+): BuildResult {
   const priceMinor = parseDollarsToMinor(fields.price);
   if (priceMinor === null || priceMinor === 0) {
     return { error: 'Enter your price in dollars, for example 1875 or 1,875.00.' };
@@ -31,6 +45,11 @@ export function buildChallengePayload(fields: ChallengeFormFields, acknowledgedM
   const setupFeeMinor = fields.setupFee.trim() ? parseDollarsToMinor(fields.setupFee) : 0;
   if (setupFeeMinor === null) {
     return { error: 'Enter the setup fee in dollars, or leave it blank for none.' };
+  }
+  const unanswered = requirements.filter((requirement) => fields.requirementAnswers[requirement.key]?.isIncluded == null);
+  if (unanswered.length > 0) {
+    // The server scores every requirement; an unanswered one would be refused, so say which before sending.
+    return { error: `Say whether your price includes every requirement: ${unanswered.length} still unanswered.` };
   }
   const visits = fields.visitsPerWeek.trim();
   if (visits && !/^\d+$/.test(visits)) {
@@ -64,6 +83,15 @@ export function buildChallengePayload(fields: ChallengeFormFields, acknowledgedM
       availability: fields.availability.trim() || null,
       site_visit_required: fields.siteVisitRequired,
       message_to_owner: fields.message.trim() || null,
+      ...(requirements.length > 0
+        ? {
+            requirement_responses: requirements.map((requirement) => ({
+              requirement_key: requirement.key,
+              is_included: fields.requirementAnswers[requirement.key]?.isIncluded === true,
+              note: fields.requirementAnswers[requirement.key]?.note.trim() || null,
+            })),
+          }
+        : {}),
     },
   };
 }

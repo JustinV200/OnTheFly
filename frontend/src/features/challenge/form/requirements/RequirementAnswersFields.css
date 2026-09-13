@@ -1,0 +1,64 @@
+/* Requirement answers: one bordered row per requirement, text above its controls on a phone, beside them from tablet up. */
+.bid-requirements__match {
+  align-items: center;
+  display: flex;
+  flex-wrap: wrap;
+  gap: var(--space-2) var(--space-3);
+}
+
+.bid-requirements__list {
+  border-top: var(--border-width) solid var(--color-border-subtle);
+  list-style: none;
+  margin: 0;
+  padding: 0;
+}
+
+.bid-requirements__row {
+  border-bottom: var(--border-width) solid var(--color-border-subtle);
+  display: grid;
+  gap: var(--space-2);
+  padding: var(--space-3) 0;
+}
+
+.bid-requirements__text {
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-1);
+  min-width: 0;
+}
+
+.bid-requirements__name {
+  font-weight: var(--weight-medium);
+  overflow-wrap: anywhere;
+}
+
+.bid-requirements__meta,
+.bid-requirements__unanswered {
+  color: var(--color-text-muted);
+  font-size: var(--text-xs);
+}
+
+.bid-requirements__unanswered {
+  color: var(--color-warning-text);
+  font-weight: var(--weight-semibold);
+}
+
+.bid-requirements__controls {
+  align-items: center;
+  display: flex;
+  flex-wrap: wrap;
+  gap: var(--space-2);
+}
+
+.bid-requirements__note {
+  flex: 1 1 14rem;
+  min-width: 0;
+}
+
+@media (min-width: 768px) {
+  .bid-requirements__row {
+    align-items: center;
+    grid-template-columns: minmax(0, 1fr) minmax(0, 1.1fr);
+    column-gap: var(--space-4);
+  }
+}

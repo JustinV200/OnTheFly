@@ -3,6 +3,7 @@ const KNOWN_CATEGORIES: Record<string, string> = {
   cleaning: 'Commercial cleaning',
   // Older listings were stored under this key; the marketplace filter treats it as "cleaning".
   commercial_cleaning: 'Commercial cleaning',
+  devsecops: 'DevSecOps',
   landscaping: 'Landscaping',
   office_supplies: 'Office supplies',
   payroll: 'Payroll',

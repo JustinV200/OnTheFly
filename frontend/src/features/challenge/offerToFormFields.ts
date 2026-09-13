@@ -61,6 +61,10 @@ export function offerToFormFields(offer: StoredOffer, taskChoices: string[]): Ch
     availability: offer.availability ?? '',
     siteVisitRequired: offer.site_visit_required,
     message: offer.message_to_owner ?? '',
+    // A revision re-answers every requirement, so it starts from the answers this version gave.
+    requirementAnswers: Object.fromEntries(
+      (offer.requirement_responses ?? []).map((response) => [response.requirement_key, { isIncluded: response.is_included, note: response.note ?? '' }]),
+    ),
   };
 }
 

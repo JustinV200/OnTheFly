@@ -20,14 +20,16 @@ export class ApiError extends Error {
   }
 }
 
-/** Fetch JSON from the API with the acting-account header; every failure throws ApiError. */
-export async function apiFetch<T>(path: string, options: RequestInit = {}): Promise<T> {
+/** Fetch JSON from the API with the acting-account header; every failure throws ApiError.
+    asAccountId overrides the tab's acting account for one request (undefined keeps it): the demo guide uses it to show
+    each business's own view side by side, each fetched exactly as that business would fetch it. */
+export async function apiFetch<T>(path: string, options: RequestInit = {}, asAccountId?: string | null): Promise<T> {
   const headers = new Headers(options.headers);
   headers.set('Content-Type', 'application/json');
 
   // This tab's own acting account, never a later switch made in another tab.
   // A public visitor sends no header at all, which is exactly what a stranger's browser does.
-  const actingAccountId = actingAccountStore.read();
+  const actingAccountId = asAccountId === undefined ? actingAccountStore.read() : asAccountId;
   if (actingAccountId) {
     headers.set('X-Account-ID', actingAccountId);
   }
@@ -72,6 +74,16 @@ export function get<T>(path: string): Promise<T> {
 /** Issue a POST request and parse the typed JSON body. */
 export function post<T>(path: string, body?: unknown): Promise<T> {
   return apiFetch<T>(path, { body: body ? JSON.stringify(body) : undefined, method: 'POST' });
+}
+
+/** Issue a GET request as a specific demo account, whatever this tab is acting as (demo guide only). */
+export function getAs<T>(path: string, accountId: string): Promise<T> {
+  return apiFetch<T>(path, { method: 'GET' }, accountId);
+}
+
+/** Issue a PUT request and parse the typed JSON body. */
+export function put<T>(path: string, body?: unknown): Promise<T> {
+  return apiFetch<T>(path, { body: body ? JSON.stringify(body) : undefined, method: 'PUT' });
 }
 
 /** Issue a PATCH request and parse the typed JSON body. */

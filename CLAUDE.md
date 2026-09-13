@@ -26,9 +26,17 @@ The GovCon demo ledger is implemented (merged 2026-09-13):
 - The result is five private monthly expenses totalling $4,044,000 annualized.
 - See `backend/app/services/transactions/fixture/GOVCON.md`.
 
+Task ownership and splitting (roadmap 12, steps 1–10) is implemented on `feat/task-ownership-splitting` (migration `0013_task_ownership`). It covers:
+- **Tasks:** tasks with a poster and task owner; requirements, constraints and category templates; per-requirement offer responses; `new` tasks with the price hidden by default.
+- **Acceptance and splitting:** acceptance with ownership transfer; cuts, remainder and undo; manual and suggested splits with their own piece projection, the Subcontract label and the payer chain.
+- **Money inputs:** cost basis rates (labeled fixture rates for GovCon, Prime A and Sub B); `market_evidence` rows; Ways to save cards with config thresholds.
+- **Views and demo:** money views, My work, and a `/demo` guide that stages the chain through the real services (`python -m app.cli.seed_task_chain --stage <stage>`, gated by `DEMO_CONTROLS_ENABLED`).
+- **Market data:** comes from a mock source labeled demo data (`MARKET_DATA_SOURCE=mock`). The live USAspending and labor-rate clients are on another branch; until they're wired, `live` reports the source unavailable ("not checked").
+- **Verification (2026-09-13):** 469 backend tests passing, plus `tsc`, the frontend build, and the colour and contrast checks.
+
 Not implemented:
-- REBID orchestration, USAspending discovery, public-rate pricing, Tavily enrichment, OpenAI reasoning and Fly Scout.
-- Tasks with a poster and task owner, offer acceptance, requirements, `new` tasks, splits and cuts, cost basis rates, market evidence, Ways to save and money views.
+- REBID orchestration (Progress → Market → Bid), USAspending discovery, public-rate pricing, Tavily enrichment, OpenAI reasoning and Fly Scout. REBID currently opens a private task with owner-entered requirements.
+- LLM requirement mapping and hour drafting, and split everything (P1).
 
 Also implemented (merged 2026-09-13): a Kalshi-style "task market" UI with light/dark/system themes (roadmap 11, "Task market direction") and owner-approved supplier invitations (roadmap 08): fixture or Tavily discovery, a preview-hash approval gate, an idempotent queue to a sandbox outbox by default (SMTP only behind an allowlist), and a public opt-out page. Tavily and SMTP have only been exercised with mocks. The latest verification (2026-09-13, after also merging the GovCon ledger) had 365 backend tests passing and a successful frontend build with the colour and contrast checks.
 
@@ -41,7 +49,7 @@ Also implemented (merged 2026-09-13): a Kalshi-style "task market" UI with light
   - Split everything (LLM) and LLM scope drafting for new tasks
   - Tavily enrichment
   - Fly Scout and FlyHash ranking, after splitting
-  - Screens for My work, the split drawer and Ways to save, plus roadmap 11's open accessibility and honesty-label audit
+  - Roadmap 11's open accessibility and honesty-label audit, including the new My work, split drawer and Ways to save screens
   - Three-device rehearsal
 - **P2:** splitting before bidding (teaming), period conversion between a task and its pieces, autonomous tool selection, fly learning, more categories, production auth and hosting expansion.
 - **Database:** SQLite currently. Supabase/Postgres is a later deployment option, not an active integration.
@@ -52,7 +60,7 @@ Also implemented (merged 2026-09-13): a Kalshi-style "task market" UI with light
 - **Fly Scout:** P1, after the splitting path. It only chooses exploration among already-qualified suppliers for a published task or piece. Every fly-influenced result is labeled where it appears. Do not claim a biological connectome or neuron count until runtime/model evidence supports it.
 - **Genuine quote:** optional bonus, not a blocking requirement.
 - **UI:** a Kalshi-style task market (market board, market page with a bid ticket, token-swap dark mode).
-  - Navigation is Markets · Spend · My listings, with My work planned for tasks an account owns through acceptance.
+  - Navigation is Markets · Spend · My listings · My work (tasks an account owns through acceptance) · Demo guide.
   - REBID's Progress → Market → Bid steps live inside the expense's REBID page.
   - Ways to save is the primary action on a task the acting account owns.
 
@@ -60,7 +68,7 @@ Also implemented (merged 2026-09-13): a Kalshi-style "task market" UI with light
 
 Stripe sandbox data is labeled `sandbox`; the GovCon ledger stays `fixture` and displays **Hackathon demo ledger — synthetic buyer spend based on public procurement categories**. Never claim those custom transactions came from Stripe.
 
-Public-rate results display **Modeled bid from public pricing — not a vendor quote** and are separate from submitted challenges. Ways to save cards display **Modeled cut from public pricing — not an offer**. A teammate's live demo submission is a demo offer, not automatically a genuine commercial quote.
+Public-rate results display **Modeled bid from public pricing — not a vendor quote** and are separate from submitted challenges. Ways to save cards display **Modeled cut from public pricing — not an offer**, or **Modeled cut from demo market data — not an offer** while the mock market-data source is in use. A teammate's live demo submission is a demo offer, not automatically a genuine commercial quote.
 
 Cost basis rates (a buyer's current contract rates, a task owner's internal costs) are owner-entered or fixture data, labeled as such, and never public.
 
@@ -68,11 +76,11 @@ REBID starts private research. It does not bypass confirmation of contract scope
 
 ## Repo layout
 
-- `frontend/src/features/`: Spend (`dashboard`), connections, publish, marketplace, My listings (`listings`), invitations, profile, challenge, Offers (`inbox`) and trace UI.
+- `frontend/src/features/`: Spend (`dashboard`), connections, publish, marketplace, My listings (`listings`), invitations, profile, challenge, Offers (`inbox`), trace, task pages (`tasks`), the split drawer (`split`), Ways to save (`savings`), cost basis rates (`rates`), My work (`work`) and the demo guide (`demo`).
 - `frontend/src/shared/`: UI primitives (`ui`), `MarketCard` (`market`), fly badges (`flybrain`), theme and formatting.
 - `frontend/src/app/shell/`: app shell and navigation.
 - `backend/app/`: API, services, models, database and core conventions.
-- `backend/alembic/`: schema migrations (0001–0012 exist; new ones start at 0013).
+- `backend/alembic/`: schema migrations (0001–0013 exist; new ones start at 0014).
 - `plan/plan2.md`: current product plan. `plan1.md` is retained for REBID detail; `previous-marketplace-plan.md` is historical.
 - `roadmap/README.md`: current P0/P1/P2 order. `12-task-ownership-and-splitting.md` is the active build spec; the other numbered files retain component specifications.
 - `.claude/codingrules.md`: coding structure rules.
@@ -170,14 +178,14 @@ In these rules, **owner** means the account that posted the listing (its poster)
 | Connection / Transaction | Source account and original spend evidence |
 | Vendor / ServiceExpense | Normalized payee and recurring service baseline |
 | Visibility | Per-expense public/private state, disclosure options, audit trail |
-| Task *(planned)* | Origin (`rebid \| new \| split`), poster, task owner, lifecycle, accepted offer |
+| Task | Origin (`rebid \| new \| split`), poster, task owner, lifecycle, accepted offer |
 | Listing / ScopeVersion | A task's public projection, its versioned scope, its bidding mode |
-| Requirement *(planned)* | Versioned requirement rows with tags, hours, source and flowed-down constraints |
-| Challenge / ChallengeRevision | A counteroffer, conditions, provenance, revisions, the bidding mode in force at submission, and per-requirement responses *(planned)* |
-| TaskSplit *(planned)* | A piece split off a task: cut, assigned requirements, entry point, undo |
-| CostBasisRate *(planned)* | Private contract or internal labor rates used for keep cost |
-| MarketEvidence *(planned)* | Public award, subaward and labor-rate retrievals with status and limitations |
-| SavingsCard *(planned)* | A segment's keep cost, modeled cut, savings, thresholds, tier and status |
+| Requirement | Versioned requirement rows with tags, hours, source and flowed-down constraints |
+| Challenge / ChallengeRevision | A counteroffer, conditions, provenance, revisions, the bidding mode in force at submission, and per-requirement responses |
+| TaskSplit | A piece split off a task: cut, assigned requirements, entry point, undo |
+| CostBasisRate | Private contract or internal labor rates used for keep cost |
+| MarketEvidence | Public award, subaward and labor-rate retrievals with status and limitations |
+| SavingsCard | A segment's keep cost, modeled cut, savings, thresholds, tier and status |
 | SplitPlan *(planned)* | An LLM split-everything draft with model and prompt provenance |
 | ChallengerEvidence | Source-backed checks and identity-match status |
 | Invitation | Secondary path: provider, approved message, delivery state |
@@ -185,4 +193,4 @@ In these rules, **owner** means the account that posted the listing (its poster)
 
 ## Open questions
 
-Open questions are at the top of [roadmap/README.md](roadmap/README.md), "Open questions to answer before building". Question 1 (GovCon seed amounts) is answered by the implemented ledger. Don't start the remaining P0 implementation until questions 2–5 have recorded answers; questions 6 (Fly Scout runtime) and 7 (three-device hosting) block only P1. Don't answer them on the user's behalf; a proposal is not an answer. A genuine supplier quote is optional.
+Open questions are at the top of [roadmap/README.md](roadmap/README.md), "Open questions to answer before building". Question 1 (GovCon seed amounts) is answered by the implemented ledger, and questions 2–5 have the user's recorded answers (2026-09-13). Questions 6 (Fly Scout runtime) and 7 (three-device hosting) block only P1. Don't answer them on the user's behalf; a proposal is not an answer. A genuine supplier quote is optional.

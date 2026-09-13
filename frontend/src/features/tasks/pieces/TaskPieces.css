@@ -1,0 +1,46 @@
+/* Piece rows: names and badges, figures, and actions stacked on a phone, side by side from tablet up. */
+.task-pieces {
+  display: grid;
+  gap: var(--space-3);
+  list-style: none;
+  margin: 0;
+  padding: 0;
+}
+
+.task-pieces__row {
+  display: grid;
+  gap: var(--space-3);
+}
+
+.task-pieces__names,
+.task-pieces__figures {
+  display: grid;
+  gap: var(--space-1);
+  min-width: 0;
+}
+
+.task-pieces__title {
+  font-size: var(--text-lg);
+  font-weight: var(--weight-semibold);
+  overflow-wrap: anywhere;
+}
+
+.task-pieces__badges,
+.task-pieces__actions {
+  align-items: center;
+  display: flex;
+  flex-wrap: wrap;
+  gap: var(--space-2);
+}
+
+.task-pieces__figures {
+  color: var(--color-text-secondary);
+  font-size: var(--text-sm);
+}
+
+@media (min-width: 768px) {
+  .task-pieces__row {
+    align-items: center;
+    grid-template-columns: minmax(0, 1.4fr) minmax(0, 1fr) auto;
+  }
+}

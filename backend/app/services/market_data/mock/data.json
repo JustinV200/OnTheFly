@@ -1,0 +1,38 @@
+{
+  "_note": "Demo market data for the hackathon simulator (roadmap open question 2: mock numbers until the public-data branch lands). Every supplier, UEI, award and rate here is fictional. None was retrieved from USAspending or GSA CALC+, and no record links to a real award.",
+  "suppliers_by_psc": {
+    "DA01": [
+      {"award_id": "DEMO-AWD-DA01-001", "award_type": "prime", "recipient_name": "Demo Pipeline Works LLC", "uei": "DEMOUEIDA001", "amount_minor": 412000000, "action_date": "2024-03-11"},
+      {"award_id": "DEMO-AWD-DA01-002", "award_type": "prime", "recipient_name": "Demo Pipeline Works LLC", "uei": "DEMOUEIDA001", "amount_minor": 198000000, "action_date": "2025-06-02"},
+      {"award_id": "DEMO-AWD-DA01-003", "award_type": "prime", "recipient_name": "Demo Build Systems Inc", "uei": "DEMOUEIDA002", "amount_minor": 276500000, "action_date": "2023-09-19"},
+      {"award_id": "DEMO-SUB-DA01-004", "award_type": "subaward", "recipient_name": "Demo Release Engineering Co", "uei": "DEMOUEIDA003", "amount_minor": 54000000, "action_date": "2024-11-07"},
+      {"award_id": "DEMO-SUB-DA01-005", "award_type": "subaward", "recipient_name": "Demo Container Group", "uei": "DEMOUEIDA004", "amount_minor": 38900000, "action_date": "2025-02-14"},
+      {"award_id": "DEMO-SUB-DA01-006", "award_type": "subaward", "recipient_name": "Demo Automation Partners", "uei": null, "amount_minor": 21000000, "action_date": "2022-08-30"}
+    ],
+    "DH01": [
+      {"award_id": "DEMO-AWD-DH01-001", "award_type": "prime", "recipient_name": "Demo Cloud Operations LLC", "uei": "DEMOUEIDH001", "amount_minor": 355000000, "action_date": "2024-01-22"},
+      {"award_id": "DEMO-AWD-DH01-002", "award_type": "prime", "recipient_name": "Demo Platform Services Inc", "uei": "DEMOUEIDH002", "amount_minor": 187200000, "action_date": "2025-04-09"},
+      {"award_id": "DEMO-SUB-DH01-003", "award_type": "subaward", "recipient_name": "Demo GovCloud Engineering", "uei": "DEMOUEIDH003", "amount_minor": 61300000, "action_date": "2023-12-05"},
+      {"award_id": "DEMO-SUB-DH01-004", "award_type": "subaward", "recipient_name": "Demo Cloud Operations LLC", "uei": "demoueidh001", "amount_minor": 17500000, "action_date": "2025-07-18"}
+    ],
+    "DJ01": [
+      {"award_id": "DEMO-AWD-DJ01-001", "award_type": "prime", "recipient_name": "Demo Assurance Group LLC", "uei": "DEMOUEIDJ001", "amount_minor": 142000000, "action_date": "2024-05-16"},
+      {"award_id": "DEMO-AWD-DJ01-002", "award_type": "prime", "recipient_name": "Demo Compliance Analytics Inc", "uei": "DEMOUEIDJ002", "amount_minor": 96400000, "action_date": "2023-07-27"},
+      {"award_id": "DEMO-SUB-DJ01-003", "award_type": "subaward", "recipient_name": "Demo ATO Services Co", "uei": "DEMOUEIDJ003", "amount_minor": 33800000, "action_date": "2025-01-30"},
+      {"award_id": "DEMO-SUB-DJ01-004", "award_type": "subaward", "recipient_name": "Demo Continuous Monitoring LLC", "uei": "DEMOUEIDJ004", "amount_minor": 27150000, "action_date": "2024-10-03"},
+      {"award_id": "DEMO-SUB-DJ01-005", "award_type": "subaward", "recipient_name": "Demo RMF Documentation Partners", "uei": "DEMOUEIDJ005", "amount_minor": 19900000, "action_date": "2022-11-21"},
+      {"award_id": "DEMO-SUB-DJ01-006", "award_type": "subaward", "recipient_name": "Demo Security Writers", "uei": null, "amount_minor": 8800000, "action_date": "2023-03-08"}
+    ],
+    "T013": [
+      {"award_id": "DEMO-AWD-T013-001", "award_type": "prime", "recipient_name": "Demo Technical Publications LLC", "uei": "DEMOUEIT0001", "amount_minor": 41200000, "action_date": "2024-06-12"},
+      {"award_id": "DEMO-SUB-T013-002", "award_type": "subaward", "recipient_name": "Demo Documentation Studio", "uei": "DEMOUEIT0002", "amount_minor": 12600000, "action_date": "2025-03-25"},
+      {"award_id": "DEMO-SUB-T013-003", "award_type": "subaward", "recipient_name": "Demo Technical Publications LLC", "uei": "DEMOUEIT0001", "amount_minor": 7400000, "action_date": "2023-10-17"}
+    ]
+  },
+  "rates_by_labor_category": {
+    "DevSecOps Engineer": {"matched": ["Demo: DevSecOps Engineer II", "Demo: DevOps Engineer, Senior"], "rates_minor_per_hour": [11900, 13200, 13800, 14600, 15200, 16000, 16900, 17800, 19100]},
+    "Cloud Engineer": {"matched": ["Demo: Cloud Engineer", "Demo: Cloud Infrastructure Engineer"], "rates_minor_per_hour": [11200, 12400, 13100, 13600, 14100, 14900, 15600, 16500, 17900]},
+    "Security Compliance Analyst": {"matched": ["Demo: Information Assurance Analyst", "Demo: Security Compliance Analyst II"], "rates_minor_per_hour": [8600, 9400, 9900, 10300, 10800, 11400, 12100, 12900, 14200]},
+    "Technical Writer": {"matched": ["Demo: Technical Writer", "Demo: Technical Writer, Senior"], "rates_minor_per_hour": [6400, 7100, 7600, 7900, 8200, 8700, 9300, 9800, 10700]}
+  }
+}

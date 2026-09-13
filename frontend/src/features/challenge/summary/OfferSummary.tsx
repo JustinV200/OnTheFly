@@ -4,8 +4,8 @@
 import type { ReactNode } from 'react';
 
 import { BiddingModePill } from '../../../shared/components/BiddingModePill';
-import { MoneyDisplay } from '../../../shared/components/MoneyDisplay';
-import { cadenceSuffix } from '../../../shared/market';
+import { ListedPrice } from '../../../shared/components/ListedPrice';
+import { cadenceSuffix, describeBilling } from '../../../shared/market';
 import { Button, Callout, Card, Stack } from '../../../shared/ui';
 import type { PublicListingProjection } from '../../publish/types';
 import type { ChallengeFormFields } from '../buildChallengePayload';
@@ -53,7 +53,9 @@ export function OfferSummary(props: OfferSummaryProps): JSX.Element {
           )}
           {typedSetupFee ? <p className="bid-summary__setup">+ {symbol}{typedSetupFee} setup fee</p> : null}
           <p className="bid-summary__current">
-            They pay now <MoneyDisplay amountMinor={listing.price_minor} currency={listing.price_currency} /> {cadenceSuffix(listing.billing_cadence)}
+            {listing.price_minor === null
+              ? <>The business didn’t disclose its price; bid what the work is worth. The listing is {describeBilling(listing.billing_cadence)}.</>
+              : <>Listed at <ListedPrice amountMinor={listing.price_minor} currency={listing.price_currency} /> {cadenceSuffix(listing.billing_cadence)}</>}
           </p>
         </div>
 

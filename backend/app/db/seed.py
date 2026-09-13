@@ -57,6 +57,22 @@ SEEDED_ACCOUNTS = [
         "service_area": "Northern Virginia",
         "contact_email": None,
     },
+    # The task chain's demo bidders (plan2, "Demo"): Prime A wins GovCon's DevSecOps task and splits off a piece,
+    # Sub B wins that piece. Fictional, with fixture cost basis rates labeled as demo data.
+    {
+        "id": "acc_prime_a",
+        "handle": "prime-a-federal",
+        "business_name": "Prime A Federal Systems",
+        "service_area": "Northern Virginia",
+        "contact_email": None,
+    },
+    {
+        "id": "acc_sub_b",
+        "handle": "sub-b-compliance",
+        "business_name": "Sub B Compliance Partners",
+        "service_area": "Northern Virginia",
+        "contact_email": None,
+    },
 ]
 
 

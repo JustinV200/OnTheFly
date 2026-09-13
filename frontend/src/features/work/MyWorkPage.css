@@ -1,0 +1,115 @@
+/* My work: two sections of position-style cards. Phone: stacked. Tablet up: heading, figure and badges share a row. */
+.my-work__section {
+  display: grid;
+  gap: var(--space-3);
+}
+
+.my-work__heading {
+  font-size: var(--text-xl);
+  margin: 0;
+}
+
+.my-work__list {
+  display: grid;
+  gap: var(--space-3);
+  list-style: none;
+  margin: 0;
+  padding: 0;
+}
+
+.work-item {
+  background-color: var(--color-surface);
+  border: var(--border-width) solid var(--color-border);
+  border-radius: var(--radius-lg);
+  box-shadow: var(--shadow-xs);
+  display: grid;
+  gap: var(--space-3);
+  grid-template-areas: "heading" "figure" "badges" "footer";
+  padding: var(--space-4);
+}
+
+.work-item__heading {
+  align-items: center;
+  display: flex;
+  gap: var(--space-3);
+  grid-area: heading;
+  min-width: 0;
+}
+
+.work-item__names {
+  min-width: 0;
+}
+
+.work-item__title {
+  font-size: var(--text-lg);
+  margin: 0;
+  overflow-wrap: anywhere;
+}
+
+.work-item__subtitle,
+.work-item__label,
+.work-item__caption {
+  color: var(--color-text-muted);
+  font-size: var(--text-sm);
+  margin: 0;
+}
+
+.work-item__figure {
+  display: flex;
+  flex-direction: column;
+  grid-area: figure;
+}
+
+.work-item__amount {
+  font-size: var(--text-2xl);
+  font-weight: var(--weight-bold);
+  letter-spacing: var(--tracking-tight);
+}
+
+.work-item__period {
+  color: var(--color-text-muted);
+  font-size: var(--text-md);
+  font-weight: var(--weight-semibold);
+  margin-left: var(--space-1);
+}
+
+.work-item__badges {
+  align-content: flex-start;
+  display: flex;
+  flex-wrap: wrap;
+  gap: var(--space-1);
+  grid-area: badges;
+}
+
+.work-item__footer {
+  align-items: center;
+  border-top: var(--border-width) solid var(--color-border-subtle);
+  display: flex;
+  flex-wrap: wrap;
+  gap: var(--space-2);
+  grid-area: footer;
+  justify-content: space-between;
+  padding-top: var(--space-3);
+}
+
+.work-item__next {
+  align-items: center;
+  color: var(--color-brand-text);
+  display: inline-flex;
+  font-size: var(--text-sm);
+  font-weight: var(--weight-medium);
+  gap: var(--space-1);
+}
+
+@media (min-width: 768px) {
+  .work-item {
+    align-items: center;
+    column-gap: var(--space-6);
+    grid-template-areas: "heading figure badges" "footer footer footer";
+    grid-template-columns: minmax(0, 1.3fr) minmax(0, 0.9fr) minmax(0, 1.4fr);
+  }
+
+  .work-item__badges {
+    justify-content: flex-end;
+  }
+}

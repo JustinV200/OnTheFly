@@ -28,11 +28,14 @@ def compute_savings(
     cancellation_fee_minor: int | None = None,
     missing_scope_items: list[str] | None = None,
     unstated_scope_items: list[str] | None = None,
+    label_base: str = "Potential savings",
 ) -> SavingsResult:
     """Compute potential savings, provisional when costs are unknown or the offer's scope differs.
 
     Scope gaps come first in the assumptions: an offer that drops requested work is not a
     like-for-like price, so its "savings" partly measure doing less (CLAUDE.md, money and math).
+    label_base names what the difference is for the task's origin: a new task compares against a budget and never
+    says "savings" (plan2, "Tasks and ownership").
     """
 
     annual_recurring = current_monthly.subtract(offer_monthly).multiply_by(12)
@@ -59,7 +62,7 @@ def compute_savings(
         assumptions=assumptions,
         # Every figure is provisional while switching costs are unknown, so the flag alone
         # can't tell a scope gap apart; the label has to.
-        label="Potential savings (scope gaps)" if missing_scope_items else "Potential savings",
+        label=f"{label_base} (scope gaps)" if missing_scope_items else label_base,
     )
 
 

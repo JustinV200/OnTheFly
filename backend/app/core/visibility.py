@@ -13,6 +13,8 @@ class ListingVisibility(StrEnum):
     public = "public"
     closed = "closed"
     shortlisted = "shortlisted"
+    # An offer was accepted: bidding is closed and the listing is no longer served publicly (roadmap 12, step 4).
+    accepted = "accepted"
 
 
 PRIVATE_DEFAULT = ListingVisibility.private

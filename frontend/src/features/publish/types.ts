@@ -25,9 +25,30 @@ export interface ListingDraftResponse {
   visibility: string;
 }
 
+// One requirement as bidders see it (roadmap 12). Offers answer requirements by key.
+export interface PublicRequirement {
+  key: string;
+  text: string;
+  priority: string;
+  labor_category: string | null;
+  // Hours per the listing's billing period; null when the poster left the estimate unanswered.
+  hours: number | null;
+}
+
+export interface PublicConstraint {
+  kind: string;
+  value: string;
+}
+
+export interface PublicScopeField {
+  label: string;
+  value: string;
+}
+
 export interface PublicListingProjection {
   id: string;
-  expense_id: string;
+  // Only a rebid of observed spend has an expense; a new task or a piece has none.
+  expense_id: string | null;
   category: string;
   scope_summary: string;
   // The structured requirements offers are scored against; null expectations were not stated by the owner.
@@ -36,7 +57,8 @@ export interface PublicListingProjection {
   supplies_included: boolean | null;
   equipment_included: boolean | null;
   taxes_included: boolean | null;
-  price_minor: number;
+  // Null when the poster hides the price (the default for new tasks and pieces): show "Price not disclosed".
+  price_minor: number | null;
   price_currency: string;
   billing_cadence: string;
   service_area_approximate: string;
@@ -46,6 +68,14 @@ export interface PublicListingProjection {
   show_exact_address: boolean;
   visibility: string;
   published_at: string | null;
+  // Roadmap 12 additions; older payloads read as empty lists, no title, and a disclosed price.
+  title?: string | null;
+  requirements?: PublicRequirement[];
+  constraints?: PublicConstraint[];
+  scope_fields?: PublicScopeField[];
+  // A piece split off an accepted task: payment depends on the business above.
+  is_subcontract?: boolean;
+  price_disclosed?: boolean;
 }
 
 export interface ListingPreviewResponse {

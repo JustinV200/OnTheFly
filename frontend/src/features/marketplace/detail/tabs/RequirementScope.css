@@ -1,0 +1,53 @@
+/* Requirement scope: an intro line, a compact requirement table, constraint badges, and template fields as rows. */
+.requirement-scope__intro,
+.requirement-scope__muted {
+  color: var(--color-text-muted);
+  font-size: var(--text-sm);
+  margin: 0;
+}
+
+.requirement-scope__text {
+  font-weight: var(--weight-medium);
+  overflow-wrap: anywhere;
+}
+
+.requirement-scope__heading {
+  font-size: var(--text-md);
+  margin: 0 0 var(--space-2);
+}
+
+.requirement-scope__constraints {
+  display: grid;
+  gap: var(--space-2);
+  list-style: none;
+  margin: 0;
+  padding: 0;
+}
+
+.requirement-scope__fields {
+  border-top: var(--border-width) solid var(--color-border-subtle);
+  margin: 0;
+}
+
+.requirement-scope__field {
+  border-bottom: var(--border-width) solid var(--color-border-subtle);
+  display: grid;
+  gap: var(--space-1);
+  padding: var(--space-3) 0;
+}
+
+.requirement-scope__field dt {
+  color: var(--color-text-muted);
+  font-size: var(--text-sm);
+}
+
+.requirement-scope__field dd {
+  margin: 0;
+  overflow-wrap: anywhere;
+}
+
+@media (min-width: 480px) {
+  .requirement-scope__field {
+    grid-template-columns: 11rem minmax(0, 1fr);
+  }
+}

@@ -11,17 +11,27 @@ from app.core.config import get_settings
 from app.db.base import Base
 from app.models import Account
 from app.models import Challenge
+from app.models import ChallengeRequirementResponse
 from app.models import ChallengeRevision
 from app.models import ChallengerEvidence
+from app.models import CostBasisRate
 from app.models import DiscoveryRun
 from app.models import Invitation
 from app.models import InvitationApproval
+from app.models import MarketEvidence
 from app.models import OutreachSuppression
 from app.models import ProviderCandidate
 from app.models import PublicListingRecord
+from app.models import Requirement
+from app.models import RequirementAssignment
 from app.models import SandboxOutboxMessage
+from app.models import SavingsCard
+from app.models import ScopeConstraint
 from app.models import ScopeVersion
 from app.models import ServiceExpense
+from app.models import Task
+from app.models import TaskEvent
+from app.models import TaskSplit
 from app.models import Transaction
 from app.models import VendorAliasDismissal
 from app.models import VendorCorrection
@@ -53,6 +63,16 @@ _ = (
     ScopeVersion,
     PublicListingRecord,
     VisibilityAudit,
+    Task,
+    TaskEvent,
+    TaskSplit,
+    RequirementAssignment,
+    Requirement,
+    ScopeConstraint,
+    ChallengeRequirementResponse,
+    CostBasisRate,
+    MarketEvidence,
+    SavingsCard,
 )
 
 
