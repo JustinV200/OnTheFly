@@ -23,14 +23,13 @@ export function OwnerDashboard({ account }: OwnerDashboardProps): JSX.Element {
     // A section root rather than one Stack: PageHeader brings its own bottom margin, and a gap on top of it doubles the space.
     <section>
       <PageHeader
-        eyebrow={account.businessName}
         meta={
           <Badge icon={<Icon name="lock" />} size="md" tone="private">
             Only {account.businessName} can see this page
           </Badge>
         }
-        subtitle="Every expense arrives private. Nothing goes public unless you publish that one expense yourself."
-        title="Private dashboard"
+        subtitle="Everything imports private. Nothing goes public unless you publish that one expense."
+        title="Spend"
       />
 
       <Stack gap={6}>
