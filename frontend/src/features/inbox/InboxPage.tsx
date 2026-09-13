@@ -13,6 +13,7 @@ import { ListingControls } from './controls/ListingControls';
 import { OfferDrawer } from './detail/OfferDrawer';
 import { GenuineOfferCallout } from './genuine/GenuineOfferCallout';
 import { InboxHeader } from './header/InboxHeader';
+import { NoOffersState } from './offers/NoOffersState';
 import { RankedOffersSection } from './offers/RankedOffersSection';
 import { SummaryStrip } from './summary/SummaryStrip';
 import { useInbox } from './useInbox';
@@ -69,11 +70,7 @@ export function InboxPage(): JSX.Element {
       <GenuineOfferCallout offers={ownerOffers} />
 
       {challenges.length === 0 ? (
-        <EmptyState action={<ButtonLink to={`/listings/${listing.id}`}>See the listing as challengers do</ButtonLink>} title="No offers yet">
-          {listing.visibility === 'public'
-            ? 'Your listing is live, and the public sees "no offers yet". New offers appear here automatically. Most listings start this way.'
-            : 'No offers arrived while this listing was public.'}
-        </EmptyState>
+        <NoOffersState listing={listing} />
       ) : (
         <RankedOffersSection
           comparisonError={comparison.data ? null : comparison.error}
