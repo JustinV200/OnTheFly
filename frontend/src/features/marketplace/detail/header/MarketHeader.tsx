@@ -1,13 +1,12 @@
 /* The top of a market page: a way back to the board, the category tile beside the title and area, and the badges a
    bidder reads before anything else (bidding mode, offer count, time left). Holds the page's single h1.
    Not PageHeader: a market title sits beside its tile, which PageHeader's title/subtitle stack doesn't lay out. */
-import { Link } from 'react-router-dom';
-
 import { BiddingModePill } from '../../../../shared/components/BiddingModePill';
 import { categoryLabel } from '../../../../shared/format/categoryLabel';
 import { CategoryTile, ClosesIn } from '../../../../shared/market';
 import { Badge, Icon, joinClassNames } from '../../../../shared/ui';
 import type { PublicListingProjection } from '../../../publish/types';
+import { BackToMarketsLink } from './BackToMarketsLink';
 import './MarketHeader.css';
 
 interface MarketHeaderProps {
@@ -21,10 +20,7 @@ interface MarketHeaderProps {
 export function MarketHeader({ listing, offerCount, closes, className }: MarketHeaderProps): JSX.Element {
   return (
     <header className={joinClassNames('market-header', className)}>
-      <Link className="market-header__back" to="/marketplace">
-        <Icon name="arrow-left" size={14} />
-        Markets
-      </Link>
+      <BackToMarketsLink />
 
       <div className="market-header__identity">
         <CategoryTile category={listing.category} size="lg" />

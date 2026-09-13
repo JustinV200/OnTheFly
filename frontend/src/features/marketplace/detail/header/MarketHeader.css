@@ -6,22 +6,6 @@
   min-width: 0;
 }
 
-.market-header__back {
-  align-items: center;
-  align-self: flex-start;
-  border-radius: var(--radius-sm);
-  color: var(--color-text-muted);
-  display: inline-flex;
-  font-size: var(--text-sm);
-  font-weight: var(--weight-semibold);
-  gap: var(--space-1);
-  text-decoration: none;
-}
-
-.market-header__back:hover {
-  color: var(--color-text);
-}
-
 .market-header__identity {
   align-items: center;
   display: flex;
