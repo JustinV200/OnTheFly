@@ -8,11 +8,13 @@ Preserve the existing marketplace and task-market implementation. [12](12-task-o
 
 Don't start P0 until each one has a recorded answer. Write the answer under its question, and carry decisions into [plan2](../plan/plan2.md) and [12](12-task-ownership-and-splitting.md). A proposal is not an answer.
 
-- [ ] **1. GovCon seed amounts and cadence.**
+- [x] **1. GovCon seed amounts and cadence.**
   - What exact monthly amounts and variation make up the 3–6 month ledger?
   - Do the totals reproduce the illustrative $4.03M annual spend, or does the displayed figure change?
-  - Proposal: none yet. Plan1's monthly examples don't multiply exactly to its annual figures.
-  - Blocks: GovCon fixtures and every downstream figure.
+  - **Answer:** recorded by the implemented ledger (Sohan, merged 2026-09-13; [GOVCON.md](../backend/app/services/transactions/fixture/GOVCON.md)).
+    - March–August 2026, with six monthly invoices for each of five services.
+    - Variation is −1.5% to +1.5%, with zero average offset.
+    - The annualized total is **$4,044,000**, not $4.03M. Use the computed figure everywhere.
 - [ ] **2. Fixture cost basis rates.**
   - What labor categories and hourly rates does GovCon's current DevSecOps contract bill?
   - What internal loaded costs do Prime A and Sub B carry?
@@ -48,7 +50,7 @@ Don't start P0 until each one has a recorded answer. Write the answer under its 
 |---|---|---|
 | App foundation | React features, FastAPI routes, SQLAlchemy models, Alembic migrations 0001–0012 | Implemented locally |
 | Stripe sandbox ingestion | `transactions/stripe/`, `api/connections/`, frontend connection controls, mocked HTTP tests | Implemented; real sandbox consent unverified |
-| Expense pipeline | Fixture source, normalization, recurrence, baseline and expense API | Implemented for existing data; GovCon validation pending |
+| Expense pipeline | Fixture source, normalization, recurrence, baseline and expense API; GovCon ledger via `app.cli.seed_govcon_demo` and `test_govcon_seed.py` | Implemented; GovCon totals and privacy covered by tests; on-screen display and labels not yet checked |
 | Publishing and profiles | Publish stepper, exact preview, public projections and visibility tests | Reuse; scope moves onto requirements and category templates ([12](12-task-ownership-and-splitting.md), step 2) |
 | Offers/comparison | Submission/revisions, sealed/open rules, Offers inbox and deterministic math | Reuse; per-requirement responses and acceptance pending ([12](12-task-ownership-and-splitting.md), steps 2 and 4) |
 | Task-market UI | Markets board, market page with bid ticket, bid form, Spend, My listings, Offers, trace, light/dark/system themes ([11](11-usability-and-dark-mode.md)) | Built and merged; keyboard focus and honesty-label audit open |
@@ -57,18 +59,22 @@ Don't start P0 until each one has a recorded answer. Write the answer under its 
 | Task ownership and splitting | No task, acceptance, requirement, split, cost basis, market evidence, Ways to save or money view implementation found | Not started ([12](12-task-ownership-and-splitting.md)) |
 | Fly Scout | `flybrain` circuits label their results on Spend and similar listings; no Fly Scout runtime | Not started; after splitting |
 
-Last reported result (at the 2026-09-13 merge): **360 backend tests passed; frontend build passed with the colour and contrast checks.** This is not an end-to-end acceptance run for the current plan. Existing checklists must not be marked complete merely because routes or files exist.
+Last verified result (2026-09-13, after merging the task-market UI, outreach and the GovCon ledger): **365 backend tests passed; frontend build passed with the colour and contrast checks.** This is not an end-to-end acceptance run for the current plan. Existing checklists must not be marked complete merely because routes or files exist.
 
 ## P0 — The splitting path
 
-Start once open questions 1–5 have recorded answers.
+Start once open questions 2–5 have recorded answers (1 is answered).
 
 **Prerequisites carried from plan1**
 
 - [ ] Verify Stripe sandbox consent with configured keys and confirm imported transactions render.
-- [ ] Add GovCon Industries and `fixture_govcon_main` through the existing normalized pipeline.
+- [x] Add GovCon Industries and `fixture_govcon_main` through the existing normalized pipeline. Covered by `backend/tests/test_govcon_seed.py`.
 - [ ] Seed 3–6 months across five categories; verify rounded display values against exact arithmetic.
+  - Seeded (6 months, 5 categories), and the $4,044,000 annualized total is asserted in minor units.
+  - Rounded values on screen are not yet checked.
 - [ ] Label synthetic GovCon data separately from Stripe sandbox data.
+  - Transactions are `fixture`, and Data sources has a Hackathon demo ledger row.
+  - Not yet checked on screen for GovCon alongside a Stripe sandbox connection.
 - [ ] Add REBID action and persisted/recoverable progress for one DevSecOps expense.
 - [ ] Draft/confirm scope as tagged requirements with hours, location, clearance and classification ([12](12-task-ownership-and-splitting.md), step 2).
 - [ ] Connect USAspending awards and subawards behind the shared market-data interface. Preserve award identifiers and source evidence ([12](12-task-ownership-and-splitting.md), step 8).

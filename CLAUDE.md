@@ -21,16 +21,21 @@ Stripe transaction-only sandbox consent, company binding, paginated imports, upd
 
 Fixtures, recurring-expense grouping, publishing/preview, profiles, challenges and comparison exist for a commercial-cleaning scenario. Reuse them; scope moves onto requirement rows and category templates (roadmap 12, step 2) rather than new DevSecOps columns.
 
+The GovCon demo ledger is implemented (merged 2026-09-13):
+- `python -m app.cli.seed_govcon_demo` imports 30 synthetic March–August 2026 invoices through `FixtureSource` into `acc_govcon_1` (`fixture_govcon_main`).
+- The result is five private monthly expenses totalling $4,044,000 annualized.
+- See `backend/app/services/transactions/fixture/GOVCON.md`.
+
 Not implemented:
-- GovCon fixtures, REBID orchestration, USAspending discovery, public-rate pricing, Tavily enrichment, OpenAI reasoning and Fly Scout.
+- REBID orchestration, USAspending discovery, public-rate pricing, Tavily enrichment, OpenAI reasoning and Fly Scout.
 - Tasks with a poster and task owner, offer acceptance, requirements, `new` tasks, splits and cuts, cost basis rates, market evidence, Ways to save and money views.
 
-Also implemented (merged 2026-09-13): a Kalshi-style "task market" UI with light/dark/system themes (roadmap 11, "Task market direction") and owner-approved supplier invitations (roadmap 08): fixture or Tavily discovery, a preview-hash approval gate, an idempotent queue to a sandbox outbox by default (SMTP only behind an allowlist), and a public opt-out page. Tavily and SMTP have only been exercised with mocks. The latest verification (2026-09-13) reported 360 backend tests passing and a successful frontend build with the colour and contrast checks.
+Also implemented (merged 2026-09-13): a Kalshi-style "task market" UI with light/dark/system themes (roadmap 11, "Task market direction") and owner-approved supplier invitations (roadmap 08): fixture or Tavily discovery, a preview-hash approval gate, an idempotent queue to a sandbox outbox by default (SMTP only behind an allowlist), and a public opt-out page. Tavily and SMTP have only been exercised with mocks. The latest verification (2026-09-13, after also merging the GovCon ledger) had 365 backend tests passing and a successful frontend build with the colour and contrast checks.
 
 ## Scope and stack decisions
 
 - **P0, the splitting path:**
-  - Prerequisites: verify Stripe, add GovCon fixtures, build REBID with confirmed requirements, discover actual USAspending suppliers, and integrate one public labor-rate path.
+  - Prerequisites: verify Stripe, check the seeded GovCon ledger's display and labels, build REBID with confirmed requirements, discover actual USAspending suppliers, and integrate one public labor-rate path.
   - Then roadmap 12 steps 1–10: tasks with poster and task owner, acceptance, requirements, `new` tasks, cuts and manual splits, piece visibility, cost basis rates, market evidence, Ways to save, and money views.
 - **P1:**
   - Split everything (LLM) and LLM scope drafting for new tasks
@@ -71,6 +76,7 @@ REBID starts private research. It does not bypass confirmation of contract scope
 - `plan/plan2.md`: current product plan. `plan1.md` is retained for REBID detail; `previous-marketplace-plan.md` is historical.
 - `roadmap/README.md`: current P0/P1/P2 order. `12-task-ownership-and-splitting.md` is the active build spec; the other numbered files retain component specifications.
 - `.claude/codingrules.md`: coding structure rules.
+- `AGENTS.md` and `codex-task.ps1`: instructions and runner for Codex agents; keep `AGENTS.md`'s source-of-truth pointers in step with this file.
 
 ## Working conventions
 
@@ -179,4 +185,4 @@ In these rules, **owner** means the account that posted the listing (its poster)
 
 ## Open questions
 
-Open questions are at the top of [roadmap/README.md](roadmap/README.md), "Open questions to answer before building". Don't start P0 implementation until each has a recorded answer. Questions 6 (Fly Scout runtime) and 7 (three-device hosting) block only P1. Don't answer them on the user's behalf; a proposal is not an answer. A genuine supplier quote is optional.
+Open questions are at the top of [roadmap/README.md](roadmap/README.md), "Open questions to answer before building". Question 1 (GovCon seed amounts) is answered by the implemented ledger. Don't start the remaining P0 implementation until questions 2–5 have recorded answers; questions 6 (Fly Scout runtime) and 7 (three-device hosting) block only P1. Don't answer them on the user's behalf; a proposal is not an answer. A genuine supplier quote is optional.

@@ -1,6 +1,6 @@
 # Phase 03 — Expense dashboard
 
-> Status reconciliation — 2026-09-12: Expense grouping, recurrence, annualization, corrections and the dashboard exist. Next: add GovCon Industries/fixture_govcon_main, verify exact totals and add REBID. Existing cleaning fixtures remain regression data; the new GovCon dataset is not implemented.
+> Status reconciliation — 2026-09-12: Expense grouping, recurrence, annualization, corrections and the dashboard exist. GovCon Industries/fixture_govcon_main is seeded, with exact totals covered by tests (merged 2026-09-13). Next: check its display on screen and add REBID. Existing cleaning fixtures remain regression data.
 >
 > Follow [the current P0/P1/P2 roadmap](README.md) and [current product plan](../plan/plan2.md). The earlier specification below is retained for reusable implementation detail. Its old priorities, demo category, and unchecked boxes are not a current completion report.
 

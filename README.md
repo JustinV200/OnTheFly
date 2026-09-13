@@ -17,7 +17,7 @@ Status reviewed 2026-09-13 against the repository, [the current plan](plan/plan2
 | Area | Current state | Remaining work |
 |---|---|---|
 | Stripe Financial Connections | Consent/session API, company binding, transaction imports, refresh polling, and UI implemented | Verify actual sandbox consent with configured keys |
-| Financial data | Normalized transactions, fixture source, recurring-spend grouping and annualization implemented | Add GovCon ledger and verify its totals |
+| Financial data | Normalized transactions, fixture source, recurring-spend grouping and annualization; GovCon demo ledger seeded through the same pipeline and covered by tests | Check GovCon's displayed totals and labels on screen |
 | Marketplace | Publish stepper with exact preview, market board, market page with bid ticket, offers with revisions and sealed/open bidding, Offers inbox, comparison and profiles, on cleaning demo data | Requirements and category templates; per-requirement offer responses; accepting an offer |
 | Task ownership and splitting | Planned ([roadmap 12](roadmap/12-task-ownership-and-splitting.md)) | Poster and task owner, cuts, splits, Ways to save, money views |
 | Evidence | Local checks and registry stub | USAspending awards and subawards, public labor rates, Tavily enrichment |
@@ -29,7 +29,7 @@ Status reviewed 2026-09-13 against the repository, [the current plan](plan/plan2
 | Database | SQLite locally, SQLAlchemy and Alembic migrations 0001–0012 | Supabase/Postgres remains optional deployment work |
 | Demo readiness | Not yet ready for the current story | Finish P0/P1 and rehearse three accounts with labeled data |
 
-Last reported verification (2026-09-13, at the task-market UI and outreach merge): **360 backend tests passed**, and the frontend build passed with the colour and contrast checks. Stripe, Tavily and SMTP responses were mocked in tests. This does not certify a real sandbox connection, live outreach, or the planned REBID and splitting flows.
+Last verification (2026-09-13, after merging the task-market UI, outreach and the GovCon ledger): **365 backend tests passed**, and the frontend build passed with the colour and contrast checks. Stripe, Tavily and SMTP responses were mocked in tests. This does not certify a real sandbox connection, live outreach, or the planned REBID and splitting flows.
 
 ## Demo and data strategy
 
@@ -53,11 +53,13 @@ Required labels:
 - **Subcontract** — pieces split from an accepted task.
 - **Demo offer** or **genuine supplier quote**, according to the actual provenance of a submitted offer.
 
-The current seed still creates Apex Facilities Group and commercial-cleaning data. GovCon data is not implemented yet.
+The GovCon ledger is implemented. Run `python -m app.cli.seed_govcon_demo` from `backend/` after migrations. It adds GovCon Industries without resetting other accounts or Stripe connections: 30 synthetic March–August 2026 invoices across five services, $4,044,000 annualized. See [GOVCON.md](backend/app/services/transactions/fixture/GOVCON.md).
+
+The default `staged` seed still creates Apex Facilities Group and commercial-cleaning data. Prime A, Sub B and their fixture rates don't exist yet.
 
 ## Next build order
 
-1. Verify Stripe sandbox consent; add GovCon fixtures and confirm annualized totals.
+1. Verify Stripe sandbox consent; check the seeded GovCon ledger's displayed totals and labels.
 2. Add tasks with poster and task owner, requirements with category templates, and offer acceptance.
 3. Add REBID with owner-confirmed DevSecOps requirements, and `new` tasks.
 4. Add cuts, manual splits, piece visibility and the payer chain.
