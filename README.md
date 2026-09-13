@@ -1,14 +1,42 @@
 # On the Fly
 
-**REBID what your business already pays for, post what it newly needs, and split off the pieces that save money.**
+> **The contract auction house for business spend.**
 
-On the Fly is a task market:
-1. A business connects its accounts, finds replaceable spend, and posts it as a task, or posts new work it needs.
-2. Other businesses bid. When the poster accepts an offer, the winning bidder owns the task.
-3. Any task owner can split off pieces. **Ways to save** suggests only the pieces where public contract history and labor rates say splitting is cheaper.
-4. Each piece is its own task, owned by whoever wins it, and can be split again.
+On the Fly turns an expense or a new business need into a competitive market. A buyer defines the outcome and the price to beat, qualified vendors bid for the work, and the winner can deliver it or split pieces back into the market for specialist subcontractors.
 
-The current code walks that whole chain for one fictional buyer: GovCon Industries REBIDs its DevSecOps spend, Prime A wins it and splits off a piece, Sub B wins the piece, and every account's money view reconciles. Stripe sandbox import, USAspending supplier discovery, owner-approved invitations and a Kalshi-style task-market UI are in place. Public labor-rate pricing, REBID's Progress → Market → Bid orchestration and Fly Scout are not.
+Built for a hackathon, the project asks a simple question: **what if buying business services were as transparent and competitive as trading in a market?**
+
+## What we built
+
+- **Spend-to-auction:** connect a Stripe sandbox or use the labeled demo ledger, identify recurring spend, and turn it into a REBID opportunity.
+- **AI-assisted scoping:** convert a rough business need into structured requirements and estimated hours for the owner to review.
+- **Public supplier discovery:** use similar USAspending contract history to find relevant vendors, with optional Tavily enrichment for outbound research.
+- **Competitive bidding:** invite selected suppliers or publish to the marketplace, receive sealed or open offers, compare them, and accept a winner.
+- **Transferable work ownership:** accepting an offer makes the vendor the task owner. That vendor can split the contract into smaller pieces and auction those pieces to subcontractors.
+- **Traceable savings:** preserve the chain from original expense to scope, bids, accepted vendor, subcontracted pieces, and modeled savings.
+
+The result is more than a lead marketplace. It is a recursive contract market: work can move from buyer to prime contractor to specialist subcontractor while every bid, requirement, owner, and dollar remains visible.
+
+## How the demo works
+
+1. **Connect spend.** GovCon Industries imports its transaction history and spots a recurring DevSecOps contract worth rebidding.
+2. **Create the market.** The expense becomes a scoped contract with requirements, a budget, and a price to beat.
+3. **Find bidders.** Similar public awards identify potential suppliers; Tavily can enrich the shortlist before the buyer approves outreach.
+4. **Run the auction.** Vendors submit offers and the buyer accepts the strongest bid, transferring ownership of the work.
+5. **Subcontract a piece.** The winning prime splits off specialist work, republishes it, and accepts a subcontractor's offer.
+6. **Follow the money.** The task trace and account views show who owns each piece and where savings were created.
+
+And the fly? It is both our mascot and a real, clearly labeled part of the experience: a simulated fruit-fly brain reacts alongside marketplace results. **We make contracting so easy, a fly can do it. In fact, it does.** The fly never makes financial decisions or gates which offer a user can accept.
+
+## Why it matters
+
+Business service purchasing is fragmented across bank transactions, procurement workflows, vendor discovery, email outreach, and subcontracting. On the Fly brings that loop into one place so companies can:
+
+- discover waste in spend they already have;
+- create price competition instead of silently renewing contracts;
+- give smaller and specialist vendors a path into larger contracts;
+- break complex work into pieces without losing accountability; and
+- show the evidence behind supplier discovery, bids, ownership, and savings.
 
 ## Current build status
 
