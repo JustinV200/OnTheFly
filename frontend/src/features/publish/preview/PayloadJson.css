@@ -1,14 +1,8 @@
-/* Payload block: a sunken monospace panel that scrolls in both directions inside itself, capped in height on large screens. */
-.publish-payload__title {
-  font-size: var(--text-md);
-  letter-spacing: normal;
-  margin: 0;
-}
-
+/* Payload block: a sunken monospace panel that scrolls in both directions inside itself, capped in height. */
 .publish-payload__description {
   color: var(--color-text-muted);
   font-size: var(--text-sm);
-  margin: var(--space-1) 0 0;
+  margin: 0;
 }
 
 .publish-payload__json {
@@ -19,7 +13,7 @@
   font-size: var(--text-xs);
   line-height: var(--leading-normal);
   margin: 0;
-  max-height: 32rem;
+  max-height: 28rem;
   max-width: 100%;
   overflow: auto;
   padding: var(--space-3) var(--space-4);

@@ -1,0 +1,40 @@
+/* An included-cost question: stacked on a phone, the question and its answer control on one row from 480px. */
+.publish-included {
+  align-items: flex-start;
+  border-top: var(--border-width) solid var(--color-border-subtle);
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-2);
+  min-width: 0;
+  padding: var(--space-3) 0;
+}
+
+.publish-included:last-child {
+  padding-bottom: 0;
+}
+
+.publish-included__text {
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-0_5);
+  min-width: 0;
+}
+
+.publish-included__question {
+  font-size: var(--text-md);
+  font-weight: var(--weight-medium);
+}
+
+.publish-included__unanswered {
+  color: var(--color-warning-text);
+  font-size: var(--text-xs);
+  font-weight: var(--weight-semibold);
+}
+
+@media (min-width: 480px) {
+  .publish-included {
+    align-items: center;
+    flex-direction: row;
+    justify-content: space-between;
+  }
+}

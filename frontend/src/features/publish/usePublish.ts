@@ -8,16 +8,20 @@ import { ApiQueryState, useApiQuery } from '../../shared/api/useApiQuery';
 import type { ExpenseListResponse } from '../dashboard/types';
 import type { ListingDraftResponse, ListingPreviewResponse } from './types';
 
-// Exported so the step indicator and step cards can show where the owner is; only this hook sets it.
+// Exported so the stepper and step bodies can show where the owner is; only this hook sets it.
 export type PublishStep = 'editing' | 'drafting' | 'previewing' | 'publishing' | 'published';
 
-interface UsePublishResult {
+export interface UsePublishResult {
   expenses: ApiQueryState<ExpenseListResponse>;
   draft: ListingDraftResponse | null;
   preview: ListingPreviewResponse | null;
   step: PublishStep;
   errorMessage: string | null;
-  createDraft: (payload: Record<string, unknown>) => Promise<void>;
+  // True after an edit discarded a preview the owner had, until a fresh preview lands. The flow says so
+  // ("You changed the scope — preview again") instead of the preview silently disappearing.
+  isPreviewStale: boolean;
+  // Resolves true only when the preview this call asked for is the one now held (not superseded by an edit, not rejected).
+  createDraft: (payload: Record<string, unknown>) => Promise<boolean>;
   invalidatePreview: () => void;
   publish: () => Promise<void>;
 }
@@ -29,13 +33,14 @@ export function usePublish(): UsePublishResult {
   const [preview, setPreview] = useState<ListingPreviewResponse | null>(null);
   const [step, setStep] = useState<PublishStep>('editing');
   const [errorMessage, setErrorMessage] = useState<string | null>(null);
+  const [isPreviewStale, setIsPreviewStale] = useState(false);
   // Bumped by every form edit and every new draft. A request only applies its answer while the
   // generation it started under is still current, so an edit made mid-request always wins.
   const formGenerationRef = useRef(0);
 
-  const createDraft = async (payload: Record<string, unknown>): Promise<void> => {
+  const createDraft = async (payload: Record<string, unknown>): Promise<boolean> => {
     if (step === 'publishing' || step === 'published') {
-      return;
+      return false;
     }
     formGenerationRef.current += 1;
     const generation = formGenerationRef.current;
@@ -49,11 +54,13 @@ export function usePublish(): UsePublishResult {
       if (formGenerationRef.current !== generation) {
         // The owner changed the form while this was in flight, so this preview shows values they
         // no longer have. Dropping it keeps Publish disabled; the private draft row is overwritten next time.
-        return;
+        return false;
       }
       setDraft(draftResponse);
       setPreview(previewResponse);
+      setIsPreviewStale(false);
       setStep('previewing');
+      return true;
     } catch (error) {
       // The server rejects drafts it can't compare (e.g. an irregular cadence); the owner needs
       // that reason to fix the form. Anything else is unexpected, so let it surface.
@@ -62,10 +69,11 @@ export function usePublish(): UsePublishResult {
       }
       if (formGenerationRef.current !== generation) {
         // The rejection is about values the owner has since changed; invalidatePreview already reset the step.
-        return;
+        return false;
       }
       setErrorMessage(error.message);
       setStep('editing');
+      return false;
     }
   };
 
@@ -75,6 +83,10 @@ export function usePublish(): UsePublishResult {
     if (step === 'publishing' || step === 'published') {
       // A publish request already sent can't be recalled; publish() settles the step when it answers.
       return;
+    }
+    if (preview) {
+      // Only a preview the owner could have seen becomes "stale"; an edit before any preview is just editing.
+      setIsPreviewStale(true);
     }
     setDraft(null);
     setPreview(null);
@@ -105,6 +117,7 @@ export function usePublish(): UsePublishResult {
         // The form changed while the request was out, so the preview on screen is stale.
         setDraft(null);
         setPreview(null);
+        setIsPreviewStale(true);
         setStep('editing');
         return;
       }
@@ -112,5 +125,5 @@ export function usePublish(): UsePublishResult {
     }
   };
 
-  return { expenses, draft, preview, step, errorMessage, createDraft, invalidatePreview, publish };
+  return { expenses, draft, preview, step, errorMessage, isPreviewStale, createDraft, invalidatePreview, publish };
 }

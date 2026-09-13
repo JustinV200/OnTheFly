@@ -1,0 +1,24 @@
+/* Small icon-led lines: muted for where a value came from, warning-toned when a ticket value was dropped. */
+.bid-ticket-note {
+  display: grid;
+  gap: var(--space-1);
+}
+
+.bid-ticket-note__line {
+  align-items: flex-start;
+  color: var(--color-text-muted);
+  display: flex;
+  font-size: var(--text-sm);
+  gap: var(--space-1);
+  line-height: var(--leading-snug);
+  margin: 0;
+}
+
+.bid-ticket-note__line > svg {
+  flex: none;
+  margin-top: var(--space-0_5);
+}
+
+.bid-ticket-note__line--warning {
+  color: var(--color-warning-text);
+}
