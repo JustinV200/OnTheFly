@@ -26,7 +26,7 @@ The result is more than a lead marketplace. It is a recursive contract market: w
 5. **Subcontract a piece.** The winning prime splits off specialist work, republishes it, and accepts a subcontractor's offer.
 6. **Follow the money.** The task trace and account views show who owns each piece and where savings were created.
 
-And the fly? It is both our mascot and a real, clearly labeled part of the experience: a simulated fruit-fly brain reacts alongside marketplace results. **We make contracting so easy, a fly can do it. In fact, it does.** The fly never makes financial decisions or gates which offer a user can accept.
+And the fly? We wanted to make this system so simple that even a fly could use it. So we made the fly part of the experience: a simulated fruit-fly brain reacts alongside marketplace results. **We made contracting so simple, a fly can use it. In fact, it does.** The fly is a clearly labeled hackathon experiment and never makes financial decisions or gates which offer a user can accept.
 
 ## Why it matters
 
@@ -38,28 +38,9 @@ Business service purchasing is fragmented across bank transactions, procurement 
 - break complex work into pieces without losing accountability; and
 - show the evidence behind supplier discovery, bids, ownership, and savings.
 
-## Current build status
+## Tech stack
 
-Status reviewed 2026-09-13 against the repository, [the current plan](plan/plan2.md) and [roadmap](roadmap/README.md).
-
-| Area | Current state | Remaining work |
-|---|---|---|
-| Stripe Financial Connections | Consent/session API, company binding, paginated transaction imports, refresh polling, and UI implemented; Spend's connect button starts the flow | Verify actual sandbox consent with configured keys (tests mock Stripe) |
-| Financial data | Normalized transactions, fixture source, recurring-spend grouping and annualization; GovCon demo ledger seeded through the same pipeline | Check GovCon's displayed totals and labels on screen |
-| Marketplace | Publish stepper with exact preview, market board, market page with bid ticket, sealed/open bidding with revisions, Offers inbox, comparison and profiles | — |
-| Tasks | Tasks with poster and task owner; requirements, constraints and category templates; per-requirement offer responses; `new` tasks with the price hidden by default; REBID… opens a private task from any covered Spend category | REBID orchestration with persisted progress and supplier results |
-| Ownership and splitting | Acceptance transfers ownership; cuts, remainder and undo; manual and suggested splits with their own piece projection, the Subcontract label and the payer chain ([roadmap 12](roadmap/12-task-ownership-and-splitting.md), migration 0013) | Split everything (LLM draft); period conversion between a task and its pieces |
-| Ways to save and money | Labeled fixture cost basis rates for the three demo accounts; `market_evidence` rows; one card per suggestion with keep cost − cut = savings and a ✓/✗ line per config threshold; money views and My work | Public labor rates, so live cards can reach a suggested tier |
-| Market evidence | `MARKET_DATA_SOURCE=mock` serves labeled demo data; `live` queries USAspending prime awards and reported subawards | A public labor-rate client (live rates render "not checked") |
-| Supplier discovery | `DISCOVERY_SOURCE=usaspending_tavily` shortlists suppliers by UEI from USAspending awards over a 5-year lookback, with award evidence kept per candidate (migration 0014); optional Tavily enrichment labeled as a name search | Tavily has only been exercised with mocks |
-| Outreach | Owner-approved invitations, sandbox outbox by default, SMTP only behind a recipient allowlist, public opt-out page | Live SMTP verification; delivery tracking |
-| AI | OpenAI drafts requirement rows, tags and hours for a `new` task when `OPENAI_API_KEY` is set, for the owner to confirm; without a key the panel reports drafting as not run. It never prices, matches identities or accepts anything | Split everything; source-backed supplier summaries |
-| Fly | A simulated fly brain (FlyWire release 783 port in a Web Worker) plays a stimulus beside results, minimized to a labeled pill; "the fruit fly's opinion" bubble beside each offer is labeled a toy, uses only the fly-brain violet, and never gates acceptance | Fly Scout and FlyHash ranking after splitting, labeled at each result |
-| UI | Task market with light/dark/system themes; navigation Markets · Spend · My listings · My work · Demo guide; one primary action per screen; a presenter rail with a **Do it** button | Keyboard focus and honesty-label audit of My work, the split drawer and Ways to save |
-| Database | SQLite locally, SQLAlchemy and Alembic migrations 0001–0014 (new ones start at 0015) | Supabase/Postgres remains optional deployment work |
-| Demo readiness | The chain is walkable from `/demo` or the presenter rail, and `?as=<account_id>` opens a tab as any business | Three-device rehearsal |
-
-Last verification (2026-09-13, after merging task ownership, the live fly brain, USAspending discovery and the demo polish pass): **548 backend tests passed**, and `tsc`, the frontend build and the colour and contrast checks passed. Stripe, Tavily, SMTP and OpenAI responses were mocked in tests. USAspending requests were checked by hand the same day. This does not certify a real sandbox connection or live outreach.
+React, TypeScript and Vite power the marketplace UI. FastAPI, Python, SQLAlchemy and Alembic provide the API, business workflows and persistence. Stripe sandbox data demonstrates financial-account ingestion; OpenAI assists with scope drafting; USAspending provides public contract evidence; and Tavily enriches outbound supplier research. The local demo runs on SQLite and can move to Postgres for deployment.
 
 ## Demo and data strategy
 
