@@ -84,6 +84,49 @@ class ChallengeListResponse(BaseModel):
     message: str | None = None
 
 
+class OwnOffer(BaseModel):
+    """The acting business's own active offer on one listing, as its author sees it to revise it.
+
+    Built field by field in api/challenges/own_offer.py rather than reusing ChallengeResponse, so it names
+    no challenger (its only reader is the challenger) and a column later added to offers isn't returned here
+    by accident.
+    """
+
+    id: str
+    listing_id: str
+    # The mode the current version was recorded under; unset or unknown reads as sealed. A revision is
+    # recorded under the listing's mode when it is made, which the challenge page shows beside this one.
+    bidding_mode_at_submission: Literal["sealed", "open"]
+    price_minor: int
+    price_currency: str
+    billing_frequency: str
+    scope_included: list[str]
+    scope_excluded: list[str]
+    scope_extras: list[str]
+    setup_fee_minor: int
+    taxes_included: bool | None
+    supplies_included: bool | None
+    minimum_term: str | None
+    other_conditions: str | None
+    message_to_owner: str | None
+    availability: str | None
+    offer_expiry: datetime | None
+    site_visit_required: bool
+    provenance: str
+    submitted_at: datetime
+    revised_at: datetime | None
+    # False once the owner re-scopes the listing: this version answered an earlier scope, and a revision
+    # attaches to the current one. Scope is versioned so an edit never reframes an existing offer.
+    answers_current_scope: bool
+
+
+class OwnOfferResponse(BaseModel):
+    """Wraps the acting business's own offer on a listing; offer is None when it has none there."""
+
+    offer: OwnOffer | None
+    message: str | None = None
+
+
 class LeaderboardEntry(BaseModel):
     """Represents an anonymized public leaderboard row for open bidding."""
 

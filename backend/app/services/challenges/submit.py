@@ -16,6 +16,7 @@ from app.models.listing import PublicListingRecord
 from app.services.challenges.amounts import find_offer_amount_problem
 from app.services.challenges.currency import find_offer_currency_problem
 from app.services.challenges.mode import resolve_offer_bidding_mode
+from app.services.challenges.own_offer import find_own_active_offer
 from app.services.challenges.provenance import resolve_offer_provenance
 from app.services.listings.bidding_mode import resolve_bidding_mode
 
@@ -42,13 +43,9 @@ def submit_challenge(
     _ensure_can_submit(listing, challenger_account_id)
     _ensure_mode_acknowledged(listing, form_data.get("acknowledged_bidding_mode"))
     _ensure_listing_currency(listing, form_data.get("price_currency"))
-    existing = db.scalar(
-        select(Challenge).where(
-            Challenge.listing_id == listing_id,
-            Challenge.challenger_account_id == challenger_account_id,
-            Challenge.is_active.is_(True),
-        )
-    )
+    # The same lookup that prefills the challenge form (GET .../my-offer), so the offer a challenger
+    # is shown as theirs is exactly the one this submission revises.
+    existing = find_own_active_offer(listing_id, challenger_account_id, db)
     if existing is not None:
         return revise_challenge(existing.id, challenger_account_id, form_data, db)
 
