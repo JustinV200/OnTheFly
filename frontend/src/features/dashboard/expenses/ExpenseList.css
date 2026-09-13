@@ -1,0 +1,73 @@
+/* Expense list: one card of hairline-divided rows. The column template is a custom property so the laptop column labels
+   and every row (ExpenseRow.css) line up; the never-publishable group sits under its own tinted heading. */
+/* Every row is its own grid, so no column may size to its content: fixed tracks keep the rows aligned.
+   The action track fits the widest action pair ("Offers" beside "Unpublish now"). */
+.expense-list {
+  --expense-list-columns: minmax(0, 1.8fr) minmax(0, 1.2fr) minmax(0, 1.4fr) 7.5rem 14rem;
+}
+
+.expense-list__header {
+  margin-bottom: var(--space-3);
+}
+
+.expense-list__title {
+  font-size: var(--text-xl);
+  margin: 0;
+}
+
+.expense-list__card {
+  overflow: hidden;
+}
+
+.expense-list__rows {
+  list-style: none;
+  margin: 0;
+  padding: 0;
+}
+
+/* Column labels only mean something when cells line up, which they do only on a laptop. */
+.expense-list__columns {
+  display: none;
+}
+
+.expense-list__group {
+  border-top: var(--border-width) solid var(--color-border);
+}
+
+.expense-list__group-header {
+  align-items: baseline;
+  background-color: var(--color-surface-subtle);
+  border-bottom: var(--border-width) solid var(--color-border-subtle);
+  display: flex;
+  flex-wrap: wrap;
+  gap: var(--space-1) var(--space-3);
+  padding: var(--space-2) var(--space-4);
+}
+
+.expense-list__group-title {
+  font-size: var(--text-sm);
+  margin: 0;
+}
+
+@media (min-width: 1024px) {
+  .expense-list__columns {
+    border-bottom: var(--border-width) solid var(--color-border);
+    color: var(--color-text-muted);
+    column-gap: var(--space-4);
+    display: grid;
+    font-size: var(--text-xs);
+    font-weight: var(--weight-semibold);
+    grid-template-columns: var(--expense-list-columns);
+    letter-spacing: var(--tracking-wide);
+    padding: var(--space-2) var(--space-5);
+    text-transform: uppercase;
+  }
+
+  .expense-list__column--end {
+    text-align: right;
+  }
+
+  .expense-list__group-header {
+    padding-inline: var(--space-5);
+  }
+}

@@ -1,67 +1,83 @@
-/* Renders one grouped expense row: figures, where they came from, visibility, and the owner's next action.
-   The whole row toggles its detail, and the vendor name is a real disclosure button, so keyboard users can open it too.
-   Every cell carries data-label, because the table stacks into one card per expense on a phone. */
+/* One expense in the Spend list: vendor and category, annual cost with the per-period amount beneath, the payment
+   pattern in words, visibility, and the owner's action. A card on a phone, a single grid row on a laptop.
+   The vendor name is a real button that opens the detail, so the row works from the keyboard; a click anywhere else on
+   the row does the same for pointer users. Owner-only: never reused on public pages. */
 import { MoneyDisplay } from '../../../../shared/components/MoneyDisplay';
 import { categoryLabel } from '../../../../shared/format/categoryLabel';
 import { ProvenanceBadge } from '../../../../shared/provenance/ProvenanceBadge';
-import { Icon, joinClassNames } from '../../../../shared/ui';
+import { joinClassNames } from '../../../../shared/ui';
 import type { Expense } from '../../types';
-import { ExpenseRowActions } from './ExpenseRowActions';
 import { VisibilityBadge } from '../../visibility/VisibilityBadge';
+import { describePattern } from './describePattern';
+import { ExpenseRowActions } from './ExpenseRowActions';
+import { perPeriodLabel } from './perPeriodLabel';
 import './ExpenseRow.css';
 
 interface ExpenseRowProps {
   expense: Expense;
   isSelected: boolean;
-  // Id of the detail row this row opens; referenced only while that row exists.
-  detailId: string;
-  onToggle: (expenseId: string) => void;
+  // False when the list header already states the one provenance every row shares.
+  shouldShowProvenance: boolean;
+  onOpen: (expenseId: string) => void;
   onVisibilityChanged: () => void;
 }
 
-/** Render one expandable expense row with summary spend details and its publish controls. */
-export function ExpenseRow({ expense, isSelected, detailId, onToggle, onVisibilityChanged }: ExpenseRowProps): JSX.Element {
+/** Render one expense row; payroll, tax, and transfer rows render dimmed with their reason in place of an action. */
+export function ExpenseRow({ expense, isSelected, shouldShowProvenance, onOpen, onVisibilityChanged }: ExpenseRowProps): JSX.Element {
+  const pattern = describePattern(expense);
+
   return (
-    <tr className={joinClassNames('expense-row', isSelected && 'is-selected')} onClick={() => onToggle(expense.id)}>
-      <td className="expense-row__vendor">
+    <li
+      className={joinClassNames('expense-row', !expense.is_publishable && 'expense-row--muted', isSelected && 'is-selected')}
+      onClick={() => onOpen(expense.id)}
+    >
+      <div className="expense-row__vendor">
         <button
-          aria-controls={isSelected ? detailId : undefined}
-          aria-expanded={isSelected}
-          className="expense-row__toggle"
+          aria-haspopup="dialog"
+          className="expense-row__open"
           onClick={(event) => {
-            // The row also toggles on click; stop here so one press doesn't open and close it again.
+            // The row also opens on click; stop here so one press doesn't open it twice.
             event.stopPropagation();
-            onToggle(expense.id);
+            onOpen(expense.id);
           }}
           type="button"
         >
-          <Icon className="expense-row__chevron" name="chevron-down" />
-          <span className="expense-row__vendor-name">{expense.vendor}</span>
+          {expense.vendor}
         </button>
-        <div className="expense-row__category ui-text-sm ui-text-muted">{categoryLabel(expense.category)}</div>
-      </td>
-      <td data-label="Visibility"><VisibilityBadge visibility={expense.visibility} /></td>
-      <td className="ui-num" data-label="Amount / period">
-        <span className="expense-row__figure"><MoneyDisplay amountMinor={expense.amount_minor_per_period} currency={expense.currency} /></span>
-        <div className="ui-text-sm ui-text-muted">{expense.cadence}</div>
-      </td>
-      <td className="ui-num" data-label="Annualized">
-        <MoneyDisplay amountMinor={expense.annualized_amount_minor} currency={expense.currency} />
-        <span className="ui-text-sm ui-text-muted"> / yr</span>
-      </td>
-      <td className="ui-num" data-label="Recurrence">
-        {Math.round(expense.recurrence_confidence * 100)}%
-        <div className="ui-text-sm ui-text-muted">{expense.period_count} {expense.period_count === 1 ? 'payment' : 'payments'}</div>
-      </td>
-      <td data-label="Source">
-        <span className="expense-row__badges">
-          {expense.provenance.map((value) => <ProvenanceBadge key={value} kind="financial" value={value} />)}
+        <span className="expense-row__category">{categoryLabel(expense.category)}</span>
+        {shouldShowProvenance ? (
+          <span className="expense-row__provenance">
+            {expense.provenance.map((value) => <ProvenanceBadge key={value} kind="financial" value={value} />)}
+          </span>
+        ) : null}
+      </div>
+
+      <div className="expense-row__cost">
+        <span className="ui-visually-hidden">Annual cost </span>
+        <span className="expense-row__annual">
+          <MoneyDisplay amountMinor={expense.annualized_amount_minor} currency={expense.currency} />
+          <span className="expense-row__unit"> / yr</span>
         </span>
-      </td>
-      {/* Actions navigate or unpublish; they must not also toggle the row. */}
-      <td className="expense-row__actions-cell" data-label="Actions" onClick={(event) => event.stopPropagation()}>
+        <span className="expense-row__period">
+          <MoneyDisplay amountMinor={expense.amount_minor_per_period} currency={expense.currency} />{' '}
+          {perPeriodLabel(expense.cadence, expense.period_count)}
+        </span>
+      </div>
+
+      <div className="expense-row__pattern">
+        <span className="ui-visually-hidden">Pattern </span>
+        <span className="expense-row__rhythm" title={pattern.tooltip}>{pattern.rhythm}</span>
+        <span className="expense-row__detail">{pattern.detail}</span>
+      </div>
+
+      <div className="expense-row__visibility">
+        <VisibilityBadge size="sm" visibility={expense.visibility} />
+      </div>
+
+      {/* Actions navigate or unpublish; they must not also open the row. */}
+      <div className="expense-row__actions" onClick={(event) => event.stopPropagation()}>
         <ExpenseRowActions expense={expense} onVisibilityChanged={onVisibilityChanged} />
-      </td>
-    </tr>
+      </div>
+    </li>
   );
 }

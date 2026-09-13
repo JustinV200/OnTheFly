@@ -6,7 +6,7 @@ import { DataSourcesCard } from '../connections/sources/DataSourcesCard';
 import { StripeConnection } from '../connections/StripeConnection';
 import { ConnectionPanel } from './connection/ConnectionPanel';
 import { useConnection } from './connection/useConnection';
-import { ExpenseList } from './expenses/ExpenseList';
+import { ImportedSpend } from './ImportedSpend';
 import { useDashboard } from './useDashboard';
 
 interface OwnerDashboardProps {
@@ -54,7 +54,7 @@ export function OwnerDashboard({ account }: OwnerDashboardProps): JSX.Element {
           />
         </DataSourcesCard>
 
-        {hasImported ? <ExpenseList businessName={account.businessName} dashboard={dashboard} sources={connection.status.data?.sources ?? []} /> : null}
+        {hasImported ? <ImportedSpend businessName={account.businessName} dashboard={dashboard} sources={connection.status.data?.sources ?? []} /> : null}
       </Stack>
     </section>
   );
