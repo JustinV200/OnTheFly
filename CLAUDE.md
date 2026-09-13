@@ -14,6 +14,8 @@ Stripe transaction-only sandbox consent, company binding, paginated imports, upd
 
 Fixtures, recurring-expense grouping, publishing/preview, profiles, challenges and comparison exist for a commercial-cleaning scenario. Reuse them and adapt the scope fields to DevSecOps. GovCon fixtures, REBID orchestration, USAspending discovery, public-rate pricing, Tavily enrichment, OpenAI reasoning and Fly Scout are not implemented.
 
+On `feat/task-market-ui`: a Kalshi-style "task market" UI with light/dark/system themes (roadmap 11, "Task market direction") and owner-approved supplier invitations (roadmap 08): fixture or Tavily discovery, a preview-hash approval gate, an idempotent queue to a sandbox outbox by default (SMTP only behind an allowlist), and a public opt-out page. Tavily and SMTP have only been exercised with mocks.
+
 ## Scope and stack decisions
 
 - **P0:** verify Stripe, add GovCon fixtures, build REBID and confirmed scope, discover actual USAspending suppliers, show defensible public-rate modeled savings.
@@ -23,10 +25,10 @@ Fixtures, recurring-expense grouping, publishing/preview, profiles, challenges a
 - **AI:** OpenAI is planned for scope/evidence processing. Anthropic dependency/configuration remain in code; neither implies a completed reasoning flow.
 - **Financial data:** Stripe sandbox plus fixtures through the existing normalized pipeline. Rho is out of the hackathon.
 - **Notifications:** excluded. Use manual refresh/polling for the buyer challenge view.
-- **Outreach:** automated invitations deferred. Manual listing sharing is sufficient.
+- **Outreach:** owner-approved invitations only, sandbox outbox by default; no automatic sending ever. Manual listing sharing remains sufficient for the demo.
 - **Fly Scout:** now in scope for P1; only chooses exploration among already-qualified suppliers. Do not claim a biological connectome or neuron count until runtime/model evidence supports it.
 - **Genuine quote:** optional bonus, not a blocking requirement.
-- **UI:** modern Robinhood/Supabase-inspired hierarchy; Spend → Progress → Market → Fly → Bid with REBID as the primary action.
+- **UI:** a Kalshi-style task market (market board, market page with a bid ticket, token-swap dark mode); Spend → Progress → Market → Fly → Bid with REBID as the primary action.
 
 ## Data and workflow boundaries
 
