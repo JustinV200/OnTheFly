@@ -1,0 +1,53 @@
+/* Charge review rows: compact, hairline-divided, date and amount left, verdict right; unusual rows take the warning tint. */
+.charge-review {
+  font-size: var(--text-sm);
+  list-style: none;
+  margin: 0;
+  padding: 0;
+}
+
+.charge-review__item {
+  align-items: baseline;
+  border-top: var(--border-width) solid var(--color-border-subtle);
+  display: flex;
+  flex-wrap: wrap;
+  gap: var(--space-1) var(--space-3);
+  justify-content: space-between;
+  padding: var(--space-2);
+}
+
+.charge-review__item:first-child {
+  border-top: 0;
+}
+
+.charge-review__charge {
+  font-variant-numeric: tabular-nums;
+}
+
+.charge-review__status {
+  align-items: baseline;
+  color: var(--color-text-muted);
+  display: inline-flex;
+  gap: var(--space-1);
+}
+
+.charge-review__item--unusual {
+  background-color: var(--color-warning-bg);
+  border-radius: var(--radius-sm);
+}
+
+.charge-review__item--unusual .charge-review__status {
+  color: var(--color-warning-text);
+  font-weight: var(--weight-semibold);
+}
+
+.charge-review__icon {
+  align-self: center;
+  flex: none;
+}
+
+.charge-review__empty {
+  color: var(--color-text-muted);
+  font-size: var(--text-sm);
+  margin: 0;
+}

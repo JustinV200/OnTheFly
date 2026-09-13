@@ -1,0 +1,52 @@
+/* Page header layout: title block first, actions at the end on desktop and below the title on a phone. */
+.ui-page-header {
+  align-items: flex-end;
+  display: flex;
+  flex-wrap: wrap;
+  gap: var(--space-4) var(--space-6);
+  justify-content: space-between;
+  margin-bottom: var(--space-6);
+}
+
+.ui-page-header__main {
+  flex: 1 1 22rem;
+  min-width: 0;
+}
+
+.ui-page-header__eyebrow {
+  color: var(--color-text-muted);
+  font-size: var(--text-sm);
+  font-weight: var(--weight-medium);
+  margin-bottom: var(--space-1);
+}
+
+.ui-page-header__title {
+  margin: 0;
+  overflow-wrap: anywhere;
+}
+
+.ui-page-header__subtitle {
+  color: var(--color-text-muted);
+  font-size: var(--text-md);
+  margin-top: var(--space-2);
+  max-width: 72ch;
+}
+
+.ui-page-header__subtitle > p:last-child {
+  margin-bottom: 0;
+}
+
+.ui-page-header__meta {
+  align-items: center;
+  display: flex;
+  flex-wrap: wrap;
+  gap: var(--space-2);
+  margin-top: var(--space-3);
+}
+
+.ui-page-header__actions {
+  align-items: center;
+  display: flex;
+  flex-wrap: wrap;
+  gap: var(--space-2);
+}

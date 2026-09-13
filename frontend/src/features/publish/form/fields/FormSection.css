@@ -1,0 +1,25 @@
+/* Form sections: a small heading over the controls, with hairline dividers between groups. */
+.publish-form-section {
+  display: grid;
+  gap: var(--space-4);
+  min-width: 0;
+}
+
+.publish-form-section + .publish-form-section {
+  border-top: var(--border-width) solid var(--color-border-subtle);
+  padding-top: var(--space-6);
+}
+
+.publish-form-section__title {
+  font-size: var(--text-lg);
+  letter-spacing: normal;
+  margin: 0;
+}
+
+.publish-form-section__description {
+  color: var(--color-text-muted);
+  font-size: var(--text-sm);
+  line-height: var(--leading-snug);
+  margin-top: var(--space-1);
+  max-width: 64ch;
+}

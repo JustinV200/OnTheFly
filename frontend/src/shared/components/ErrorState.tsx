@@ -3,6 +3,8 @@
 import type { ReactNode } from 'react';
 
 import { ApiError, NETWORK_FAILURE_STATUS } from '../api/client';
+import { Button, Callout } from '../ui';
+import './pageStates.css';
 
 interface ErrorStateProps {
   title: string;
@@ -11,34 +13,29 @@ interface ErrorStateProps {
   children?: ReactNode;
 }
 
-/** Render an alert card for a failed load or action. */
+/** Render an alert callout for a failed load or action. */
 export function ErrorState({ title, error, onRetry, children }: ErrorStateProps): JSX.Element {
   const isNetwork = error?.status === NETWORK_FAILURE_STATUS;
   return (
-    <section
+    <Callout
+      actions={onRetry ? <Button onClick={onRetry} size="sm">Try again</Button> : undefined}
+      as="section"
+      className="page-state"
       role="alert"
-      style={{
-        backgroundColor: '#fef2f2',
-        border: '1px solid #fecaca',
-        borderRadius: '12px',
-        color: '#7f1d1d',
-        margin: '1rem 0',
-        padding: '1rem 1.25rem',
-      }}
+      title={title}
+      tone="danger"
     >
-      <h3 style={{ margin: '0 0 0.5rem' }}>{title}</h3>
-      {error ? (
-        <p style={{ margin: 0 }}>
-          {isNetwork ? null : <strong>HTTP {error.status}: </strong>}
-          {error.message}
-        </p>
+      {error || children ? (
+        <>
+          {error ? (
+            <p>
+              {isNetwork ? null : <strong>HTTP {error.status}: </strong>}
+              {error.message}
+            </p>
+          ) : null}
+          {children}
+        </>
       ) : null}
-      {children}
-      {onRetry ? (
-        <button onClick={onRetry} style={{ marginTop: '0.75rem' }} type="button">
-          Try again
-        </button>
-      ) : null}
-    </section>
+    </Callout>
   );
 }

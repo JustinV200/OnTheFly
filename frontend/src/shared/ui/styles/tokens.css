@@ -1,0 +1,95 @@
+/* Design tokens for On the Fly that don't change with the theme: type, spacing, radii, motion, layout.
+   Colour roles and shadows live in themes/light.css and themes/dark.css, so dark mode is a token swap, never a
+   component branch (roadmap 11, "Dark mode is a token swap"). This file declares values only; it styles nothing. */
+
+:root {
+  /* ---- Typography ---- */
+  /* Inter when the machine has it, then the platform UI font: a clean grotesk, like a trading app, with no font request. */
+  --font-sans: "Inter", "Inter var", ui-sans-serif, system-ui, -apple-system, "Segoe UI", Roboto, "Helvetica Neue", Arial,
+    sans-serif, "Apple Color Emoji", "Segoe UI Emoji";
+  --font-mono: ui-monospace, SFMono-Regular, "SF Mono", Menlo, Consolas, "Liberation Mono", monospace;
+
+  --text-2xs: 0.6875rem;  /* 11px: chart axes, dense meta */
+  --text-xs: 0.75rem;     /* 12px: table headers, eyebrows, badges */
+  --text-sm: 0.8125rem;   /* 13px: captions, hints, dense cells */
+  --text-md: 0.9375rem;   /* 15px: body */
+  --text-lg: 1.0625rem;   /* 17px: card titles, emphasized body */
+  --text-xl: 1.25rem;     /* 20px: section titles */
+  --text-2xl: 1.5rem;     /* 24px: page titles on phone, stats */
+  --text-3xl: 1.875rem;   /* 30px: page titles on desktop, headline money */
+  --text-4xl: 2.25rem;    /* 36px: the one headline figure on a screen */
+  --text-5xl: 3rem;       /* 48px: the market price on a listing page */
+
+  --leading-tight: 1.2;
+  --leading-snug: 1.35;
+  --leading-normal: 1.5;
+
+  --weight-regular: 400;
+  --weight-medium: 500;
+  --weight-semibold: 600;
+  --weight-bold: 700;
+
+  --tracking-tight: -0.015em;
+  --tracking-tighter: -0.03em;
+  --tracking-wide: 0.06em;
+
+  /* ---- Spacing: 4px grid ---- */
+  --space-0: 0;
+  --space-0_5: 0.125rem;  /* 2px */
+  --space-1: 0.25rem;     /* 4px */
+  --space-2: 0.5rem;      /* 8px */
+  --space-3: 0.75rem;     /* 12px */
+  --space-4: 1rem;        /* 16px */
+  --space-5: 1.25rem;     /* 20px */
+  --space-6: 1.5rem;      /* 24px */
+  --space-8: 2rem;        /* 32px */
+  --space-10: 2.5rem;     /* 40px */
+  --space-12: 3rem;       /* 48px */
+  --space-16: 4rem;       /* 64px */
+
+  /* ---- Radii: soft cards and pill chips, the market-app look ---- */
+  --radius-sm: 6px;
+  --radius-md: 10px;
+  --radius-lg: 14px;
+  --radius-xl: 18px;
+  --radius-pill: 999px;
+
+  --border-width: 1px;
+
+  /* ---- Motion (all zeroed under prefers-reduced-motion in base.css) ---- */
+  --duration-fast: 120ms;
+  --duration-base: 180ms;
+  --duration-slow: 280ms;
+  --ease-standard: cubic-bezier(0.2, 0, 0, 1);
+
+  /* ---- Layout ---- */
+  --layout-max-width: 1240px;
+  --layout-gutter: var(--space-4);
+  --topbar-height: 56px;
+  --control-height: 38px;
+  --z-sticky: 20;
+  --z-drawer: 40;
+  --z-popover: 50;
+
+  /* ---- Breakpoints (documentation only) ----
+     Custom properties can't be read inside @media, so media queries repeat these literals:
+       sm  480px   large phones
+       md  768px   tablets; the shell switches from phone to desktop layout here
+       lg  1024px  small laptops
+       xl  1280px  desktops and projectors
+     Write mobile-first: base styles for 390px, then @media (min-width: 768px) and up. */
+}
+
+@media (min-width: 768px) {
+  :root {
+    --layout-gutter: var(--space-6);
+    --topbar-height: 64px;
+  }
+}
+
+@media (pointer: coarse) {
+  :root {
+    /* Larger touch targets for form controls and buttons on phones. */
+    --control-height: 44px;
+  }
+}

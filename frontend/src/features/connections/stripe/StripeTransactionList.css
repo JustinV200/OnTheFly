@@ -1,0 +1,13 @@
+/* Imported Stripe rows: the shared-source line above the table; descriptions keep the statement's mono text. */
+.stripe-transactions__shared {
+  align-items: center;
+  display: flex;
+  gap: var(--space-2);
+  margin: 0 0 var(--space-2);
+}
+
+.stripe-transactions__description {
+  font-family: var(--font-mono);
+  font-size: var(--text-sm);
+  overflow-wrap: anywhere;
+}

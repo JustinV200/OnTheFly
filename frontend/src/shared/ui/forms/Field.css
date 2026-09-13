@@ -1,0 +1,32 @@
+/* Field layout: label above the control, hint and error below. */
+.ui-field {
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-1);
+  min-width: 0;
+}
+
+.ui-field__label {
+  color: var(--color-text);
+  font-size: var(--text-sm);
+  font-weight: var(--weight-medium);
+  line-height: var(--leading-snug);
+}
+
+.ui-field__hint {
+  color: var(--color-text-muted);
+  font-size: var(--text-sm);
+  line-height: var(--leading-snug);
+}
+
+.ui-field__error {
+  color: var(--color-danger-text);
+  font-size: var(--text-sm);
+  font-weight: var(--weight-medium);
+  line-height: var(--leading-snug);
+}
+
+/* The words carry the error; the symbol only reinforces it, with empty alt text so screen readers skip it. */
+.ui-field__error::before {
+  content: "⚠ " / "";
+}

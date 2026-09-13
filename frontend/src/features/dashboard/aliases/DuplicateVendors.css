@@ -1,0 +1,20 @@
+/* Duplicate-vendor notice: one quiet bordered line, text first, the fly-brain badge, and Review at the end. */
+.duplicate-vendors {
+  align-items: center;
+  background-color: var(--color-surface-subtle);
+  border: var(--border-width) solid var(--color-border);
+  border-radius: var(--radius-md);
+  display: flex;
+  flex-wrap: wrap;
+  gap: var(--space-2) var(--space-3);
+  padding: var(--space-2) var(--space-2) var(--space-2) var(--space-4);
+}
+
+.duplicate-vendors__text {
+  font-size: var(--text-sm);
+  min-width: 0;
+}
+
+.duplicate-vendors__review {
+  margin-left: auto;
+}

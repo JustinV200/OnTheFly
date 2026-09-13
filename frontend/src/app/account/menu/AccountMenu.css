@@ -1,0 +1,223 @@
+/* Top-bar identity menu: the trigger showing who is acting, and the switch list it opens. */
+.account-menu {
+  min-width: 0;
+  position: relative;
+}
+
+.account-menu__trigger {
+  align-items: center;
+  background-color: var(--color-surface);
+  border: var(--border-width) solid var(--color-border);
+  border-radius: var(--radius-pill);
+  box-shadow: none;
+  color: var(--color-text);
+  cursor: pointer;
+  display: flex;
+  gap: var(--space-2);
+  max-width: 100%;
+  min-height: 44px;
+  padding: var(--space-1) var(--space-2) var(--space-1) var(--space-1);
+  text-align: left;
+}
+
+.account-menu__trigger:hover {
+  background-color: var(--color-surface-hover);
+  border-color: var(--color-border-strong);
+}
+
+.account-menu__trigger[aria-expanded="true"] {
+  border-color: var(--color-brand);
+  box-shadow: var(--focus-ring);
+}
+
+.account-menu__identity {
+  display: flex;
+  flex-direction: column;
+  min-width: 0;
+}
+
+.account-menu__eyebrow {
+  color: var(--color-text-muted);
+  font-size: 0.6875rem;
+  font-weight: var(--weight-semibold);
+  letter-spacing: var(--tracking-wide);
+  line-height: var(--leading-tight);
+  overflow: hidden;
+  text-overflow: ellipsis;
+  text-transform: uppercase;
+  white-space: nowrap;
+}
+
+/* Too long for a phone's top bar; the phone menu repeats it beside "Public visitor". */
+.account-menu__eyebrow-detail {
+  display: none;
+}
+
+@media (min-width: 768px) {
+  .account-menu__eyebrow-detail {
+    display: inline;
+  }
+}
+
+.account-menu__name {
+  -webkit-box-orient: vertical;
+  display: -webkit-box;
+  font-size: var(--text-sm);
+  font-weight: var(--weight-bold);
+  letter-spacing: var(--tracking-tight);
+  line-height: var(--leading-tight);
+  -webkit-line-clamp: 2;
+  overflow: hidden;
+}
+
+/* Between phone and desktop widths a long name wraps to a second line; it is never cut off (projector legibility). */
+@media (min-width: 480px) {
+  .account-menu__name {
+    display: block;
+    font-size: var(--text-md);
+    max-width: 18ch;
+  }
+}
+
+.account-menu__chevron {
+  color: var(--color-text-muted);
+  flex: none;
+}
+
+/* Projector legibility: the acting business is the largest text in the bar. */
+@media (min-width: 1024px) {
+  .account-menu__trigger {
+    gap: var(--space-3);
+    min-height: 48px;
+    padding-right: var(--space-3);
+  }
+
+  .account-menu__name {
+    font-size: 1.125rem;
+  }
+}
+
+@media (min-width: 1280px) {
+  .account-menu__name {
+    max-width: none;
+    white-space: nowrap;
+  }
+}
+
+.account-menu__panel {
+  background-color: var(--color-surface-raised);
+  border: var(--border-width) solid var(--color-border);
+  border-radius: var(--radius-lg);
+  box-shadow: var(--shadow-lg);
+  padding: var(--space-2);
+  position: absolute;
+  right: 0;
+  top: calc(100% + var(--space-2));
+  width: min(360px, calc(100vw - 2 * var(--layout-gutter)));
+  z-index: var(--z-popover);
+}
+
+.account-menu__prompt {
+  color: var(--color-text-muted);
+  font-size: var(--text-sm);
+  margin: 0;
+  padding: var(--space-2) var(--space-3) var(--space-2);
+}
+
+.account-menu__list {
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-0_5);
+  list-style: none;
+  margin: 0;
+  padding: 0;
+}
+
+.account-menu__option {
+  align-items: center;
+  background: none;
+  border: 0;
+  border-radius: var(--radius-md);
+  box-shadow: none;
+  color: var(--color-text);
+  cursor: pointer;
+  display: flex;
+  font-size: var(--text-md);
+  font-weight: var(--weight-medium);
+  gap: var(--space-3);
+  justify-content: flex-start;
+  min-height: 52px;
+  padding: var(--space-2) var(--space-3);
+  text-align: left;
+  width: 100%;
+}
+
+.account-menu__option:hover {
+  background-color: var(--color-surface-hover);
+}
+
+.account-menu__option[aria-pressed="true"] {
+  background-color: var(--color-brand-soft);
+  color: var(--color-brand-text);
+  font-weight: var(--weight-semibold);
+}
+
+.account-menu__option-text {
+  display: flex;
+  flex: 1;
+  flex-direction: column;
+  min-width: 0;
+}
+
+.account-menu__option-hint {
+  color: var(--color-text-muted);
+  font-size: var(--text-sm);
+  font-weight: var(--weight-regular);
+}
+
+/* A larger avatar beside the larger desktop name. */
+@media (min-width: 1024px) {
+  .account-menu .account-avatar--md { font-size: var(--text-sm); height: 40px; width: 40px; }
+}
+
+.account-menu__visitor {
+  border-top: var(--border-width) solid var(--color-border-subtle);
+  margin-top: var(--space-1);
+  padding-top: var(--space-1);
+}
+
+.account-menu__footer {
+  border-top: var(--border-width) solid var(--color-border-subtle);
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-1);
+  margin-top: var(--space-1);
+  padding-top: var(--space-1);
+}
+
+.account-menu__profile-link {
+  align-items: center;
+  border-radius: var(--radius-md);
+  color: var(--color-text);
+  display: flex;
+  font-weight: var(--weight-medium);
+  gap: var(--space-3);
+  min-height: 44px;
+  padding: 0 var(--space-3);
+  text-decoration: none;
+}
+
+.account-menu__profile-link:hover {
+  background-color: var(--color-surface-hover);
+  color: var(--color-text);
+}
+
+.account-menu__theme {
+  align-items: center;
+  color: var(--color-text-secondary);
+  display: flex;
+  font-size: var(--text-sm);
+  justify-content: space-between;
+  min-height: 44px;
+  padding: 0 var(--space-3);
+}

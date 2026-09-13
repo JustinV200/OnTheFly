@@ -1,0 +1,105 @@
+/* Top bar: sticky, translucent over the canvas, with content aligned to the page container.
+   Phone (grid): brand and account on the first row, the demo-data chip across the second. From 768px: one flex row
+   with the theme flip. 1024px: navigation moves inline. 1440px: the search field joins. */
+.top-bar {
+  background-color: color-mix(in srgb, var(--color-canvas) 90%, transparent);
+  border-bottom: var(--border-width) solid var(--color-border);
+  box-shadow: inset 0 3px 0 var(--acting-color);
+  position: sticky;
+  top: 0;
+  z-index: var(--z-sticky);
+  -webkit-backdrop-filter: saturate(1.4) blur(12px);
+  backdrop-filter: saturate(1.4) blur(12px);
+}
+
+.top-bar__inner {
+  align-items: center;
+  display: grid;
+  gap: var(--space-2) var(--space-3);
+  grid-template-areas:
+    "brand account"
+    "chip chip";
+  grid-template-columns: auto minmax(0, 1fr);
+  margin: 0 auto;
+  max-width: var(--layout-max-width);
+  min-height: var(--topbar-height);
+  padding: var(--space-2) var(--layout-gutter);
+}
+
+.top-bar__brand {
+  align-items: center;
+  border-radius: var(--radius-md);
+  color: var(--color-text);
+  display: inline-flex;
+  flex: none;
+  gap: var(--space-2);
+  grid-area: brand;
+  text-decoration: none;
+}
+
+.top-bar__brand:hover {
+  color: var(--color-text);
+}
+
+.top-bar__wordmark {
+  font-size: var(--text-lg);
+  font-weight: var(--weight-bold);
+  letter-spacing: var(--tracking-tighter);
+  white-space: nowrap;
+}
+
+.top-bar__search,
+.top-bar__theme {
+  display: none;
+}
+
+.top-bar__chip {
+  grid-area: chip;
+  min-width: 0;
+}
+
+.top-bar__account {
+  display: flex;
+  grid-area: account;
+  justify-content: flex-end;
+  min-width: 0;
+}
+
+@media (min-width: 768px) {
+  .top-bar__inner {
+    display: flex;
+    gap: var(--space-4);
+  }
+
+  .top-bar__chip {
+    flex: none;
+    margin-left: auto;
+  }
+
+  .top-bar__theme {
+    display: inline-flex;
+  }
+
+  .top-bar__account {
+    flex: 0 1 auto;
+  }
+}
+
+@media (min-width: 1024px) {
+  .top-bar__inner {
+    padding-bottom: 0;
+    padding-top: 0;
+  }
+}
+
+@media (min-width: 1440px) {
+  .top-bar__search {
+    display: flex;
+    flex: 1 1 auto;
+    min-width: 0;
+  }
+
+  .top-bar__chip {
+    margin-left: 0;
+  }
+}

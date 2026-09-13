@@ -1,0 +1,56 @@
+/* Bidding rules: an icon column beside each rule; the mode in force gets a soft brand tint and an "In force here" tag. */
+.bidding-rules__lead {
+  margin: 0 0 var(--space-3);
+}
+
+.bidding-rules__list {
+  display: grid;
+  gap: var(--space-2);
+  list-style: none;
+  margin: 0;
+  padding: 0;
+}
+
+.bidding-rules__rule {
+  border: var(--border-width) solid transparent;
+  border-radius: var(--radius-md);
+  display: flex;
+  gap: var(--space-3);
+  padding: var(--space-2) var(--space-3);
+}
+
+.bidding-rules__rule--current {
+  background-color: var(--color-surface-subtle);
+  border-color: var(--color-border);
+}
+
+.bidding-rules__icon {
+  color: var(--color-text-muted);
+  flex: none;
+  margin-top: var(--space-0_5);
+}
+
+.bidding-rules__title {
+  align-items: center;
+  display: flex;
+  flex-wrap: wrap;
+  font-weight: var(--weight-semibold);
+  gap: var(--space-1) var(--space-2);
+  margin: 0;
+}
+
+.bidding-rules__current {
+  background-color: var(--color-brand-soft);
+  border: var(--border-width) solid var(--color-brand-soft-border);
+  border-radius: var(--radius-pill);
+  color: var(--color-brand-text);
+  font-size: var(--text-xs);
+  font-weight: var(--weight-semibold);
+  padding: 0 var(--space-2);
+}
+
+.bidding-rules__text {
+  color: var(--color-text-secondary);
+  font-size: var(--text-sm);
+  margin: var(--space-0_5) 0 0;
+}

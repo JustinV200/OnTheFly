@@ -1,0 +1,134 @@
+/* Market card: a bordered surface that lifts on hover, price first, a meta row of badges, and one action at the bottom.
+   The linked variant stretches the title link over the card; the action sits above it so it stays its own target. */
+.market-card {
+  background-color: var(--color-surface);
+  border: var(--border-width) solid var(--color-border);
+  border-radius: var(--radius-lg);
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-2);
+  min-width: 0;
+  padding: var(--space-4);
+  position: relative;
+  transition:
+    border-color var(--duration-fast) var(--ease-standard),
+    box-shadow var(--duration-fast) var(--ease-standard),
+    transform var(--duration-fast) var(--ease-standard);
+}
+
+.market-card--linked:hover {
+  border-color: var(--color-border-strong);
+  box-shadow: var(--shadow-md);
+}
+
+.market-card--linked:focus-within {
+  border-color: var(--color-focus-ring);
+}
+
+.market-card__header {
+  align-items: center;
+  display: flex;
+  gap: var(--space-3);
+  min-width: 0;
+}
+
+.market-card__heading {
+  min-width: 0;
+}
+
+.market-card__title {
+  font-size: var(--text-md);
+  font-weight: var(--weight-semibold);
+  letter-spacing: normal;
+  line-height: var(--leading-snug);
+  margin: 0;
+}
+
+.market-card__link {
+  color: var(--color-text);
+  text-decoration: none;
+}
+
+.market-card__link:hover {
+  color: var(--color-text);
+}
+
+.market-card__link::after {
+  content: "";
+  inset: 0;
+  position: absolute;
+  border-radius: inherit;
+}
+
+.market-card__link:focus-visible {
+  outline: none;
+}
+
+.market-card__area {
+  color: var(--color-text-muted);
+  font-size: var(--text-sm);
+  margin: 0;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.market-card__price {
+  align-items: baseline;
+  display: flex;
+  flex-wrap: wrap;
+  gap: var(--space-1);
+  margin-top: var(--space-2);
+}
+
+.market-card__amount {
+  font-size: var(--text-3xl);
+  font-weight: var(--weight-bold);
+  letter-spacing: var(--tracking-tighter);
+  line-height: 1;
+}
+
+.market-card__period {
+  color: var(--color-text-muted);
+  font-size: var(--text-md);
+  font-weight: var(--weight-semibold);
+}
+
+.market-card__price-caption {
+  color: var(--color-text-muted);
+  font-size: var(--text-xs);
+  margin: 0;
+}
+
+.market-card__scope {
+  -webkit-box-orient: vertical;
+  color: var(--color-text-secondary);
+  display: -webkit-box;
+  font-size: var(--text-sm);
+  -webkit-line-clamp: 2;
+  margin: var(--space-1) 0 0;
+  overflow: hidden;
+  overflow-wrap: anywhere;
+}
+
+.market-card__meta {
+  display: flex;
+  flex-wrap: wrap;
+  gap: var(--space-1);
+  margin-top: auto;
+  padding-top: var(--space-2);
+}
+
+.market-card__action {
+  border-top: var(--border-width) solid var(--color-border-subtle);
+  display: flex;
+  gap: var(--space-2);
+  margin-top: var(--space-2);
+  padding-top: var(--space-3);
+  position: relative;
+  z-index: 1;
+}
+
+.market-card__action > * {
+  flex: 1 1 auto;
+}

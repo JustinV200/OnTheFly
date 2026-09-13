@@ -7,6 +7,7 @@ export const API_BASE_URL = import.meta.env.VITE_API_URL ?? 'http://127.0.0.1:80
 
 // Status used when no HTTP response arrived at all (network down, DNS, CORS rejection).
 export const NETWORK_FAILURE_STATUS = 0;
+const NO_CONTENT_STATUS = 204;
 
 export class ApiError extends Error {
   public readonly envelope: ErrorEnvelope;
@@ -35,13 +36,21 @@ export async function apiFetch<T>(path: string, options: RequestInit = {}): Prom
   try {
     response = await fetch(`${API_BASE_URL}${path}`, { ...options, headers });
   } catch (cause) {
-    console.error('API request failed before a response arrived', cause);
+    // An abort the caller asked for (unmount cleanup, StrictMode's dev double-mount, its own timeout) isn't a failure,
+    // so it isn't logged. It still throws the same ApiError: callers tell the two apart by checking their own signal.
+    if (!options.signal?.aborted) {
+      console.error('API request failed before a response arrived', cause);
+    }
     throw new ApiError(NETWORK_FAILURE_STATUS, {
       error: 'network_error',
       detail: `Could not reach the API at ${API_BASE_URL}. It may be down, or this network may be blocking it.`,
     });
   }
 
+  // 204 No Content (e.g. a delete) has no body by definition; that is success, not an invalid response.
+  if (response.status === NO_CONTENT_STATUS) {
+    return undefined as T;
+  }
   const payload = parseJson(await response.text());
   if (!response.ok) {
     throw new ApiError(response.status, toEnvelope(response.status, payload));
@@ -70,7 +79,7 @@ export function patch<T>(path: string, body?: unknown): Promise<T> {
   return apiFetch<T>(path, { body: body ? JSON.stringify(body) : undefined, method: 'PATCH' });
 }
 
-/** Issue a DELETE request and parse the typed JSON body. */
+/** Issue a DELETE request and parse the typed JSON body; a 204 response resolves to undefined. */
 export function del<T>(path: string): Promise<T> {
   return apiFetch<T>(path, { method: 'DELETE' });
 }

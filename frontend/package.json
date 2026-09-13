@@ -5,7 +5,9 @@
   "type": "module",
   "scripts": {
     "dev": "vite",
-    "build": "tsc && vite build"
+    "build": "tsc && vite build",
+    "check:colors": "node scripts/checkColors.mjs",
+    "check:contrast": "node scripts/checkContrast.mjs"
   },
   "dependencies": {
     "@stripe/stripe-js": "^9.16.0",

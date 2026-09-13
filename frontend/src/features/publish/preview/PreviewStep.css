@@ -1,0 +1,29 @@
+/* Preview layout: the rendered listing and the "Never public" list side by side from 768px, stacked on a phone. */
+.publish-preview__grid {
+  display: grid;
+  gap: var(--space-5);
+  grid-template-columns: minmax(0, 1fr);
+}
+
+@media (min-width: 768px) {
+  .publish-preview__grid {
+    align-items: start;
+    grid-template-columns: minmax(0, 1.4fr) minmax(0, 1fr);
+  }
+}
+
+.publish-preview__group {
+  display: grid;
+  gap: var(--space-2);
+  min-width: 0;
+}
+
+.publish-preview__label {
+  color: var(--color-text-muted);
+  font-size: var(--text-xs);
+  font-weight: var(--weight-semibold);
+  letter-spacing: var(--tracking-wide);
+  line-height: var(--leading-tight);
+  margin: 0;
+  text-transform: uppercase;
+}

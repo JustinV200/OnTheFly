@@ -1,0 +1,267 @@
+/* Element-level defaults: box model, page, type, links, focus rings, form controls, tables, reduced motion.
+   Every element rule is wrapped in :where() so it has zero specificity: any component class or inline style wins.
+   Feature screens not yet on the primitives still get coherent controls from here; the primitives are preferred. */
+
+*,
+*::before,
+*::after {
+  box-sizing: border-box;
+}
+
+:where(html) {
+  -webkit-text-size-adjust: 100%;
+  text-size-adjust: 100%;
+}
+
+:where(body) {
+  margin: 0;
+  min-height: 100vh;
+  background-color: var(--color-canvas);
+  color: var(--color-text);
+  font-family: var(--font-sans);
+  font-size: var(--text-md);
+  line-height: var(--leading-normal);
+  -webkit-font-smoothing: antialiased;
+  -moz-osx-font-smoothing: grayscale;
+  text-rendering: optimizeLegibility;
+}
+
+::selection {
+  background-color: var(--color-selection);
+}
+
+/* ---- Headings: a restrained scale; pages own the single h1 through PageHeader ---- */
+:where(h1, h2, h3, h4, h5, h6) {
+  color: var(--color-text);
+  font-weight: var(--weight-semibold);
+  letter-spacing: var(--tracking-tight);
+  line-height: var(--leading-tight);
+  margin: 0 0 var(--space-2);
+  text-wrap: balance;
+}
+
+:where(h1) { font-size: var(--text-2xl); }
+:where(h2) { font-size: var(--text-xl); }
+:where(h3) { font-size: var(--text-lg); }
+:where(h4, h5, h6) { font-size: var(--text-md); }
+
+@media (min-width: 768px) {
+  :where(h1) { font-size: var(--text-3xl); }
+}
+
+:where(p) {
+  margin: 0 0 var(--space-3);
+}
+
+:where(small) {
+  font-size: var(--text-sm);
+}
+
+:where(strong, b) {
+  font-weight: var(--weight-semibold);
+}
+
+:where(code, kbd, samp, pre) {
+  font-family: var(--font-mono);
+  font-size: 0.92em;
+}
+
+:where(hr) {
+  border: 0;
+  border-top: var(--border-width) solid var(--color-border);
+  margin: var(--space-6) 0;
+}
+
+:where(img, svg, video) {
+  max-width: 100%;
+}
+
+:where(ul, ol) {
+  margin: 0 0 var(--space-3);
+  padding-left: var(--space-5);
+}
+
+/* ---- Links ---- */
+:where(a) {
+  color: var(--color-text-link);
+  text-decoration-line: underline;
+  text-decoration-thickness: 1px;
+  text-underline-offset: 0.18em;
+  text-decoration-color: color-mix(in srgb, currentColor 40%, transparent);
+  transition: color var(--duration-fast) var(--ease-standard), text-decoration-color var(--duration-fast) var(--ease-standard);
+}
+
+:where(a:hover) {
+  color: var(--color-text-link-hover);
+  text-decoration-color: currentColor;
+}
+
+/* ---- Focus: one visible ring everywhere, only for keyboard focus ---- */
+:focus-visible {
+  outline: 2px solid var(--color-focus-ring);
+  outline-offset: 2px;
+}
+
+/* ---- Buttons: bare <button> looks like a secondary button until it moves to <Button> ---- */
+:where(button) {
+  align-items: center;
+  background-color: var(--color-surface);
+  border: var(--border-width) solid var(--color-border-control);
+  border-radius: var(--radius-md);
+  box-shadow: var(--shadow-xs);
+  color: var(--color-text);
+  cursor: pointer;
+  display: inline-flex;
+  font: inherit;
+  font-size: var(--text-sm);
+  font-weight: var(--weight-semibold);
+  gap: var(--space-2);
+  justify-content: center;
+  line-height: var(--leading-tight);
+  min-height: 32px;
+  padding: var(--space-1) var(--space-3);
+  text-align: center;
+  transition: background-color var(--duration-fast) var(--ease-standard), border-color var(--duration-fast) var(--ease-standard);
+}
+
+:where(button:hover:not(:disabled)) {
+  background-color: var(--color-surface-hover);
+  border-color: var(--color-border-strong);
+}
+
+:where(button:disabled) {
+  cursor: not-allowed;
+  opacity: 0.55;
+}
+
+/* ---- Form controls ---- */
+:where(input, select, textarea, button) {
+  font-family: inherit;
+}
+
+:where(input:not([type="checkbox"], [type="radio"], [type="range"], [type="file"], [type="color"]), select, textarea) {
+  background-color: var(--color-surface);
+  border: var(--border-width) solid var(--color-border-control);
+  border-radius: var(--radius-md);
+  color: var(--color-text);
+  font-size: var(--text-md);
+  line-height: var(--leading-snug);
+  max-width: 100%;
+  min-height: var(--control-height);
+  padding: var(--space-1) var(--space-3);
+  transition: border-color var(--duration-fast) var(--ease-standard), box-shadow var(--duration-fast) var(--ease-standard);
+}
+
+:where(textarea) {
+  min-height: 5.5rem;
+  padding-block: var(--space-2);
+  resize: vertical;
+}
+
+:where(select) {
+  appearance: none;
+  /* The chevron is a data URI, which can't read a custom property colour, so each theme supplies its own drawing. */
+  background-image: var(--select-chevron);
+  background-position: right var(--space-2) center;
+  background-repeat: no-repeat;
+  cursor: pointer;
+  padding-right: var(--space-8);
+}
+
+:where(input, select, textarea)::placeholder {
+  color: var(--color-text-subtle);
+}
+
+/* Pseudo-classes sit inside :where() too, so a component's own :hover or :focus rule always wins. */
+:where(input:not([type="checkbox"], [type="radio"]):hover:not(:disabled), select:hover:not(:disabled), textarea:hover:not(:disabled)) {
+  border-color: var(--color-text-subtle);
+}
+
+:where(input:not([type="checkbox"], [type="radio"]):focus, select:focus, textarea:focus) {
+  border-color: var(--color-brand);
+  box-shadow: var(--focus-ring);
+  outline: none;
+}
+
+:where(input[aria-invalid="true"], select[aria-invalid="true"], textarea[aria-invalid="true"]) {
+  border-color: var(--color-danger-solid);
+}
+
+:where(input:disabled, select:disabled, textarea:disabled) {
+  background-color: var(--color-surface-sunken);
+  color: var(--color-text-subtle);
+  cursor: not-allowed;
+}
+
+:where(input[type="checkbox"], input[type="radio"]) {
+  accent-color: var(--color-brand);
+  cursor: pointer;
+  height: 1rem;
+  margin: 0 var(--space-1) 0 0;
+  vertical-align: -0.15em;
+  width: 1rem;
+}
+
+:where(input[type="checkbox"]:disabled, input[type="radio"]:disabled) {
+  cursor: not-allowed;
+}
+
+:where(label) {
+  color: var(--color-text-secondary);
+}
+
+:where(fieldset) {
+  border: var(--border-width) solid var(--color-border);
+  border-radius: var(--radius-lg);
+  margin: var(--space-4) 0;
+  min-width: 0;
+  padding: var(--space-3) var(--space-4) var(--space-4);
+}
+
+:where(legend) {
+  color: var(--color-text);
+  font-weight: var(--weight-semibold);
+  padding: 0 var(--space-1);
+}
+
+:where(summary) {
+  color: var(--color-text-link);
+  cursor: pointer;
+  font-weight: var(--weight-medium);
+}
+
+/* ---- Tables: dense, zebra-free, hairline rows ---- */
+:where(table) {
+  border-collapse: collapse;
+  font-variant-numeric: tabular-nums;
+}
+
+:where(th) {
+  border-bottom: var(--border-width) solid var(--color-border);
+  color: var(--color-text-muted);
+  font-size: var(--text-xs);
+  font-weight: var(--weight-semibold);
+  letter-spacing: 0.02em;
+  padding: var(--space-2) var(--space-3);
+  text-align: left;
+  vertical-align: bottom;
+  white-space: nowrap;
+}
+
+:where(td) {
+  border-top: var(--border-width) solid var(--color-border-subtle);
+  padding: var(--space-3);
+  vertical-align: top;
+}
+
+/* ---- Reduced motion: stop animation and transitions, keep the end state ---- */
+@media (prefers-reduced-motion: reduce) {
+  *,
+  *::before,
+  *::after {
+    animation-duration: 0.01ms !important;
+    animation-iteration-count: 1 !important;
+    scroll-behavior: auto !important;
+    transition-duration: 0.01ms !important;
+  }
+}

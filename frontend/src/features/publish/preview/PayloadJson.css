@@ -1,0 +1,28 @@
+/* Payload block: a sunken monospace panel that scrolls in both directions inside itself, capped in height. */
+.publish-payload__description {
+  color: var(--color-text-muted);
+  font-size: var(--text-sm);
+  margin: 0;
+}
+
+.publish-payload__json {
+  background-color: var(--color-surface-sunken);
+  border: var(--border-width) solid var(--color-border);
+  border-radius: var(--radius-md);
+  color: var(--color-text);
+  font-size: var(--text-xs);
+  line-height: var(--leading-normal);
+  margin: 0;
+  max-height: 28rem;
+  max-width: 100%;
+  overflow: auto;
+  padding: var(--space-3) var(--space-4);
+  -webkit-overflow-scrolling: touch;
+}
+
+.publish-payload__hash {
+  color: var(--color-text-muted);
+  font-size: var(--text-xs);
+  margin: 0;
+  overflow-wrap: anywhere;
+}

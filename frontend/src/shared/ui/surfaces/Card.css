@@ -1,0 +1,86 @@
+/* Card surface, tones, padding, and the header row. */
+.ui-card {
+  border: var(--border-width) solid var(--color-border);
+  border-radius: var(--radius-lg);
+  margin: 0;
+  min-width: 0;
+}
+
+.ui-card--default {
+  background-color: var(--color-surface);
+  box-shadow: var(--shadow-xs);
+}
+
+.ui-card--subtle {
+  background-color: var(--color-surface-subtle);
+  border-color: var(--color-border-subtle);
+}
+
+.ui-card--outlined {
+  background-color: transparent;
+  border-color: var(--color-border-strong);
+  border-style: dashed;
+}
+
+.ui-card--pad-none { padding: 0; }
+.ui-card--pad-sm { padding: var(--space-3); }
+.ui-card--pad-md { padding: var(--space-4); }
+.ui-card--pad-lg { padding: var(--space-5); }
+
+@media (min-width: 768px) {
+  .ui-card--pad-md { padding: var(--space-5); }
+  .ui-card--pad-lg { padding: var(--space-6); }
+}
+
+.ui-card__header {
+  align-items: flex-start;
+  display: flex;
+  flex-wrap: wrap;
+  gap: var(--space-2) var(--space-4);
+  justify-content: space-between;
+  margin-bottom: var(--space-4);
+}
+
+/* A card with only a header (no body) shouldn't carry trailing space. */
+.ui-card__header:last-child {
+  margin-bottom: 0;
+}
+
+.ui-card__heading {
+  flex: 1 1 16rem;
+  min-width: 0;
+}
+
+.ui-card__title {
+  font-size: var(--text-lg);
+  margin: 0;
+}
+
+.ui-card__description {
+  color: var(--color-text-muted);
+  font-size: var(--text-sm);
+  margin-top: var(--space-1);
+}
+
+.ui-card__description > p:last-child {
+  margin-bottom: 0;
+}
+
+.ui-card__actions {
+  align-items: center;
+  display: flex;
+  flex-wrap: wrap;
+  gap: var(--space-2);
+}
+
+/* A flush card (padding "none") still pads its header, so a list inside can run edge to edge under a readable title. */
+.ui-card--pad-none > .ui-card__header {
+  margin-bottom: 0;
+  padding: var(--space-4) var(--space-4) 0;
+}
+
+@media (min-width: 768px) {
+  .ui-card--pad-none > .ui-card__header {
+    padding: var(--space-5) var(--space-5) 0;
+  }
+}

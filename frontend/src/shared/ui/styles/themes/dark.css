@@ -1,0 +1,104 @@
+/* Dark theme colour roles: a near-black graphite canvas (not pure black), raised card surfaces, and a brighter green.
+   Only the roles change; every component reads the same token names, so no screen needs an isDark branch.
+   Contrast targets match light.css: 4.5:1 for text, 3:1 for borders and focus rings. */
+
+:root[data-theme="dark"] {
+  color-scheme: dark;
+
+  /* ---- Surfaces: lighter as they rise toward the viewer ---- */
+  --color-canvas: #0b0d10;
+  --color-surface: #13161a;
+  --color-surface-raised: #1a1e23;
+  --color-surface-subtle: #171a1f;
+  --color-surface-sunken: #0f1114;
+  --color-surface-hover: #1c2127;
+  --color-surface-selected: #10261c;
+  --color-backdrop: rgb(0 0 0 / 0.6);
+
+  /* ---- Text ---- */
+  --color-text: #eef1f4;
+  --color-text-secondary: #c5cbd3;
+  --color-text-muted: #9aa3ae;
+  --color-text-subtle: #6c7580;
+  --color-text-inverse: #ffffff;
+  --color-text-link: #5fe0a6;
+  --color-text-link-hover: #8aebc0;
+
+  /* The select chevron, drawn in this theme's muted text colour. */
+  --select-chevron: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='16' height='16' viewBox='0 0 24 24' fill='none' stroke='%239aa3ae' stroke-width='2' stroke-linecap='round' stroke-linejoin='round'%3E%3Cpath d='m6 9 6 6 6-6'/%3E%3C/svg%3E");
+
+  /* ---- Borders ---- */
+  --color-border-subtle: #1c2025;
+  --color-border: #262b31;
+  --color-border-strong: #353c44;
+  --color-border-control: #5d6671;
+
+  /* ---- Brand: a brighter green with dark text on it, so the primary action still leads on a dark canvas ---- */
+  --color-brand: #2fd18b;
+  --color-brand-hover: #4cdf9f;
+  --color-brand-active: #22b877;
+  --color-on-brand: #03140c;
+  --color-brand-soft: #0f271c;
+  --color-brand-soft-border: #1f5a3f;
+  --color-brand-text: #6ee7b0;
+
+  --color-focus-ring: #4cdf9f;
+  --color-selection: #1f5a3f;
+
+  /* ---- Status tones ---- */
+  --color-success-text: #6ee7b0;
+  --color-success-bg: #0f271c;
+  --color-success-border: #1f5a3f;
+  --color-success-solid: #2fd18b;
+
+  --color-warning-text: #fbc56b;
+  --color-warning-bg: #2a1d07;
+  --color-warning-border: #5f4411;
+  --color-warning-solid: #d98c1c;
+
+  --color-danger-text: #ff9096;
+  --color-danger-bg: #2c1215;
+  --color-danger-border: #6a2a30;
+  --color-danger-solid: #c8323a;
+  --color-danger-solid-hover: #d9434b;
+
+  --color-info-text: #8cc4ff;
+  --color-info-bg: #0e2136;
+  --color-info-border: #1f446e;
+  --color-info-solid: #4c9eff;
+
+  /* Still amber: demo data must read the same in both themes. */
+  --color-simulated-text: #ffb57f;
+  --color-simulated-bg: #2c190b;
+  --color-simulated-border: #6b3d17;
+  --color-simulated-solid: #e7802f;
+
+  --color-private-text: #dde2e8;
+  --color-private-bg: #1c2127;
+  --color-private-border: #5d6671;
+
+  --color-neutral-text: #c5cbd3;
+  --color-neutral-bg: #1c2127;
+  --color-neutral-border: #2c3239;
+
+  --color-flybrain-text: #c9b8ff;
+  --color-flybrain-bg: #1c1533;
+  --color-flybrain-border: #4a3a86;
+  --color-flybrain-solid: #9b72f7;
+
+  /* ---- Data visualisation ---- */
+  --color-chart-line: #2fd18b;
+  --color-chart-fill: rgb(47 209 139 / 0.12);
+  --color-chart-reference: #6c7580;
+  --color-chart-grid: #1c2025;
+  --color-skeleton: #1a1e23;
+  --color-skeleton-highlight: #22272d;
+
+  /* ---- Shadows: darker and wider, since a light shadow disappears on graphite ---- */
+  --shadow-xs: 0 1px 1px rgb(0 0 0 / 0.3);
+  --shadow-sm: 0 1px 2px rgb(0 0 0 / 0.4), 0 1px 1px rgb(0 0 0 / 0.25);
+  --shadow-md: 0 8px 20px rgb(0 0 0 / 0.45), 0 1px 3px rgb(0 0 0 / 0.3);
+  --shadow-lg: 0 18px 44px rgb(0 0 0 / 0.6), 0 2px 6px rgb(0 0 0 / 0.35);
+  --focus-ring: 0 0 0 3px rgb(76 223 159 / 0.3);
+  --focus-ring-danger: 0 0 0 3px rgb(255 144 150 / 0.28);
+}

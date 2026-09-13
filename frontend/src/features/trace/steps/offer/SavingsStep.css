@@ -1,0 +1,30 @@
+/* Savings step: a one-line note, the arithmetic on a sunken panel in tabular numerals, then the assumptions behind a
+   provisional figure. */
+.trace-savings__note {
+  color: var(--color-text-muted);
+  font-size: var(--text-sm);
+  margin: 0;
+}
+
+.trace-savings__math {
+  background-color: var(--color-surface-sunken);
+  border-radius: var(--radius-md);
+  display: grid;
+  font-variant-numeric: tabular-nums;
+  gap: var(--space-1);
+  padding: var(--space-3) var(--space-4);
+}
+
+.trace-savings__math > p {
+  margin: 0;
+}
+
+.trace-savings__because {
+  font-weight: var(--weight-medium);
+  margin: 0 0 var(--space-1);
+}
+
+.trace-savings__assumptions {
+  color: var(--color-text-secondary);
+  margin: 0;
+}

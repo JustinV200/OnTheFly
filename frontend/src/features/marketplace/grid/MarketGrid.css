@@ -1,0 +1,16 @@
+/* Market grid: auto-fill (not the Grid primitive's auto-fit), so a lone market keeps card width instead of stretching
+   across the page. min(…, 100%) keeps a card from overflowing a 390px phone. */
+.market-grid {
+  display: grid;
+  gap: var(--space-4);
+  min-width: 0;
+}
+
+.market-grid--comfortable {
+  grid-template-columns: repeat(auto-fill, minmax(min(17.5rem, 100%), 1fr));
+}
+
+.market-grid--compact {
+  gap: var(--space-3);
+  grid-template-columns: repeat(auto-fill, minmax(min(15rem, 100%), 1fr));
+}

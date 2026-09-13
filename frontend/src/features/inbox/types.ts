@@ -97,7 +97,11 @@ export interface OwnerChallenge {
   billing_frequency: string;
   scope_included: string[];
   scope_excluded: string[];
+  scope_extras: string[];
   setup_fee_minor: number;
+  // Null means the challenger didn't say, which the drawer shows as "Not stated".
+  taxes_included: boolean | null;
+  supplies_included: boolean | null;
   minimum_term: string | null;
   other_conditions: string | null;
   message_to_owner: string | null;

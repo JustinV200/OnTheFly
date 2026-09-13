@@ -1,0 +1,46 @@
+/* Coverage section: the match shortcut as a quiet row, tasks drawn as tappable chips (the checkbox stays visible inside
+   each chip, so the checked state never rests on the tint alone), and a short visits input. */
+.bid-coverage__match {
+  align-items: center;
+  background-color: var(--color-surface-subtle);
+  border: var(--border-width) solid var(--color-border-subtle);
+  border-radius: var(--radius-md);
+  display: flex;
+  flex-wrap: wrap;
+  gap: var(--space-2) var(--space-3);
+  padding: var(--space-2) var(--space-3);
+}
+
+.bid-coverage__tasks {
+  border: 0;
+  margin: 0;
+  min-width: 0;
+  padding: 0;
+}
+
+.bid-coverage__legend {
+  color: var(--color-text);
+  font-size: var(--text-sm);
+  font-weight: var(--weight-medium);
+  padding: 0;
+}
+
+.bid-coverage__task-list {
+  margin-top: var(--space-2);
+}
+
+.bid-coverage__tasks .bid-coverage__task {
+  background-color: var(--color-surface);
+  border: var(--border-width) solid var(--color-border-control);
+  border-radius: var(--radius-md);
+  padding: var(--space-2) var(--space-3);
+}
+
+.bid-coverage__tasks .bid-coverage__task:has(input:checked) {
+  background-color: var(--color-brand-soft);
+  border-color: var(--color-brand-soft-border);
+}
+
+.bid-coverage__visits {
+  max-width: 8rem;
+}

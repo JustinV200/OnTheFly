@@ -1,0 +1,34 @@
+/* Fact grid: a muted label above each value, hairlines between rows, columns auto-fitted to the card's width. */
+.trace-facts {
+  /* Two columns fit in a phone-width card; wider columns from tablet width keep lists like tasks on one line. */
+  --trace-facts-min: 8rem;
+  display: grid;
+  gap: var(--space-3) var(--space-5);
+  grid-template-columns: repeat(auto-fit, minmax(min(var(--trace-facts-min), 100%), 1fr));
+  margin: 0;
+}
+
+@media (min-width: 768px) {
+  .trace-facts {
+    --trace-facts-min: 11rem;
+  }
+}
+
+.trace-facts__item {
+  border-top: var(--border-width) solid var(--color-border-subtle);
+  display: grid;
+  gap: var(--space-0_5);
+  min-width: 0;
+  padding-top: var(--space-2);
+}
+
+.trace-facts__label {
+  color: var(--color-text-muted);
+  font-size: var(--text-sm);
+  font-weight: var(--weight-medium);
+}
+
+.trace-facts__value {
+  margin: 0;
+  overflow-wrap: anywhere;
+}

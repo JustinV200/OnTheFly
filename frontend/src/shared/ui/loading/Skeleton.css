@@ -1,0 +1,31 @@
+/* Skeleton placeholder: a soft shimmer that stops under reduced motion and stays a flat grey block. */
+.ui-skeleton {
+  animation: ui-skeleton-shimmer 1.4s ease-in-out infinite;
+  background: linear-gradient(90deg, var(--color-skeleton) 0%, var(--color-skeleton-highlight) 40%, var(--color-skeleton) 80%);
+  background-size: 200% 100%;
+  display: block;
+}
+
+.ui-skeleton--line {
+  border-radius: var(--radius-sm);
+  height: 0.75rem;
+}
+
+.ui-skeleton--block {
+  border-radius: var(--radius-md);
+  height: 4rem;
+}
+
+.ui-skeleton--pill {
+  border-radius: var(--radius-pill);
+  height: 1.25rem;
+}
+
+@keyframes ui-skeleton-shimmer {
+  from {
+    background-position: 100% 0;
+  }
+  to {
+    background-position: -100% 0;
+  }
+}

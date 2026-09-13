@@ -1,0 +1,29 @@
+/* Row actions: small buttons that wrap on a phone and hug the row's right edge on a laptop;
+   the not-publishable reason reads as a locked fact, not a control. */
+.expense-row-actions {
+  align-items: flex-start;
+  display: inline-flex;
+  flex-wrap: wrap;
+  gap: var(--space-2);
+}
+
+.expense-row-actions__ineligible {
+  align-items: center;
+  color: var(--color-text-secondary);
+  display: inline-flex;
+  font-size: var(--text-sm);
+  font-weight: var(--weight-medium);
+  gap: var(--space-1);
+}
+
+@media (min-width: 1024px) {
+  .expense-row-actions {
+    flex-wrap: nowrap;
+    justify-content: flex-end;
+  }
+
+  .expense-row-actions__ineligible {
+    justify-content: flex-end;
+    text-align: right;
+  }
+}

@@ -1,0 +1,29 @@
+/* Base rules for the Stack, Cluster, and Grid layout helpers. Gaps and alignment arrive as inline token values. */
+.ui-stack {
+  display: flex;
+  flex-direction: column;
+  min-width: 0;
+}
+
+.ui-cluster {
+  display: flex;
+  min-width: 0;
+}
+
+/* Lists used as layout lose their bullets and indent. */
+:is(ul, ol):is(.ui-stack, .ui-cluster, .ui-grid) {
+  list-style: none;
+  margin: 0;
+  padding: 0;
+}
+
+.ui-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(min(var(--ui-grid-min, 220px), 100%), 1fr));
+  min-width: 0;
+}
+
+/* Children of layout helpers carry their own spacing through the gap, not stray margins. */
+:is(.ui-stack, .ui-cluster, .ui-grid) > :is(p, h1, h2, h3, h4, ul, ol, section, article, fieldset) {
+  margin-block: 0;
+}

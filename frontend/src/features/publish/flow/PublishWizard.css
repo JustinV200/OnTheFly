@@ -1,0 +1,39 @@
+/* Wizard layout: the expense card above the step on a phone; from 1024px the step takes the main column and the
+   expense card sits on the right, sticky below the top bar, so the chosen expense stays in view while scrolling. */
+.publish-wizard {
+  display: grid;
+  gap: var(--space-5);
+}
+
+.publish-wizard__layout {
+  display: grid;
+  gap: var(--space-5);
+  grid-template-columns: minmax(0, 1fr);
+}
+
+.publish-wizard__main {
+  /* Focus lands here on a step change; the global ring then follows the step card's corners. */
+  border-radius: var(--radius-lg);
+  min-width: 0;
+}
+
+@media (min-width: 1024px) {
+  .publish-wizard__layout {
+    align-items: start;
+    gap: var(--space-6);
+    grid-template-columns: minmax(0, 1fr) 20rem;
+  }
+
+  .publish-wizard__main {
+    grid-column: 1;
+    grid-row: 1;
+  }
+
+  /* First in the DOM (context before the form for phones and screen readers) but on the right here. */
+  .publish-wizard__side {
+    grid-column: 2;
+    grid-row: 1;
+    position: sticky;
+    top: calc(var(--topbar-height) + var(--space-4));
+  }
+}

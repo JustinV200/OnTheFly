@@ -1,0 +1,12 @@
+/* Duplicate-vendor suggestions: one hairline-divided row per suggested pair. */
+.alias-suggestions {
+  list-style: none;
+  margin: 0;
+  padding: 0;
+}
+
+.alias-suggestions__item + .alias-suggestions__item {
+  border-top: var(--border-width) solid var(--color-border-subtle);
+  margin-top: var(--space-4);
+  padding-top: var(--space-4);
+}

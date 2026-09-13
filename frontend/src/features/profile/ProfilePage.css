@@ -1,0 +1,36 @@
+/* Public profile: the business monogram beside its name, and a market-card grid that keeps a lone listing at card width
+   (auto-fill, the same column width as the market board). */
+.profile-page__identity {
+  align-items: center;
+  display: inline-flex;
+  gap: var(--space-3);
+  min-width: 0;
+}
+
+.profile-page__monogram {
+  align-items: center;
+  background-color: var(--color-surface-sunken);
+  border: var(--border-width) solid var(--color-border);
+  border-radius: var(--radius-lg);
+  color: var(--color-text-secondary);
+  display: inline-flex;
+  flex: none;
+  font-size: var(--text-lg);
+  font-weight: var(--weight-semibold);
+  height: var(--space-12);
+  justify-content: center;
+  letter-spacing: normal;
+  width: var(--space-12);
+}
+
+.profile-page__section-title {
+  font-size: var(--text-xl);
+  margin: 0;
+}
+
+.profile-page__listings {
+  display: grid;
+  gap: var(--space-4);
+  grid-template-columns: repeat(auto-fill, minmax(min(17.5rem, 100%), 1fr));
+  min-width: 0;
+}

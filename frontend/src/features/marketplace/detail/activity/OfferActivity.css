@@ -1,0 +1,77 @@
+/* Offer activity states: the sealed panel (lock tile beside the count), the single-offer row, the empty and loading
+   blocks. The chart styles itself in chart/OfferChart.css. */
+.sealed-offers {
+  align-items: center;
+  background-color: var(--color-private-bg);
+  border: var(--border-width) solid var(--color-private-border);
+  border-radius: var(--radius-lg);
+  color: var(--color-private-text);
+  display: flex;
+  gap: var(--space-4);
+  padding: var(--space-4) var(--space-5);
+}
+
+.sealed-offers__icon {
+  align-items: center;
+  background-color: var(--color-surface);
+  border: var(--border-width) solid var(--color-private-border);
+  border-radius: var(--radius-md);
+  display: inline-flex;
+  flex: none;
+  height: var(--space-12);
+  justify-content: center;
+  width: var(--space-12);
+}
+
+.sealed-offers__title {
+  font-size: var(--text-lg);
+  font-weight: var(--weight-semibold);
+  margin: 0;
+}
+
+.sealed-offers__text {
+  margin: var(--space-0_5) 0 0;
+}
+
+.single-offer__title,
+.open-offers__empty-title {
+  font-weight: var(--weight-semibold);
+  margin: 0 0 var(--space-2);
+}
+
+.single-offer__facts {
+  align-items: center;
+  display: flex;
+  flex-wrap: wrap;
+  gap: var(--space-2) var(--space-4);
+  margin-bottom: var(--space-2);
+}
+
+.single-offer__price {
+  font-size: var(--text-2xl);
+  font-weight: var(--weight-bold);
+  letter-spacing: var(--tracking-tight);
+}
+
+.single-offer__period {
+  color: var(--color-text-muted);
+  font-size: var(--text-md);
+  font-weight: var(--weight-semibold);
+}
+
+.open-offers__empty {
+  background-color: var(--color-surface-subtle);
+  border: var(--border-width) dashed var(--color-border-strong);
+  border-radius: var(--radius-md);
+  padding: var(--space-4);
+}
+
+.open-offers__empty p:last-child {
+  margin-bottom: 0;
+}
+
+.open-offers__loading {
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-2);
+}

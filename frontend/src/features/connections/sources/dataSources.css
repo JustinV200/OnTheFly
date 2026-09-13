@@ -1,0 +1,73 @@
+/* Data sources card: one compact row per source below a hairline. A row stacks on a phone; from a tablet up its
+   actions sit at the end, centred against the name and facts line. */
+.data-source {
+  border-top: var(--border-width) solid var(--color-border-subtle);
+  padding-block: var(--space-3);
+}
+
+.data-source:last-child {
+  padding-bottom: 0;
+}
+
+.data-source__row {
+  display: grid;
+  gap: var(--space-3);
+}
+
+.data-source__main {
+  display: grid;
+  gap: var(--space-1);
+  min-width: 0;
+}
+
+.data-source__title {
+  font-size: var(--text-md);
+  margin: 0;
+}
+
+.data-source__facts {
+  color: var(--color-text-muted);
+  font-size: var(--text-sm);
+  margin: 0;
+  overflow-wrap: anywhere;
+}
+
+.data-source__disclosure {
+  margin-top: var(--space-2);
+}
+
+.data-source__disclosure p {
+  margin: 0;
+  max-width: 80ch;
+  overflow-wrap: anywhere;
+}
+
+.data-source__disclosure p + p {
+  margin-top: var(--space-1);
+}
+
+/* Two classes of specificity, so this spacing wins over a child's own margin (callouts, page states). */
+.data-source__details > :not(:empty) {
+  margin-block: var(--space-3) 0;
+}
+
+/* A bare slot holds whole states (a loading box, a failure, an empty state), spaced a step apart. */
+.data-source--bare > :not(:empty) {
+  margin-block: 0;
+}
+
+.data-source--bare > :not(:empty) + :not(:empty) {
+  margin-top: var(--space-4);
+}
+
+@media (min-width: 768px) {
+  .data-source__row {
+    align-items: center;
+    gap: var(--space-6);
+    grid-template-columns: minmax(0, 1fr) auto;
+  }
+
+  .data-source__actions {
+    justify-content: flex-end;
+  }
+}

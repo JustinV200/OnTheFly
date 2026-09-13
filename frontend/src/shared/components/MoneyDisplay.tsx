@@ -1,5 +1,6 @@
 /* Displays integer minor-unit amounts as USD-formatted strings.
-   Frontend display logic stays here instead of leaking into every feature row. */
+   Frontend display logic stays here instead of leaking into every feature row.
+   Tabular numerals and no line break inside the amount come from the system's .ui-money class. */
 interface MoneyDisplayProps {
   amountMinor: number;
   currency: string;
@@ -13,5 +14,5 @@ export function MoneyDisplay({ amountMinor, currency }: MoneyDisplayProps): JSX.
     style: 'currency',
   });
 
-  return <span>{formatter.format(amount)}</span>;
+  return <span className="ui-money">{formatter.format(amount)}</span>;
 }

@@ -1,0 +1,26 @@
+/* Order-ticket layout: one column on phones with the summary after the form; from 1024px the form takes the main column
+   and the summary sits on the right, sticky below the top bar, scrolling inside itself if it is taller than the window. */
+.bid-form-layout {
+  display: grid;
+  gap: var(--space-5);
+  grid-template-columns: minmax(0, 1fr);
+}
+
+.bid-form-layout__form {
+  min-width: 0;
+}
+
+@media (min-width: 1024px) {
+  .bid-form-layout {
+    align-items: start;
+    gap: var(--space-6);
+    grid-template-columns: minmax(0, 1fr) 22rem;
+  }
+
+  .bid-form-layout__summary {
+    max-height: calc(100vh - var(--topbar-height) - var(--space-8));
+    overflow-y: auto;
+    position: sticky;
+    top: calc(var(--topbar-height) + var(--space-4));
+  }
+}

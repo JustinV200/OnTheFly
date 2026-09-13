@@ -13,8 +13,13 @@ from app.models import Account
 from app.models import Challenge
 from app.models import ChallengeRevision
 from app.models import ChallengerEvidence
+from app.models import DiscoveryRun
 from app.models import Invitation
+from app.models import InvitationApproval
+from app.models import OutreachSuppression
+from app.models import ProviderCandidate
 from app.models import PublicListingRecord
+from app.models import SandboxOutboxMessage
 from app.models import ScopeVersion
 from app.models import ServiceExpense
 from app.models import Transaction
@@ -35,7 +40,12 @@ _ = (
     Challenge,
     ChallengeRevision,
     ChallengerEvidence,
+    DiscoveryRun,
     Invitation,
+    InvitationApproval,
+    OutreachSuppression,
+    ProviderCandidate,
+    SandboxOutboxMessage,
     Transaction,
     ServiceExpense,
     VendorAliasDismissal,

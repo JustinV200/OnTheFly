@@ -1,0 +1,73 @@
+/* Board controls: search first, then category chips with sort chips beside them on a laptop, stacked on a phone.
+   Both chip rows scroll sideways inside themselves, so the page never does. */
+.board-controls {
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-3);
+  min-width: 0;
+}
+
+.board-controls__search {
+  max-width: 28rem;
+  position: relative;
+}
+
+.board-controls__search-icon {
+  color: var(--color-text-muted);
+  left: var(--space-3);
+  pointer-events: none;
+  position: absolute;
+  top: 50%;
+  transform: translateY(-50%);
+}
+
+/* Two classes, so this outranks the Input primitive's own padding and radius whatever order the CSS loads in. */
+.board-controls__search .board-controls__search-input {
+  background-color: var(--color-surface-sunken);
+  border-color: var(--color-border);
+  border-radius: var(--radius-pill);
+  box-shadow: none;
+  padding-left: var(--space-10);
+}
+
+.board-controls__search .board-controls__search-input:focus {
+  background-color: var(--color-surface);
+  border-color: var(--color-brand);
+}
+
+.board-controls__chips {
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-2);
+  min-width: 0;
+}
+
+.board-controls__categories {
+  min-width: 0;
+}
+
+.board-controls__sort {
+  align-items: center;
+  display: flex;
+  gap: var(--space-2);
+  min-width: 0;
+}
+
+.board-controls__sort-label {
+  color: var(--color-text-muted);
+  flex: none;
+  font-size: var(--text-sm);
+  font-weight: var(--weight-medium);
+}
+
+@media (min-width: 1024px) {
+  .board-controls__chips {
+    align-items: center;
+    flex-direction: row;
+    justify-content: space-between;
+  }
+
+  .board-controls__sort {
+    flex: none;
+  }
+}

@@ -1,0 +1,31 @@
+/* Genuine offer card: a success-toned edge and label set it apart from the simulated offers; the words say why.
+   The element in the selector outranks the Card primitive's own border and shadow rules. */
+article.genuine-offer {
+  border-color: var(--color-success-border);
+  box-shadow: inset 4px 0 0 var(--color-success-solid), var(--shadow-xs);
+}
+
+.genuine-offer__title {
+  align-items: center;
+  display: inline-flex;
+  gap: var(--space-2);
+}
+
+/* Only the icon takes the success colour; the heading text stays at full contrast. */
+.genuine-offer__title > svg {
+  color: var(--color-success-solid);
+  flex: none;
+}
+
+.genuine-offer__business {
+  font-size: var(--text-lg);
+  font-weight: var(--weight-semibold);
+  overflow-wrap: anywhere;
+}
+
+.genuine-offer__message {
+  border-left: 3px solid var(--color-success-border);
+  color: var(--color-text-secondary);
+  margin: 0;
+  padding-left: var(--space-3);
+}

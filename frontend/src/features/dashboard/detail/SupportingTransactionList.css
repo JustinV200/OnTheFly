@@ -1,0 +1,86 @@
+/* Supporting transactions: a count and shared-source line, then compact hairline rows with the date and statement text
+   left, the amount right, and status beneath. Excluded rows use secondary text so they read as set aside. */
+.supporting-transactions__header {
+  align-items: center;
+  color: var(--color-text-muted);
+  display: flex;
+  flex-wrap: wrap;
+  font-size: var(--text-sm);
+  gap: var(--space-1) var(--space-3);
+  justify-content: space-between;
+  padding-bottom: var(--space-2);
+}
+
+.supporting-transactions__shared {
+  align-items: center;
+  display: inline-flex;
+  gap: var(--space-2);
+}
+
+.supporting-transactions__list {
+  border-top: var(--border-width) solid var(--color-border);
+  list-style: none;
+  margin: 0;
+  padding: 0;
+}
+
+.supporting-transactions__item {
+  align-items: baseline;
+  column-gap: var(--space-3);
+  display: grid;
+  grid-template-areas:
+    "date amount"
+    "description description"
+    "meta meta";
+  grid-template-columns: minmax(0, 1fr) auto;
+  padding-block: var(--space-2);
+  row-gap: var(--space-0_5);
+}
+
+.supporting-transactions__item + .supporting-transactions__item {
+  border-top: var(--border-width) solid var(--color-border-subtle);
+}
+
+.supporting-transactions__date {
+  color: var(--color-text-muted);
+  font-size: var(--text-sm);
+  grid-area: date;
+}
+
+.supporting-transactions__description {
+  color: var(--color-text);
+  font-size: var(--text-sm);
+  grid-area: description;
+  min-width: 0;
+  overflow-wrap: anywhere;
+}
+
+.supporting-transactions__amount {
+  font-weight: var(--weight-semibold);
+  grid-area: amount;
+  text-align: right;
+}
+
+.supporting-transactions__meta {
+  align-items: center;
+  color: var(--color-text-muted);
+  display: flex;
+  flex-wrap: wrap;
+  font-size: var(--text-xs);
+  gap: var(--space-1) var(--space-2);
+  grid-area: meta;
+}
+
+.supporting-transactions__item--excluded .supporting-transactions__description,
+.supporting-transactions__item--excluded .supporting-transactions__amount {
+  color: var(--color-text-secondary);
+}
+
+@media (min-width: 480px) {
+  .supporting-transactions__item {
+    grid-template-areas:
+      "date description amount"
+      ". meta meta";
+    grid-template-columns: 6.5rem minmax(0, 1fr) auto;
+  }
+}

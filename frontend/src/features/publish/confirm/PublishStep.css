@@ -1,0 +1,21 @@
+/* What publishing does, as a short icon list: icon in a fixed column, the sentence wrapping beside it. */
+.publish-confirm__facts {
+  display: grid;
+  gap: var(--space-3);
+  list-style: none;
+  margin: 0;
+  padding: 0;
+}
+
+.publish-confirm__facts > li {
+  align-items: flex-start;
+  display: grid;
+  gap: var(--space-3);
+  grid-template-columns: auto minmax(0, 1fr);
+  line-height: var(--leading-normal);
+}
+
+.publish-confirm__facts > li > svg {
+  color: var(--color-text-muted);
+  margin-top: var(--space-0_5);
+}

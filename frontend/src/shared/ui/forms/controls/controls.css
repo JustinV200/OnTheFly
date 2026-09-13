@@ -1,0 +1,61 @@
+/* Text input, select, and textarea styles shared by the Input, Select, and Textarea primitives. */
+.ui-control {
+  background-color: var(--color-surface);
+  border: var(--border-width) solid var(--color-border-control);
+  border-radius: var(--radius-md);
+  box-shadow: var(--shadow-xs);
+  color: var(--color-text);
+  font: inherit;
+  font-size: var(--text-md);
+  line-height: var(--leading-snug);
+  min-height: var(--control-height);
+  min-width: 0;
+  padding: var(--space-1) var(--space-3);
+  transition: border-color var(--duration-fast) var(--ease-standard), box-shadow var(--duration-fast) var(--ease-standard);
+  width: 100%;
+}
+
+.ui-control::placeholder {
+  color: var(--color-text-subtle);
+}
+
+.ui-control:hover:not(:disabled) {
+  border-color: var(--color-text-subtle);
+}
+
+.ui-control:focus {
+  border-color: var(--color-brand);
+  box-shadow: var(--focus-ring);
+  outline: none;
+}
+
+.ui-control[aria-invalid="true"] {
+  border-color: var(--color-danger-solid);
+}
+
+.ui-control[aria-invalid="true"]:focus {
+  box-shadow: var(--focus-ring-danger);
+}
+
+.ui-control:disabled {
+  background-color: var(--color-surface-sunken);
+  box-shadow: none;
+  color: var(--color-text-subtle);
+  cursor: not-allowed;
+}
+
+.ui-control--select {
+  appearance: none;
+  /* Per-theme drawing (see themes/*.css): a data URI can't take its stroke colour from a custom property. */
+  background-image: var(--select-chevron);
+  background-position: right var(--space-2) center;
+  background-repeat: no-repeat;
+  cursor: pointer;
+  padding-right: var(--space-8);
+}
+
+.ui-control--textarea {
+  min-height: 5.5rem;
+  padding-block: var(--space-2);
+  resize: vertical;
+}

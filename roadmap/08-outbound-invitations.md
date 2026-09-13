@@ -1,6 +1,23 @@
 # Phase 08 — Outbound invitations (secondary path)
 
-> Status reconciliation — 2026-09-12: Invitation API/service stubs exist; delivery does not. Automated outreach is deferred. Manual sharing of the existing listing is sufficient. The earlier email-provider work below is a future reference, not hackathon critical-path work.
+> Status — 2026-09-13 (merged to `main` with the Invite suppliers page and the public opt-out page): the secondary path is implemented behind safe defaults. Still not critical path; manual sharing of the listing remains enough for the demo.
+>
+> **Implemented and covered by backend tests**
+> - Discovery behind `services/discovery/source.py`. Default `DISCOVERY_SOURCE=fixture` returns fictional, labeled demo providers (`.example` domains) including one aggregator and one duplicate. `tavily` runs a real web search only with `TAVILY_API_KEY`. Without a key the run is recorded as not run; an HTTP failure is recorded as an error. Neither falls back to demo data.
+> - Queries come from the stored public projection (category, area, tasks, frequency), never the incumbent. Aggregators are dropped, and duplicates merge deterministically by domain, phone and name. Every candidate stores its source, source URLs and `retrieved_at` (null only for a manual addition). Each run is stored with its counts.
+> - Durable `provider_candidates` records, discovered or manually added, with per-candidate eligibility reasons. A provider marked `contacted_off_platform` can't be invited automatically.
+> - Approval gate: the owner previews every recipient and the exact rendered message, and approval must echo the preview hash. The approval records who, what and when. Discovery, adding candidates, publishing, seeding and jobs never create or send invitations.
+> - Template compliance is part of the render. It sets accurate From/To/Subject and `List-Unsubscribe`, adds the platform's postal address line (`OUTREACH_POSTAL_ADDRESS`; the footer says when it is missing) and a per-recipient opt-out link. Content is only the public listing projection plus the owner's public name and profile link. The incumbent is never named. The listing link is the ordinary public URL with no token.
+> - Channels: `OUTREACH_CHANNEL=sandbox` (default) stores messages in `sandbox_outbox`, and no email leaves the machine. `smtp` sends only to `OUTREACH_RECIPIENT_ALLOWLIST`, and approval is refused until the postal address, a non-`.example` From address and `SMTP_HOST` are set.
+> - Idempotent queue (`workers/outreach/`): one invitation per `(listing_id, provider_candidate_id)`, enforced by a unique constraint. Each send starts with an atomic `queued → sending` claim committed before sending. Transient failures back off (30s, 120s) and fail after 3 attempts. A row left in `sending` by a crash is never retried automatically. Opt-outs are checked at preview and again at send time.
+> - Per-invitation status `queued | sending | sent | failed | suppressed`, plus `challenged` attributed by exact account contact-email match after the send, never a tracking token. There are opt-out describe/apply endpoints and a `python -m app.cli.process_outreach` CLI.
+>
+> **Not built or not verified**
+> - `delivered`, `opened` and `bounced` need provider webhooks, which are not built. The overview reports `delivery_tracked: false`.
+> - SPF/DKIM for a real sending domain is a deployment task and is not done.
+> - Tavily has only been exercised against mocked HTTP. No real key has been used, so "5–10 real candidates" is unproven.
+> - Service-area and scope-fit checks (step 3) are not implemented; the owner judges fit from the capability summary and sources.
+> - No real email has been sent through the SMTP channel.
 >
 > Follow [the current P0/P1/P2 roadmap](README.md) and [current product plan](../plan/plan1.md). The earlier specification below is retained for reusable implementation detail. Its old priorities, demo category, and unchecked boxes are not a current completion report.
 
@@ -86,14 +103,16 @@ A challenge arriving from an invited provider marks that invitation `challenged`
 
 ## Done when
 
-- [ ] Discovery returns 5–10 real candidates with source URLs and retrieval timestamps.
-- [ ] Aggregators are filtered and duplicates collapse to one candidate.
-- [ ] Manually added providers sit alongside discovered ones.
-- [ ] Nothing sends without an explicit approval action showing the rendered message.
-- [ ] Processing the queue twice produces exactly one delivery per recipient.
-- [ ] The template carries accurate headers, a postal address, and an opt-out.
-- [ ] An invitation links to the public listing, not a private flow.
-- [ ] Delivery, failure, and challenge states are visible per provider.
+Ticked boxes are proven by backend tests (`backend/tests/outreach/`) as of 2026-09-13; the UI is not built.
+
+- [ ] Discovery returns 5–10 real candidates with source URLs and retrieval timestamps. *(Fixture discovery returns 6 fictional candidates with both; Tavily is tested only against mocked HTTP.)*
+- [x] Aggregators are filtered and duplicates collapse to one candidate.
+- [x] Manually added providers sit alongside discovered ones.
+- [x] Nothing sends without an explicit approval action showing the rendered message.
+- [x] Processing the queue twice produces exactly one delivery per recipient.
+- [x] The template carries accurate headers, a postal address, and an opt-out. *(The postal address comes from `OUTREACH_POSTAL_ADDRESS`; real sending is blocked until it is set.)*
+- [x] An invitation links to the public listing, not a private flow.
+- [ ] Delivery, failure, and challenge states are visible per provider. *(Sent, failed, suppressed and challenged are visible; delivered needs provider webhooks.)*
 
 ## Watch out for
 

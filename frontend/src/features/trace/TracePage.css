@@ -1,0 +1,26 @@
+/* The trace page: a quiet back link, and the chain as an ordered list of steps with no bullets; the rail and markers
+   live with TraceStep. The page header's own bottom margin is dropped because the page stack already spaces sections. */
+.trace-page > .ui-page-header {
+  margin-bottom: 0;
+}
+
+.trace-page__back {
+  align-items: center;
+  color: var(--color-text-muted);
+  display: inline-flex;
+  font-weight: var(--weight-medium);
+  gap: var(--space-1);
+  text-decoration: none;
+}
+
+.trace-page__back:hover {
+  color: var(--color-text);
+}
+
+.trace-chain {
+  display: grid;
+  gap: 0;
+  list-style: none;
+  margin: 0;
+  padding: 0;
+}

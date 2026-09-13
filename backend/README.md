@@ -29,7 +29,11 @@ Company binding is enforced against the demo account header. This is sandbox iso
 - Existing `fixture_apex_main` cleaning/demo transactions.
 - Stripe-provided simulated transactions after a completed sandbox connection.
 - GovCon Industries and `fixture_govcon_main` are planned, not seeded yet.
-- USAspending, public labor-rate pricing, OpenAI, Tavily and Fly Scout are not integrated.
+- USAspending, public labor-rate pricing, OpenAI and Fly Scout are not integrated. Tavily is wired only for outreach provider discovery (`DISCOVERY_SOURCE=tavily`) and has not been run with a real key.
+
+## Outbound invitations (secondary path)
+
+`/api/invitations` implements roadmap 08 behind safe defaults. `DISCOVERY_SOURCE=fixture` returns fictional, labeled demo providers. `OUTREACH_CHANNEL=sandbox` stores approved invitations in the `sandbox_outbox` table, and no email leaves the machine. Nothing is sent without the owner's preview-hash approval. `smtp` sends only to `OUTREACH_RECIPIENT_ALLOWLIST` and is refused until `OUTREACH_POSTAL_ADDRESS`, a real `OUTREACH_FROM_EMAIL` and `SMTP_HOST` are set. `python -m app.cli.process_outreach [--listing ID]` retries due, already-approved invitations. It never re-sends one.
 
 ## Optional old demo reset
 
@@ -41,4 +45,4 @@ Company binding is enforced against the demo account header. This is sandbox iso
 python -m pytest -q
 ```
 
-Last check (2026-09-12): 313 backend tests passed, including mocked-provider ownership, pagination and transaction-status tests. The Windows test-engine cleanup was fixed. Real Stripe sandbox consent and the new REBID story still need their own acceptance runs.
+Last check (2026-09-13, `feat/outreach`): 355 backend tests passed, including mocked-provider ownership, pagination, transaction-status and outreach tests (Tavily and SMTP mocked). The Windows test-engine cleanup was fixed. Real Stripe sandbox consent and the new REBID story still need their own acceptance runs.

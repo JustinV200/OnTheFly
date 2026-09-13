@@ -1,0 +1,153 @@
+/* Expense row. Phone: a compact card with vendor and visibility on top, cost and pattern beneath, actions last.
+   Laptop (1024px+): one grid row whose columns line up with the list's column labels (ExpenseList.css). */
+.expense-row {
+  cursor: pointer;
+  display: grid;
+  gap: var(--space-2) var(--space-3);
+  grid-template-areas:
+    "vendor visibility"
+    "cost cost"
+    "pattern pattern"
+    "actions actions";
+  grid-template-columns: minmax(0, 1fr) auto;
+  padding: var(--space-4);
+  transition: background-color var(--duration-fast) var(--ease-standard);
+}
+
+.expense-row + .expense-row {
+  border-top: var(--border-width) solid var(--color-border-subtle);
+}
+
+.expense-row:hover {
+  background-color: var(--color-surface-hover);
+}
+
+.expense-row.is-selected {
+  background-color: var(--color-surface-selected);
+}
+
+.expense-row__vendor {
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-0_5);
+  grid-area: vendor;
+  min-width: 0;
+}
+
+.expense-row__open {
+  align-self: flex-start;
+  background: none;
+  border: 0;
+  border-radius: var(--radius-sm);
+  box-shadow: none;
+  color: var(--color-text);
+  display: inline;
+  font-size: var(--text-md);
+  font-weight: var(--weight-semibold);
+  line-height: var(--leading-snug);
+  min-height: 0;
+  overflow-wrap: anywhere;
+  padding: 0;
+  text-align: left;
+}
+
+.expense-row__open:hover:not(:disabled) {
+  background: none;
+  text-decoration: underline;
+  text-underline-offset: 0.18em;
+}
+
+.expense-row__category,
+.expense-row__period,
+.expense-row__detail {
+  color: var(--color-text-muted);
+  font-size: var(--text-sm);
+}
+
+.expense-row__provenance {
+  display: flex;
+  flex-wrap: wrap;
+  gap: var(--space-1);
+  margin-top: var(--space-1);
+}
+
+.expense-row__cost {
+  align-items: baseline;
+  display: flex;
+  flex-wrap: wrap;
+  gap: var(--space-0_5) var(--space-2);
+  grid-area: cost;
+}
+
+.expense-row__annual {
+  font-size: var(--text-lg);
+  font-weight: var(--weight-semibold);
+}
+
+.expense-row__unit {
+  color: var(--color-text-muted);
+  font-size: var(--text-sm);
+  font-weight: var(--weight-medium);
+}
+
+.expense-row__pattern {
+  align-items: baseline;
+  display: flex;
+  flex-wrap: wrap;
+  gap: var(--space-0_5) var(--space-2);
+  grid-area: pattern;
+}
+
+.expense-row__rhythm {
+  font-size: var(--text-sm);
+  font-weight: var(--weight-semibold);
+  text-decoration: underline dotted var(--color-border-strong);
+  text-underline-offset: 0.2em;
+}
+
+.expense-row__visibility {
+  grid-area: visibility;
+  justify-self: end;
+}
+
+.expense-row__actions {
+  cursor: auto;
+  grid-area: actions;
+}
+
+/* Never-publishable rows: secondary text colour instead of opacity, so dimmed text still meets contrast. */
+.expense-row--muted .expense-row__open,
+.expense-row--muted .expense-row__annual {
+  color: var(--color-text-secondary);
+  font-weight: var(--weight-medium);
+}
+
+@media (min-width: 1024px) {
+  .expense-row {
+    align-items: center;
+    column-gap: var(--space-4);
+    grid-template-areas: "vendor cost pattern visibility actions";
+    grid-template-columns: var(--expense-list-columns);
+    padding: var(--space-3) var(--space-5);
+  }
+
+  .expense-row__cost,
+  .expense-row__pattern {
+    align-items: flex-start;
+    flex-direction: column;
+  }
+
+  .expense-row__cost {
+    align-items: flex-end;
+    text-align: right;
+  }
+
+  .expense-row__visibility {
+    justify-self: start;
+  }
+
+  .expense-row__actions {
+    display: flex;
+    justify-content: flex-end;
+  }
+}
