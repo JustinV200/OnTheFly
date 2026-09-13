@@ -10,6 +10,7 @@ import { LoadingSpinner } from '../../shared/components/LoadingSpinner';
 import { describeClosesIn } from '../../shared/market';
 import { Stack } from '../../shared/ui';
 import { OfferActivity } from './detail/activity/OfferActivity';
+import { BackToMarketsLink } from './detail/header/BackToMarketsLink';
 import { MarketHeader } from './detail/header/MarketHeader';
 import { PriceHeadline } from './detail/header/PriceHeadline';
 import { ListingNotPublic } from './detail/ListingNotPublic';
@@ -37,9 +38,15 @@ export function ListingDetailPage(): JSX.Element {
     return <ListingNotPublic />;
   }
   if (!query.data) {
-    return query.error
-      ? <ErrorState error={query.error} onRetry={query.reload} title="Couldn’t load this listing" />
-      : <LoadingSpinner label="Loading market…" />;
+    // The way back to the board stays available while the page loads or after it fails.
+    return (
+      <Stack gap={4}>
+        <BackToMarketsLink />
+        {query.error
+          ? <ErrorState error={query.error} onRetry={query.reload} title="Couldn’t load this listing" />
+          : <LoadingSpinner label="Loading market…" />}
+      </Stack>
+    );
   }
 
   const { listing, challenge_count: offerCount } = query.data;
