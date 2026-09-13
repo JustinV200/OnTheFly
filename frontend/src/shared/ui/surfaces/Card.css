@@ -72,3 +72,15 @@
   flex-wrap: wrap;
   gap: var(--space-2);
 }
+
+/* A flush card (padding "none") still pads its header, so a list inside can run edge to edge under a readable title. */
+.ui-card--pad-none > .ui-card__header {
+  margin-bottom: 0;
+  padding: var(--space-4) var(--space-4) 0;
+}
+
+@media (min-width: 768px) {
+  .ui-card--pad-none > .ui-card__header {
+    padding: var(--space-5) var(--space-5) 0;
+  }
+}
