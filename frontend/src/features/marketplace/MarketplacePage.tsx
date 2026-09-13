@@ -1,47 +1,57 @@
-/* Loads and renders the public marketplace feed with a category filter.
-   The page remains read-only and never reaches into private expense data. */
-import { useState } from 'react';
-
+/* The market board: every public listing as a market card, with search, category and sort. Fetches the whole feed
+   once (polled) and filters client-side, so category counts describe the feed. Read-only; never touches private data. */
 import { useActingAccount } from '../../shared/account/ActingAccountContext';
 import { useApiQuery } from '../../shared/api/useApiQuery';
-import { categoryLabel } from '../../shared/format/categoryLabel';
-import { Field, PageHeader, Select, Stack } from '../../shared/ui';
-import { FeedBody } from './feed/FeedBody';
+import { PageHeader, Stack } from '../../shared/ui';
+import { BoardControls } from './board/BoardControls';
+import { buildCategoryChips } from './board/filters/categoryChips';
+import { filterListings } from './board/filters/filterListings';
+import { sortListings } from './board/filters/sortListings';
+import { useBoardFilters } from './board/filters/useBoardFilters';
+import { MarketBoard } from './board/MarketBoard';
 import type { MarketplaceFeedResponse } from './types';
-import './MarketplacePage.css';
 
-// One category in scope for the MVP (CLAUDE.md, "Scope discipline"); the filter still shows its empty state.
-const CATEGORY_OPTIONS = ['cleaning'];
 const POLL_INTERVAL_MS = 10000;
 
-/** Render the public marketplace feed for published listings. */
+/** Render the public market board. */
 export function MarketplacePage(): JSX.Element {
   const { account } = useActingAccount();
-  const [category, setCategory] = useState('');
-  const feed = useApiQuery<MarketplaceFeedResponse>(
-    `/api/marketplace${category ? `?category=${encodeURIComponent(category)}` : ''}`,
-    { pollIntervalMs: POLL_INTERVAL_MS },
-  );
+  const feed = useApiQuery<MarketplaceFeedResponse>('/api/marketplace', { pollIntervalMs: POLL_INTERVAL_MS });
+  const filters = useBoardFilters();
+
+  const listings = feed.data?.listings ?? [];
+  const visibleListings = sortListings(filterListings(listings, filters.category, filters.searchText), filters.sort);
 
   return (
-    <Stack gap={6}>
+    <Stack gap={5}>
       <PageHeader
-        actions={
-          <Field className="marketplace-page__filter" label="Category">
-            <Select onChange={(event) => setCategory(event.target.value)} value={category}>
-              <option value="">All categories</option>
-              {CATEGORY_OPTIONS.map((option) => <option key={option} value={option}>{categoryLabel(option)}</option>)}
-            </Select>
-          </Field>
+        subtitle={
+          // Said once here rather than on every card: each price is what that business published, not a platform estimate.
+          `Prices are published by each business. ${account ? 'Your own listings aren’t shown here.' : 'Choose a business in the account menu to bid.'}`
         }
-        subtitle={`Prices businesses chose to publish. ${account ? 'Your own listings are not shown here.' : 'Pick a business above to challenge one.'}`}
-        title="Marketplace"
+        title="Markets"
       />
 
-      <section aria-labelledby="marketplace-listings-heading">
-        {/* The count line under it is visible; this heading keeps the outline h1 → h2 → card h3 for screen readers. */}
-        <h2 className="ui-visually-hidden" id="marketplace-listings-heading">Public listings</h2>
-        <FeedBody category={category} feed={feed} />
+      <BoardControls
+        category={filters.category}
+        categoryChips={feed.data ? buildCategoryChips(listings, filters.category) : null}
+        onCategoryChange={filters.setCategory}
+        onSearchTextChange={filters.setSearchText}
+        onSortChange={filters.setSort}
+        searchText={filters.searchText}
+        sort={filters.sort}
+      />
+
+      <section aria-labelledby="market-board-heading">
+        {/* Keeps the outline h1 → h2 → card h3 for screen readers; the count line under it is the visible heading. */}
+        <h2 className="ui-visually-hidden" id="market-board-heading">Public markets</h2>
+        <MarketBoard
+          canBid={account !== null}
+          feed={feed}
+          isFiltered={filters.isFiltered}
+          onClearFilters={filters.clearFilters}
+          visibleListings={visibleListings}
+        />
       </section>
     </Stack>
   );
