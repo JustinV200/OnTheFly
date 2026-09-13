@@ -7,18 +7,21 @@ import { ErrorState } from '../../../shared/components/ErrorState';
 import { LoadingSpinner } from '../../../shared/components/LoadingSpinner';
 import { Cluster, Stack } from '../../../shared/ui';
 import { VendorAliasPanel } from '../aliases/VendorAliasPanel';
+import type { ImportedSource } from '../connection/types';
+import { SpendOverview } from '../overview/SpendOverview';
 import type { Expense } from '../types';
 import { useDashboard } from '../useDashboard';
-import { ExpenseSummary } from './ExpenseSummary';
 import { ExpenseTable } from './ExpenseTable';
 
 interface ExpenseListProps {
   businessName: string;
   dashboard: ReturnType<typeof useDashboard>;
+  // Stored transactions per provider, for the data-source tile.
+  sources: ImportedSource[];
 }
 
 /** Render the "Your expenses" section and, when there are expenses, the vendor alias suggestions after it. */
-export function ExpenseList({ businessName, dashboard }: ExpenseListProps): JSX.Element {
+export function ExpenseList({ businessName, dashboard, sources }: ExpenseListProps): JSX.Element {
   const headingId = useId();
   const expenses = dashboard.list.data?.expenses ?? [];
   const hasExpenses = expenses.length > 0;
@@ -31,7 +34,7 @@ export function ExpenseList({ businessName, dashboard }: ExpenseListProps): JSX.
             <h2 id={headingId}>Your expenses</h2>
             {hasExpenses ? <p className="ui-text-sm ui-text-muted">Select an expense to see the transactions behind its figures.</p> : null}
           </Cluster>
-          <ExpenseListContent businessName={businessName} dashboard={dashboard} expenses={expenses} />
+          <ExpenseListContent businessName={businessName} dashboard={dashboard} expenses={expenses} sources={sources} />
         </Stack>
       </section>
       {hasExpenses ? (
@@ -51,7 +54,7 @@ interface ExpenseListContentProps extends ExpenseListProps {
   expenses: Expense[];
 }
 
-function ExpenseListContent({ businessName, dashboard, expenses }: ExpenseListContentProps): JSX.Element {
+function ExpenseListContent({ businessName, dashboard, expenses, sources }: ExpenseListContentProps): JSX.Element {
   if (!dashboard.list.data) {
     return dashboard.list.error
       ? <ErrorState error={dashboard.list.error} onRetry={dashboard.list.reload} title="Couldn’t load expenses" />
@@ -68,7 +71,7 @@ function ExpenseListContent({ businessName, dashboard, expenses }: ExpenseListCo
   const selectedExpenseId = dashboard.selectedExpenseId;
   return (
     <>
-      <ExpenseSummary expenses={expenses} />
+      <SpendOverview expenses={expenses} sources={sources} />
       {dashboard.list.error ? (
         <ErrorState error={dashboard.list.error} onRetry={dashboard.list.reload} title="Showing the last loaded expenses; a refresh failed" />
       ) : null}

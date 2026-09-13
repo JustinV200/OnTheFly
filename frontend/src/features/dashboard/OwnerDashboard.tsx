@@ -54,7 +54,7 @@ export function OwnerDashboard({ account }: OwnerDashboardProps): JSX.Element {
           />
         </DataSourcesCard>
 
-        {hasImported ? <ExpenseList businessName={account.businessName} dashboard={dashboard} /> : null}
+        {hasImported ? <ExpenseList businessName={account.businessName} dashboard={dashboard} sources={connection.status.data?.sources ?? []} /> : null}
       </Stack>
     </section>
   );
