@@ -45,6 +45,37 @@ export interface DiscoveryStatus {
   last_run: DiscoveryRun | null;
 }
 
+/** One USAspending prime contract award won by the candidate's UEI. amount_minor is integer cents. */
+export interface AwardEvidence {
+  kind: 'usaspending_award';
+  // The PIID as displayed; generated_award_id is USAspending's unique key.
+  award_id: string;
+  generated_award_id: string | null;
+  url: string | null;
+  recipient_uei: string;
+  awarding_agency: string | null;
+  amount_minor: number | null;
+  currency: 'USD';
+  start_date: string | null;
+  naics_code: string | null;
+  psc_code: string | null;
+  place_of_performance_state: string | null;
+  retrieved_at: string;
+}
+
+/** One web page returned by searching the candidate's name; it may describe a different business. */
+export interface WebEvidence {
+  kind: 'web_page';
+  source: string;
+  url: string;
+  title: string | null;
+  snippet: string | null;
+  match_basis: 'name_search';
+  retrieved_at: string;
+}
+
+export type CandidateEvidence = AwardEvidence | WebEvidence;
+
 export interface Candidate {
   id: string;
   listing_id: string;
@@ -58,11 +89,14 @@ export interface Candidate {
   capability_summary: string | null;
   // discovered | manually_added
   origin: string;
-  // fixture | tavily | owner
+  // fixture | tavily | usaspending_tavily | owner
   discovery_source: string;
-  // demo_data | public_web | owner_entered
+  // demo_data | public_web | public_award | owner_entered
   provenance: string;
+  // USAspending's recipient UEI, the candidate's identity when present; null for fixture, web and manual candidates.
+  supplier_uei: string | null;
   source_urls: string[];
+  evidence: CandidateEvidence[];
   retrieved_at: string | null;
   contacted_off_platform: boolean;
   created_at: string;

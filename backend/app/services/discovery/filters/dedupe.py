@@ -1,11 +1,13 @@
 """Collapses the same provider found under several listings or URLs into one (roadmap 08, step 3).
-Matching is deterministic (domain, phone, name); merged providers keep every source URL.
+Matching is deterministic (UEI when a provider has one, else domain, phone, name); merged providers keep every
+source URL and evidence record.
 """
 
 from dataclasses import dataclass, field
 
 from pydantic import BaseModel
 
+from app.services.discovery.evidence.merge import merge_evidence
 from app.services.discovery.filters.identity import ProviderIdentity, identity_of
 from app.services.discovery.types import DiscoveredProvider
 
@@ -35,24 +37,8 @@ def dedupe_providers(providers: list[DiscoveredProvider]) -> DedupeResult:
 
     groups: list[_Group] = []
     for provider in providers:
-        identity = identity_of(
-            provider.business_name, provider.website_url, provider.phone
-        )
-        # USAspending's UEI wins over heuristic identity.  Two different UEIs are
-        # never collapsed merely because their display names look alike.
-        matching = [
-            group
-            for group in groups
-            if (
-                provider.supplier_uei
-                and group.provider.supplier_uei == provider.supplier_uei
-            )
-            or (
-                not provider.supplier_uei
-                and not group.provider.supplier_uei
-                and group.matches(identity)
-            )
-        ]
+        identity = identity_of(provider.business_name, provider.website_url, provider.phone)
+        matching = [group for group in groups if _same_business(group, provider, identity)]
         if not matching:
             groups.append(_Group(provider=provider, identities=[identity]))
             continue
@@ -65,15 +51,10 @@ def dedupe_providers(providers: list[DiscoveredProvider]) -> DedupeResult:
             target.identities.extend(other.identities)
             groups.remove(other)
 
-    return DedupeResult(
-        kept=[group.provider for group in groups],
-        merged_count=len(providers) - len(groups),
-    )
+    return DedupeResult(kept=[group.provider for group in groups], merged_count=len(providers) - len(groups))
 
 
-def merge_providers(
-    primary: DiscoveredProvider, duplicate: DiscoveredProvider
-) -> DiscoveredProvider:
+def merge_providers(primary: DiscoveredProvider, duplicate: DiscoveredProvider) -> DiscoveredProvider:
     """Fill the primary's missing fields from the duplicate and union their source URLs in order."""
 
     has_primary_email = primary.contact_email is not None
@@ -81,22 +62,23 @@ def merge_providers(
         update={
             "website_url": primary.website_url or duplicate.website_url,
             # The address and the page it was published on travel together, so the citation stays true.
-            "contact_email": primary.contact_email
-            if has_primary_email
-            else duplicate.contact_email,
+            "contact_email": primary.contact_email if has_primary_email else duplicate.contact_email,
             "contact_email_source_url": (
-                primary.contact_email_source_url
-                if has_primary_email
-                else duplicate.contact_email_source_url
+                primary.contact_email_source_url if has_primary_email else duplicate.contact_email_source_url
             ),
             "phone": primary.phone or duplicate.phone,
             "service_area": primary.service_area or duplicate.service_area,
-            "capability_summary": primary.capability_summary
-            or duplicate.capability_summary,
-            "source_urls": list(
-                dict.fromkeys([*primary.source_urls, *duplicate.source_urls])
-            ),
+            "capability_summary": primary.capability_summary or duplicate.capability_summary,
+            "source_urls": list(dict.fromkeys([*primary.source_urls, *duplicate.source_urls])),
             "supplier_uei": primary.supplier_uei or duplicate.supplier_uei,
-            "evidence": [*primary.evidence, *duplicate.evidence],
+            "evidence": merge_evidence(primary.evidence, duplicate.evidence),
         }
     )
+
+
+def _same_business(group: _Group, provider: DiscoveredProvider, identity: ProviderIdentity) -> bool:
+    # A UEI is an identifier-level match and outranks the name/domain/phone heuristics: two UEIs never merge
+    # because their names look alike, and a UEI provider never absorbs an unidentified web result.
+    if provider.supplier_uei or group.provider.supplier_uei:
+        return provider.supplier_uei == group.provider.supplier_uei
+    return group.matches(identity)

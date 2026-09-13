@@ -6,6 +6,7 @@ import { Badge, Button, Disclosure, Icon } from '../../../shared/ui';
 import { candidateSourceLabel, websiteHost } from '../labels/candidateSourceLabel';
 import { invitationStateLabel } from '../labels/invitationStateLabel';
 import type { Candidate, ChannelInfo, Invitation } from '../types';
+import { CandidateEvidenceList } from './CandidateEvidenceList';
 import './CandidateRow.css';
 
 interface CandidateRowProps {
@@ -24,6 +25,7 @@ export function CandidateRow({ candidate, invitation, channel, isSelected, isRem
   const checkboxId = `candidate-${candidate.id}`;
   const reasonId = `${checkboxId}-reason`;
   const state = invitation ? invitationStateLabel(invitation, channel) : null;
+  const evidenceUrls = new Set(candidate.evidence.map((record) => record.url).filter((url): url is string => url !== null));
 
   return (
     <li className={`candidate-row${isSelected ? ' candidate-row--selected' : ''}`}>
@@ -55,6 +57,7 @@ export function CandidateRow({ candidate, invitation, channel, isSelected, isRem
             </a>
           ) : null}
           {candidate.service_area ? <span>{candidate.service_area}</span> : null}
+          {candidate.supplier_uei ? <span>UEI {candidate.supplier_uei}</span> : null}
         </p>
 
         {candidate.capability_summary ? <p className="candidate-row__summary">{candidate.capability_summary}</p> : null}
@@ -70,8 +73,10 @@ export function CandidateRow({ candidate, invitation, channel, isSelected, isRem
               : `Sources (${candidate.source_urls.length})`}
           >
             {candidate.retrieved_at ? <p>Retrieved {formatTimestamp(candidate.retrieved_at)}.</p> : null}
+            {candidate.evidence.length > 0 ? <CandidateEvidenceList evidence={candidate.evidence} /> : null}
             <ul className="candidate-row__sources">
-              {candidate.source_urls.map((url) => (
+              {/* Pages already listed as evidence aren't repeated; any other source URL still shows. */}
+              {candidate.source_urls.filter((url) => !evidenceUrls.has(url)).map((url) => (
                 <li key={url}><a href={url} rel="noreferrer noopener" target="_blank">{url}</a></li>
               ))}
               {candidate.contact_email_source_url && !candidate.source_urls.includes(candidate.contact_email_source_url) ? (

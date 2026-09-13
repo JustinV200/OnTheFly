@@ -1,0 +1,313 @@
+{
+  "recorded_at": "2026-09-13T07:54:15+00:00",
+  "url": "https://api.usaspending.gov/api/v2/search/spending_by_award/",
+  "request": {
+    "filters": {
+      "time_period": [
+        {
+          "start_date": "2021-09-13",
+          "end_date": "2026-09-13"
+        }
+      ],
+      "award_type_codes": [
+        "A",
+        "B",
+        "C",
+        "D"
+      ],
+      "naics_codes": [
+        "541512",
+        "541519"
+      ],
+      "place_of_performance_locations": [
+        {
+          "country": "USA",
+          "state": "VA"
+        }
+      ]
+    },
+    "fields": [
+      "Award ID",
+      "Recipient Name",
+      "Recipient UEI",
+      "Awarding Agency",
+      "Award Amount",
+      "Start Date",
+      "NAICS",
+      "PSC",
+      "Place of Performance State Code",
+      "generated_internal_id"
+    ],
+    "limit": 12,
+    "page": 1,
+    "sort": "Award Amount",
+    "order": "desc"
+  },
+  "response": {
+    "spending_level": "awards",
+    "limit": 12,
+    "results": [
+      {
+        "internal_id": 281082239,
+        "Award ID": "47QFCA21F0001",
+        "Recipient Name": "SCIENCE APPLICATIONS INTERNATIONAL CORPORATION",
+        "Recipient UEI": "MMLKPW9JLX64",
+        "Awarding Agency": "General Services Administration",
+        "Award Amount": 1205937997.76,
+        "Start Date": "2020-11-30",
+        "NAICS": {
+          "code": "541512",
+          "description": "COMPUTER SYSTEMS DESIGN SERVICES"
+        },
+        "PSC": {
+          "code": "DA01",
+          "description": "IT AND TELECOM - BUSINESS APPLICATION/APPLICATION DEVELOPMENT SUPPORT SERVICES (LABOR)"
+        },
+        "Place of Performance State Code": "VA",
+        "generated_internal_id": "CONT_AWD_47QFCA21F0001_4732_47QTCK18D0001_4732",
+        "awarding_agency_id": 614,
+        "agency_slug": "general-services-administration"
+      },
+      {
+        "internal_id": 279969338,
+        "Award ID": "36C10B21N10150056",
+        "Recipient Name": "BOOZ ALLEN HAMILTON INC",
+        "Recipient UEI": "KHK6E1JW9C15",
+        "Awarding Agency": "Department of Veterans Affairs",
+        "Award Amount": 1139008033.13,
+        "Start Date": "2021-01-08",
+        "NAICS": {
+          "code": "541512",
+          "description": "COMPUTER SYSTEMS DESIGN SERVICES"
+        },
+        "PSC": {
+          "code": "DA01",
+          "description": "IT AND TELECOM - BUSINESS APPLICATION/APPLICATION DEVELOPMENT SUPPORT SERVICES (LABOR)"
+        },
+        "Place of Performance State Code": "VA",
+        "generated_internal_id": "CONT_AWD_36C10B21N10150056_3600_VA11816D1015_3600",
+        "awarding_agency_id": 561,
+        "agency_slug": "department-of-veterans-affairs"
+      },
+      {
+        "internal_id": 281082126,
+        "Award ID": "47QFCA19F0006",
+        "Recipient Name": "CACI, INC. - FEDERAL",
+        "Recipient UEI": "N3PBJAVNKF61",
+        "Awarding Agency": "General Services Administration",
+        "Award Amount": 975282370.96,
+        "Start Date": "2019-05-20",
+        "NAICS": {
+          "code": "541512",
+          "description": "COMPUTER SYSTEMS DESIGN SERVICES"
+        },
+        "PSC": {
+          "code": "D399",
+          "description": "IT AND TELECOM- OTHER IT AND TELECOMMUNICATIONS"
+        },
+        "Place of Performance State Code": "VA",
+        "generated_internal_id": "CONT_AWD_47QFCA19F0006_4732_47QTCK18D0009_4732",
+        "awarding_agency_id": 614,
+        "agency_slug": "general-services-administration"
+      },
+      {
+        "internal_id": 292112757,
+        "Award ID": "91003119F0003",
+        "Recipient Name": "ACCENTURE FEDERAL SERVICES LLC",
+        "Recipient UEI": "C47BNA8GM833",
+        "Awarding Agency": "Department of Education",
+        "Award Amount": 942639630.41,
+        "Start Date": "2019-02-20",
+        "NAICS": {
+          "code": "541512",
+          "description": "COMPUTER SYSTEMS DESIGN SERVICES"
+        },
+        "PSC": {
+          "code": "R415",
+          "description": "SUPPORT- PROFESSIONAL: TECHNOLOGY SHARING/UTILIZATION"
+        },
+        "Place of Performance State Code": "VA",
+        "generated_internal_id": "CONT_AWD_91003119F0003_9100_HHSN316201200002W_7529",
+        "awarding_agency_id": 1068,
+        "agency_slug": "department-of-education"
+      },
+      {
+        "internal_id": 281086673,
+        "Award ID": "47QFRA24F0005",
+        "Recipient Name": "CACI, INC. - FEDERAL",
+        "Recipient UEI": "N3PBJAVNKF61",
+        "Awarding Agency": "General Services Administration",
+        "Award Amount": 886056233.62,
+        "Start Date": "2024-05-01",
+        "NAICS": {
+          "code": "541512",
+          "description": "COMPUTER SYSTEMS DESIGN SERVICES"
+        },
+        "PSC": {
+          "code": "DA01",
+          "description": "IT AND TELECOM - BUSINESS APPLICATION/APPLICATION DEVELOPMENT SUPPORT SERVICES (LABOR)"
+        },
+        "Place of Performance State Code": "VA",
+        "generated_internal_id": "CONT_AWD_47QFRA24F0005_4732_47QTCK18D0009_4732",
+        "awarding_agency_id": 614,
+        "agency_slug": "general-services-administration"
+      },
+      {
+        "internal_id": 361850674,
+        "Award ID": "W52P1J20C0005",
+        "Recipient Name": "ACCENTURE FEDERAL SERVICES LLC",
+        "Recipient UEI": "C47BNA8GM833",
+        "Awarding Agency": "Department of Defense",
+        "Award Amount": 885483827.6,
+        "Start Date": "2019-12-10",
+        "NAICS": {
+          "code": "541512",
+          "description": "COMPUTER SYSTEMS DESIGN SERVICES"
+        },
+        "PSC": {
+          "code": "D399",
+          "description": "IT AND TELECOM- OTHER IT AND TELECOMMUNICATIONS"
+        },
+        "Place of Performance State Code": "VA",
+        "generated_internal_id": "CONT_AWD_W52P1J20C0005_9700_-NONE-_-NONE-",
+        "awarding_agency_id": 1173,
+        "agency_slug": "department-of-defense"
+      },
+      {
+        "internal_id": 349009952,
+        "Award ID": "W52P1J20C0005",
+        "Recipient Name": "ACCENTURE FEDERAL SERVICES LLC",
+        "Recipient UEI": "C47BNA8GM833",
+        "Awarding Agency": "Department of Defense",
+        "Award Amount": 876971000.61,
+        "Start Date": "2019-12-10",
+        "NAICS": {
+          "code": "541512",
+          "description": "COMPUTER SYSTEMS DESIGN SERVICES"
+        },
+        "PSC": {
+          "code": "D399",
+          "description": "IT AND TELECOM- OTHER IT AND TELECOMMUNICATIONS"
+        },
+        "Place of Performance State Code": "VA",
+        "generated_internal_id": "CONT_AWD_W52P1J20C0005_9700_-NONE-_-NONE-",
+        "awarding_agency_id": 1173,
+        "agency_slug": "department-of-defense"
+      },
+      {
+        "internal_id": 306879524,
+        "Award ID": "HHSM500201500246C",
+        "Recipient Name": "ACCENTURE FEDERAL SERVICES LLC",
+        "Recipient UEI": "C47BNA8GM833",
+        "Awarding Agency": "Department of Health and Human Services",
+        "Award Amount": 829577336.92,
+        "Start Date": "2014-12-23",
+        "NAICS": {
+          "code": "541512",
+          "description": "COMPUTER SYSTEMS DESIGN SERVICES"
+        },
+        "PSC": {
+          "code": "D306",
+          "description": "IT AND TELECOM- SYSTEMS ANALYSIS"
+        },
+        "Place of Performance State Code": "VA",
+        "generated_internal_id": "CONT_AWD_HHSM500201500246C_7530_-NONE-_-NONE-",
+        "awarding_agency_id": 806,
+        "agency_slug": "department-of-health-and-human-services"
+      },
+      {
+        "internal_id": 281082176,
+        "Award ID": "47QFCA20F0010",
+        "Recipient Name": "CACI, INC. - FEDERAL",
+        "Recipient UEI": "N3PBJAVNKF61",
+        "Awarding Agency": "General Services Administration",
+        "Award Amount": 824303222.05,
+        "Start Date": "2019-11-05",
+        "NAICS": {
+          "code": "541512",
+          "description": "COMPUTER SYSTEMS DESIGN SERVICES"
+        },
+        "PSC": {
+          "code": "D318",
+          "description": "IT AND TELECOM- INTEGRATED HARDWARE/SOFTWARE/SERVICES SOLUTIONS, PREDOMINANTLY SERVICES"
+        },
+        "Place of Performance State Code": "VA",
+        "generated_internal_id": "CONT_AWD_47QFCA20F0010_4732_47QTCK18D0009_4732",
+        "awarding_agency_id": 614,
+        "agency_slug": "general-services-administration"
+      },
+      {
+        "internal_id": 291528546,
+        "Award ID": "75FCMC21F0002",
+        "Recipient Name": "ACCENTURE FEDERAL SERVICES LLC",
+        "Recipient UEI": "C47BNA8GM833",
+        "Awarding Agency": "Department of Health and Human Services",
+        "Award Amount": 796233862.71,
+        "Start Date": "2021-07-11",
+        "NAICS": {
+          "code": "541512",
+          "description": "COMPUTER SYSTEMS DESIGN SERVICES"
+        },
+        "PSC": {
+          "code": "DA01",
+          "description": "IT AND TELECOM - BUSINESS APPLICATION/APPLICATION DEVELOPMENT SUPPORT SERVICES (LABOR)"
+        },
+        "Place of Performance State Code": "VA",
+        "generated_internal_id": "CONT_AWD_75FCMC21F0002_7530_HHSM500201600003I_7530",
+        "awarding_agency_id": 806,
+        "agency_slug": "department-of-health-and-human-services"
+      },
+      {
+        "internal_id": 291529076,
+        "Award ID": "75FCMC23F0010",
+        "Recipient Name": "SERCO INC",
+        "Recipient UEI": "DKJ1R5ABCN48",
+        "Awarding Agency": "Department of Health and Human Services",
+        "Award Amount": 786064459.89,
+        "Start Date": "2023-07-01",
+        "NAICS": {
+          "code": "541512",
+          "description": "COMPUTER SYSTEMS DESIGN SERVICES"
+        },
+        "PSC": {
+          "code": "R499",
+          "description": "SUPPORT- PROFESSIONAL: OTHER"
+        },
+        "Place of Performance State Code": "VA",
+        "generated_internal_id": "CONT_AWD_75FCMC23F0010_7530_47QTCK18D0041_4732",
+        "awarding_agency_id": 806,
+        "agency_slug": "department-of-health-and-human-services"
+      },
+      {
+        "internal_id": 279967351,
+        "Award ID": "36C10B18F0278",
+        "Recipient Name": "CGI FEDERAL INC.",
+        "Recipient UEI": "TRKEP1HEBNS5",
+        "Awarding Agency": "Department of Veterans Affairs",
+        "Award Amount": 783318157.08,
+        "Start Date": "2018-04-25",
+        "NAICS": {
+          "code": "541512",
+          "description": "COMPUTER SYSTEMS DESIGN SERVICES"
+        },
+        "PSC": {
+          "code": "D399",
+          "description": "IT AND TELECOM- OTHER IT AND TELECOMMUNICATIONS"
+        },
+        "Place of Performance State Code": "VA",
+        "generated_internal_id": "CONT_AWD_36C10B18F0278_3600_HHSN316201200011W_7529",
+        "awarding_agency_id": 561,
+        "agency_slug": "department-of-veterans-affairs"
+      }
+    ],
+    "page_metadata": {
+      "page": 1,
+      "hasNext": true,
+      "last_record_unique_id": 279967351,
+      "last_record_sort_value": "78331815708"
+    },
+    "messages": [
+      "For searches, time period start and end dates are currently limited to an earliest date of 2007-10-01.  For data going back to 2000-10-01, use either the Custom Award Download feature on the website or one of our download or bulk_download API endpoints as listed on https://api.usaspending.gov/docs/endpoints. "
+    ]
+  }
+}

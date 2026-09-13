@@ -26,6 +26,8 @@ def get_discovery_source(settings: Settings) -> DiscoverySource:
         # Real web search. With no TAVILY_API_KEY it reports "not run" rather than falling back to fixtures.
         return TavilyDiscoverySource(api_key=settings.tavily_api_key)
     if settings.discovery_source == "usaspending_tavily":
+        # Public contract award recipients, identified by UEI. Tavily enrichment runs only when a key is set,
+        # and a missing key is stated in the run detail rather than blocking the award search.
         return UsaSpendingTavilyDiscoverySource(tavily_api_key=settings.tavily_api_key)
     raise ValueError(f"Unsupported discovery_source: {settings.discovery_source}")
 

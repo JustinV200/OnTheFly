@@ -1,254 +1,118 @@
-"""Structured supplier discovery from USAspending, with optional Tavily enrichment.
-
-Only award recipients enter the shortlist.  Tavily adds public-web context to
-those recipients and never creates a supplier by itself.
+"""Supplier discovery from USAspending prime contract awards, with optional Tavily public-web enrichment.
+Only award recipients with a UEI become providers; Tavily adds context to that fixed shortlist and never adds one.
 """
 
-from collections import defaultdict
-from datetime import UTC, datetime, timedelta
-from typing import Any
+from datetime import date, datetime, timezone
 
 import httpx
 
-from app.core.provenance import ProviderCandidateProvenance
+from app.services.discovery.source import DiscoverySource
 from app.services.discovery.tavily.client import TavilyClient, TavilyError
-from app.services.discovery.tavily.extract import summarize_content, website_from_url
-from app.services.discovery.types import (
-    DiscoveredProvider,
-    DiscoveryQuery,
-    DiscoverySearchResult,
-)
+from app.services.discovery.types import DiscoveredProvider, DiscoveryQuery, DiscoverySearchResult
+from app.services.discovery.usaspending.classification import naics_codes_for
+from app.services.discovery.usaspending.enrich import enrich_supplier
+from app.services.discovery.usaspending.shortlist import shortlist_suppliers
+from app.services.market_data.usaspending import AwardSearch, UsaSpendingClient, UsaSpendingError, states_in_area
 
-USA_SPENDING_AWARDS_URL = "https://api.usaspending.gov/api/v2/search/spending_by_award/"
-_MAX_SHORTLIST = 10
-_DEVSECOPS_NAICS = ("541512", "541519")
+# Roadmap 12, step 8 queries a 5-year lookback; discovery uses the same window so both read the same market.
+LOOKBACK_YEARS = 5
 
 
-class UsaSpendingTavilyDiscoverySource:
-    """Find recent DevSecOps awardees by UEI, then enrich that fixed shortlist."""
+class UsaSpendingTavilyDiscoverySource(DiscoverySource):
+    """Finds recent contract awardees for the listing's industry and area, then enriches that shortlist."""
 
     name = "usaspending_tavily"
-    label = "USAspending awards with Tavily public-web enrichment"
+    label = "USAspending contract awards (public records), enriched by web search (Tavily)"
 
-    def __init__(
-        self, tavily_api_key: str, http_client: httpx.Client | None = None
-    ) -> None:
+    def __init__(self, tavily_api_key: str, http_client: httpx.Client | None = None) -> None:
+        """Keep the Tavily key; http_client is injected by tests so no request leaves the machine."""
+
         self._tavily_api_key = tavily_api_key
         self._http_client = http_client
 
     def unavailable_reason(self) -> str | None:
-        # USAspending needs no key.  A missing Tavily key is reported in the run
-        # detail while award discovery still proceeds.
+        """USAspending needs no key, so the source can always run; a missing Tavily key is stated in the run detail."""
+
         return None
 
     def search(self, queries: list[DiscoveryQuery]) -> DiscoverySearchResult:
-        retrieved_at = datetime.now(UTC)
+        """Search awards once for the listing's category and area, shortlist by UEI, then enrich each supplier.
+
+        Every phrasing shares one category and area, and awards are searched by classification rather than
+        free text, so only the first query is read. A USAspending failure keeps nothing. A Tavily failure
+        keeps the award suppliers, since they stand on their own, and the detail says where enrichment stopped.
+        """
+
+        retrieved_at = datetime.now(timezone.utc)
         if not queries:
+            return DiscoverySearchResult(status="ok", detail="No public listing fields to search", retrieved_at=retrieved_at)
+        query = queries[0]
+        naics_codes = naics_codes_for(query.category)
+        if not naics_codes:
             return DiscoverySearchResult(
-                status="ok",
-                detail="No confirmed scope queries",
-                retrieved_at=retrieved_at,
-            )
-        try:
-            awards = self._awards(queries[0])
-        except httpx.TimeoutException:
-            return DiscoverySearchResult(
-                status="error",
-                detail="USAspending request timed out",
-                retrieved_at=retrieved_at,
-            )
-        except (httpx.HTTPError, TypeError, ValueError):
-            return DiscoverySearchResult(
-                status="error",
-                detail="USAspending returned an unavailable or invalid response",
+                status="unavailable",
+                detail=f'No NAICS industry is mapped for category "{query.category}"; USAspending discovery not run',
                 retrieved_at=retrieved_at,
             )
 
-        providers = self._shortlist(awards, queries[0], retrieved_at)
-        if not self._tavily_api_key:
-            return DiscoverySearchResult(
-                status="ok",
-                retrieved_at=retrieved_at,
-                providers=providers,
-                detail="USAspending awards retrieved; Tavily enrichment not run because TAVILY_API_KEY is not configured",
-            )
-        try:
-            providers = [self._enrich(provider, queries[0]) for provider in providers]
-        except TavilyError as error:
-            # Awards are valid completed work, so retain them and state the web gap.
-            return DiscoverySearchResult(
-                status="ok",
-                retrieved_at=retrieved_at,
-                providers=providers,
-                detail=f"USAspending awards retrieved; Tavily enrichment unavailable: {error}",
-            )
-        return DiscoverySearchResult(
-            status="ok",
-            retrieved_at=retrieved_at,
-            providers=providers,
-            detail="USAspending awards retrieved; deterministic UEI shortlist enriched through Tavily",
+        states = states_in_area(query.service_area)
+        today = retrieved_at.date()
+        search = AwardSearch(
+            naics_codes=list(naics_codes),
+            place_of_performance_states=states,
+            start_date=_years_before(today, LOOKBACK_YEARS),
+            end_date=today,
         )
+        try:
+            awards = UsaSpendingClient(self._http_client).search_awards(search)
+        except UsaSpendingError as error:
+            return DiscoverySearchResult(status="error", detail=f"{error}; no results were kept", retrieved_at=retrieved_at)
 
-    def _awards(self, query: DiscoveryQuery) -> list[dict[str, Any]]:
-        state = _state_from_area(query.service_area)
-        filters: dict[str, Any] = {
-            "time_period": [
-                {
-                    "start_date": (datetime.now(UTC) - timedelta(days=365 * 3))
-                    .date()
-                    .isoformat(),
-                    "end_date": datetime.now(UTC).date().isoformat(),
-                }
-            ],
-            "naics_codes": list(_DEVSECOPS_NAICS),
-        }
-        if state:
-            filters["place_of_performance_locations"] = [
-                {"country": "USA", "state": state}
-            ]
-        payload = {
-            "filters": filters,
-            "fields": [
-                "Award ID",
-                "Recipient Name",
-                "Recipient UEI",
-                "Awarding Agency",
-                "Award Amount",
-                "Action Date",
-                "NAICS",
-                "PSC",
-                "Place of Performance State Code",
-                "Place of Performance City Code",
-            ],
-            "limit": 100,
-            "page": 1,
-            "sort": "Award Amount",
-            "order": "desc",
-        }
-        if self._http_client:
-            response = self._http_client.post(USA_SPENDING_AWARDS_URL, json=payload)
-        else:
-            with httpx.Client(timeout=20.0) as client:
-                response = client.post(USA_SPENDING_AWARDS_URL, json=payload)
-        response.raise_for_status()
-        body = response.json()
-        results = body.get("results")
-        if not isinstance(results, list):
-            raise TypeError("missing results")
-        return [award for award in results if isinstance(award, dict)]
-
-    def _shortlist(
-        self,
-        awards: list[dict[str, Any]],
-        query: DiscoveryQuery,
-        retrieved_at: datetime,
-    ) -> list[DiscoveredProvider]:
-        grouped: dict[str, list[dict[str, Any]]] = defaultdict(list)
-        for award in awards:
-            uei = str(
-                award.get("recipient_uei") or award.get("Recipient UEI") or ""
-            ).strip()
-            name = str(
-                award.get("Recipient Name") or award.get("recipient_name") or ""
-            ).strip()
-            if uei and name:
-                grouped[uei].append(award)
-        # Award count, then total reported amount, then UEI: stable and reviewable.
-        ranked = sorted(
-            grouped.items(),
-            key=lambda item: (
-                -len(item[1]),
-                -sum(_amount(a) for a in item[1]),
-                item[0],
-            ),
-        )[:_MAX_SHORTLIST]
-        providers: list[DiscoveredProvider] = []
-        for uei, supplier_awards in ranked:
-            first = supplier_awards[0]
-            name = str(
-                first.get("Recipient Name") or first.get("recipient_name")
-            ).strip()
-            evidence = [
-                _award_evidence(award, retrieved_at) for award in supplier_awards
-            ]
-            providers.append(
-                DiscoveredProvider(
-                    business_name=name,
-                    supplier_uei=uei,
-                    service_area=query.service_area or None,
-                    source_urls=[item["url"] for item in evidence],
-                    evidence=evidence,
-                    provenance=ProviderCandidateProvenance.public_award.value,
-                )
-            )
-        return providers
+        shortlist = shortlist_suppliers(awards, retrieved_at)
+        providers, enrichment_note = self._enrich(shortlist, query.category, retrieved_at)
+        notes = [_search_note(search, len(awards), len(shortlist), query.service_area), enrichment_note]
+        return DiscoverySearchResult(
+            status="ok", detail=" ".join(note for note in notes if note), retrieved_at=retrieved_at, providers=providers
+        )
 
     def _enrich(
-        self, provider: DiscoveredProvider, query: DiscoveryQuery
-    ) -> DiscoveredProvider:
+        self, providers: list[DiscoveredProvider], category: str, retrieved_at: datetime
+    ) -> tuple[list[DiscoveredProvider], str]:
+        if not providers:
+            return providers, ""
+        if not self._tavily_api_key:
+            return providers, "Web enrichment not run: TAVILY_API_KEY is not configured."
         client = TavilyClient(self._tavily_api_key, self._http_client)
-        response = client.search(
-            f'"{provider.business_name}" {query.category} {query.service_area}'
-        )
-        hits = response.results
-        if not hits:
-            return provider
-        urls = [hit.url for hit in hits]
-        snippets = [
-            summarize_content(hit.content)
-            for hit in hits
-            if summarize_content(hit.content)
-        ]
-        web_evidence = [
-            {
-                "source": "tavily",
-                "url": hit.url,
-                "title": hit.title,
-                "content": summarize_content(hit.content),
-            }
-            for hit in hits
-        ]
-        return provider.model_copy(
-            update={
-                "website_url": website_from_url(hits[0].url),
-                "capability_summary": " ".join(snippets)[:400] or None,
-                "source_urls": [*provider.source_urls, *urls],
-                "evidence": [*provider.evidence, *web_evidence],
-            }
-        )
+        enriched: list[DiscoveredProvider] = []
+        for provider in providers:
+            try:
+                enriched.append(enrich_supplier(provider, category, client, retrieved_at))
+            except TavilyError as error:
+                # The rest keep their award evidence unenriched; the count tells the owner exactly which part ran.
+                done = len(enriched)
+                return [*enriched, *providers[done:]], (
+                    f"Web enrichment stopped after {done} of {len(providers)} suppliers: {error}."
+                )
+        return enriched, f"Web enrichment ran for all {len(providers)} suppliers (name search, not identity-verified)."
 
 
-def _award_evidence(award: dict[str, Any], retrieved_at: datetime) -> dict[str, object]:
-    award_id = str(award.get("Award ID") or award.get("award_id") or "").strip()
-    return {
-        "source": "usaspending_award",
-        "url": f"https://www.usaspending.gov/award/{award_id}",
-        "retrieved_at": retrieved_at.isoformat(),
-        "award_id": award_id,
-        "agency": award.get("Awarding Agency") or award.get("awarding_agency_name"),
-        "naics": award.get("NAICS") or award.get("naics_code"),
-        "psc": award.get("PSC") or award.get("psc_code"),
-        "place_of_performance": {
-            "state": award.get("Place of Performance State Code"),
-            "city": award.get("Place of Performance City Code"),
-        },
-        "supplier_uei": award.get("recipient_uei") or award.get("Recipient UEI"),
-    }
+def _search_note(search: AwardSearch, award_count: int, supplier_count: int, service_area: str) -> str:
+    where = (
+        f"place of performance {', '.join(search.place_of_performance_states)}"
+        if search.place_of_performance_states
+        # A search that couldn't be narrowed says so, rather than letting nationwide results pass as local.
+        else f'all states (no US state read from "{service_area}")'
+    )
+    return (
+        f"{supplier_count} suppliers by UEI from {award_count} prime contract awards "
+        f"(NAICS {', '.join(search.naics_codes)}; {where}; since {search.start_date.isoformat()}). "
+        "Subawards not searched."
+    )
 
 
-def _amount(award: dict[str, Any]) -> float:
+def _years_before(day: date, years: int) -> date:
     try:
-        return float(
-            award.get("Award Amount")
-            or award.get("generated_pragmatic_obligation")
-            or 0
-        )
-    except (TypeError, ValueError):
-        return 0.0
-
-
-def _state_from_area(area: str) -> str | None:
-    lowered = area.casefold()
-    if "virginia" in lowered or " va" in lowered:
-        return "VA"
-    return None
+        return day.replace(year=day.year - years)
+    except ValueError:
+        # 29 February minus whole years can land on a date that doesn't exist.
+        return day.replace(year=day.year - years, day=28)

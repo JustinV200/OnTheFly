@@ -19,6 +19,9 @@ export function candidateSourceLabel(candidate: Candidate): SourceLabel {
   if (candidate.provenance === 'public_web') {
     return { label: 'Found on the public web', tone: 'info' };
   }
+  if (candidate.provenance === 'public_award') {
+    return { label: 'Federal contract awardee · USAspending', tone: 'info' };
+  }
   // An unknown provenance is shown raw rather than dressed up as a known source.
   return { label: `Source: ${candidate.provenance}`, tone: 'danger' };
 }

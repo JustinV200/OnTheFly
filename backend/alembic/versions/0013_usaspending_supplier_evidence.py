@@ -1,9 +1,13 @@
-"""Keep USAspending supplier identities and source-specific evidence on candidates."""
+"""Keep USAspending supplier identities and source-attributable evidence on provider candidates.
+
+supplier_uei is the award recipient's identifier, null for fixture, web and manual candidates.
+evidence holds the JSON award and web-page records behind a candidate; existing rows start empty.
+"""
 
 from collections.abc import Sequence
 
-import sqlalchemy as sa
 from alembic import op
+import sqlalchemy as sa
 
 revision: str = "0013_usaspending_supplier_evidence"
 down_revision: str | None = "0012_outreach"
