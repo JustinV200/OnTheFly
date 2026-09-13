@@ -56,6 +56,16 @@ def list_candidate_views(listing: PublicListingRecord, sender: OutreachSender, d
     return [candidate_view(candidate, assessed[candidate.id]) for candidate in candidates]
 
 
+def view_candidate(candidate: ProviderCandidate, sender: OutreachSender, db: Session) -> CandidateView:
+    """Return one candidate with its current eligibility, e.g. right after the owner adds it."""
+
+    listing = db.get(PublicListingRecord, candidate.listing_id)
+    if listing is None:
+        # The foreign key makes this unreachable; failing loudly beats serializing an unassessed candidate.
+        raise LookupError(f"Listing {candidate.listing_id} for candidate {candidate.id} does not exist")
+    return candidate_view(candidate, assess_candidates(listing, [candidate], sender, db)[candidate.id])
+
+
 def candidate_view(candidate: ProviderCandidate, assessed: AssessedCandidate) -> CandidateView:
     """Serialize one candidate with its assessed eligibility."""
 

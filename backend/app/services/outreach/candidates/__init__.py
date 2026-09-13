@@ -3,7 +3,7 @@
 from app.services.outreach.candidates.add import ManualCandidateInput, add_manual_candidate
 from app.services.outreach.candidates.eligibility import AssessedCandidate, CandidateEligibility, assess_candidates
 from app.services.outreach.candidates.remove import remove_candidate
-from app.services.outreach.candidates.view import CandidateView, candidate_view, list_candidate_views
+from app.services.outreach.candidates.view import CandidateView, candidate_view, list_candidate_views, view_candidate
 
 __all__ = [
     "AssessedCandidate",
@@ -15,4 +15,5 @@ __all__ = [
     "candidate_view",
     "list_candidate_views",
     "remove_candidate",
+    "view_candidate",
 ]

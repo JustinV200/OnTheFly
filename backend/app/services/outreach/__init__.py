@@ -18,6 +18,7 @@ from app.services.outreach.candidates import (
     candidate_view,
     list_candidate_views,
     remove_candidate,
+    view_candidate,
 )
 from app.services.outreach.compliance import ComplianceCheck, ComplianceReport, check_compliance
 from app.services.outreach.opt_out import OptOutDescription, OptOutResult, apply_opt_out, describe_opt_out
@@ -77,4 +78,5 @@ __all__ = [
     "list_sandbox_outbox",
     "remove_candidate",
     "render_invitation",
+    "view_candidate",
 ]
