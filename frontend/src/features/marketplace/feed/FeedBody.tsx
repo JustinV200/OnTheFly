@@ -5,9 +5,9 @@ import { EmptyState } from '../../../shared/components/EmptyState';
 import { ErrorState } from '../../../shared/components/ErrorState';
 import { LoadingSpinner } from '../../../shared/components/LoadingSpinner';
 import { categoryLabel } from '../../../shared/format/categoryLabel';
-import { Stack } from '../../../shared/ui';
+import { describeClosesIn, MarketCard } from '../../../shared/market';
+import { ButtonLink, Stack } from '../../../shared/ui';
 import type { MarketplaceFeedResponse } from '../types';
-import { ListingCard } from './ListingCard';
 import './FeedBody.css';
 
 interface FeedBodyProps {
@@ -43,7 +43,17 @@ export function FeedBody({ category, feed }: FeedBodyProps): JSX.Element {
         {category ? ` in ${categoryLabel(category)}` : ''}
       </p>
       <div className="marketplace-feed__grid">
-        {feed.data.listings.map((item) => <ListingCard item={item} key={item.listing.id} />)}
+        {feed.data.listings.map((item) => (
+          <MarketCard
+            action={describeClosesIn(item.listing.challenge_deadline).isClosed ? undefined : (
+              <ButtonLink to={`/listings/${item.listing.id}/challenge`} variant="primary">Bid</ButtonLink>
+            )}
+            href={`/listings/${item.listing.id}`}
+            key={item.listing.id}
+            listing={item.listing}
+            offerCount={item.challenge_count}
+          />
+        ))}
       </div>
     </Stack>
   );

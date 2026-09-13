@@ -1,0 +1,26 @@
+/* Category tile: a soft rounded square with bold initials, like a market card's thumbnail. */
+.category-tile {
+  align-items: center;
+  background-color: var(--color-surface-sunken);
+  border: var(--border-width) solid var(--color-border);
+  color: var(--color-text-secondary);
+  display: inline-flex;
+  flex: none;
+  font-weight: var(--weight-bold);
+  justify-content: center;
+  letter-spacing: 0.02em;
+}
+
+.category-tile--md {
+  border-radius: var(--radius-md);
+  font-size: var(--text-xs);
+  height: 40px;
+  width: 40px;
+}
+
+.category-tile--lg {
+  border-radius: var(--radius-lg);
+  font-size: var(--text-md);
+  height: 56px;
+  width: 56px;
+}
