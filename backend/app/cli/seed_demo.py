@@ -3,8 +3,9 @@
     python -m app.cli.seed_demo                      # live: everything private, perform the script
     python -m app.cli.seed_demo --scenario staged    # listing public with offers, rehearse or recover
 
-Order matters: genuine offers are written to the ledger file before anything is dropped, and a
-capture that fails or can't account for the challenges table stops the command before the drop.
+Order matters: a transaction source the seed can't import from (anything but fixture) stops the
+command before it reads the database, genuine offers are written to the ledger file before anything
+is dropped, and a capture that fails or can't account for the challenges table stops it before the drop.
 """
 
 from __future__ import annotations
@@ -20,10 +21,12 @@ from sqlalchemy.exc import SQLAlchemyError
 from app.cli.demo_seed import (
     BACKEND_DIR,
     GenuineOfferLedger,
+    MissingDemoConnectionError,
     capture_genuine_offers,
     challenges_table_exists,
     load_ledger,
     merge_entries,
+    require_demo_connections,
     reset_schema,
     save_ledger,
     seed_scenario,
@@ -49,6 +52,13 @@ def main(argv: list[str] | None = None) -> int:
             "without --confirm-remote.",
             file=sys.stderr,
         )
+        return 2
+
+    try:
+        require_demo_connections(settings.transaction_source)
+    except MissingDemoConnectionError as error:
+        # The seed would only discover this after the drop; checking now leaves the database untouched.
+        print(f"Refusing to reset: {error} Nothing was read, saved, or dropped.", file=sys.stderr)
         return 2
 
     existing_ledger = load_ledger(args.ledger)

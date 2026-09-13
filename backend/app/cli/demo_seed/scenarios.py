@@ -10,9 +10,8 @@ from pydantic import BaseModel
 from sqlalchemy import func, select
 from sqlalchemy.orm import Session
 
+from app.cli.demo_seed.connections import require_demo_connections
 from app.cli.demo_seed.demo_marketplace import (
-    DEMO_OWNER_ID,
-    NEIGHBOR_OWNER_ID,
     publish_demo_cleaning_listing,
     publish_neighbor_cleaning_listing,
     seed_demo_offers,
@@ -26,7 +25,6 @@ from app.models.challenge import Challenge
 from app.models.listing import PublicListingRecord
 from app.models.service_expense import ServiceExpense
 from app.services.evidence.refresh import get_or_refresh_challenger_evidence
-from app.services.transactions.connection import get_connection
 from app.services.transactions.import_run import run_import
 
 Scenario = Literal["live", "staged"]
@@ -48,13 +46,18 @@ class SeedSummary(BaseModel):
 
 
 def seed_scenario(scenario: Scenario, ledger: GenuineOfferLedger, transaction_source: str, db: Session) -> SeedSummary:
-    """Seed accounts and the owner's transactions, then the staged marketplace when asked."""
+    """Seed accounts and the owner's transactions, then the staged marketplace when asked.
 
+    Raises MissingDemoConnectionError before writing anything when the source has no demo connections.
+    """
+
+    # Resolved before any write, so an unseedable source never leaves a half-seeded database.
+    connections = require_demo_connections(transaction_source)
     run_seed(db)
     restore_accounts(ledger, db)
     # Both publishing businesses import in every scenario; their transactions stay private until staged publishes.
     transactions_imported = sum(
-        _import_owner_transactions(owner_id, transaction_source, db) for owner_id in (DEMO_OWNER_ID, NEIGHBOR_OWNER_ID)
+        run_import(owner_id, connection.provider_account_id, db).new for owner_id, connection in connections.items()
     )
 
     demo_offer_ids: list[str] = []
@@ -98,16 +101,6 @@ def seed_scenario(scenario: Scenario, ledger: GenuineOfferLedger, transaction_so
         genuine_offers_restored=len(restored_ids),
         genuine_offers_skipped=skipped,
     )
-
-
-def _import_owner_transactions(owner_id: str, transaction_source: str, db: Session) -> int:
-    connection = get_connection(owner_id, transaction_source)
-    if connection is None:
-        raise RuntimeError(
-            f"{owner_id} has no connection for transaction source '{transaction_source}'. "
-            "Add one in services/transactions/connection/resolve.py or run with TRANSACTION_SOURCE=fixture."
-        )
-    return run_import(owner_id, connection.provider_account_id, db).new
 
 
 def _count(db: Session, query) -> int:
