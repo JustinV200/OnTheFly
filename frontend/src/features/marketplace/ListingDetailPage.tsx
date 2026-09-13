@@ -1,81 +1,73 @@
-/* Shows one public listing, its bidding terms, and its offers, as any visitor sees it.
-   An unpublished listing gets a defined "no longer public" state, not a spinner. */
+/* A market page: one public listing as any visitor sees it. Header and price, the offer activity, tabs for scope,
+   leaderboard and rules, and a sticky ticket with the one action. An unpublished listing gets a defined "isn't public"
+   page, not a spinner. The leaderboard is fetched once here and shared by everything that shows offers. */
 import { useParams } from 'react-router-dom';
 
+import { useActingAccount } from '../../shared/account/ActingAccountContext';
 import { useApiQuery } from '../../shared/api/useApiQuery';
-import { BiddingModePill } from '../../shared/components/BiddingModePill';
-import { EmptyState } from '../../shared/components/EmptyState';
 import { ErrorState } from '../../shared/components/ErrorState';
 import { LoadingSpinner } from '../../shared/components/LoadingSpinner';
-import { categoryLabel } from '../../shared/format/categoryLabel';
-import { describeDeadline } from '../../shared/format/describeDeadline';
-import { Badge, Card, Icon, PageHeader, Stack } from '../../shared/ui';
-import { ChallengePanel } from './detail/ChallengePanel';
+import { describeClosesIn } from '../../shared/market';
+import { Stack } from '../../shared/ui';
+import { OfferActivity } from './detail/activity/OfferActivity';
+import { BackToMarketsLink } from './detail/header/BackToMarketsLink';
+import { MarketHeader } from './detail/header/MarketHeader';
+import { PriceHeadline } from './detail/header/PriceHeadline';
 import { ListingNotPublic } from './detail/ListingNotPublic';
-import { ListingOverviewCard } from './detail/ListingOverviewCard';
-import { Leaderboard } from './leaderboard/Leaderboard';
-import { offerCountText } from './offerCountText';
+import { MarketTabs } from './detail/tabs/MarketTabs';
+import { BidTicket } from './detail/ticket/BidTicket';
+import { useListingOwnership } from './detail/ticket/useListingOwnership';
+import { useLeaderboard } from './leaderboard/useLeaderboard';
 import { SimilarListings } from './similar/SimilarListings';
 import type { MarketplaceListing } from './types';
 import './ListingDetailPage.css';
 
 const POLL_INTERVAL_MS = 10000;
 
-/** Render one public listing detail page fetched by listing ID. */
+/** Render one market page fetched by listing ID. */
 export function ListingDetailPage(): JSX.Element {
   const { id = '' } = useParams();
+  const { account } = useActingAccount();
   const query = useApiQuery<MarketplaceListing>(`/api/marketplace/${id}`, { pollIntervalMs: POLL_INTERVAL_MS });
+  const isNotPublic = query.error?.status === 404;
+  // Stops polling offers once the listing is known to be private: its prices went dark with it.
+  const board = useLeaderboard(isNotPublic ? null : id);
+  const ownership = useListingOwnership(id, account !== null);
 
-  if (query.error?.status === 404) {
+  if (isNotPublic) {
     return <ListingNotPublic />;
   }
   if (!query.data) {
-    return query.error
-      ? <ErrorState error={query.error} onRetry={query.reload} title="Couldn’t load this listing" />
-      : <LoadingSpinner label="Loading listing…" />;
+    // The way back to the board stays available while the page loads or after it fails.
+    return (
+      <Stack gap={4}>
+        <BackToMarketsLink />
+        {query.error
+          ? <ErrorState error={query.error} onRetry={query.reload} title="Couldn’t load this listing" />
+          : <LoadingSpinner label="Loading market…" />}
+      </Stack>
+    );
   }
 
   const { listing, challenge_count: offerCount } = query.data;
-  const deadline = describeDeadline(listing.challenge_deadline);
+  const closes = describeClosesIn(listing.challenge_deadline);
 
   return (
-    <Stack gap={6}>
-      <PageHeader
-        eyebrow="Public listing"
-        meta={
-          <>
-            <BiddingModePill mode={listing.bidding_mode} />
-            {deadline.isClosed
-              ? <Badge icon={<Icon name="lock" />} tone="neutral">Closed to new offers</Badge>
-              : <Badge tone="neutral">Open for offers</Badge>}
-            <Badge tone="neutral">{offerCountText(offerCount)}</Badge>
-          </>
-        }
-        subtitle={listing.service_area_approximate || 'Area not specified'}
-        title={categoryLabel(listing.category)}
-      />
-
+    <Stack gap={10}>
       {/* A failed poll keeps the last listing visible, but never silently: its price or terms may have changed. */}
       {query.error ? (
         <ErrorState error={query.error} onRetry={query.reload} title="Showing the last loaded listing; a refresh failed" />
       ) : null}
 
-      <div className="listing-detail__layout">
-        <ListingOverviewCard listing={listing} />
-        <ChallengePanel deadline={deadline} listing={listing} />
+      <div className="market-page">
+        <MarketHeader className="market-page__header" closes={closes} listing={listing} offerCount={offerCount} />
+        <PriceHeadline className="market-page__price" listing={listing} />
+        <aside aria-label="Bid on this task" className="market-page__ticket">
+          <BidTicket closes={closes} listing={listing} ownership={ownership} />
+        </aside>
+        <OfferActivity board={board} className="market-page__activity" closes={closes} listing={listing} offerCount={offerCount} />
+        <MarketTabs board={board} className="market-page__tabs" closes={closes} listing={listing} />
       </div>
-
-      {offerCount === 0 ? (
-        <Card title="Offers">
-          <Stack>
-            <EmptyState title="No offers yet">
-              This listing is live and waiting for its first challenger. Most listings in a young marketplace start here.
-            </EmptyState>
-          </Stack>
-        </Card>
-      ) : (
-        <Leaderboard listingId={listing.id} />
-      )}
 
       <SimilarListings listingId={listing.id} />
     </Stack>

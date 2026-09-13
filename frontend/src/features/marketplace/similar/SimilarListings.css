@@ -1,8 +1,0 @@
-/* Similar listings grid: up to three compact cards per row inside the panel, one on a phone.
-   auto-fill keeps a single match at card width rather than stretching it across the whole panel. */
-.similar-listings__grid {
-  display: grid;
-  gap: var(--space-3);
-  grid-template-columns: repeat(auto-fill, minmax(min(18rem, 100%), 1fr));
-  min-width: 0;
-}

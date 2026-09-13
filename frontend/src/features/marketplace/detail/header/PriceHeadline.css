@@ -1,0 +1,43 @@
+/* Price headline: the biggest text on the page (--text-5xl from a tablet up), period muted beside it. Proportional
+   figures at display size read tighter than tabular ones; MoneyDisplay still keeps the amount on one line. */
+.price-headline {
+  min-width: 0;
+}
+
+.price-headline__figure {
+  align-items: baseline;
+  display: flex;
+  flex-wrap: wrap;
+  gap: var(--space-1) var(--space-2);
+  margin: 0;
+}
+
+.price-headline__amount {
+  font-size: var(--text-4xl);
+  font-weight: var(--weight-bold);
+  letter-spacing: var(--tracking-tighter);
+  line-height: 1;
+}
+
+.price-headline__amount .ui-money {
+  font-variant-numeric: normal;
+  font-feature-settings: normal;
+}
+
+.price-headline__period {
+  color: var(--color-text-muted);
+  font-size: var(--text-xl);
+  font-weight: var(--weight-semibold);
+}
+
+.price-headline__caption {
+  color: var(--color-text-muted);
+  font-size: var(--text-sm);
+  margin: var(--space-2) 0 0;
+}
+
+@media (min-width: 768px) {
+  .price-headline__amount {
+    font-size: var(--text-5xl);
+  }
+}

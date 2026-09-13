@@ -1,13 +1,42 @@
-/* Listing detail layout: price and scope, then the terms panel, stacked on a phone; side by side from a laptop up. */
-.listing-detail__layout {
-  align-items: start;
+/* Market page layout. Phone: one column in reading order (header, price, ticket, offers, tabs), so the one action
+   comes right after the price. Laptop up: main content on the left and the ticket in its own column, sticky under the
+   top bar while the left column scrolls. */
+.market-page {
   display: grid;
   gap: var(--space-6);
+  grid-template-areas:
+    "header"
+    "price"
+    "ticket"
+    "activity"
+    "tabs";
+  grid-template-columns: minmax(0, 1fr);
   min-width: 0;
 }
 
+.market-page__header { grid-area: header; }
+.market-page__price { grid-area: price; }
+.market-page__ticket { grid-area: ticket; }
+.market-page__activity { grid-area: activity; }
+.market-page__tabs { grid-area: tabs; min-width: 0; }
+
 @media (min-width: 1024px) {
-  .listing-detail__layout {
-    grid-template-columns: minmax(0, 1fr) minmax(18rem, 22rem);
+  .market-page {
+    column-gap: var(--space-8);
+    grid-template-areas:
+      "header ticket"
+      "price ticket"
+      "activity ticket"
+      "tabs ticket";
+    grid-template-columns: minmax(0, 1fr) minmax(19rem, 23rem);
+    /* The last row takes the spare height, so the upper rows stay snug when the ticket is taller than them. */
+    grid-template-rows: auto auto auto 1fr;
+  }
+
+  /* align-self: start keeps the ticket its own height, which is what lets it stick inside its tall grid area. */
+  .market-page__ticket {
+    align-self: start;
+    position: sticky;
+    top: calc(var(--topbar-height) + var(--space-4));
   }
 }

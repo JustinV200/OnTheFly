@@ -1,0 +1,16 @@
+/* Back link: muted, no underline, icon and word on one baseline; darkens on hover like other quiet actions. */
+.back-to-markets {
+  align-items: center;
+  align-self: flex-start;
+  border-radius: var(--radius-sm);
+  color: var(--color-text-muted);
+  display: inline-flex;
+  font-size: var(--text-sm);
+  font-weight: var(--weight-semibold);
+  gap: var(--space-1);
+  text-decoration: none;
+}
+
+.back-to-markets:hover {
+  color: var(--color-text);
+}

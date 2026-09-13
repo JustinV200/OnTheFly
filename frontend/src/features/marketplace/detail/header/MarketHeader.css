@@ -1,0 +1,43 @@
+/* Market header: a small back link, then the tile beside a two-line title, then the badge row. */
+.market-header {
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-3);
+  min-width: 0;
+}
+
+.market-header__identity {
+  align-items: center;
+  display: flex;
+  gap: var(--space-3);
+  min-width: 0;
+}
+
+.market-header__heading {
+  min-width: 0;
+}
+
+.market-header__title {
+  font-size: var(--text-2xl);
+  margin: 0;
+  overflow-wrap: anywhere;
+}
+
+.market-header__area {
+  color: var(--color-text-muted);
+  font-size: var(--text-md);
+  margin: var(--space-0_5) 0 0;
+  overflow-wrap: anywhere;
+}
+
+.market-header__meta {
+  display: flex;
+  flex-wrap: wrap;
+  gap: var(--space-2);
+}
+
+@media (min-width: 768px) {
+  .market-header__title {
+    font-size: var(--text-3xl);
+  }
+}
