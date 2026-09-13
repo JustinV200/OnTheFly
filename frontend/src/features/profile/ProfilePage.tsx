@@ -1,5 +1,6 @@
-/* Loads and renders a public business profile, the page a stranger sees, whoever is acting.
-   It shows only the additive public listing projection; the empty state is the end of the privacy proof. */
+/* Loads and renders a public business profile, the page a stranger sees, whoever is acting: the business, then its
+   public listings as market cards. It shows only the additive public listing projection; the empty state is the end of
+   the privacy proof. */
 import { useParams } from 'react-router-dom';
 
 import { useActingAccount } from '../../shared/account/ActingAccountContext';
@@ -7,8 +8,8 @@ import { useApiQuery } from '../../shared/api/useApiQuery';
 import { EmptyState } from '../../shared/components/EmptyState';
 import { ErrorState } from '../../shared/components/ErrorState';
 import { LoadingSpinner } from '../../shared/components/LoadingSpinner';
-import { ButtonLink, Callout, Cluster, PageHeader, Stack } from '../../shared/ui';
-import { PublicListingCard } from './PublicListingCard';
+import { MarketCard } from '../../shared/market';
+import { Badge, ButtonLink, Callout, Cluster, Icon, PageHeader, Stack } from '../../shared/ui';
 import type { ProfileResponse } from './types';
 import './ProfilePage.css';
 
@@ -24,7 +25,7 @@ export function ProfilePage(): JSX.Element {
       <Stack gap={5}>
         <PageHeader eyebrow="Public profile" subtitle="Check the link for typos." title="No business has this profile address" />
         <Cluster>
-          <ButtonLink to="/marketplace" variant="primary">Browse the marketplace</ButtonLink>
+          <ButtonLink to="/marketplace" variant="primary">Browse the markets</ButtonLink>
         </Cluster>
       </Stack>
     );
@@ -37,10 +38,14 @@ export function ProfilePage(): JSX.Element {
 
   const { business_name: businessName, listings } = profile.data;
   const isOwnProfile = account?.handle === profile.data.handle;
+  const count = listings.length;
+
   return (
     <Stack gap={6}>
       <PageHeader
         eyebrow="Public profile"
+        // With no listings the empty state below says so; a "0 public listings" badge beside it would just repeat it.
+        meta={count > 0 ? <Badge icon={<Icon name="globe" />} tone="neutral">{count === 1 ? '1 public listing' : `${count} public listings`}</Badge> : undefined}
         subtitle={profile.data.service_area}
         title={
           <span className="profile-page__identity">
@@ -53,24 +58,27 @@ export function ProfilePage(): JSX.Element {
 
       <Callout icon="eye" role="note" title="Public view" tone="neutral">
         <p>
-          This page is identical for everyone, signed in or not.
+          This page is identical for everyone, signed in or not. Only expenses {businessName} chose to publish appear here.
           {isOwnProfile ? ' Your private expenses are on your dashboard, not here.' : ''}
         </p>
       </Callout>
 
       <Stack as="section" gap={3}>
-        {/* With no listings the empty state below says so; a "0 public listings" label beside it would just repeat it. */}
-        <h2 className="ui-eyebrow">
-          {listings.length === 0 ? 'Public listings' : `${listings.length} public ${listings.length === 1 ? 'listing' : 'listings'}`}
-        </h2>
-        {listings.length === 0 ? (
+        <h2 className="profile-page__section-title">Public listings</h2>
+        {count === 0 ? (
           <EmptyState title="No public listings right now">
             {businessName} hasn’t published any expenses. Everything it pays for is private until it chooses to publish one.
           </EmptyState>
         ) : (
-          <div className="profile-page__listings">
-            {listings.map((listing) => <PublicListingCard key={listing.id} listing={listing} />)}
-          </div>
+          <>
+            <p className="ui-text-muted ui-text-sm">Prices are published by {businessName}.</p>
+            <div className="profile-page__listings">
+              {listings.map((listing) => (
+                // No offer count: the profile response doesn't carry one, and a guessed zero would misstate a live market.
+                <MarketCard href={`/listings/${listing.id}`} key={listing.id} listing={listing} offerCount={null} />
+              ))}
+            </div>
+          </>
         )}
       </Stack>
     </Stack>

@@ -1,4 +1,5 @@
-/* Public profile: the business monogram beside its name, and a listing grid that keeps a lone listing at card width. */
+/* Public profile: the business monogram beside its name, and a market-card grid that keeps a lone listing at card width
+   (auto-fill, the same column width as the market board). */
 .profile-page__identity {
   align-items: center;
   display: inline-flex;
@@ -22,9 +23,14 @@
   width: var(--space-12);
 }
 
+.profile-page__section-title {
+  font-size: var(--text-xl);
+  margin: 0;
+}
+
 .profile-page__listings {
   display: grid;
   gap: var(--space-4);
-  grid-template-columns: repeat(auto-fill, minmax(min(24rem, 100%), 1fr));
+  grid-template-columns: repeat(auto-fill, minmax(min(17.5rem, 100%), 1fr));
   min-width: 0;
 }
