@@ -3,7 +3,7 @@ import { get, post } from '../../../shared/api/client';
 import type { TaskDetail } from '../types';
 
 export interface AcceptanceBlock {
-  code: 'already_accepted' | 'offer_not_active' | 'double_cover' | 'negative_remainder' | 'currency_mismatch';
+  code: 'already_accepted' | 'offer_not_active' | 'double_cover' | 'negative_remainder' | 'currency_mismatch' | 'split_undone';
   message: string;
 }
 

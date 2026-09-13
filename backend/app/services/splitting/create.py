@@ -15,6 +15,7 @@ from app.models.savings import SavingsCard
 from app.models.tasks import RequirementAssignment, Task, TaskSplit
 from app.services.savings.cards import mark_task_cards_stale
 from app.services.scope.requirements import RequirementInput, load_constraints
+from app.services.splitting.active_split import ensure_split_active
 from app.services.splitting.flow_down import ConstraintRef, UnacknowledgedRemovalError, flow_down_constraints
 from app.services.splitting.ledger import CutProblem, build_ledger, check_new_cut
 from app.services.splitting.parent_rewrite import write_parent_without
@@ -57,6 +58,7 @@ def split_off_piece(parent_task_id: str, acting_account_id: str, request: SplitR
     if parent is None:
         raise HTTPException(status_code=status.HTTP_404_NOT_FOUND, detail="Task not found")
     require_task_owner(parent, acting_account_id, "split this task")
+    ensure_split_active(parent, db, "split further")
     is_before_acceptance = parent.accepted_challenge_id is None
     listing = listing_for_task(parent.id, db)
     scope = splittable_scope_version(parent, db)

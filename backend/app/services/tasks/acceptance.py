@@ -18,6 +18,7 @@ from app.models.savings import SavingsCard
 from app.models.tasks import Task, TaskSplit
 from app.services.listings.audit import write_visibility_audit
 from app.services.listings.projection import projection_from_record
+from app.services.splitting.active_split import is_undone_piece
 from app.services.splitting.ledger import build_ledger, counted_splits, listed_price_minor, remainder_if_piece_accepted
 from app.services.splitting.requirements_in_play import keys_covered_by_pieces
 from app.services.tasks.access import listing_for_task, require_task_poster
@@ -28,7 +29,9 @@ from app.services.tasks.offer_price import offer_price_in_period
 class AcceptanceBlock(BaseModel):
     """One reason an offer can't be accepted, in words the poster can act on."""
 
-    code: Literal["already_accepted", "offer_not_active", "double_cover", "negative_remainder", "currency_mismatch"]
+    code: Literal[
+        "already_accepted", "offer_not_active", "double_cover", "negative_remainder", "currency_mismatch", "split_undone"
+    ]
     message: str
 
 
@@ -61,6 +64,15 @@ def check_acceptance(task: Task, challenge_id: str, acting_account_id: str, db: 
     blocks: list[AcceptanceBlock] = []
     if task.accepted_challenge_id is not None:
         blocks.append(AcceptanceBlock(code="already_accepted", message="This task already accepted an offer."))
+    if is_undone_piece(task, db):
+        # Undo kept the piece's offers for the record, but its cut and requirements went back to the parent: accepting
+        # one now would hand a bidder work that the parent's ledger no longer counts.
+        blocks.append(
+            AcceptanceBlock(
+                code="split_undone",
+                message="This piece's split was undone, so its offers can't be accepted. Split a new piece off its task instead.",
+            )
+        )
     if not challenge.is_active:
         blocks.append(AcceptanceBlock(code="offer_not_active", message="This offer was withdrawn or replaced."))
     if challenge.price_currency != task.currency:
