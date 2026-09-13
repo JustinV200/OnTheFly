@@ -1,0 +1,39 @@
+/* Expense overview: a secondary-text lead sentence, then label / value facts divided by hairlines. */
+.expense-overview__lead {
+  color: var(--color-text-secondary);
+  margin: 0;
+}
+
+.expense-overview__facts {
+  margin: 0;
+}
+
+.expense-overview__fact {
+  align-items: baseline;
+  border-top: var(--border-width) solid var(--color-border-subtle);
+  display: grid;
+  gap: var(--space-1) var(--space-4);
+  grid-template-columns: 6rem minmax(0, 1fr);
+  padding-block: var(--space-2);
+}
+
+.expense-overview__fact dt {
+  color: var(--color-text-muted);
+  font-size: var(--text-sm);
+  font-weight: var(--weight-medium);
+}
+
+.expense-overview__fact dd {
+  align-items: center;
+  display: flex;
+  flex-wrap: wrap;
+  gap: var(--space-1) var(--space-2);
+  margin: 0;
+  min-width: 0;
+}
+
+.expense-overview__rhythm {
+  font-weight: var(--weight-semibold);
+  text-decoration: underline dotted var(--color-border-strong);
+  text-underline-offset: 0.2em;
+}
