@@ -1,9 +1,10 @@
 """Roadmap 12, step 8: supplier counts by UEI only, integer rate percentiles, and honest no-match and unavailable states.
-Recorded (fixture) responses stand in for live calls; the live client slot is filled by the public-data branch.
+Recorded and mocked responses stand in for live calls; tests/market_data covers the USAspending source itself.
 """
 
 from datetime import date
 
+import httpx
 import pytest
 from fastapi.testclient import TestClient
 from sqlalchemy import select
@@ -12,7 +13,9 @@ from sqlalchemy.orm import Session
 from app.core.config import get_settings
 from app.models.savings import MarketEvidence
 from app.services.market_data import AwardRecord, LaborRateQuery, SupplierQuery, count_suppliers, rate_percentiles
+from app.services.market_data import factory as market_data_factory
 from app.services.market_data.mock.source import MockMarketDataSource
+from app.services.market_data.usaspending import UsaSpendingMarketDataSource
 from tests.tasks.support import PRIME_A, headers, stage
 
 
@@ -74,18 +77,21 @@ def test_unavailable_source_renders_not_checked_and_never_suggests(
     chain = stage(db_session, "prime_owns")
     monkeypatch.setenv("MARKET_DATA_SOURCE", "live")
     get_settings.cache_clear()
+    # The live source with USAspending down (HTTP 503), so no request leaves the machine.
+    down = httpx.Client(transport=httpx.MockTransport(lambda request: httpx.Response(503)))
+    monkeypatch.setattr(market_data_factory, "UsaSpendingMarketDataSource", lambda: UsaSpendingMarketDataSource(down))
 
     body = client.post(f"/api/tasks/{chain.rebid_task_id}/ways-to-save/refresh", headers=headers(PRIME_A)).json()
 
-    assert body["market_data_source"] == "live_market_data_unwired"
+    assert body["market_data_source"] == "usaspending"
     assert body["cards"]
     for card in body["cards"]:
         assert card["tier"] == "not_viable"
         assert "Award and subaward suppliers" in card["sources_not_checked"]
         assert "Public labor rates" in card["sources_not_checked"]
     evidence = db_session.scalars(select(MarketEvidence).where(MarketEvidence.task_id == chain.rebid_task_id)).all()
-    assert {row.status for row in evidence if row.source == "live_market_data_unwired"} == {"unavailable"}
-    assert all(row.limitations.startswith("Not checked") for row in evidence if row.source == "live_market_data_unwired")
+    assert {row.status for row in evidence if row.source == "usaspending"} == {"unavailable"}
+    assert all(row.limitations.startswith("Not checked") for row in evidence if row.source == "usaspending")
 
 
 def test_every_retrieval_is_recorded_with_source_query_time_and_status(client: TestClient, db_session: Session) -> None:

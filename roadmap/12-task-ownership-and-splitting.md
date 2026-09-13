@@ -1,8 +1,10 @@
 # Phase 12 — Task ownership and splitting
 
-> Status — 2026-09-13: Steps 1–10 are implemented on `feat/task-ownership-splitting`. Steps 11–12 (P1) aren't started.
+> Status — 2026-09-13: Steps 1–10 are implemented and merged. Steps 11–12 (P1) aren't started.
 >
-> - **Steps 8–9** run against a mock market-data source labeled demo data. The live USAspending and labor-rate clients are being built on another branch.
+> - **Steps 8–9** default to a mock market-data source labeled demo data.
+>   - `MARKET_DATA_SOURCE=live` answers suppliers from USAspending prime awards and subawards (`services/market_data/usaspending/`, one module per search rather than the file names below).
+>   - No public labor-rate client exists, so live rates are `unavailable` and live cards stay not viable.
 > - **Decisions recorded in the [roadmap](README.md) open questions:**
 >   - fixture rates and mock market data for now
 >   - live calls only, with no snapshot
@@ -23,7 +25,7 @@
 | Merged work | What exists | How this phase uses it |
 |---|---|---|
 | Task-market UI ([11](11-usability-and-dark-mode.md)) | `frontend/src/shared/ui` primitives (`Drawer`, `Tabs`, `Disclosure` and more), `shared/market/MarketCard`, `shared/flybrain/FlyBrainBadge`, navigation in `frontend/src/app/shell/topbar/NavBar.tsx` | New screens go in new feature folders and use these primitives. Keep the public listing fields the board reads; add, don't rename. Use its words: Bid, offer, Offers, Markets · Spend · My listings. |
-| Outreach ([08](08-outbound-invitations.md)) | Migration `0012_outreach`, discovery source interface, approval-gated invitations | Migrations start at 0013. Inviting suppliers to a piece uses the same approval flow; there is no second outreach path. |
+| Outreach ([08](08-outbound-invitations.md)) | Migration `0012_outreach`, discovery source interface, approval-gated invitations | Migrations start at 0015. Inviting suppliers to a piece uses the same approval flow; there is no second outreach path. |
 | Plan1 REBID work (not started) | — | Build the USAspending and labor-rate clients once, behind a market-data interface that both REBID discovery and step 8 call. |
 
 **Keep schema changes additive** (new tables, and nullable columns on `scope_versions`, `public_listings` and `challenges`) until the category template migration passes the existing listing, offer and comparison tests. Do not drop or rename the cleaning scope columns before then; the cleaning template reads them in place.

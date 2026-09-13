@@ -59,7 +59,8 @@ class Settings(BaseSettings):
     savings_min_suppliers: int = 3
     savings_lookback_years: int = 5
     # Market evidence behind Ways to save. "mock" returns deterministic demo data labeled as such (roadmap open
-    # question 2: mock numbers until the public-data branch lands); "live" is the slot that branch wires up.
+    # question 2); "live" queries public USAspending prime awards and subawards on every refresh, and reports labor
+    # rates as not checked because no public rate client exists yet.
     market_data_source: str = "mock"
     # Presenter controls (stage the task-chain demo, simulate a labeled demo bid). Local demo only; set false
     # anywhere the database is shared, since staging deletes and reseeds the GovCon task chain.

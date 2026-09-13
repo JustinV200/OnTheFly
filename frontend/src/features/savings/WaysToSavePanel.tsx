@@ -78,6 +78,11 @@ export function WaysToSavePanel({ taskId, canSplit, onSplitOff }: WaysToSavePane
               <Badge tone="simulated" title="Fictional suppliers, UEIs, awards and rates for the simulator; not USAspending or GSA CALC+.">
                 Source: demo market data
               </Badge>
+            ) : data.market_data_source === 'usaspending' ? (
+              // The live source answers suppliers only; saying so here keeps "rates not checked" from being a surprise on each card.
+              <Badge tone="info" title="Public USAspending prime awards and reported subawards. No public labor-rate source is connected yet.">
+                Source: USAspending public records · rates not checked
+              </Badge>
             ) : (
               <Badge tone="info">Source: {data.market_data_source}</Badge>
             )}

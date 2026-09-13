@@ -26,19 +26,30 @@ The GovCon demo ledger is implemented (merged 2026-09-13):
 - The result is five private monthly expenses totalling $4,044,000 annualized.
 - See `backend/app/services/transactions/fixture/GOVCON.md`.
 
-Task ownership and splitting (roadmap 12, steps 1–10) is implemented on `feat/task-ownership-splitting` (migration `0013_task_ownership`). It covers:
+Task ownership and splitting (roadmap 12, steps 1–10) is implemented (merged 2026-09-13; migration `0013_task_ownership`). It covers:
 - **Tasks:** tasks with a poster and task owner; requirements, constraints and category templates; per-requirement offer responses; `new` tasks with the price hidden by default.
 - **Acceptance and splitting:** acceptance with ownership transfer; cuts, remainder and undo; manual and suggested splits with their own piece projection, the Subcontract label and the payer chain.
 - **Money inputs:** cost basis rates (labeled fixture rates for GovCon, Prime A and Sub B); `market_evidence` rows; Ways to save cards with config thresholds.
 - **Views and demo:** money views, My work, and a `/demo` guide that stages the chain through the real services (`python -m app.cli.seed_task_chain --stage <stage>`, gated by `DEMO_CONTROLS_ENABLED`).
-- **Market data:** comes from a mock source labeled demo data (`MARKET_DATA_SOURCE=mock`). The live USAspending and labor-rate clients are on another branch; until they're wired, `live` reports the source unavailable ("not checked").
-- **Verification (2026-09-13):** 469 backend tests passing, plus `tsc`, the frontend build, and the colour and contrast checks.
+- **Market data:** `MARKET_DATA_SOURCE=mock` (the default) serves a source labeled demo data. `live` queries USAspending prime awards and reported subawards through `services/market_data/usaspending/`. No public labor-rate client exists yet, so live rates render "not checked" and live cards can't reach a suggested tier.
+- **Verification (2026-09-13, after merging task ownership, the live fly brain and USAspending discovery):**
+  - 509 backend tests passed; `tsc`, the frontend build, and the colour and contrast checks passed.
+  - The migration chain round-tripped to 0012 and back.
+  - A live USAspending query for PSC DA01 / NAICS 541512 in Virginia returned 100 prime awards and 83 subawards from 99 distinct UEIs.
+
+USAspending supplier discovery is implemented (merged 2026-09-13, from `feature/usaspending-tavily-discovery`; migration `0014_usaspending_supplier_evidence`):
+- `DISCOVERY_SOURCE=usaspending_tavily` shortlists a public listing's suppliers from USAspending contract awards. It searches the category's NAICS codes and the states read from the service area, over a 5-year lookback.
+- Suppliers are identified by UEI only. Each candidate keeps its award evidence. Tavily enrichment runs when `TAVILY_API_KEY` is set and is marked as a name search, not identity-verified.
+- The USAspending client is shared with the live market-data source. Tests use recorded real responses. Live requests were checked by hand on 2026-09-13. Tavily has only been exercised with mocks.
 
 Not implemented:
-- REBID orchestration (Progress → Market → Bid), USAspending discovery, public-rate pricing, Tavily enrichment, OpenAI reasoning and Fly Scout. REBID currently opens a private task with owner-entered requirements.
+- REBID orchestration (Progress → Market → Bid), public labor-rate pricing, source-backed LLM supplier summaries, OpenAI reasoning and Fly Scout. REBID currently opens a private task with owner-entered requirements.
 - LLM requirement mapping and hour drafting, and split everything (P1).
 
-Also implemented (merged 2026-09-13): a Kalshi-style "task market" UI with light/dark/system themes (roadmap 11, "Task market direction") and owner-approved supplier invitations (roadmap 08): fixture or Tavily discovery, a preview-hash approval gate, an idempotent queue to a sandbox outbox by default (SMTP only behind an allowlist), and a public opt-out page. Tavily and SMTP have only been exercised with mocks. The latest verification (2026-09-13, after also merging the GovCon ledger) had 365 backend tests passing and a successful frontend build with the colour and contrast checks.
+Also implemented (merged 2026-09-13):
+- A Kalshi-style "task market" UI with light/dark/system themes (roadmap 11, "Task market direction").
+- Owner-approved supplier invitations (roadmap 08): fixture, Tavily or USAspending discovery, a preview-hash approval gate, an idempotent queue to a sandbox outbox by default (SMTP only behind an allowlist), and a public opt-out page. SMTP has only been exercised with mocks.
+- A live simulated fly brain (`features/brainview`, `shared/flybrain/live`). Every fly-brain result carries a `brain_stimulus` that a Web Worker plays on a leaky integrate-and-fire port of the FlyWire release 783 model, loaded from `frontend/public/flybrain`. It is a simulation shown alongside results; results don't depend on it, and it is not Fly Scout.
 
 ## Scope and stack decisions
 
@@ -80,7 +91,7 @@ REBID starts private research. It does not bypass confirmation of contract scope
 - `frontend/src/shared/`: UI primitives (`ui`), `MarketCard` (`market`), fly badges (`flybrain`), theme and formatting.
 - `frontend/src/app/shell/`: app shell and navigation.
 - `backend/app/`: API, services, models, database and core conventions.
-- `backend/alembic/`: schema migrations (0001–0013 exist; new ones start at 0014).
+- `backend/alembic/`: schema migrations (0001–0014 exist; new ones start at 0015).
 - `plan/plan2.md`: current product plan. `plan1.md` is retained for REBID detail; `previous-marketplace-plan.md` is historical.
 - `roadmap/README.md`: current P0/P1/P2 order. `12-task-ownership-and-splitting.md` is the active build spec; the other numbered files retain component specifications.
 - `.claude/codingrules.md`: coding structure rules.

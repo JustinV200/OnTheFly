@@ -19,15 +19,23 @@ Don't start P0 until each one has a recorded answer. Write the answer under its 
   - What labor categories and hourly rates does GovCon's current DevSecOps contract bill?
   - What internal loaded costs do Prime A and Sub B carry?
   - These decide whether any Ways to save card qualifies, so set them before seeing results, never by working back from a wanted outcome.
-  - **Answer (user, 2026-09-13):** mock numbers for now. Public-data pulling is being built on another branch and will be wired in later.
+  - **Answer (user, 2026-09-13):** mock numbers for now. Public USAspending supplier data is now wired behind `MARKET_DATA_SOURCE=live`; a public labor-rate source isn't.
     - Fixture rates are labeled demo data, in `backend/app/services/demo/task_chain/fixture_rates.py`.
     - Market rates and suppliers come from a mock market-data source labeled demo data (`MARKET_DATA_SOURCE=mock`).
 - [x] **3. USAspending subaward data.**
   - Do award and subaward records for DevSecOps PSC/NAICS codes in Northern Virginia return enough distinct suppliers by UEI to meet the 3-supplier threshold?
   - Answer with a short API check that writes no product code. Record the query, date and counts.
   - **Answer (user, 2026-09-13):** live calls only, with no saved snapshot; each refresh queries the source.
-    - The USAspending client is being built on another branch.
-    - Until it's wired, `MARKET_DATA_SOURCE=live` reports the source unavailable, which renders "not checked".
+    - `MARKET_DATA_SOURCE=live` queries prime awards and subawards through `services/market_data/usaspending/`.
+  - **API check (2026-09-13):** `spending_by_award`, contract types A–D, place of performance VA, 2021-09-13 to 2026-09-13. Counts cover the first 500 rows by amount, so they are floors.
+
+    | Filter | Prime award UEIs | Subaward UEIs |
+    |---|---|---|
+    | NAICS 541512 + 541519 | 159 | 261 |
+    | PSC DA01 | 189 | 242 |
+    | PSC D399 | 222 | 223 |
+
+    Both clear the 3-supplier threshold, so subawards are used alongside prime awards.
 - [x] **4. Depth cap.**
   - How many levels of splitting does `MAX_TASK_DEPTH` allow?
   - **Answer (user, 2026-09-13):** no depth cap, and no limit on manual splits.
@@ -50,18 +58,21 @@ Don't start P0 until each one has a recorded answer. Write the answer under its 
 
 | Capability | Evidence in repository | Status |
 |---|---|---|
-| App foundation | React features, FastAPI routes, SQLAlchemy models, Alembic migrations 0001–0013 | Implemented locally |
+| App foundation | React features, FastAPI routes, SQLAlchemy models, Alembic migrations 0001–0014 | Implemented locally |
 | Stripe sandbox ingestion | `transactions/stripe/`, `api/connections/`, frontend connection controls, mocked HTTP tests | Implemented; real sandbox consent unverified |
 | Expense pipeline | Fixture source, normalization, recurrence, baseline and expense API; GovCon ledger via `app.cli.seed_govcon_demo` and `test_govcon_seed.py` | Implemented; GovCon totals and privacy covered by tests; on-screen display and labels not yet checked |
 | Publishing and profiles | Publish stepper, exact preview, public projections and visibility tests; requirement rows and category templates (cleaning, DevSecOps) | Implemented; the cleaning scope columns remain in place |
 | Offers/comparison | Submission/revisions, sealed/open rules, Offers inbox, deterministic math, per-requirement responses and acceptance | Implemented ([12](12-task-ownership-and-splitting.md), steps 2 and 4) |
 | Task-market UI | Markets board, market page with bid ticket, bid form, Spend, My listings, Offers, trace, light/dark/system themes ([11](11-usability-and-dark-mode.md)) | Built and merged; keyboard focus and honesty-label audit open |
-| Evidence/outreach | Local evidence logic; registry stub; outreach backend (fixture/Tavily discovery, approval gate, sandbox/allowlisted SMTP queue, opt-out) and Invite suppliers UI | Registry missing; Tavily and SMTP unverified live; delivery tracking not built |
-| REBID experience | REBID… on a Spend expense opens a private DevSecOps task with requirements and constraints (`features/tasks/new/`); no USAspending discovery, public-rate pricing or Progress → Market → Bid orchestration | Partial: scope entry only |
-| Task ownership and splitting | `models/tasks/`, `services/tasks/`, `services/splitting/`, `services/rates/`, `services/market_data/`, `services/savings/`, tests in `tests/tasks/` and `tests/savings/`; screens in `features/tasks/`, `split/`, `savings/`, `rates/`, `work/` and the `/demo` guide | Steps 1–10 implemented against a mock market-data source labeled demo data; the live source isn't wired yet ([12](12-task-ownership-and-splitting.md)) |
+| Evidence/outreach | Local evidence logic; registry stub; outreach backend (fixture, Tavily or USAspending discovery with UEI identity and award evidence, approval gate, sandbox/allowlisted SMTP queue, opt-out) and Invite suppliers UI | Registry missing; USAspending tested on recorded responses and checked live by hand; Tavily and SMTP unverified live; delivery tracking not built |
+| REBID experience | REBID… on a Spend expense opens a private DevSecOps task with requirements and constraints (`features/tasks/new/`); no public-rate pricing or Progress → Market → Bid orchestration | Partial: scope entry only |
+| Task ownership and splitting | `models/tasks/`, `services/tasks/`, `services/splitting/`, `services/rates/`, `services/market_data/`, `services/savings/`, tests in `tests/tasks/`, `tests/savings/` and `tests/market_data/`; screens in `features/tasks/`, `split/`, `savings/`, `rates/`, `work/` and the `/demo` guide | Steps 1–10 implemented. The demo runs on the mock market-data source; `live` answers suppliers from USAspending, with labor rates not checked ([12](12-task-ownership-and-splitting.md)) |
 | Fly Scout | `flybrain` circuits label their results on Spend and similar listings; no Fly Scout runtime | Not started; after splitting |
 
-Last verified result (2026-09-13, on `feat/task-ownership-splitting`): **469 backend tests passed; `tsc`, the frontend build, and the colour and contrast checks passed.**
+Last verified result (2026-09-13, `main` after merging task ownership, the live fly brain and USAspending discovery): **509 backend tests passed; `tsc`, the frontend build, and the colour and contrast checks passed.**
+- A live `MARKET_DATA_SOURCE=live` query for PSC DA01 / NAICS 541512 in Virginia returned 100 prime awards and 83 subawards from 99 distinct UEIs.
+- That query ran from a script, not through a saved Ways to save refresh.
+- The task-chain browser run below predates this merge.
 
 The GovCon → Prime A → Sub B chain was also driven through the real UI in headless Chrome against a scratch database. That run covered:
 - REBID from Spend, preview and publish
@@ -90,8 +101,10 @@ Open questions 1–5 have recorded answers.
   - The REBID… action creates a private task whose scope and state persist.
   - The Progress → Market → Bid orchestration isn't built.
 - [x] Draft/confirm scope as tagged requirements with hours, location, clearance and classification ([12](12-task-ownership-and-splitting.md), step 2). Owner-entered, with a labeled demo fill; LLM drafting is P1.
-- [ ] Connect USAspending awards and subawards behind the shared market-data interface. Preserve award identifiers and source evidence ([12](12-task-ownership-and-splitting.md), step 8).
+- [x] Connect USAspending awards and subawards behind the shared market-data interface. Preserve award identifiers and source evidence ([12](12-task-ownership-and-splitting.md), step 8). `UsaSpendingMarketDataSource` (`MARKET_DATA_SOURCE=live`) and outreach discovery share one client, tested against recorded responses.
 - [ ] Apply deterministic qualification, deduplicating suppliers by UEI.
+  - UEI dedupe is implemented: supplier counts, the discovery shortlist, candidate storage and reruns all match on UEI alone.
+  - Qualification rules beyond the supplier-count threshold aren't built.
 - [ ] Integrate one usable public labor-rate path, saving the labor-category mapping and percentiles.
 - [ ] Display the deterministic modeled annual cost for the whole expense with the model/quote distinction.
 
@@ -106,7 +119,8 @@ Open questions 1–5 have recorded answers.
 - [x] Cost basis rates, with labeled fixture rates for GovCon, Prime A and Sub B (step 7).
 - [ ] Market evidence records (step 8).
   - The `MarketDataSource` interface, UEI dedupe, integer percentiles and `market_evidence` rows are implemented and tested against the mock source.
-  - The live USAspending and labor-rate clients are on another branch and not wired.
+  - The live source answers suppliers from USAspending prime awards and subawards. No public labor-rate client exists, so live rates are recorded `unavailable`.
+  - No live retrieval for the demo segment has been saved yet.
 - [ ] Ways to save cards with thresholds from config (step 9).
   - Cards, tiers, config thresholds, the 5-suggested-pieces limit, dismiss/restore and oversight are implemented.
   - The demo cards come from mock data ("Modeled cut from demo market data — not an offer"), not saved live evidence.
@@ -119,6 +133,8 @@ Open questions 1–5 have recorded answers.
 - [ ] Split everything, LLM-drafted and code-validated ([12](12-task-ownership-and-splitting.md), step 11).
 - [ ] LLM scope drafting for `new` tasks from owner-provided detail only.
 - [ ] Enrich shortlisted suppliers through Tavily and source-backed LLM summaries.
+  - Tavily enrichment of the USAspending discovery shortlist is built and mock-tested; each page is marked as a name search.
+  - LLM summaries aren't built.
 - [ ] Fly Scout on qualified suppliers for a published piece, and FlyHash ordering of retrieved awards. Label each at the result ([12](12-task-ownership-and-splitting.md), step 12).
 - [x] Build My work, the split drawer and Ways to save on the task-market system ([11](11-usability-and-dark-mode.md)). Built with the P0 steps, plus a `/demo` guide that stages the chain.
 - [ ] Finish roadmap 11's keyboard-focus and screen-by-screen honesty-label audit, including the new screens.
@@ -159,7 +175,7 @@ A fixed orchestration sequence remains sufficient for P0.
 
 Open decisions are listed at the top of this file.
 
-- Reuse `TransactionSource`, existing ORM models and feature folders; extend through migrations numbered from 0013.
+- Reuse `TransactionSource`, existing ORM models and feature folders; extend through migrations numbered from 0015.
 - Keep the cleaning scope columns until the category template migration passes the existing listing, offer and comparison tests.
 - Supplier counts from USAspending are floors, and example counts are not guarantees.
 - Biological or neuron-count claims about Fly Scout require runtime evidence.
