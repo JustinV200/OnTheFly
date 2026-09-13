@@ -20,6 +20,8 @@ class Invitation(Base):
     # database refuses a second row for the same provider on the same listing.
     __table_args__ = (
         UniqueConstraint("listing_id", "provider_candidate_id", name="uq_invitation_listing_candidate"),
+        # The same inbox, whichever candidate record it came from, gets at most one invitation per listing.
+        UniqueConstraint("listing_id", "recipient_email", name="uq_invitation_listing_recipient"),
     )
 
     id: Mapped[str] = mapped_column(String(36), primary_key=True, default=lambda: str(uuid.uuid4()))

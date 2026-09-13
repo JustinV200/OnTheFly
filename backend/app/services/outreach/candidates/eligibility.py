@@ -41,12 +41,15 @@ def assess_candidates(
     """
 
     invitation_ids = _invitation_ids_by_candidate(listing.id, db)
+    invited_emails = _invited_emails(listing.id, db)
     opted_out = suppressed_emails([candidate.contact_email or "" for candidate in candidates], db)
     is_public = listing_is_public(listing)
 
     assessed: dict[str, AssessedCandidate] = {}
     for candidate in candidates:
-        reason = _blocking_reason(candidate, is_public, candidate.id in invitation_ids, opted_out, sender)
+        # A second candidate record with an already-invited address (e.g. added by hand after discovery) is the same inbox.
+        has_invitation = candidate.id in invitation_ids or (candidate.contact_email or "") in invited_emails
+        reason = _blocking_reason(candidate, is_public, has_invitation, opted_out, sender)
         assessed[candidate.id] = AssessedCandidate(
             eligibility=CandidateEligibility(can_invite=reason is None, reason=reason),
             invitation_id=invitation_ids.get(candidate.id),
@@ -76,6 +79,11 @@ def _blocking_reason(
     # e.g. smtp refuses anyone off the allowlist; blocking here keeps a doomed send from using up the
     # provider's one invitation.
     return sender.refusal_reason(candidate.contact_email)
+
+
+def _invited_emails(listing_id: str, db: Session) -> frozenset[str]:
+    # Stored normalized at approval, like candidate emails, so plain equality is an exact address match.
+    return frozenset(db.scalars(select(Invitation.recipient_email).where(Invitation.listing_id == listing_id)).all())
 
 
 def _invitation_ids_by_candidate(listing_id: str, db: Session) -> dict[str, str]:

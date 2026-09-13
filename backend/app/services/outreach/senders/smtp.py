@@ -68,6 +68,7 @@ class SmtpSender(OutreachSender):
 
         email_message = _build_email(message, idempotency_key)
         handed_over = False
+        refused: dict[str, tuple[int, bytes]] | None = None
         try:
             with self._factory(self._host, self._port, SMTP_TIMEOUT_SECONDS) as connection:
                 if self._use_starttls:
@@ -76,28 +77,34 @@ class SmtpSender(OutreachSender):
                     connection.login(self._username, self._password)
                 handed_over = True
                 refused = connection.send_message(email_message, to_addrs=[message.to_email])
-        except smtplib.SMTPRecipientsRefused:
-            return SendResult(outcome="permanent_failure", detail="The mail server refused the recipient address")
-        except smtplib.SMTPAuthenticationError:
-            return SendResult(outcome="permanent_failure", detail="SMTP login failed; check SMTP_USERNAME and SMTP_PASSWORD")
-        except smtplib.SMTPResponseException as error:
-            # A 4xx reply is a definite "not now" before acceptance; 5xx is a definite rejection.
-            outcome = "transient_failure" if 400 <= error.smtp_code < 500 else "permanent_failure"
-            return SendResult(outcome=outcome, detail=f"The mail server replied {error.smtp_code}")
         except (smtplib.SMTPException, OSError) as error:
-            if handed_over:
-                return SendResult(
-                    outcome="permanent_failure",
-                    detail=f"Connection lost while sending ({error.__class__.__name__}); delivery is unknown, so it is not retried",
-                )
-            return SendResult(
-                outcome="transient_failure",
-                detail=f"Could not reach the mail server ({error.__class__.__name__})",
-            )
+            if refused is None:
+                return _failure_before_acceptance(error, handed_over)
+            # send_message already returned, so the server accepted the message; this error came from closing the
+            # connection (e.g. QUIT answered with 421). Treating it as a failure would retry a delivered invitation.
 
         if refused:
             return SendResult(outcome="permanent_failure", detail="The mail server refused the recipient address")
         return SendResult(outcome="accepted", provider_message_id=email_message["Message-ID"])
+
+
+def _failure_before_acceptance(error: Exception, handed_over: bool) -> SendResult:
+    # Classifies an error raised before the server accepted the message. A definite SMTP reply says whether to retry;
+    # a dropped connection after the message was handed over leaves delivery unknown, so it is never retried.
+    if isinstance(error, smtplib.SMTPRecipientsRefused):
+        return SendResult(outcome="permanent_failure", detail="The mail server refused the recipient address")
+    if isinstance(error, smtplib.SMTPAuthenticationError):
+        return SendResult(outcome="permanent_failure", detail="SMTP login failed; check SMTP_USERNAME and SMTP_PASSWORD")
+    if isinstance(error, smtplib.SMTPResponseException):
+        # A 4xx reply is a definite "not now" before acceptance; 5xx is a definite rejection.
+        outcome = "transient_failure" if 400 <= error.smtp_code < 500 else "permanent_failure"
+        return SendResult(outcome=outcome, detail=f"The mail server replied {error.smtp_code}")
+    if handed_over:
+        return SendResult(
+            outcome="permanent_failure",
+            detail=f"Connection lost while sending ({error.__class__.__name__}); delivery is unknown, so it is not retried",
+        )
+    return SendResult(outcome="transient_failure", detail=f"Could not reach the mail server ({error.__class__.__name__})")
 
 
 def _connect(host: str, port: int, timeout: float) -> SmtpConnection:

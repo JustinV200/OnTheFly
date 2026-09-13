@@ -33,3 +33,6 @@ class InvitationApproval(Base):
     # JSON array of {candidate_id, name, email}: the recipient list exactly as approved.
     recipients: Mapped[str] = mapped_column(Text, nullable=False)
     listing_url: Mapped[str] = mapped_column(String(1024), nullable=False)
+    # Fingerprint of the public listing terms the batch was rendered from (templates/listing_terms.py). The queue
+    # refuses to send once the listing no longer matches, since the approved words would then be wrong.
+    listing_terms_hash: Mapped[str] = mapped_column(String(64), nullable=False)

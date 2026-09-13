@@ -34,7 +34,8 @@ def describe_bidding_mode(bidding_mode: str) -> str:
     """Return the bidding-mode sentence; anything but an explicit "open" reads as sealed, as the listing does."""
 
     if resolve_bidding_mode(bidding_mode) == BiddingMode.open:
-        return "Open bidding: prices are visible to the business and other bidders, identities never are."
+        # Matches the listing: open prices are public; other bidders never learn who bid, but the business does.
+        return "Open bidding: offer prices and scope are shown publicly. Other bidders never see who made an offer; the business does."
     return "Offers are sealed: other bidders can't see your price."
 
 

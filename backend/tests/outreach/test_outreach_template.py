@@ -78,4 +78,4 @@ def test_configured_postal_address_and_base_url_reach_the_footer(client, db_sess
 
     assert "On the Fly · On the Fly Demo, 100 Example Way, Springfield, USA" in body
     assert f"https://app.onthefly.test/listings/{listing.id}" in body
-    assert "Open bidding: prices are visible to the business and other bidders, identities never are." in body
+    assert "Open bidding: offer prices and scope are shown publicly. Other bidders never see who made an offer; the business does." in body
