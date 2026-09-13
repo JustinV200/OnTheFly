@@ -10,4 +10,5 @@ export {
 } from './brainRunQueue';
 export type { BrainRunQueueSnapshot, QueuedBrainRun } from './brainRunQueue';
 export { CIRCUIT_LABELS } from './circuitLabels';
+export { brainStimulusKey } from './stimulusKey';
 export { usePublishBrainStimulus } from './usePublishBrainStimulus';

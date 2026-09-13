@@ -1,6 +1,7 @@
 /* The app-wide queue of fly-brain simulation runs. Features publish a response's brain_stimulus; the brain view plays them.
    Publishing is a quick synchronous bookkeeping step that never waits on the simulation, so no feature is slowed by it. */
 import type { BrainStimulus } from './brainStimulusTypes';
+import { brainStimulusKey } from './stimulusKey';
 
 export interface QueuedBrainRun {
   id: string;
@@ -30,7 +31,7 @@ export function publishBrainStimulus(stimulus: BrainStimulus | null | undefined)
   if (!stimulus || stimulus.pulses.length === 0) {
     return;
   }
-  const key = JSON.stringify(stimulus);
+  const key = brainStimulusKey(stimulus);
   if (snapshot.current?.key === key || snapshot.waiting.some((run) => run.key === key)) {
     return;
   }

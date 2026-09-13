@@ -1,8 +1,10 @@
 # Fly brain data
 
 Builds `frontend/public/flybrain/fly-brain-783.bin.gz`, the whole-brain wiring the simulated fly brain view
-(`frontend/src/features/brainview`) runs in a Web Worker. The app's results never depend on this file. The view plays a
-response's `brain_stimulus` through it alongside the result, and nothing waits on it.
+(`frontend/src/features/brainview`) runs in a Web Worker. The app's results never depend on this file, with one labelled
+exception: the fruit fly's opinion bubble on an offer (`features/brainview/opinion`) reads its yes/no and rating off the
+spike counts of two trials run here. It is presented as a toy and decides nothing. The view plays a response's
+`brain_stimulus` through it alongside the result, and nothing waits on it.
 
 ## Build
 

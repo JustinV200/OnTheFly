@@ -9,6 +9,7 @@ import { ErrorState } from '../../../shared/components/ErrorState';
 import { LoadingSpinner } from '../../../shared/components/LoadingSpinner';
 import { ProvenanceBadge } from '../../../shared/provenance/ProvenanceBadge';
 import { Badge, Button, ButtonLink, Card, useFocusOnRequest } from '../../../shared/ui';
+import { FlyOpinionBubble } from '../../brainview';
 import type { InboxResponse, OwnerChallengeListResponse } from '../../inbox/types';
 import { AcceptOfferPanel } from '../acceptance/AcceptOfferPanel';
 import { OfferPrice } from './OfferPrice';
@@ -80,6 +81,8 @@ export function OffersToAccept({ taskId, listingId, onAccepted, isFocusRequested
                     {offer.missing_items.length > 0 ? (
                       <p className="offers-to-accept__gaps">Not included: {offer.missing_items.map((item) => item.replace(/^requirement:/, '')).join('; ')}</p>
                     ) : null}
+                    {/* A toy beside the decision, never part of it: the accept check below is the server's alone. */}
+                    <FlyOpinionBubble bidderName={offer.challenger_name} stimulus={offer.fly_opinion_stimulus} />
                     {isReviewing ? (
                       <AcceptOfferPanel
                         bidderName={offer.challenger_name}

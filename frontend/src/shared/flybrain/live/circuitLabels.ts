@@ -6,4 +6,5 @@ export const CIRCUIT_LABELS: Record<FlyBrainComponent, string> = {
   compound_eye: 'Compound Eye',
   mushroom_body_novelty: 'Mushroom Body · novelty filter',
   mushroom_body_flyhash: 'Mushroom Body · FlyHash',
+  whole_brain_simulation: 'Whole-brain simulation',
 };

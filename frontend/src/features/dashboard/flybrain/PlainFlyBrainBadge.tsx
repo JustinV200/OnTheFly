@@ -9,6 +9,8 @@ const PLAIN_WORDS: Record<FlyBrainComponent, string> = {
   compound_eye: 'Found by price-pattern matching',
   mushroom_body_flyhash: 'Found by name matching',
   mushroom_body_novelty: 'Found by charge-pattern matching',
+  // Only the fruit fly's opinion bubble uses this circuit, and that bubble labels itself; Spend never shows it.
+  whole_brain_simulation: 'Read off the simulated brain',
 };
 
 interface PlainFlyBrainBadgeProps {

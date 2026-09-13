@@ -1,4 +1,5 @@
 /* Declares inbox and comparison response shapes local to the inbox feature. */
+import type { BrainStimulus } from '../../shared/flybrain/live';
 import type { RequirementAnswerItem } from '../../shared/offers/RequirementAnswerList';
 import type { PublicListingProjection } from '../publish/types';
 
@@ -53,6 +54,9 @@ export interface InboxChallenge {
   bidding_mode_at_submission: string;
   submitted_at: string;
   revised_at: string | null;
+  // "What you pay now" then "this offer" as smells for the simulated fly brain, whose spikes give the fruit fly's
+  // opinion (features/brainview/opinion). Null when there is no baseline to compare the offer against.
+  fly_opinion_stimulus: BrainStimulus | null;
 }
 
 // The task behind the listing, as its poster sees it (backend api/inbox/schemas.py InboxTaskSummary).

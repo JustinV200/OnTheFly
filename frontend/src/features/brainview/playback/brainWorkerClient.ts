@@ -66,6 +66,11 @@ export class BrainWorkerClient {
     this.send({ type: 'cancel', runId });
   }
 
+  /** Run a stimulus to the end and get back per-trial totals only (an 'evaluated' message), without any playback. */
+  public evaluate(evaluationId: string, stimulus: BrainStimulus, seed: number): void {
+    this.send({ type: 'evaluate', evaluationId, stimulus, seed });
+  }
+
   private send(message: PageToWorkerMessage): void {
     this.worker.postMessage(message);
   }

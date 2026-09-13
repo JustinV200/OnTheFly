@@ -9,6 +9,7 @@ import { cadenceSuffix } from '../../../shared/market';
 import { RequirementAnswerList } from '../../../shared/offers/RequirementAnswerList';
 import { ProvenanceBadge } from '../../../shared/provenance/ProvenanceBadge';
 import { ButtonLink, Drawer, Grid, Icon, Skeleton, Stat } from '../../../shared/ui';
+import { FlyOpinionBubble } from '../../brainview';
 import type { PublicRequirement } from '../../publish/types';
 import { EvidenceRecords } from '../evidence/EvidenceRecords';
 import { SavingsBreakdown } from '../savings/SavingsBreakdown';
@@ -65,6 +66,8 @@ export function OfferDrawer({ offer, ownerOffers, onClose, task, hasExpense, req
       <div className="offer-drawer">
         {task && task.accepted_challenge_id === null ? (
           <DrawerSection title="Accept this offer">
+            {/* A toy beside the decision, never part of it: the accept check is the server's alone. */}
+            <FlyOpinionBubble bidderName={offer.challenger_name} stimulus={offer.fly_opinion_stimulus} />
             <AcceptOfferPanel bidderName={offer.challenger_name} challengeId={offer.challenge_id} onAccepted={onAccepted} taskId={task.id} />
           </DrawerSection>
         ) : null}

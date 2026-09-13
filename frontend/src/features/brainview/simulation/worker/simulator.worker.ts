@@ -1,7 +1,9 @@
-/* Web Worker entry: loads the brain once, then runs one stimulus at a time, posting spikes as they are computed.
+/* Web Worker entry: loads the brain once, then runs one stimulus at a time for playback, posting spikes as they are
+   computed, and evaluates opinion stimuli one after another between playback batches, posting only their totals.
    Everything heavy (22 MB download, decompression, decoding, 15 million connections) stays off the page's main thread. */
 import { decodeBrainFile, type DecodedBrain } from '../../connectome/decodeBrainFile';
 import { fetchBrainFile } from '../../connectome/fetchBrainFile';
+import { TrialCounter } from '../evaluation/trialActivity';
 import { SimulationRun } from '../simulationRun';
 import type { PageToWorkerMessage, WorkerToPageMessage } from './workerProtocol';
 
@@ -18,9 +20,14 @@ interface ActiveRun {
   playbackStep: number;
 }
 
+type EvaluationRequest = Extract<PageToWorkerMessage, { type: 'evaluate' }>;
+
 let brainPromise: Promise<DecodedBrain> | null = null;
 let active: ActiveRun | null = null;
 let wakePump: (() => void) | null = null;
+// Evaluations wait their turn here; one runs at a time so a burst of offers never multiplies the memory in use.
+const evaluationQueue: EvaluationRequest[] = [];
+let isEvaluating = false;
 
 const post = (message: WorkerToPageMessage, transfer: Transferable[] = []): void => {
   (self as unknown as Worker).postMessage(message, transfer);
@@ -28,16 +35,26 @@ const post = (message: WorkerToPageMessage, transfer: Transferable[] = []): void
 
 self.onmessage = (event: MessageEvent<PageToWorkerMessage>): void => {
   const message = event.data;
-  if (message.type === 'start') {
-    void startRun(message.runId, message);
-  } else if (message.type === 'playback') {
-    if (active?.runId === message.runId) {
-      active.playbackStep = message.step;
-      wake();
-    }
-  } else if (active?.runId === message.runId) {
-    active = null;
-    wake();
+  switch (message.type) {
+    case 'start':
+      void startRun(message.runId, message);
+      break;
+    case 'playback':
+      if (active?.runId === message.runId) {
+        active.playbackStep = message.step;
+        wake();
+      }
+      break;
+    case 'cancel':
+      if (active?.runId === message.runId) {
+        active = null;
+        wake();
+      }
+      break;
+    case 'evaluate':
+      evaluationQueue.push(message);
+      void drainEvaluations();
+      break;
   }
 };
 
@@ -103,6 +120,47 @@ async function pump(runId: string): Promise<void> {
     post({ type: 'finished', runId, computeMs: performance.now() - started });
     active = null;
   }
+}
+
+async function drainEvaluations(): Promise<void> {
+  if (isEvaluating) {
+    return;
+  }
+  isEvaluating = true;
+  try {
+    for (let next = evaluationQueue.shift(); next !== undefined; next = evaluationQueue.shift()) {
+      await evaluate(next);
+    }
+  } finally {
+    isEvaluating = false;
+  }
+}
+
+async function evaluate(request: EvaluationRequest): Promise<void> {
+  let brain: DecodedBrain;
+  try {
+    brain = await loadBrain();
+  } catch (error) {
+    brainPromise = null;
+    post({ type: 'failed', runId: null, message: error instanceof Error ? error.message : String(error) });
+    return;
+  }
+
+  let run: SimulationRun;
+  try {
+    run = new SimulationRun(brain.connectome, request.stimulus, request.seed);
+  } catch (error) {
+    post({ type: 'failed', runId: request.evaluationId, message: `This evaluation couldn't start: ${error instanceof Error ? error.message : String(error)}` });
+    return;
+  }
+  const counter = new TrialCounter(request.stimulus, run.totalSteps, brain.connectome.neuronCount);
+  const started = performance.now();
+  while (!run.isFinished) {
+    counter.append(run.advance(BATCH_STEPS));
+    // Between batches a playing run gets its turn, so an opinion never freezes the panel.
+    await yieldToMessages();
+  }
+  post({ type: 'evaluated', evaluationId: request.evaluationId, evaluation: counter.result(performance.now() - started) });
 }
 
 function wake(): void {

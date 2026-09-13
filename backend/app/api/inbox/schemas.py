@@ -5,6 +5,7 @@ from datetime import datetime
 from pydantic import BaseModel
 
 from app.services.evidence.status import EvidenceRollup
+from app.services.flybrain import BrainStimulus
 from app.services.listings.types import PublicListingProjection
 
 
@@ -60,6 +61,9 @@ class InboxChallengeResponse(BaseModel):
     bidding_mode_at_submission: str
     submitted_at: datetime
     revised_at: datetime | None
+    # "What you pay now" then "this offer" as smells for the browser's simulated fly brain, which reads its yes/no and
+    # rating off the spikes (a labelled toy, never a check). None when there is no baseline to compare against.
+    fly_opinion_stimulus: BrainStimulus | None = None
 
 
 class InboxTaskSummary(BaseModel):

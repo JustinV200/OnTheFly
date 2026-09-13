@@ -23,6 +23,7 @@ from app.models.listing import PublicListingRecord, ScopeVersion
 from app.models.service_expense import ServiceExpense
 from app.models.tasks import Task
 from app.services.comparison.answered_scopes import load_answered_scopes
+from app.services.comparison.fly_opinion_stimulus import fly_opinion_stimulus
 from app.services.comparison.rank import RankedChallenge, rank_challenges
 from app.services.comparison.requirement_completeness import load_requirement_context
 from app.services.tasks.comparison_label import savings_label_for
@@ -91,6 +92,8 @@ def get_inbox(
                 bidding_mode_at_submission=row.bidding_mode_at_submission or "sealed",
                 submitted_at=challenge.submitted_at,
                 revised_at=challenge.revised_at,
+                # Owner-only like the rest of this row; it carries hashed receptor indices, never figures or names.
+                fly_opinion_stimulus=fly_opinion_stimulus(row),
             )
         )
     return InboxResponse(
