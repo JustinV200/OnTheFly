@@ -1,13 +1,16 @@
 /* Renders the page for a URL that matches no route. */
-import { Link } from 'react-router-dom';
+import { ButtonLink, PageHeader } from '../../shared/ui';
 
-import { EmptyState } from '../../shared/components/EmptyState';
-
-/** Render a defined state for unknown URLs. */
+/** Render a defined state for unknown URLs, with its own h1 and a way back into the product. */
 export function NotFoundPage(): JSX.Element {
   return (
-    <EmptyState action={<Link to="/marketplace">Browse the marketplace</Link>} title="There’s no page at this address">
-      The link may be mistyped, or it pointed at something that no longer exists.
-    </EmptyState>
+    <section>
+      <PageHeader
+        eyebrow="Page not found"
+        subtitle="The link may be mistyped, or it pointed at something that no longer exists."
+        title="There’s no page at this address"
+      />
+      <ButtonLink to="/marketplace" variant="primary">Browse the marketplace</ButtonLink>
+    </section>
   );
 }

@@ -1,0 +1,31 @@
+/* Scope completeness meter: a short track with a status-coloured fill, then the percentage in tabular numerals. */
+.scope-completeness {
+  align-items: center;
+  display: inline-flex;
+  gap: var(--space-2);
+  white-space: nowrap;
+}
+
+.scope-completeness__track {
+  background-color: var(--color-surface-sunken);
+  border-radius: var(--radius-pill);
+  display: inline-block;
+  height: var(--space-2);
+  overflow: hidden;
+  width: 5rem;
+}
+
+.scope-completeness__fill {
+  border-radius: var(--radius-pill);
+  display: block;
+  height: 100%;
+}
+
+.scope-completeness--high .scope-completeness__fill { background-color: var(--color-success-solid); }
+.scope-completeness--partial .scope-completeness__fill { background-color: var(--color-warning-solid); }
+.scope-completeness--low .scope-completeness__fill { background-color: var(--color-danger-solid); }
+
+.scope-completeness__text {
+  font-variant-numeric: tabular-nums;
+  font-weight: var(--weight-medium);
+}

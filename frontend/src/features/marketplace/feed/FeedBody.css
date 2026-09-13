@@ -1,0 +1,8 @@
+/* Feed grid: one card per row on a phone, two at desktop width.
+   auto-fill (not the Grid primitive's auto-fit) keeps a lone listing at card width instead of stretching across the page. */
+.marketplace-feed__grid {
+  display: grid;
+  gap: var(--space-4);
+  grid-template-columns: repeat(auto-fill, minmax(min(24rem, 100%), 1fr));
+  min-width: 0;
+}

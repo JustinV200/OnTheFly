@@ -1,11 +1,16 @@
-/* Labels a listing's bidding mode. Anything but an explicit "open" reads as sealed, the safe fallback. */
-import { Pill } from './Pill';
+/* Labels a listing's bidding mode. Anything but an explicit "open" reads as sealed, the safe fallback.
+   The lock / eye icons reinforce the words; the words alone say which mode is in force. */
+import { Badge, Icon } from '../ui';
 
 /** Render "Open bidding" or "Sealed bidding" with what each means on hover. */
 export function BiddingModePill({ mode }: { mode: string }): JSX.Element {
   return mode === 'open' ? (
-    <Pill title="Offer prices and scope are public, anonymized. Challenger identities never are." tone="info">Open bidding</Pill>
+    <Badge icon={<Icon name="eye" />} title="Offer prices and scope are public, anonymized. Challenger identities never are." tone="info">
+      Open bidding
+    </Badge>
   ) : (
-    <Pill title="Only the number of offers is public. Prices stay with the owner." tone="private">Sealed bidding</Pill>
+    <Badge icon={<Icon name="lock" />} title="Only the number of offers is public. Prices stay with the owner." tone="private">
+      Sealed bidding
+    </Badge>
   );
 }

@@ -3,13 +3,12 @@
 import { useState } from 'react';
 
 import { useActingAccount } from '../../shared/account/ActingAccountContext';
-import { ApiQueryState, useApiQuery } from '../../shared/api/useApiQuery';
-import { EmptyState } from '../../shared/components/EmptyState';
-import { ErrorState } from '../../shared/components/ErrorState';
-import { LoadingSpinner } from '../../shared/components/LoadingSpinner';
+import { useApiQuery } from '../../shared/api/useApiQuery';
 import { categoryLabel } from '../../shared/format/categoryLabel';
-import { ListingCard } from './ListingCard';
+import { Field, PageHeader, Select, Stack } from '../../shared/ui';
+import { FeedBody } from './feed/FeedBody';
 import type { MarketplaceFeedResponse } from './types';
+import './MarketplacePage.css';
 
 // One category in scope for the MVP (CLAUDE.md, "Scope discipline"); the filter still shows its empty state.
 const CATEGORY_OPTIONS = ['cleaning'];
@@ -25,45 +24,25 @@ export function MarketplacePage(): JSX.Element {
   );
 
   return (
-    <section>
-      <div style={{ alignItems: 'center', display: 'flex', flexWrap: 'wrap', gap: '1rem', justifyContent: 'space-between' }}>
-        <div>
-          <h2 style={{ margin: 0 }}>Marketplace</h2>
-          <p style={{ color: '#475569', margin: '0.25rem 0 0' }}>
-            Prices businesses chose to publish. {account ? 'Your own listings are not shown here.' : 'Pick a business above to challenge one.'}
-          </p>
-        </div>
-        <label>
-          Category{' '}
-          <select onChange={(event) => setCategory(event.target.value)} value={category}>
-            <option value="">All categories</option>
-            {CATEGORY_OPTIONS.map((option) => <option key={option} value={option}>{categoryLabel(option)}</option>)}
-          </select>
-        </label>
-      </div>
+    <Stack gap={6}>
+      <PageHeader
+        actions={
+          <Field className="marketplace-page__filter" label="Category">
+            <Select onChange={(event) => setCategory(event.target.value)} value={category}>
+              <option value="">All categories</option>
+              {CATEGORY_OPTIONS.map((option) => <option key={option} value={option}>{categoryLabel(option)}</option>)}
+            </Select>
+          </Field>
+        }
+        subtitle={`Prices businesses chose to publish. ${account ? 'Your own listings are not shown here.' : 'Pick a business above to challenge one.'}`}
+        title="Marketplace"
+      />
 
-      <FeedBody category={category} feed={feed} />
-    </section>
-  );
-}
-
-function FeedBody({ category, feed }: { category: string; feed: ApiQueryState<MarketplaceFeedResponse> }): JSX.Element {
-  if (!feed.data) {
-    return feed.error
-      ? <ErrorState error={feed.error} onRetry={feed.reload} title="Couldn’t load the marketplace" />
-      : <LoadingSpinner label="Loading public listings…" />;
-  }
-  if (feed.data.listings.length === 0) {
-    return (
-      <EmptyState title={category ? `No public listings in ${categoryLabel(category)} yet` : 'No public listings yet'}>
-        A listing appears here the moment a business publishes one of its expenses. Everything else a business pays for stays
-        private, so a quiet feed is what a young marketplace looks like, not an error.
-      </EmptyState>
-    );
-  }
-  return (
-    <div style={{ marginTop: '1rem' }}>
-      {feed.data.listings.map((item) => <ListingCard item={item} key={item.listing.id} />)}
-    </div>
+      <section aria-labelledby="marketplace-listings-heading">
+        {/* The count line under it is visible; this heading keeps the outline h1 → h2 → card h3 for screen readers. */}
+        <h2 className="ui-visually-hidden" id="marketplace-listings-heading">Public listings</h2>
+        <FeedBody category={category} feed={feed} />
+      </section>
+    </Stack>
   );
 }

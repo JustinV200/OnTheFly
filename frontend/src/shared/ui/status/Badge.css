@@ -1,0 +1,58 @@
+/* Badge shape and tones. Every tone pairs its own text, background, and border (contrast >= 4.5:1). */
+.ui-badge {
+  align-items: center;
+  border: var(--border-width) solid;
+  border-radius: var(--radius-pill);
+  display: inline-flex;
+  font-weight: var(--weight-semibold);
+  gap: var(--space-1);
+  letter-spacing: 0.005em;
+  line-height: var(--leading-snug);
+  max-width: 100%;
+  vertical-align: middle;
+  white-space: nowrap;
+}
+
+.ui-badge--sm {
+  font-size: var(--text-xs);
+  min-height: 22px;
+  padding: 0 var(--space-2);
+}
+
+.ui-badge--md {
+  font-size: var(--text-sm);
+  min-height: 26px;
+  padding: 0 var(--space-3);
+}
+
+.ui-badge__icon {
+  display: inline-flex;
+  flex: none;
+}
+
+.ui-badge__icon > svg {
+  height: 12px;
+  width: 12px;
+}
+
+.ui-badge--md .ui-badge__icon > svg {
+  height: 14px;
+  width: 14px;
+}
+
+/* Long labels ("offer: captured from an off-platform response") wrap instead of overflowing a phone screen. */
+@media (max-width: 479px) {
+  .ui-badge {
+    border-radius: var(--radius-md);
+    white-space: normal;
+  }
+}
+
+.ui-badge--neutral { background-color: var(--color-neutral-bg); border-color: var(--color-neutral-border); color: var(--color-neutral-text); }
+.ui-badge--info { background-color: var(--color-info-bg); border-color: var(--color-info-border); color: var(--color-info-text); }
+.ui-badge--success { background-color: var(--color-success-bg); border-color: var(--color-success-border); color: var(--color-success-text); }
+.ui-badge--warning { background-color: var(--color-warning-bg); border-color: var(--color-warning-border); color: var(--color-warning-text); }
+.ui-badge--danger { background-color: var(--color-danger-bg); border-color: var(--color-danger-border); color: var(--color-danger-text); }
+.ui-badge--simulated { background-color: var(--color-simulated-bg); border-color: var(--color-simulated-border); color: var(--color-simulated-text); }
+.ui-badge--private { background-color: var(--color-private-bg); border-color: var(--color-private-border); color: var(--color-private-text); }
+.ui-badge--brand { background-color: var(--color-brand-soft); border-color: var(--color-brand-soft-border); color: var(--color-brand-text); }

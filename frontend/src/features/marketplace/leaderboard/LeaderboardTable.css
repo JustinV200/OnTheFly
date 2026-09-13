@@ -1,0 +1,10 @@
+/* Leaderboard cells: a bold rank and a larger price, the two figures a challenger scans first. */
+.leaderboard-table__rank {
+  font-variant-numeric: tabular-nums;
+  font-weight: var(--weight-bold);
+}
+
+.leaderboard-table__price {
+  font-size: var(--text-lg);
+  font-weight: var(--weight-semibold);
+}

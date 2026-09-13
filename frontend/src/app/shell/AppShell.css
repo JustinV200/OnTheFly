@@ -1,0 +1,48 @@
+/* Shell layout: a centred page container with responsive gutters, and the skip link. */
+.app-shell {
+  display: flex;
+  flex-direction: column;
+  min-height: 100vh;
+}
+
+.app-shell__container {
+  margin: 0 auto;
+  max-width: var(--layout-max-width);
+  padding: 0 var(--layout-gutter);
+  width: 100%;
+}
+
+.app-shell__main {
+  flex: 1;
+  padding-bottom: var(--space-16);
+  padding-top: var(--space-5);
+}
+
+@media (min-width: 768px) {
+  .app-shell__main {
+    padding-top: var(--space-4);
+  }
+}
+
+.app-shell__main:focus {
+  outline: none;
+}
+
+.app-shell__skip-link {
+  background-color: var(--color-brand);
+  border-radius: var(--radius-md);
+  color: var(--color-text-inverse);
+  font-weight: var(--weight-semibold);
+  left: var(--space-3);
+  padding: var(--space-2) var(--space-4);
+  position: absolute;
+  text-decoration: none;
+  top: var(--space-3);
+  transform: translateY(-200%);
+  z-index: calc(var(--z-popover) + 1);
+}
+
+.app-shell__skip-link:focus-visible {
+  color: var(--color-text-inverse);
+  transform: none;
+}

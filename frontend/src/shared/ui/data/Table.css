@@ -1,0 +1,149 @@
+/* Table styles: hairline rows, muted headers, right-aligned numbers, selected rows, and the phone stack layout. */
+.ui-table-scroll {
+  border: var(--border-width) solid var(--color-border);
+  border-radius: var(--radius-lg);
+  background-color: var(--color-surface);
+  max-width: 100%;
+  overflow-x: auto;
+  -webkit-overflow-scrolling: touch;
+}
+
+.ui-table-scroll:focus-visible {
+  outline: 2px solid var(--color-focus-ring);
+  outline-offset: 2px;
+}
+
+.ui-table {
+  border-collapse: collapse;
+  font-variant-numeric: tabular-nums;
+  min-width: var(--ui-table-min-width, 0);
+  width: 100%;
+}
+
+.ui-table__caption {
+  color: var(--color-text-muted);
+  font-size: var(--text-sm);
+  padding: var(--space-3) var(--space-4) 0;
+  text-align: left;
+}
+
+.ui-table th {
+  background-color: var(--color-surface-subtle);
+  border-bottom: var(--border-width) solid var(--color-border);
+  color: var(--color-text-muted);
+  font-size: var(--text-xs);
+  font-weight: var(--weight-semibold);
+  letter-spacing: 0.02em;
+  padding: var(--space-2) var(--space-3);
+  text-align: left;
+  vertical-align: bottom;
+  white-space: nowrap;
+}
+
+.ui-table td {
+  border-top: var(--border-width) solid var(--color-border-subtle);
+  padding: var(--space-3);
+  /* Rows here are often multi-line (figures with captions, evidence lists), which read best top-aligned. */
+  vertical-align: top;
+}
+
+.ui-table tbody tr:first-child td {
+  border-top: 0;
+}
+
+.ui-table--compact th { padding: var(--space-1) var(--space-3); }
+.ui-table--compact td { padding: var(--space-2) var(--space-3); }
+
+/* Outer cells line up with the container edge padding. */
+.ui-table :is(th, td):first-child { padding-left: var(--space-4); }
+.ui-table :is(th, td):last-child { padding-right: var(--space-4); }
+
+.ui-table :is(th, td).ui-num {
+  text-align: right;
+  white-space: nowrap;
+}
+
+.ui-table--interactive tbody tr {
+  cursor: pointer;
+  transition: background-color var(--duration-fast) var(--ease-standard);
+}
+
+.ui-table--interactive tbody tr:hover {
+  background-color: var(--color-surface-subtle);
+}
+
+/* Selected row: tint plus an inset bar, and the row itself should also say so in text for non-visual users. */
+.ui-table tbody tr.is-selected {
+  background-color: var(--color-brand-soft);
+  box-shadow: inset 3px 0 0 var(--color-brand);
+}
+
+/* ---- Phone stack layout: each row becomes a card of label/value pairs ---- */
+@media (max-width: 639px) {
+  .ui-table-scroll--stack {
+    background: none;
+    border: 0;
+    border-radius: 0;
+    overflow: visible;
+  }
+
+  .ui-table--stack {
+    min-width: 0;
+  }
+
+  .ui-table--stack thead {
+    border: 0;
+    clip: rect(0 0 0 0);
+    height: 1px;
+    margin: -1px;
+    overflow: hidden;
+    position: absolute;
+    white-space: nowrap;
+    width: 1px;
+  }
+
+  .ui-table--stack,
+  .ui-table--stack tbody,
+  .ui-table--stack tr,
+  .ui-table--stack td,
+  .ui-table--stack th {
+    display: block;
+  }
+
+  .ui-table--stack tbody tr {
+    background-color: var(--color-surface);
+    border: var(--border-width) solid var(--color-border);
+    border-radius: var(--radius-lg);
+    margin-bottom: var(--space-3);
+    padding: var(--space-2) var(--space-4);
+  }
+
+  /* Block cells with the column label floated left: a cell's mixed inline content stays together on the right. */
+  .ui-table--stack td,
+  .ui-table--stack td:first-child,
+  .ui-table--stack td:last-child {
+    border: 0;
+    padding: var(--space-2) 0;
+    text-align: right;
+  }
+
+  .ui-table--stack tbody tr > td:not(:first-child) {
+    border-top: var(--border-width) solid var(--color-border-subtle);
+  }
+
+  .ui-table--stack td[data-label]::before {
+    color: var(--color-text-muted);
+    content: attr(data-label);
+    float: left;
+    font-size: var(--text-sm);
+    font-weight: var(--weight-medium);
+    margin-right: var(--space-4);
+    text-align: left;
+  }
+
+  .ui-table--stack td::after {
+    clear: both;
+    content: "";
+    display: table;
+  }
+}

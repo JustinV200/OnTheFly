@@ -1,0 +1,13 @@
+/* Listing detail layout: price and scope, then the terms panel, stacked on a phone; side by side from a laptop up. */
+.listing-detail__layout {
+  align-items: start;
+  display: grid;
+  gap: var(--space-6);
+  min-width: 0;
+}
+
+@media (min-width: 1024px) {
+  .listing-detail__layout {
+    grid-template-columns: minmax(0, 1fr) minmax(18rem, 22rem);
+  }
+}
