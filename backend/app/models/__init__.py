@@ -4,8 +4,15 @@ from app.models.account import Account
 from app.models.challenge import Challenge, ChallengeRevision
 from app.models.challenger_evidence import ChallengerEvidence
 from app.models.financial_connection import FinancialConnection
-from app.models.invitation import Invitation
 from app.models.listing import PublicListingRecord, ScopeVersion
+from app.models.outreach import (
+    DiscoveryRun,
+    Invitation,
+    InvitationApproval,
+    OutreachSuppression,
+    ProviderCandidate,
+    SandboxOutboxMessage,
+)
 from app.models.service_expense import ServiceExpense
 from app.models.transaction import Transaction
 from app.models.vendor_alias_dismissal import VendorAliasDismissal
@@ -17,9 +24,14 @@ __all__ = [
     "Challenge",
     "ChallengeRevision",
     "ChallengerEvidence",
+    "DiscoveryRun",
     "FinancialConnection",
     "Invitation",
+    "InvitationApproval",
+    "OutreachSuppression",
+    "ProviderCandidate",
     "PublicListingRecord",
+    "SandboxOutboxMessage",
     "ScopeVersion",
     "ServiceExpense",
     "Transaction",
