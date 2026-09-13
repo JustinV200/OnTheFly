@@ -2,9 +2,14 @@
 
 > Status reconciliation — 2026-09-12: Modern UI redesign and the new demo rehearsal remain outstanding. Target Spend → REBID progress → Market → actual Fly Scout output → Bid. Preserve privacy/provenance checks; genuine external quotes and production hosting complexity are not hard prerequisites.
 >
+> Update 2026-09-13:
+> - The task-market UI is merged ([11](11-usability-and-dark-mode.md)).
+> - The demo is now [plan2](../plan/plan2.md)'s three-account run: GovCon → Prime A → Sub B, with acceptance, Ways to save and reconciled money views. Fly output comes after splitting.
+> - Rehearsal acceptance is in [12](12-task-ownership-and-splitting.md), "Demo acceptance". The eleven-step script referenced below is superseded.
+>
 > The detailed usability redesign and dark mode plan for "Establish the visual system and application shell" and "Redesign the five core screens" is [11 — Usability redesign and dark mode](11-usability-and-dark-mode.md).
 >
-> Follow [the current P0/P1/P2 roadmap](README.md) and [current product plan](../plan/plan1.md). The earlier specification below is retained for reusable implementation detail. Its old priorities, demo category, and unchecked boxes are not a current completion report.
+> Follow [the current P0/P1/P2 roadmap](README.md) and [current product plan](../plan/plan2.md). The earlier specification below is retained for reusable implementation detail. Its old priorities, demo category, and unchecked boxes are not a current completion report.
 
 ## Earlier component specification
 

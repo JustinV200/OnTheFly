@@ -2,7 +2,11 @@
 
 **Connect existing business spend → REBID → discover suppliers → compare modeled pricing → receive a challenge.**
 
-Updated 2026-09-12 using the supplied `on_the_fly_hackathon_build_plan.md`. This is the plan of record. It supersedes the [previous marketplace plan](previous-marketplace-plan.md) for product priorities while retaining the implemented marketplace, data pipeline, and privacy mechanics.
+> Superseded as the plan of record on 2026-09-13 by [plan2](plan2.md). Plan2 adds task ownership, offer acceptance, splitting and Ways to save, and moves Fly Scout after splitting.
+>
+> This document is retained for REBID detail: the GovCon ledger, the two data paths, scope inputs, supplier discovery and public-rate rules. Where the two differ on priority, demo sequence or UI, plan2 wins.
+
+Updated 2026-09-12 using the supplied `on_the_fly_hackathon_build_plan.md`. It superseded the [previous marketplace plan](previous-marketplace-plan.md) for product priorities while retaining the implemented marketplace, data pipeline, and privacy mechanics.
 
 ## Current position
 

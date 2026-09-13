@@ -1,8 +1,8 @@
 # Phase 04 — Visibility and public profiles
 
-> Status reconciliation — 2026-09-12: Publishing/preview, explicit public projection, profile routes and scope versions exist. Reuse these and add DevSecOps scope. REBID starts private research; it does not automatically publish account data. Cleaning fields below are historical, not the new category schema.
+> Status reconciliation — 2026-09-12: Publishing/preview, explicit public projection, profile routes and scope versions exist. Reuse these and add DevSecOps scope. REBID starts private research; it does not automatically publish account data. Cleaning fields below are historical, not the new category schema. Under [12](12-task-ownership-and-splitting.md), scope moves onto requirement rows and category templates, and each piece gets its own public projection built field by field.
 >
-> Follow [the current P0/P1/P2 roadmap](README.md) and [current product plan](../plan/plan1.md). The earlier specification below is retained for reusable implementation detail. Its old priorities, demo category, and unchecked boxes are not a current completion report.
+> Follow [the current P0/P1/P2 roadmap](README.md) and [current product plan](../plan/plan2.md). The earlier specification below is retained for reusable implementation detail. Its old priorities, demo category, and unchecked boxes are not a current completion report.
 
 ## Earlier component specification
 

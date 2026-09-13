@@ -2,7 +2,9 @@
 
 > Status reconciliation — 2026-09-12: Listing, submission/revision, sealed/open bidding and inbox code exist. Adapt them to the DevSecOps scope and verify a two-device bid. Notifications are excluded. Connect discovered suppliers to this existing flow instead of creating a second marketplace.
 >
-> Follow [the current P0/P1/P2 roadmap](README.md) and [current product plan](../plan/plan1.md). The earlier specification below is retained for reusable implementation detail. Its old priorities, demo category, and unchecked boxes are not a current completion report.
+> Update 2026-09-13: [12](12-task-ownership-and-splitting.md) extends this flow with offer acceptance, ownership transfer to the winning bidder, and the payer chain. "An owner cannot bid on their own listing" becomes the chain's first link. The demo now needs three accounts on three devices.
+>
+> Follow [the current P0/P1/P2 roadmap](README.md) and [current product plan](../plan/plan2.md). The earlier specification below is retained for reusable implementation detail. Its old priorities, demo category, and unchecked boxes are not a current completion report.
 
 ## Earlier component specification
 

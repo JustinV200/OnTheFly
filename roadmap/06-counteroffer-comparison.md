@@ -1,8 +1,8 @@
 # Phase 06 — Counteroffer comparison
 
-> Status reconciliation — 2026-09-12: Deterministic offer normalization, comparison and scope-gap logic exist for the earlier demo. Add a separate public-rate modeled-price path and DevSecOps labor/hours assumptions. A modeled bid must never be stored or labeled as a supplier-submitted quote.
+> Status reconciliation — 2026-09-12: Deterministic offer normalization, comparison and scope-gap logic exist for the earlier demo. Add a separate public-rate modeled-price path and DevSecOps labor/hours assumptions. A modeled bid must never be stored or labeled as a supplier-submitted quote. Under [12](12-task-ownership-and-splitting.md), scope completeness comes from per-requirement offer responses, and money views reuse this arithmetic.
 >
-> Follow [the current P0/P1/P2 roadmap](README.md) and [current product plan](../plan/plan1.md). The earlier specification below is retained for reusable implementation detail. Its old priorities, demo category, and unchecked boxes are not a current completion report.
+> Follow [the current P0/P1/P2 roadmap](README.md) and [current product plan](../plan/plan2.md). The earlier specification below is retained for reusable implementation detail. Its old priorities, demo category, and unchecked boxes are not a current completion report.
 
 ## Earlier component specification
 

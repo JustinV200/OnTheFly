@@ -2,7 +2,7 @@
 
 > Status reconciliation — 2026-09-12: A genuine external quote is now an optional bonus. The full demo needs a submitted challenge, which can be labeled demo data. The earlier hour-zero critical-path requirement and quote deadline below no longer govern the build.
 >
-> Follow [the current P0/P1/P2 roadmap](README.md) and [current product plan](../plan/plan1.md). The earlier specification below is retained for reusable implementation detail. Its old priorities, demo category, and unchecked boxes are not a current completion report.
+> Follow [the current P0/P1/P2 roadmap](README.md) and [current product plan](../plan/plan2.md). The earlier specification below is retained for reusable implementation detail. Its old priorities, demo category, and unchecked boxes are not a current completion report.
 
 ## Earlier component specification
 

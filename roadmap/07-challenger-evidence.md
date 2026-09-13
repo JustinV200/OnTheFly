@@ -1,8 +1,8 @@
 # Phase 07 — Challenger evidence
 
-> Status reconciliation — 2026-09-12: Only local evidence logic and registry stubs exist. USAspending supplier discovery/evidence is P0; Tavily enrichment is P1. The earlier optional-evidence priority below does not apply to the new demo's required public supplier evidence.
+> Status reconciliation — 2026-09-12: Only local evidence logic and registry stubs exist. USAspending supplier discovery/evidence is P0; Tavily enrichment is P1. The same USAspending and public-rate retrievals become per-segment market evidence for Ways to save ([12](12-task-ownership-and-splitting.md), step 8), with suppliers counted by UEI only. The earlier optional-evidence priority below does not apply to the new demo's required public supplier evidence.
 >
-> Follow [the current P0/P1/P2 roadmap](README.md) and [current product plan](../plan/plan1.md). The earlier specification below is retained for reusable implementation detail. Its old priorities, demo category, and unchecked boxes are not a current completion report.
+> Follow [the current P0/P1/P2 roadmap](README.md) and [current product plan](../plan/plan2.md). The earlier specification below is retained for reusable implementation detail. Its old priorities, demo category, and unchecked boxes are not a current completion report.
 
 ## Earlier component specification
 

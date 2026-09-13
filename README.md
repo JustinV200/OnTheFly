@@ -1,33 +1,46 @@
 # On the Fly
 
-**Click REBID on what your business already pays for.**
+**REBID what your business already pays for, post what it newly needs, and split off the pieces that save money.**
 
-On the Fly is being built into a spend-to-supplier marketplace: connect a business account, identify replaceable spend, research comparable suppliers, compare public pricing models, and receive a challenger offer.
+On the Fly is a task market:
+1. A business connects its accounts, finds replaceable spend, and posts it as a task, or posts new work it needs.
+2. Other businesses bid. When the poster accepts an offer, the winning bidder owns the task.
+3. Any task owner can split off pieces. **Ways to save** suggests only the pieces where public contract history and labor rates say splitting is cheaper.
+4. Each piece is its own task, owned by whoever wins it, and can be split again.
 
-The current code is a working marketplace foundation with a Stripe sandbox import integration. The new GovCon REBID workflow is the next build milestone, not a completed feature.
+The current code is a working marketplace foundation with a Kalshi-style task-market UI, a Stripe sandbox import integration and owner-approved supplier invitations. REBID, task ownership and splitting are the next build milestones, not completed features.
 
 ## Current build status
 
-Status reviewed 2026-09-12 against the repository and the supplied `on_the_fly_hackathon_build_plan.md`.
+Status reviewed 2026-09-13 against the repository, [the current plan](plan/plan2.md) and [roadmap](roadmap/README.md).
 
 | Area | Current state | Remaining work |
 |---|---|---|
 | Stripe Financial Connections | Consent/session API, company binding, transaction imports, refresh polling, and UI implemented | Verify actual sandbox consent with configured keys |
 | Financial data | Normalized transactions, fixture source, recurring-spend grouping and annualization implemented | Add GovCon ledger and verify its totals |
-| Marketplace | Private dashboard, publish preview, profiles, listings, challenges, and comparison implemented for the cleaning demo | Adapt scope and comparison to DevSecOps; verify two-device bid flow |
-| Evidence | Local checks and registry stub | USAspending supplier discovery, public rate inputs, Tavily enrichment |
-| REBID | Planned | Orchestrated workflow, persisted progress, supplier results |
-| AI | Anthropic dependency/configuration present; no completed reasoning workflow | New plan calls for OpenAI scope/evidence processing |
-| Fly Scout | Planned P1 | Actual exploration output wired to qualified suppliers |
-| UI | Basic existing screens and Stripe controls | Modern REBID-focused Spend → Progress → Market → Fly → Bid experience |
-| Database | SQLite locally, SQLAlchemy and Alembic migrations | Supabase/Postgres remains optional deployment work |
-| Demo readiness | Not yet ready for the new story | Finish P0/P1 and rehearse with labeled data |
+| Marketplace | Publish stepper with exact preview, market board, market page with bid ticket, offers with revisions and sealed/open bidding, Offers inbox, comparison and profiles, on cleaning demo data | Requirements and category templates; per-requirement offer responses; accepting an offer |
+| Task ownership and splitting | Planned ([roadmap 12](roadmap/12-task-ownership-and-splitting.md)) | Poster and task owner, cuts, splits, Ways to save, money views |
+| Evidence | Local checks and registry stub | USAspending awards and subawards, public labor rates, Tavily enrichment |
+| Outreach | Owner-approved invitations, sandbox outbox by default, public opt-out page | Live Tavily and SMTP verification; delivery tracking |
+| REBID | Planned | Workflow, persisted progress, confirmed requirements, supplier results |
+| AI | Anthropic dependency/configuration present; no completed reasoning workflow | OpenAI for requirement tags, hour estimates and split drafts; never money or identity |
+| Fly | `flybrain` circuits label their results on Spend and similar listings | Fly Scout and FlyHash award ranking after splitting, labeled at each result |
+| UI | Task market with light/dark/system themes ([roadmap 11](roadmap/11-usability-and-dark-mode.md)) | My work, split drawer, Ways to save; keyboard focus and honesty-label audit |
+| Database | SQLite locally, SQLAlchemy and Alembic migrations 0001–0012 | Supabase/Postgres remains optional deployment work |
+| Demo readiness | Not yet ready for the current story | Finish P0/P1 and rehearse three accounts with labeled data |
 
-Last verification (2026-09-12, after the justin-working review fixes): **313 backend tests passed**, frontend typecheck and production build passed, and migrations 0001–0011 applied to a fresh database matching the models. Stripe responses were mocked in tests; this does not certify a real sandbox connection or the new REBID flow.
+Last reported verification (2026-09-13, at the task-market UI and outreach merge): **360 backend tests passed**, and the frontend build passed with the colour and contrast checks. Stripe, Tavily and SMTP responses were mocked in tests. This does not certify a real sandbox connection, live outreach, or the planned REBID and splitting flows.
 
-## New demo and data strategy
+## Demo and data strategy
 
-Target buyer: **GovCon Industries**, a fictional company. Seed 3–6 months across DevSecOps, cybersecurity, program management, facilities, and logistics. Only **DevSecOps Engineering Support** needs the complete REBID path.
+Target buyer: **GovCon Industries**, a fictional company. Seed 3–6 months across DevSecOps, cybersecurity, program management, facilities, and logistics. Only **DevSecOps Engineering Support** needs the complete path.
+
+Demo accounts:
+- **GovCon Industries** posts the REBID.
+- **Prime A** wins it and splits off a piece.
+- **Sub B** wins that piece and can split it again.
+
+All three are demo identities with labeled fixture rates.
 
 Stripe demonstrates consent and ingestion using Stripe's simulated bank data. The custom GovCon ledger is a separate fixture imported through the same normalized pipeline. It is not manufactured inside Stripe.
 
@@ -35,21 +48,23 @@ Required labels:
 
 - **Stripe sandbox** — transactions returned by Stripe.
 - **Hackathon demo ledger — synthetic buyer spend based on public procurement categories** — planned GovCon fixtures.
-- **Modeled bid from public pricing — not a vendor quote** — future public-rate calculations.
-- **Demo offer** or **genuine supplier quote**, according to the actual provenance of a submitted challenge.
+- **Modeled bid from public pricing — not a vendor quote** — public-rate estimates for a whole task.
+- **Modeled cut from public pricing — not an offer** — Ways to save cards.
+- **Subcontract** — pieces split from an accepted task.
+- **Demo offer** or **genuine supplier quote**, according to the actual provenance of a submitted offer.
 
 The current seed still creates Apex Facilities Group and commercial-cleaning data. GovCon data is not implemented yet.
 
 ## Next build order
 
 1. Verify Stripe sandbox consent; add GovCon fixtures and confirm annualized totals.
-2. Add REBID and owner-confirmed DevSecOps scope.
-3. Discover real suppliers through USAspending and preserve source evidence.
-4. Build one defensible deterministic public-rate comparison.
-5. Add Tavily enrichment and actual Fly Scout exploration.
-6. Reuse challenges for a two-device submitted bid, then polish the UI and rehearse.
+2. Add tasks with poster and task owner, requirements with category templates, and offer acceptance.
+3. Add REBID with owner-confirmed DevSecOps requirements, and `new` tasks.
+4. Add cuts, manual splits, piece visibility and the payer chain.
+5. Connect USAspending and public labor rates as market evidence; add cost basis rates, Ways to save and money views.
+6. Add Split everything and Tavily, then Fly Scout, then rehearse on three devices.
 
-Notifications, automated outreach, payment movement, and real authentication are excluded from this hackathon slice. A genuine external quote is a bonus, not a dependency.
+Notifications, automatic sending, payment movement, contracts and real authentication are excluded from this hackathon slice. Invitations send only with owner approval. A genuine external quote is a bonus, not a dependency.
 
 ## Run locally
 
@@ -80,8 +95,9 @@ The existing `python -m app.cli.seed_demo` command is a **destructive reset** fo
 
 ## Documentation and structure
 
-- [Current product plan](plan/plan1.md)
+- [Current product plan](plan/plan2.md), with [plan1](plan/plan1.md) retained for REBID detail
 - [Current roadmap and completion gates](roadmap/README.md)
+- [Task ownership and splitting build spec](roadmap/12-task-ownership-and-splitting.md)
 - [Backend setup](backend/README.md) and [frontend setup](frontend/README.md)
 - [Stripe setup and limitations](backend/app/services/transactions/stripe/NOTES.md)
 - [Project guide](CLAUDE.md) and [coding rules](.claude/codingrules.md)

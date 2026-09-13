@@ -2,7 +2,7 @@
 
 > Status reconciliation — 2026-09-12: Implemented locally: React/Vite, FastAPI, SQLite, Alembic, seeded demo accounts and money/provenance primitives. Supabase and public deployment are not established by this status. Reuse the foundation; do not rebuild it.
 >
-> Follow [the current P0/P1/P2 roadmap](README.md) and [current product plan](../plan/plan1.md). The earlier specification below is retained for reusable implementation detail. Its old priorities, demo category, and unchecked boxes are not a current completion report.
+> Follow [the current P0/P1/P2 roadmap](README.md) and [current product plan](../plan/plan2.md). The earlier specification below is retained for reusable implementation detail. Its old priorities, demo category, and unchecked boxes are not a current completion report.
 
 ## Earlier component specification
 

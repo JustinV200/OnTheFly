@@ -2,7 +2,7 @@
 
 > Status — 2026-09-13: Built and merged to `main`: theme tokens, dark mode, primitives, the compact shell, the market card, and the task-market screens (Markets, market page with bid ticket, bid form, Publish stepper, Spend, My listings, Offers, trace, Invite suppliers). Checked in screenshots at 1280px light and 390px dark, and with one submitted bid; keyboard focus and a screen-by-screen honesty-label audit are still open. Planned from a walkthrough of the running staged demo at desktop (1280px) and phone (390px) widths. This is the detailed specification behind roadmap 09's "Establish the visual system and application shell" and "Redesign the five core screens"; 09's provenance audit, privacy proof and rehearsal steps are unchanged.
 >
-> Follow [the current P0/P1/P2 roadmap](README.md) and [current product plan](../plan/plan1.md).
+> Follow [the current P0/P1/P2 roadmap](README.md) and [current product plan](../plan/plan2.md). The next screens on this system are My work, the split drawer and Ways to save ([12](12-task-ownership-and-splitting.md), steps 6, 9 and 10).
 
 **Goal:** on any screen, a first-time user can tell within a few seconds what they are looking at, whether it is private or public, and what to do next. This must work in light and dark mode without dropping any honesty label.
 
@@ -114,7 +114,7 @@ User-facing words: **Bid** is the action, an **offer** is what a bid creates, an
 - **Account menu.** A button shows the acting business's coloured avatar and full name at ≥18px, so it is still unmistakable on a projector (roadmap 09, "The account switch as a demo instrument"). It opens a list of businesses with Public visitor separated at the bottom. "View our public profile" moves here.
 - **Task-based navigation:** **Spend** (private dashboard), **Listings** (the business's published and unpublished listings with offer counts, each linking to its inbox, derived from existing expense data), and **Marketplace**. **My offers** (offers this business has made) needs a new owner-scoped endpoint that never exposes other challengers, so it is optional.
 - **Demo-data chip.** The strip becomes one chip that still states both facts on screen, e.g. "Fixture data · 3 simulated offers", in the simulated tone. Clicking expands the full explanation. When `/api/demo/status` fails, the chip turns danger-toned with "Data labels unavailable", never hidden (roadmap 09, "Honest labeling of the demo's seams").
-- **Workflow vs places.** REBID's Progress → Market → Fly → Bid ([plan](../plan/plan1.md), "UI and demo sequence") is a per-expense workflow, so it gets a Stepper inside the expense's REBID page, not top-level nav items.
+- **Workflow vs places.** REBID's Progress → Market → Bid ([plan1](../plan/plan1.md), "UI and demo sequence"; [plan2](../plan/plan2.md) moves Fly after splitting) is a per-expense workflow, so it gets a Stepper inside the expense's REBID page, not top-level nav items.
 - **Page chrome.** Use `PageHeader` on every page with a back link on nested routes. Set per-page document titles ("Spend · On the Fly"), a real favicon, and fix the "Marketplace Demo" title.
 - **Phone.** The nav collapses behind a menu button, the account menu becomes a full-width sheet, and the page never scrolls horizontally.
 

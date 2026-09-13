@@ -2,7 +2,7 @@
 
 > Status reconciliation — 2026-09-12: Stripe transaction-only sandbox sessions, company binding, imports, status updates, polling and UI are implemented with mocked-provider tests. Actual sandbox consent remains unverified. Add the separate GovCon fixture ledger next. Useful custom Stripe transactions are not a dependency; balances/webhooks remain deferred.
 >
-> Follow [the current P0/P1/P2 roadmap](README.md) and [current product plan](../plan/plan1.md). The earlier specification below is retained for reusable implementation detail. Its old priorities, demo category, and unchecked boxes are not a current completion report.
+> Follow [the current P0/P1/P2 roadmap](README.md) and [current product plan](../plan/plan2.md). The earlier specification below is retained for reusable implementation detail. Its old priorities, demo category, and unchecked boxes are not a current completion report.
 
 ## Earlier component specification
 

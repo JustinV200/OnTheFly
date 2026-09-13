@@ -2,7 +2,7 @@
 
 > Status reconciliation — 2026-09-12: Use the current roadmap's P2 list: tool-selecting orchestration, fly learning/rewards, optional SAM.gov, additional categories/providers and production expansion. Fly Scout exploration itself is P1, not stretch. A fixed REBID workflow is P0.
 >
-> Follow [the current P0/P1/P2 roadmap](README.md) and [current product plan](../plan/plan1.md). The earlier specification below is retained for reusable implementation detail. Its old priorities, demo category, and unchecked boxes are not a current completion report.
+> Follow [the current P0/P1/P2 roadmap](README.md) and [current product plan](../plan/plan2.md). The earlier specification below is retained for reusable implementation detail. Its old priorities, demo category, and unchecked boxes are not a current completion report.
 
 ## Earlier component specification
 
