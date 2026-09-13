@@ -8,6 +8,7 @@ import json
 from sqlalchemy import select
 from sqlalchemy.orm import Session
 
+from app.core.email_address import normalize_email
 from app.core.provenance import ProviderCandidateOrigin
 from app.models.listing import PublicListingRecord
 from app.models.outreach.provider_candidate import ProviderCandidate
@@ -63,7 +64,7 @@ def _new_candidate(
         owner_account_id=listing.owner_account_id,
         business_name=provider.business_name,
         website_url=provider.website_url,
-        contact_email=provider.contact_email.casefold() if provider.contact_email else None,
+        contact_email=normalize_email(provider.contact_email) if provider.contact_email else None,
         contact_email_source_url=provider.contact_email_source_url if provider.contact_email else None,
         phone=provider.phone,
         service_area=provider.service_area,
@@ -83,7 +84,7 @@ def _refresh(candidate: ProviderCandidate, provider: DiscoveredProvider, retriev
     candidate.retrieved_at = retrieved_at
     candidate.source_urls = json.dumps(list(dict.fromkeys([*json.loads(candidate.source_urls), *provider.source_urls])))
     if candidate.contact_email is None and provider.contact_email:
-        candidate.contact_email = provider.contact_email.casefold()
+        candidate.contact_email = normalize_email(provider.contact_email)
         candidate.contact_email_source_url = provider.contact_email_source_url
     candidate.website_url = candidate.website_url or provider.website_url
     candidate.phone = candidate.phone or provider.phone

@@ -69,4 +69,9 @@ class FixtureDiscoverySource(DiscoverySource):
             DiscoveredProvider(**entry.model_dump(), provenance=ProviderCandidateProvenance.demo_data.value)
             for entry in entries
         ]
-        return DiscoverySearchResult(status="ok", detail=self.label, retrieved_at=retrieved_at, providers=providers)
+        return DiscoverySearchResult(
+            status="ok",
+            detail=f"{len(providers)} fictional demo results for this category; not a web search",
+            retrieved_at=retrieved_at,
+            providers=providers,
+        )

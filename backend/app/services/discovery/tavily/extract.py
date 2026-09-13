@@ -39,7 +39,7 @@ def find_published_email(content: str) -> str | None:
     """Return the first plausible inquiry address in the text, lowercased; None when none is published."""
 
     for match in _EMAIL.finditer(content):
-        address = match.group(0).rstrip(".").casefold()
+        address = match.group(0).rstrip(".").lower()
         local_part, _, domain = address.partition("@")
         if address.endswith(_IMAGE_SUFFIXES) or local_part in _IGNORED_LOCAL_PARTS:
             continue
