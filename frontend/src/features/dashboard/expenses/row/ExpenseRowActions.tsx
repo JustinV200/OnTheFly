@@ -35,8 +35,12 @@ export function ExpenseRowActions({ expense, onVisibilityChanged }: ExpenseRowAc
       <ButtonLink size="sm" to={`/publish?expense=${expense.id}`} variant="primary">
         {expense.listing_id ? 'Publish again…' : 'Publish…'}
       </ButtonLink>
-      {/* An unpublished listing keeps the offers it received while public. */}
-      {expense.listing_id ? <ButtonLink size="sm" to={`/listings/${expense.listing_id}/inbox`}>Retained offers</ButtonLink> : null}
+      {/* An unpublished listing keeps the offers it received while public; the short label fits the row's action track. */}
+      {expense.listing_id ? (
+        <ButtonLink size="sm" title="Offers received while it was public are kept" to={`/listings/${expense.listing_id}/inbox`}>
+          Offers
+        </ButtonLink>
+      ) : null}
     </span>
   );
 }
