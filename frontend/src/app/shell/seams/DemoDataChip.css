@@ -1,0 +1,103 @@
+/* Demo-data chip: a tone-coloured pill in the top bar and a popover with the full sentences. */
+.demo-chip {
+  min-width: 0;
+  position: relative;
+}
+
+.demo-chip__trigger {
+  align-items: center;
+  border: var(--border-width) solid;
+  border-radius: var(--radius-pill);
+  box-shadow: none;
+  display: inline-flex;
+  font-size: var(--text-xs);
+  font-weight: var(--weight-semibold);
+  gap: var(--space-1);
+  max-width: 100%;
+  min-height: 30px;
+  padding: 0 var(--space-3);
+}
+
+/* Never truncated: it is an honesty label. It wraps on a narrow phone rather than hiding a fact behind an ellipsis. */
+.demo-chip__label {
+  text-align: left;
+}
+
+@media (min-width: 768px) {
+  .demo-chip__label {
+    white-space: nowrap;
+  }
+}
+
+.demo-chip__trigger--simulated,
+.demo-chip__trigger--simulated:hover:not(:disabled) {
+  background-color: var(--color-simulated-bg);
+  border-color: var(--color-simulated-border);
+  color: var(--color-simulated-text);
+}
+
+.demo-chip__trigger--neutral,
+.demo-chip__trigger--neutral:hover:not(:disabled),
+.demo-chip__trigger--loading,
+.demo-chip__trigger--loading:hover:not(:disabled) {
+  background-color: var(--color-neutral-bg);
+  border-color: var(--color-neutral-border);
+  color: var(--color-neutral-text);
+}
+
+.demo-chip__trigger--danger,
+.demo-chip__trigger--danger:hover:not(:disabled) {
+  background-color: var(--color-danger-bg);
+  border-color: var(--color-danger-border);
+  color: var(--color-danger-text);
+}
+
+.demo-chip__panel {
+  background-color: var(--color-surface-raised);
+  border: var(--border-width) solid var(--color-border);
+  border-radius: var(--radius-lg);
+  box-shadow: var(--shadow-lg);
+  left: 0;
+  padding: var(--space-4);
+  position: absolute;
+  top: calc(100% + var(--space-2));
+  width: min(380px, calc(100vw - 2 * var(--layout-gutter)));
+  z-index: var(--z-popover);
+}
+
+@media (min-width: 768px) {
+  .demo-chip__panel {
+    left: auto;
+    right: 0;
+  }
+}
+
+.demo-chip__facts {
+  display: grid;
+  gap: var(--space-1);
+  margin: 0;
+}
+
+.demo-chip__facts dt {
+  color: var(--color-text-muted);
+  font-size: var(--text-xs);
+  font-weight: var(--weight-semibold);
+  letter-spacing: var(--tracking-wide);
+  text-transform: uppercase;
+}
+
+.demo-chip__facts dd {
+  color: var(--color-text);
+  font-size: var(--text-sm);
+  margin: 0 0 var(--space-2);
+}
+
+.demo-chip__facts dd:last-child {
+  margin-bottom: 0;
+}
+
+.demo-chip__error {
+  color: var(--color-danger-text);
+  font-size: var(--text-sm);
+  margin: 0;
+}

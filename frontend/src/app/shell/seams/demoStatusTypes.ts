@@ -12,4 +12,10 @@ export interface DemoStatus {
     demo: number;
     all_simulated: boolean;
   };
+  // Which channel approved invitations go through. Optional so a backend without outreach still renders.
+  outreach?: {
+    channel: string;
+    channel_label: string;
+    delivers_real_email: boolean;
+  };
 }

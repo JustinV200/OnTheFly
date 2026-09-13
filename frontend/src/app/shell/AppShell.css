@@ -15,12 +15,12 @@
 .app-shell__main {
   flex: 1;
   padding-bottom: var(--space-16);
-  padding-top: var(--space-5);
+  padding-top: var(--space-6);
 }
 
 @media (min-width: 768px) {
   .app-shell__main {
-    padding-top: var(--space-4);
+    padding-top: var(--space-8);
   }
 }
 
@@ -31,7 +31,7 @@
 .app-shell__skip-link {
   background-color: var(--color-brand);
   border-radius: var(--radius-md);
-  color: var(--color-text-inverse);
+  color: var(--color-on-brand);
   font-weight: var(--weight-semibold);
   left: var(--space-3);
   padding: var(--space-2) var(--space-4);
@@ -43,6 +43,6 @@
 }
 
 .app-shell__skip-link:focus-visible {
-  color: var(--color-text-inverse);
+  color: var(--color-on-brand);
   transform: none;
 }

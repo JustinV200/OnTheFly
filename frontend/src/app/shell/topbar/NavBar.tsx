@@ -1,5 +1,7 @@
-/* Top-level navigation between the private dashboard, the marketplace, and the acting business's public profile.
-   The top bar renders it twice (inline on wide screens, as a scrolling tab row on narrow ones); CSS shows exactly one. */
+/* Task-based navigation: Markets (open tasks to bid on), Spend (this business's private expenses), and My listings
+   (what this business has put up for bids, with offers and invitations). The top bar renders it twice (inline on wide
+   screens, as a scrolling tab row on narrow ones); CSS shows exactly one. "My listings" never shows for a public
+   visitor, who has none (roadmap 11, "Watch out for"). */
 import { NavLink } from 'react-router-dom';
 
 import { useActingAccount } from '../../../shared/account/ActingAccountContext';
@@ -15,10 +17,9 @@ interface NavBarProps {
 export function NavBar({ placement }: NavBarProps): JSX.Element {
   const { account } = useActingAccount();
   const links = [
-    { to: '/', label: 'Private dashboard', end: true },
-    { to: '/marketplace', label: 'Marketplace', end: false },
-    // A visitor has no profile of their own; businesses link to the page strangers see.
-    ...(account ? [{ to: `/p/${account.handle}`, label: 'Our public profile', end: false }] : []),
+    { to: '/marketplace', label: 'Markets', end: false },
+    { to: '/', label: 'Spend', end: true },
+    ...(account ? [{ to: '/my-listings', label: 'My listings', end: false }] : []),
   ];
 
   return (

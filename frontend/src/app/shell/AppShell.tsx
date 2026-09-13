@@ -1,11 +1,9 @@
-/* The persistent layout: demo seams strip, top bar (brand, navigation, acting business), desktop switch band, then the page.
+/* The persistent layout: the top bar (brand, navigation, search, demo-data chip, theme, acting business), then the page.
    The page subtree is keyed by acting account, so switching business remounts it and refetches as that business. */
 import { Outlet } from 'react-router-dom';
 
 import { useActingAccount } from '../../shared/account/ActingAccountContext';
 import { ErrorBoundary } from '../../shared/components/ErrorBoundary';
-import { AccountSwitcher } from '../account/AccountSwitcher';
-import { DemoSeamsBanner } from './seams/DemoSeamsBanner';
 import { TopBar } from './topbar/TopBar';
 import './AppShell.css';
 
@@ -15,14 +13,9 @@ export function AppShell(): JSX.Element {
 
   return (
     <div className="app-shell">
-      {/* First in tab order, so keyboard users can skip the bar and the switcher on every page. */}
+      {/* First in tab order, so keyboard users can skip the bar on every page. */}
       <a className="app-shell__skip-link" href="#main-content">Skip to page content</a>
-      {/* Keyed too: the switch mid-demo is exactly when an offer has just landed, so refetch the counts then. */}
-      <DemoSeamsBanner key={account?.id ?? 'public-visitor'} />
       <TopBar />
-      <div className="app-shell__container">
-        <AccountSwitcher />
-      </div>
       {/* tabIndex -1 lets the skip link move focus here without adding a tab stop. */}
       <main className="app-shell__container app-shell__main" id="main-content" tabIndex={-1}>
         {/* Without the key, a page fetched as the previous business would keep showing its data. */}

@@ -1,9 +1,12 @@
 /* The acting identity in the top bar, and the switcher behind it. Visible on every screen at every width, so who is acting
-   is never scrolled away. The name is large on desktop for projector legibility; on a phone it opens a list where one tap
-   switches business (or to the public visitor) and closes the list. */
+   is never scrolled away. The name stays at least 18px on desktop for projector legibility (roadmap 09, "The account
+   switch as a demo instrument"). One tap switches business, or to the public visitor, who is listed apart at the bottom.
+   The panel also links to the business's public profile and holds the full theme choice, including Match system. */
 import { useCallback, useEffect, useId, useRef, useState } from 'react';
+import { Link } from 'react-router-dom';
 
 import { useActingAccount } from '../../../shared/account/ActingAccountContext';
+import { ThemeToggle } from '../../../shared/theme';
 import { Icon } from '../../../shared/ui';
 import { AccountAvatar } from '../AccountAvatar';
 import { accountOptions } from '../accountOptions';
@@ -47,7 +50,7 @@ export function AccountMenu(): JSX.Element {
         <AccountAvatar account={account} size="md" />
         <span className="account-menu__identity">
           <span className="account-menu__eyebrow">
-            {account ? 'You are acting as' : (
+            {account ? 'Acting as' : (
               <>Signed out<span className="account-menu__eyebrow-detail">: sees only what is public</span></>
             )}
           </span>
@@ -64,7 +67,8 @@ export function AccountMenu(): JSX.Element {
             {accountOptions.map((option) => {
               const isActive = option.id === (account?.id ?? null);
               return (
-                <li key={option.id ?? 'public-visitor'}>
+                // The visitor row starts a separate group: it is the logged-out view, not another business.
+                <li className={option.account ? undefined : 'account-menu__visitor'} key={option.id ?? 'public-visitor'}>
                   <button
                     aria-pressed={isActive}
                     className="account-menu__option"
@@ -86,6 +90,18 @@ export function AccountMenu(): JSX.Element {
               );
             })}
           </ul>
+          <div className="account-menu__footer">
+            {account ? (
+              <Link className="account-menu__profile-link" onClick={() => close(false)} to={`/p/${account.handle}`}>
+                <Icon name="globe" size={16} />
+                View our public profile
+              </Link>
+            ) : null}
+            <div className="account-menu__theme">
+              <span>Theme</span>
+              <ThemeToggle />
+            </div>
+          </div>
         </div>
       ) : null}
     </div>

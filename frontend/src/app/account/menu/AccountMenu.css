@@ -70,12 +70,12 @@
   overflow: hidden;
 }
 
+/* Between phone and desktop widths a long name wraps to a second line; it is never cut off (projector legibility). */
 @media (min-width: 480px) {
   .account-menu__name {
     display: block;
     font-size: var(--text-md);
-    text-overflow: ellipsis;
-    white-space: nowrap;
+    max-width: 18ch;
   }
 }
 
@@ -88,23 +88,24 @@
 @media (min-width: 1024px) {
   .account-menu__trigger {
     gap: var(--space-3);
-    min-height: 52px;
+    min-height: 48px;
     padding-right: var(--space-3);
   }
 
   .account-menu__name {
-    font-size: var(--text-xl);
+    font-size: 1.125rem;
   }
 }
 
 @media (min-width: 1280px) {
   .account-menu__name {
-    font-size: 1.375rem;
+    max-width: none;
+    white-space: nowrap;
   }
 }
 
 .account-menu__panel {
-  background-color: var(--color-surface);
+  background-color: var(--color-surface-raised);
   border: var(--border-width) solid var(--color-border);
   border-radius: var(--radius-lg);
   box-shadow: var(--shadow-lg);
@@ -177,4 +178,46 @@
 /* A larger avatar beside the larger desktop name. */
 @media (min-width: 1024px) {
   .account-menu .account-avatar--md { font-size: var(--text-sm); height: 40px; width: 40px; }
+}
+
+.account-menu__visitor {
+  border-top: var(--border-width) solid var(--color-border-subtle);
+  margin-top: var(--space-1);
+  padding-top: var(--space-1);
+}
+
+.account-menu__footer {
+  border-top: var(--border-width) solid var(--color-border-subtle);
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-1);
+  margin-top: var(--space-1);
+  padding-top: var(--space-1);
+}
+
+.account-menu__profile-link {
+  align-items: center;
+  border-radius: var(--radius-md);
+  color: var(--color-text);
+  display: flex;
+  font-weight: var(--weight-medium);
+  gap: var(--space-3);
+  min-height: 44px;
+  padding: 0 var(--space-3);
+  text-decoration: none;
+}
+
+.account-menu__profile-link:hover {
+  background-color: var(--color-surface-hover);
+  color: var(--color-text);
+}
+
+.account-menu__theme {
+  align-items: center;
+  color: var(--color-text-secondary);
+  display: flex;
+  font-size: var(--text-sm);
+  justify-content: space-between;
+  min-height: 44px;
+  padding: 0 var(--space-3);
 }
