@@ -1,8 +1,10 @@
-/* Step 1 of the offer trace: the potential-savings figure and its arithmetic, or why this offer has none.
-   Every figure comes from the server; an unranked offer gets its reason, never a figure made up here. */
+/* Step 1 of the offer trace: the arithmetic behind the potential-savings figure the headline shows, and the assumptions
+   that make it provisional, or why this offer has none. Every figure comes from the server; nothing is computed here. */
 import { MoneyDisplay } from '../../../../shared/components/MoneyDisplay';
 import { ProvenanceBadge } from '../../../../shared/provenance/ProvenanceBadge';
-import { Badge, Stack, Stat } from '../../../../shared/ui';
+import { Badge, Stack } from '../../../../shared/ui';
+// Shared with the inbox so an assumption reads the same under the figure there and here.
+import { describeAssumption } from '../../../inbox/savings/describeAssumption';
 import { TraceStep } from '../../chain/TraceStep';
 import type { OfferTrace } from '../../types';
 import './SavingsStep.css';
@@ -29,22 +31,19 @@ export function SavingsStep({ savings, unrankedReason, earlierScopeVersion, offe
   const money = (amountMinor: number): JSX.Element => <MoneyDisplay amountMinor={amountMinor} currency={savings.currency} />;
   const baselineName = earlierScopeVersion === null ? 'current' : `price on scope v${earlierScopeVersion}`;
   return (
-    <TraceStep leadsTo="The offer being compared" step={1} title={savings.label}>
+    <TraceStep
+      badges={(
+        <>
+          {savings.is_provisional ? <Badge tone="warning">Provisional</Badge> : null}
+          <ProvenanceBadge kind="offer" value={offerProvenance} />
+        </>
+      )}
+      leadsTo="The offer being compared"
+      step={1}
+      title={savings.label}
+    >
       <Stack gap={4}>
-        <Stat
-          caption={(
-            <>
-              {savings.is_provisional ? <Badge tone="warning">Provisional</Badge> : null}
-              <ProvenanceBadge kind="offer" value={offerProvenance} />
-              <span>Potential until a switch actually happens. Computed by the server, not estimated.</span>
-            </>
-          )}
-          label="First year"
-          size="xl"
-          // Green only for an actual saving; a negative figure stays neutral, and the label says what it is either way.
-          tone={savings.first_year_net_savings_minor > 0 ? 'success' : 'default'}
-          value={money(savings.first_year_net_savings_minor)}
-        />
+        <p className="trace-savings__note">Potential until a switch actually happens. Computed by the server, not estimated.</p>
         <div className="trace-savings__math">
           <p>
             ({money(savings.baseline_monthly_minor)} {baselineName} − {money(savings.offer_monthly_minor)} offer) × 12 months ={' '}
@@ -57,7 +56,7 @@ export function SavingsStep({ savings, unrankedReason, earlierScopeVersion, offe
         {savings.assumptions.length > 0 ? (
           <div>
             {savings.is_provisional ? <p className="trace-savings__because">Provisional, because:</p> : null}
-            <ul className="trace-savings__assumptions">{savings.assumptions.map((item) => <li key={item}>{item}</li>)}</ul>
+            <ul className="trace-savings__assumptions">{savings.assumptions.map((item) => <li key={item}>{describeAssumption(item)}</li>)}</ul>
           </div>
         ) : null}
       </Stack>

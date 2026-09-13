@@ -1,0 +1,63 @@
+/* Scope coverage: a bold percentage, a thin bar (success when complete, warning with gaps), then gap badges that wrap. */
+.scope-coverage {
+  display: grid;
+  gap: var(--space-1);
+  min-width: 0;
+}
+
+.scope-coverage__figure {
+  align-items: baseline;
+  display: flex;
+  gap: var(--space-1);
+}
+
+.scope-coverage__percent {
+  font-size: var(--text-lg);
+  font-weight: var(--weight-semibold);
+  line-height: var(--leading-tight);
+}
+
+.scope-coverage__of {
+  color: var(--color-text-muted);
+  font-size: var(--text-sm);
+}
+
+.scope-coverage__track {
+  background-color: var(--color-surface-sunken);
+  border-radius: var(--radius-pill);
+  height: 6px;
+  max-width: 12rem;
+  overflow: hidden;
+}
+
+.scope-coverage__fill {
+  background-color: var(--color-success-solid);
+  border-radius: inherit;
+  height: 100%;
+}
+
+.scope-coverage__fill--gaps {
+  background-color: var(--color-warning-solid);
+}
+
+.scope-coverage__gaps {
+  display: flex;
+  flex-wrap: wrap;
+  gap: var(--space-1);
+  margin-top: var(--space-1);
+}
+
+/* A long scope label wraps inside its badge rather than widening the column; a squarer corner keeps two lines tidy. */
+.scope-coverage__gaps .ui-badge {
+  border-radius: var(--radius-sm);
+  padding-block: var(--space-0_5);
+  white-space: normal;
+}
+
+.scope-coverage__complete {
+  align-items: center;
+  color: var(--color-text-secondary);
+  display: flex;
+  font-size: var(--text-sm);
+  gap: var(--space-1);
+}

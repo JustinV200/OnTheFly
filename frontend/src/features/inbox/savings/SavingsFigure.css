@@ -1,0 +1,40 @@
+/* Savings cell: the figure in tabular numerals with a small period, then the flags and any qualifier underneath. */
+.savings-figure {
+  display: grid;
+  gap: var(--space-1);
+  justify-items: start;
+  min-width: 0;
+}
+
+.savings-figure__amount {
+  align-items: baseline;
+  display: flex;
+  flex-wrap: wrap;
+  gap: var(--space-1);
+}
+
+.savings-figure__money {
+  font-size: var(--text-lg);
+  font-weight: var(--weight-semibold);
+}
+
+.savings-figure__money--positive {
+  color: var(--color-success-text);
+}
+
+.savings-figure__unit {
+  color: var(--color-text-muted);
+  font-size: var(--text-sm);
+}
+
+.savings-figure__flags {
+  align-items: center;
+  display: flex;
+  flex-wrap: wrap;
+  gap: var(--space-1) var(--space-2);
+}
+
+.savings-figure__note {
+  color: var(--color-text-muted);
+  font-size: var(--text-sm);
+}

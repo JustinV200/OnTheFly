@@ -1,0 +1,44 @@
+/* Offers header: a quiet back link, then the category tile beside the title block. The page header's own bottom margin
+   is dropped because the page stack already spaces sections. */
+.inbox-header {
+  display: grid;
+  gap: var(--space-3);
+}
+
+.inbox-header__back {
+  align-items: center;
+  color: var(--color-text-muted);
+  display: inline-flex;
+  font-size: var(--text-sm);
+  font-weight: var(--weight-medium);
+  gap: var(--space-1);
+  justify-self: start;
+  text-decoration: none;
+}
+
+.inbox-header__back:hover {
+  color: var(--color-text);
+}
+
+.inbox-header__main {
+  align-items: flex-start;
+  display: flex;
+  gap: var(--space-4);
+  min-width: 0;
+}
+
+.inbox-header__main > .ui-page-header {
+  flex: 1 1 auto;
+  min-width: 0;
+}
+
+.inbox-header .ui-page-header {
+  margin-bottom: 0;
+}
+
+/* On a phone the tile would squeeze a two-line title; the category is in the title anyway. */
+@media (max-width: 479px) {
+  .inbox-header__main > .category-tile {
+    display: none;
+  }
+}

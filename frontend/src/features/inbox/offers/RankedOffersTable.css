@@ -1,0 +1,161 @@
+/* Ranked list: a pinned baseline band, clickable offer rows with a text-button name, and a phone layout where each row
+   is a card. Selectors that change a Table primitive cell rule are two classes deep so they outrank the primitive. */
+.ranked-offers .ranked-offers__baseline > td {
+  background-color: var(--color-surface-subtle);
+}
+
+.ranked-offers .ranked-offers__offer {
+  cursor: pointer;
+  transition: background-color var(--duration-fast) var(--ease-standard);
+}
+
+.ranked-offers .ranked-offers__offer:hover > td {
+  background-color: var(--color-surface-hover);
+}
+
+/* Column shares at desktop width: the challenger's badges wrap, while scope badges, the savings qualifier, and the
+   evidence chips each get room for a typical label on one line. */
+.ranked-offers .ranked-offers__col-challenger { width: 24%; }
+.ranked-offers .ranked-offers__col-scope { width: 19%; }
+.ranked-offers .ranked-offers__col-monthly { width: 11%; }
+.ranked-offers .ranked-offers__col-savings { width: 19%; }
+.ranked-offers .ranked-offers__col-evidence { width: 17%; }
+
+.ranked-offers__who {
+  align-items: center;
+  display: flex;
+  flex-wrap: wrap;
+  gap: var(--space-1) var(--space-2);
+}
+
+.ranked-offers__rank {
+  color: var(--color-text-muted);
+  font-size: var(--text-sm);
+  font-variant-numeric: tabular-nums;
+  font-weight: var(--weight-semibold);
+}
+
+/* A plain text button: it reads as the row's title, and underlines to show it opens the offer. */
+.ranked-offers__name {
+  background: none;
+  border: 0;
+  border-radius: var(--radius-sm);
+  box-shadow: none;
+  color: var(--color-text);
+  font-size: var(--text-md);
+  font-weight: var(--weight-semibold);
+  justify-content: flex-start;
+  min-height: 0;
+  overflow-wrap: anywhere;
+  padding: 0;
+  text-align: left;
+}
+
+.ranked-offers__name:hover:not(:disabled) {
+  background: none;
+  text-decoration: underline;
+  text-underline-offset: 0.18em;
+}
+
+.ranked-offers__baseline-name {
+  font-size: var(--text-md);
+  font-weight: var(--weight-semibold);
+}
+
+.ranked-offers__when {
+  color: var(--color-text-muted);
+  font-size: var(--text-sm);
+  margin-top: var(--space-0_5);
+}
+
+.ranked-offers__badges {
+  display: flex;
+  flex-wrap: wrap;
+  gap: var(--space-1);
+  margin-top: var(--space-2);
+}
+
+.ranked-offers__price {
+  font-size: var(--text-lg);
+  font-weight: var(--weight-semibold);
+}
+
+.ranked-offers__period,
+.ranked-offers__muted {
+  color: var(--color-text-muted);
+  font-size: var(--text-sm);
+}
+
+.ranked-offers .ranked-offers__action {
+  text-align: right;
+  vertical-align: middle;
+  white-space: nowrap;
+}
+
+@media (max-width: 639px) {
+  /* The challenger cell is the card's title: no label, left-aligned. */
+  .ranked-offers td.ranked-offers__challenger {
+    padding-top: var(--space-3);
+    text-align: left;
+  }
+
+  /* Cells holding bars, badges, or lists put their label above, left-aligned, instead of beside right-aligned content. */
+  .ranked-offers td.ranked-offers__block[data-label],
+  .ranked-offers td[data-label="Potential savings"] {
+    text-align: left;
+  }
+
+  .ranked-offers td.ranked-offers__block[data-label]::before,
+  .ranked-offers td[data-label="Potential savings"]::before {
+    display: block;
+    float: none;
+    margin-bottom: var(--space-1);
+  }
+
+  .ranked-offers td.ranked-offers__action {
+    padding-bottom: var(--space-3);
+    text-align: left;
+  }
+
+  .ranked-offers td.ranked-offers__action:empty {
+    display: none;
+  }
+
+  .ranked-offers td.ranked-offers__action .ui-button {
+    justify-content: center;
+    width: 100%;
+  }
+
+  .ranked-offers .ranked-offers__baseline {
+    background-color: var(--color-surface-subtle);
+  }
+
+  /* The baseline's "not applicable" cells add height to the phone card without saying anything. */
+  .ranked-offers .ranked-offers__baseline > td.ranked-offers__not-applicable {
+    display: none;
+  }
+}
+
+/* Section head: title, the one-line rule, and the "How ranking works" disclosure. */
+.ranked-offers-section {
+  display: grid;
+  gap: var(--space-3);
+  min-width: 0;
+}
+
+.ranked-offers-section__head {
+  display: grid;
+  gap: var(--space-1);
+}
+
+.ranked-offers-section__title {
+  font-size: var(--text-xl);
+  margin: 0;
+}
+
+.ranked-offers-section__rule {
+  color: var(--color-text-muted);
+  font-size: var(--text-sm);
+  margin: 0;
+  max-width: 72ch;
+}

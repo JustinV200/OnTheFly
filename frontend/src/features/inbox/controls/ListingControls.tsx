@@ -1,15 +1,13 @@
-/* The owner's controls for one listing: bidding mode, unpublish, and links to its public views.
-   A mode change is never retroactive, and the confirmation text says so every time. */
-import { useState } from 'react';
+/* The owner's controls for one listing, as a band under the summary tiles: bidding mode as Sealed / Open, visibility with
+   a one-click Unpublish, and sharing (copy link, invite suppliers, view as a stranger). Side by side from laptop width.
+   A mode change is never retroactive; the hint says so before the change and the result says so after it. */
 import { Link } from 'react-router-dom';
 
-import { useActingAccount } from '../../../shared/account/ActingAccountContext';
-import { ApiError, post } from '../../../shared/api/client';
-import { BiddingModePill } from '../../../shared/components/BiddingModePill';
-import { Button, ButtonLink, Callout, Card, Cluster, Stack } from '../../../shared/ui';
+import { ButtonLink, Card, CopyButton, Icon } from '../../../shared/ui';
 import type { PublicListingProjection } from '../../publish/types';
 import { UnpublishButton } from '../../publish/UnpublishButton';
-import { ListingVisibilityBadge } from './ListingVisibilityBadge';
+import { ListingVisibilityBadge } from '../header/ListingVisibilityBadge';
+import { BiddingModeControl } from './BiddingModeControl';
 import './ListingControls.css';
 
 interface ListingControlsProps {
@@ -17,80 +15,41 @@ interface ListingControlsProps {
   onChanged: () => void;
 }
 
-// The last mode change's outcome, in words; a failure is announced as an alert, a success as a status.
-interface ModeChangeResult {
-  text: string;
-  isFailure: boolean;
-}
-
-/** Render mode toggle, unpublish or republish, and public links for an owned listing. */
+/** Render the bidding, visibility, and share controls for an owned listing. */
 export function ListingControls({ listing, onChanged }: ListingControlsProps): JSX.Element {
-  const { account } = useActingAccount();
-  const [result, setResult] = useState<ModeChangeResult | null>(null);
-  const [isWorking, setIsWorking] = useState(false);
   const isPublic = listing.visibility === 'public';
-
-  const toggleBiddingMode = async (): Promise<void> => {
-    const nextMode = listing.bidding_mode === 'open' ? 'sealed' : 'open';
-    setIsWorking(true);
-    try {
-      await post(`/api/listings/${listing.id}/bidding-mode`, { mode: nextMode });
-      setResult({
-        isFailure: false,
-        text: nextMode === 'open'
-          ? 'Bidding is now open. Only offers submitted from now on show their prices publicly. Offers received while sealed stay sealed.'
-          : 'Bidding is now sealed. Future offers are private. Prices already published under open bidding stay as they were submitted.',
-      });
-      onChanged();
-    } catch (error) {
-      if (!(error instanceof ApiError)) {
-        throw error;
-      }
-      setResult({ isFailure: true, text: `Bidding mode unchanged: ${error.message}` });
-    } finally {
-      setIsWorking(false);
-    }
-  };
+  const publicPath = `/listings/${listing.id}`;
 
   return (
-    <Card title="Bidding and visibility">
-      <Stack gap={4}>
-        <div className="listing-controls__row">
-          <Cluster gap={2} justify="between">
-            <h3 className="listing-controls__heading">Bidding</h3>
-            <BiddingModePill mode={listing.bidding_mode} />
-          </Cluster>
-          <Cluster gap={3}>
-            <Button isBusy={isWorking} onClick={() => void toggleBiddingMode()}>
-              {listing.bidding_mode === 'open' ? 'Switch to sealed bidding' : 'Open bidding to underbids'}
-            </Button>
-          </Cluster>
-        </div>
+    <Card className="listing-controls" label="Listing controls" padding="sm">
+      <div className="listing-controls__rows">
+        <BiddingModeControl listing={listing} onChanged={onChanged} />
 
-        <div className="listing-controls__row">
-          <Cluster gap={2} justify="between">
-            <h3 className="listing-controls__heading">Visibility</h3>
+        <div className="listing-controls__row listing-controls__row--inline">
+          <div className="listing-controls__line">
+            <span className="listing-controls__label">Visibility</span>
             <ListingVisibilityBadge visibility={listing.visibility} />
-          </Cluster>
+          </div>
           {isPublic ? (
-            <Cluster gap={4}>
-              <UnpublishButton listingId={listing.id} onUnpublished={onChanged} />
-              <Link to={`/listings/${listing.id}`}>Public listing page</Link>
-              {account ? <Link to={`/p/${account.handle}`}>Public profile</Link> : null}
-            </Cluster>
+            // Unpublishing is the safe direction: one visible click, never hidden in a menu (roadmap 11, principle 5).
+            <UnpublishButton listingId={listing.id} onUnpublished={onChanged} size="sm" />
           ) : (
-            <Cluster gap={3}>
-              <ButtonLink to={`/publish?expense=${listing.expense_id}`}>Publish again…</ButtonLink>
-            </Cluster>
+            <ButtonLink size="sm" to={`/publish?expense=${listing.expense_id}`}>Publish again…</ButtonLink>
           )}
         </div>
 
-        {result ? (
-          <Callout role={result.isFailure ? 'alert' : 'status'} tone={result.isFailure ? 'danger' : 'success'}>
-            <p>{result.text}</p>
-          </Callout>
-        ) : null}
-      </Stack>
+        <div className="listing-controls__row listing-controls__share">
+          <span className="listing-controls__label">Share</span>
+          {isPublic ? <CopyButton label="Copy link" size="sm" value={`${window.location.origin}${publicPath}`} /> : null}
+          {isPublic ? (
+            <ButtonLink iconStart={<Icon name="mail" size={15} />} size="sm" to={`${publicPath}/invite`}>Invite suppliers</ButtonLink>
+          ) : null}
+          <Link className="listing-controls__stranger" to={publicPath}>
+            <Icon name="eye" size={14} />
+            View as a stranger
+          </Link>
+        </div>
+      </div>
     </Card>
   );
 }

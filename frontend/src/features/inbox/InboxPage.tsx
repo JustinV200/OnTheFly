@@ -1,32 +1,29 @@
-/* The owner's offers inbox for one listing: status and controls, any genuine offer first, every offer, then the comparison.
-   It polls, so an offer made by another business shows up after switching back without a refresh. */
-import type { ReactNode } from 'react';
+/* The owner's Offers page for one listing, read like a market from the owner's side: the header, a summary strip with
+   the listing's controls, any genuine offer, then one ranked list with "What you pay now" pinned on top. A row opens the
+   offer drawer. It polls, so an offer made by another business shows up after switching back without a refresh. */
+import { ReactNode, useState } from 'react';
 import { useParams } from 'react-router-dom';
 
 import { useActingAccount } from '../../shared/account/ActingAccountContext';
-import { useApiQuery } from '../../shared/api/useApiQuery';
-import { BiddingModePill } from '../../shared/components/BiddingModePill';
 import { EmptyState } from '../../shared/components/EmptyState';
 import { ErrorState } from '../../shared/components/ErrorState';
 import { LoadingSpinner } from '../../shared/components/LoadingSpinner';
-import { categoryLabel } from '../../shared/format/categoryLabel';
-import { ButtonLink, Callout, Grid, PageHeader, Stack } from '../../shared/ui';
-import { ComparisonView } from './comparison/ComparisonView';
+import { ButtonLink, Callout, Stack } from '../../shared/ui';
 import { ListingControls } from './controls/ListingControls';
-import { ListingVisibilityBadge } from './controls/ListingVisibilityBadge';
-import { CurrentPriceCard } from './CurrentPriceCard';
-import { GenuineOfferCallout } from './offers/GenuineOfferCallout';
-import { OffersTable } from './offers/OffersTable';
-import type { OwnerChallengeListResponse } from './types';
+import { OfferDrawer } from './detail/OfferDrawer';
+import { GenuineOfferCallout } from './genuine/GenuineOfferCallout';
+import { InboxHeader } from './header/InboxHeader';
+import { NoOffersState } from './offers/NoOffersState';
+import { RankedOffersSection } from './offers/RankedOffersSection';
+import { SummaryStrip } from './summary/SummaryStrip';
 import { useInbox } from './useInbox';
-import './InboxPage.css';
 
-/** Render the owner inbox page for one listing. */
+/** Render the owner's Offers page for one listing. */
 export function InboxPage(): JSX.Element {
   const { id = '' } = useParams();
   const { account } = useActingAccount();
-  const { inbox, comparison, reload } = useInbox(id);
-  const ownerOffers = useApiQuery<OwnerChallengeListResponse>(`/api/listings/${id}/challenges`, { pollIntervalMs: 5000 });
+  const { inbox, comparison, ownerOffers, reload } = useInbox(id);
+  const [openOfferId, setOpenOfferId] = useState<string | null>(null);
 
   if (inbox.error?.status === 404 || inbox.error?.status === 401) {
     // Same message whether the listing is missing or belongs to someone else, so ids can't be probed.
@@ -50,18 +47,13 @@ export function InboxPage(): JSX.Element {
   }
 
   const { listing, challenges, current_scope_version_number: currentScopeVersionNumber } = inbox.data;
+  // Looked up on every poll, so the drawer shows fresh figures and closes itself if the offer is withdrawn.
+  const openOffer = challenges.find((challenge) => challenge.challenge_id === openOfferId) ?? null;
+  const incumbent = comparison.data?.rows.find((row) => row.is_incumbent) ?? null;
+
   return (
     <Stack gap={6}>
-      <PageHeader
-        meta={(
-          <>
-            <ListingVisibilityBadge visibility={listing.visibility} />
-            <BiddingModePill mode={listing.bidding_mode} />
-          </>
-        )}
-        subtitle={listing.scope_summary}
-        title={`Offers on your ${categoryLabel(listing.category).toLowerCase()} listing`}
-      />
+      <InboxHeader listing={listing} />
       {listing.visibility !== 'public' ? (
         <Callout role="status" title="This listing is private now" tone="private">
           <p>Nobody else can see it. The offers below arrived while it was public and are kept for you.</p>
@@ -69,29 +61,29 @@ export function InboxPage(): JSX.Element {
       ) : null}
       {inbox.error ? <ErrorState error={inbox.error} onRetry={reload} title="Showing the last loaded offers; a refresh failed" /> : null}
 
-      <Grid className="inbox-page__overview" minItemWidth="20rem">
-        <CurrentPriceCard listing={listing} offerCount={challenges.length} />
-        <ListingControls listing={listing} onChanged={reload} />
-      </Grid>
-      <GenuineOfferCallout offers={ownerOffers} />
+      <SummaryStrip
+        controls={<ListingControls listing={listing} onChanged={reload} />}
+        listing={listing}
+        offers={challenges}
+        onOpenOffer={setOpenOfferId}
+      />
+      <GenuineOfferCallout offers={ownerOffers} onOpenOffer={setOpenOfferId} />
 
       {challenges.length === 0 ? (
-        <EmptyState action={<ButtonLink to={`/listings/${listing.id}`}>See the listing as challengers do</ButtonLink>} title="No offers yet">
-          {listing.visibility === 'public'
-            ? 'Your listing is live, and the public sees "no offers yet". New offers appear here automatically. Most listings start this way.'
-            : 'No offers arrived while this listing was public.'}
-        </EmptyState>
+        <NoOffersState listing={listing} />
       ) : (
-        <OffersTable challenges={challenges} currentScopeVersionNumber={currentScopeVersionNumber} />
+        <RankedOffersSection
+          comparisonError={comparison.data ? null : comparison.error}
+          currentScopeVersionNumber={currentScopeVersionNumber}
+          incumbent={incumbent}
+          listing={listing}
+          offers={challenges}
+          onOpenOffer={setOpenOfferId}
+          onRetry={reload}
+        />
       )}
 
-      {challenges.length > 0 && comparison.data ? (
-        <ComparisonView currentScopeVersionNumber={comparison.data.current_scope_version_number} rows={comparison.data.rows} />
-      ) : null}
-      {challenges.length > 0 && !comparison.data && comparison.error ? (
-        <ErrorState error={comparison.error} onRetry={reload} title="Couldn’t load the comparison" />
-      ) : null}
-      {challenges.length > 0 && !comparison.data && !comparison.error ? <LoadingSpinner label="Loading the comparison…" /> : null}
+      <OfferDrawer offer={openOffer} onClose={() => setOpenOfferId(null)} ownerOffers={ownerOffers} />
     </Stack>
   );
 }
@@ -100,7 +92,7 @@ export function InboxPage(): JSX.Element {
 function InboxPageFrame({ children }: { children: ReactNode }): JSX.Element {
   return (
     <Stack gap={6}>
-      <PageHeader title="Offers on your listing" />
+      <InboxHeader listing={null} />
       {children}
     </Stack>
   );
