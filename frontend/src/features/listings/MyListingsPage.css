@@ -1,0 +1,6 @@
+/* My listings page: the listing cards stack as a plain list with no bullets or indent. */
+.my-listings__list {
+  list-style: none;
+  margin: 0;
+  padding: 0;
+}

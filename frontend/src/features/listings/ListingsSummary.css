@@ -1,0 +1,21 @@
+/* Summary tiles: two small bordered tiles side by side, capped in width so they stay compact on a laptop. */
+.listings-summary {
+  display: grid;
+  gap: var(--space-3);
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  max-width: 34rem;
+}
+
+.listings-summary__tile {
+  background-color: var(--color-surface);
+  border: var(--border-width) solid var(--color-border);
+  border-radius: var(--radius-lg);
+  min-width: 0;
+  padding: var(--space-3) var(--space-4);
+}
+
+.listings-summary__label {
+  align-items: center;
+  display: inline-flex;
+  gap: var(--space-1);
+}
