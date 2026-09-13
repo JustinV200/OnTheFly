@@ -1,0 +1,18 @@
+/* A round, quiet icon button that matches the height of the other top-bar controls. */
+.theme-quick-toggle {
+  background: none;
+  border: var(--border-width) solid var(--color-border);
+  border-radius: var(--radius-pill);
+  box-shadow: none;
+  color: var(--color-text-secondary);
+  flex: none;
+  height: 38px;
+  padding: 0;
+  width: 38px;
+}
+
+.theme-quick-toggle:hover:not(:disabled) {
+  background-color: var(--color-surface-hover);
+  border-color: var(--color-border-strong);
+  color: var(--color-text);
+}
