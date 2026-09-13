@@ -27,6 +27,7 @@ class ProviderCandidateProvenance(StrEnum):
 
     demo_data = "demo_data"
     public_web = "public_web"
+    public_award = "public_award"
     owner_entered = "owner_entered"
 
 

@@ -36,6 +36,12 @@ class DiscoveredProvider(BaseModel):
     provenance: str
     # The page title as returned, kept for the aggregator title heuristics.
     page_title: str | None = None
+    # USAspending's recipient identifier.  It is deliberately separate from the
+    # display name: names are only a fallback for the existing candidate deduper.
+    supplier_uei: str | None = None
+    # Source-specific facts retained verbatim for owner review.  Each entry has a
+    # source, URL, and source payload; this keeps award and web evidence distinct.
+    evidence: list[dict[str, object]] = Field(default_factory=list)
 
 
 class DiscoverySearchResult(BaseModel):

@@ -13,13 +13,48 @@ from app.services.discovery.types import DiscoveredProvider
 # aggregators. Local-service results are dominated by these, and none of them can quote the job.
 AGGREGATOR_DOMAINS = frozenset(
     {
-        "angi.com", "angieslist.com", "bark.com", "bbb.org", "bing.com", "birdeye.com", "bizapedia.com",
-        "buildzoom.com", "chamberofcommerce.com", "clutch.co", "dnb.com", "expertise.com", "facebook.com",
-        "glassdoor.com", "google.com", "govtribe.com", "highergov.com", "homeadvisor.com", "houzz.com",
-        "indeed.com", "instagram.com", "linkedin.com", "manta.com", "mapquest.com", "nextdoor.com",
-        "pinterest.com", "porch.com", "reddit.com", "sam.gov", "superpages.com", "thumbtack.com",
-        "trustpilot.com", "twitter.com", "upcity.com", "usaspending.gov", "wikipedia.org", "x.com",
-        "yahoo.com", "yellowpages.com", "yelp.com", "youtube.com", "zoominfo.com",
+        "angi.com",
+        "angieslist.com",
+        "bark.com",
+        "bbb.org",
+        "bing.com",
+        "birdeye.com",
+        "bizapedia.com",
+        "buildzoom.com",
+        "chamberofcommerce.com",
+        "clutch.co",
+        "dnb.com",
+        "expertise.com",
+        "facebook.com",
+        "glassdoor.com",
+        "google.com",
+        "govtribe.com",
+        "highergov.com",
+        "homeadvisor.com",
+        "houzz.com",
+        "indeed.com",
+        "instagram.com",
+        "linkedin.com",
+        "manta.com",
+        "mapquest.com",
+        "nextdoor.com",
+        "pinterest.com",
+        "porch.com",
+        "reddit.com",
+        "sam.gov",
+        "superpages.com",
+        "thumbtack.com",
+        "trustpilot.com",
+        "twitter.com",
+        "upcity.com",
+        "usaspending.gov",
+        "wikipedia.org",
+        "x.com",
+        "yahoo.com",
+        "yellowpages.com",
+        "yelp.com",
+        "youtube.com",
+        "zoominfo.com",
     }
 )
 
@@ -47,8 +82,17 @@ def drop_aggregators(providers: list[DiscoveredProvider]) -> AggregatorFilterRes
 
 
 def _is_aggregator(provider: DiscoveredProvider) -> bool:
-    urls = [provider.website_url, *provider.source_urls]
+    # A USAspending award page documents the supplier; it is not the supplier's
+    # website.  Do not discard a structured award result for citing that page.
+    urls = [
+        provider.website_url,
+        *([] if provider.supplier_uei else provider.source_urls),
+    ]
     if any(registrable_domain(url) in AGGREGATOR_DOMAINS for url in urls if url):
         return True
     titles = [title for title in (provider.page_title, provider.business_name) if title]
-    return any(pattern.search(title) for pattern in _LISTICLE_TITLE_PATTERNS for title in titles)
+    return any(
+        pattern.search(title)
+        for pattern in _LISTICLE_TITLE_PATTERNS
+        for title in titles
+    )

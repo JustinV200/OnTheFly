@@ -2,9 +2,9 @@
 A durable review record (roadmap 08, step 4): discovered or manually added, never an invitation by itself.
 """
 
-from datetime import datetime, timezone
 import secrets
 import uuid
+from datetime import UTC, datetime
 
 from sqlalchemy import Boolean, DateTime, ForeignKey, String, Text, UniqueConstraint
 from sqlalchemy.orm import Mapped, mapped_column
@@ -22,16 +22,28 @@ class ProviderCandidate(Base):
 
     __tablename__ = "provider_candidates"
     # The same provider found twice (or found and also added by hand) stays one row per listing.
-    __table_args__ = (UniqueConstraint("listing_id", "dedupe_key", name="uq_provider_candidate_listing_dedupe"),)
+    __table_args__ = (
+        UniqueConstraint(
+            "listing_id", "dedupe_key", name="uq_provider_candidate_listing_dedupe"
+        ),
+    )
 
-    id: Mapped[str] = mapped_column(String(36), primary_key=True, default=lambda: str(uuid.uuid4()))
-    listing_id: Mapped[str] = mapped_column(ForeignKey("public_listings.id"), nullable=False, index=True)
-    owner_account_id: Mapped[str] = mapped_column(ForeignKey("accounts.id"), nullable=False)
+    id: Mapped[str] = mapped_column(
+        String(36), primary_key=True, default=lambda: str(uuid.uuid4())
+    )
+    listing_id: Mapped[str] = mapped_column(
+        ForeignKey("public_listings.id"), nullable=False, index=True
+    )
+    owner_account_id: Mapped[str] = mapped_column(
+        ForeignKey("accounts.id"), nullable=False
+    )
     business_name: Mapped[str] = mapped_column(String(255), nullable=False)
     website_url: Mapped[str | None] = mapped_column(String(1024), nullable=True)
     # Stored lowercased so suppression and attribution compare exact normalized strings.
     contact_email: Mapped[str | None] = mapped_column(String(255), nullable=True)
-    contact_email_source_url: Mapped[str | None] = mapped_column(String(1024), nullable=True)
+    contact_email_source_url: Mapped[str | None] = mapped_column(
+        String(1024), nullable=True
+    )
     phone: Mapped[str | None] = mapped_column(String(64), nullable=True)
     service_area: Mapped[str | None] = mapped_column(String(255), nullable=True)
     capability_summary: Mapped[str | None] = mapped_column(Text, nullable=True)
@@ -39,18 +51,32 @@ class ProviderCandidate(Base):
     origin: Mapped[str] = mapped_column(String(32), nullable=False)
     # The discovery source name (fixture | tavily), or "owner" for a manual addition.
     discovery_source: Mapped[str] = mapped_column(String(32), nullable=False)
-    # ProviderCandidateProvenance: demo_data | public_web | owner_entered.
+    # ProviderCandidateProvenance: demo_data | public_award | public_web | owner_entered.
     provenance: Mapped[str] = mapped_column(String(32), nullable=False)
+    # A UEI is the authoritative USAspending supplier identity.  It is nullable
+    # because fixture, web, and owner-entered candidates do not have one.
+    supplier_uei: Mapped[str | None] = mapped_column(
+        String(32), nullable=True, index=True
+    )
     # JSON array of the pages this provider's details were read from.
     source_urls: Mapped[str] = mapped_column(Text, nullable=False, default="[]")
+    # JSON evidence records.  Award facts and web-search pages remain separately
+    # attributable even after candidate deduplication and Tavily enrichment.
+    evidence: Mapped[str] = mapped_column(Text, nullable=False, default="[]")
     # Null only for a manual addition, which was never retrieved from a source.
-    retrieved_at: Mapped[datetime | None] = mapped_column(DateTime(timezone=True), nullable=True)
+    retrieved_at: Mapped[datetime | None] = mapped_column(
+        DateTime(timezone=True), nullable=True
+    )
     dedupe_key: Mapped[str] = mapped_column(String(255), nullable=False)
     # Roadmap 08, "Watch out for": a provider already contacted by hand is never invited automatically.
-    contacted_off_platform: Mapped[bool] = mapped_column(Boolean, nullable=False, default=False)
-    opt_out_token: Mapped[str] = mapped_column(String(64), nullable=False, unique=True, default=_new_opt_out_token)
+    contacted_off_platform: Mapped[bool] = mapped_column(
+        Boolean, nullable=False, default=False
+    )
+    opt_out_token: Mapped[str] = mapped_column(
+        String(64), nullable=False, unique=True, default=_new_opt_out_token
+    )
     created_at: Mapped[datetime] = mapped_column(
         DateTime(timezone=True),
         nullable=False,
-        default=lambda: datetime.now(timezone.utc),
+        default=lambda: datetime.now(UTC),
     )

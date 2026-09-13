@@ -25,7 +25,7 @@ class Settings(BaseSettings):
 
     # Provider discovery (roadmap 08, step 1). "fixture" returns deterministic, fictional demo providers
     # labeled as demo data; "tavily" runs a real web search and needs TAVILY_API_KEY.
-    discovery_source: str = "fixture"
+    discovery_source: str = "fixture"  # fixture | tavily | usaspending_tavily
     # Without a key the Tavily source reports discovery as not run; it never falls back to fixtures.
     tavily_api_key: str = ""
 

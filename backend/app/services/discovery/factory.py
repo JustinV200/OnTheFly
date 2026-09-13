@@ -6,11 +6,13 @@ from app.core.config import Settings
 from app.services.discovery.fixture.source import FixtureDiscoverySource
 from app.services.discovery.source import DiscoverySource
 from app.services.discovery.tavily.source import TavilyDiscoverySource
+from app.services.discovery.usaspending.source import UsaSpendingTavilyDiscoverySource
 
 # Labels by stored source name, so a past run still reads correctly after the configured source changes.
 _LABELS: dict[str, str] = {
     FixtureDiscoverySource.name: FixtureDiscoverySource.label,
     TavilyDiscoverySource.name: TavilyDiscoverySource.label,
+    UsaSpendingTavilyDiscoverySource.name: UsaSpendingTavilyDiscoverySource.label,
 }
 
 
@@ -23,6 +25,8 @@ def get_discovery_source(settings: Settings) -> DiscoverySource:
     if settings.discovery_source == "tavily":
         # Real web search. With no TAVILY_API_KEY it reports "not run" rather than falling back to fixtures.
         return TavilyDiscoverySource(api_key=settings.tavily_api_key)
+    if settings.discovery_source == "usaspending_tavily":
+        return UsaSpendingTavilyDiscoverySource(tavily_api_key=settings.tavily_api_key)
     raise ValueError(f"Unsupported discovery_source: {settings.discovery_source}")
 
 
