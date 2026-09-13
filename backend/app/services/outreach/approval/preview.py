@@ -7,14 +7,26 @@ from pydantic import BaseModel
 from sqlalchemy.orm import Session
 
 from app.core.config import Settings
-from app.services.listings.owned_listing import get_owned_listing, require_public_listing
+from app.services.listings.owned_listing import (
+    get_owned_listing,
+    require_public_listing,
+)
+from app.services.listings.projection import projection_from_record
 from app.services.outreach.approval.message_hash import build_message_hash
-from app.services.outreach.approval.recipients import BlockedRecipient, PreviewMessage, resolve_recipient_batch
+from app.services.outreach.approval.recipients import (
+    BlockedRecipient,
+    PreviewMessage,
+    resolve_recipient_batch,
+)
 from app.services.outreach.compliance.check import ComplianceReport, check_compliance
+from app.services.outreach.rate import ImpliedRate, implied_rate_from_projection
 from app.services.outreach.senders.base import OutreachSender
 from app.services.outreach.senders.channel import ChannelInfo, describe_channel
 from app.services.outreach.templates.links import public_listing_url
-from app.services.outreach.templates.redact import redact_header_tokens, redact_opt_out_tokens
+from app.services.outreach.templates.redact import (
+    redact_header_tokens,
+    redact_opt_out_tokens,
+)
 from app.services.outreach.templates.render import TEMPLATE_VERSION
 
 
@@ -27,6 +39,7 @@ class InvitationPreview(BaseModel):
     template_version: str
     channel: ChannelInfo
     compliance: ComplianceReport
+    implied_rate: ImpliedRate
     messages: list[PreviewMessage]
     blocked: list[BlockedRecipient]
 
@@ -71,6 +84,7 @@ def render_unredacted_preview(
         template_version=TEMPLATE_VERSION,
         channel=describe_channel(sender),
         compliance=check_compliance(sender.name, settings, listing_is_public=True),
+        implied_rate=implied_rate_from_projection(projection_from_record(listing)),
         messages=batch.messages,
         blocked=batch.blocked,
     )

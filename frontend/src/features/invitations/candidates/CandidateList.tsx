@@ -10,9 +10,11 @@ interface CandidateListProps {
   invitations: Invitation[];
   channel: ChannelInfo;
   selectedIds: Set<string>;
+  recommendedCandidateIds: string[];
   removingId: string | null;
   onToggle: (candidateId: string) => void;
   onSelectAll: (candidateIds: string[]) => void;
+  onSelectRecommended: (candidateIds: string[]) => void;
   onRemove: (candidateId: string) => void;
   onPreview: () => void;
   isPreviewing: boolean;
@@ -20,7 +22,10 @@ interface CandidateListProps {
 
 /** Render the candidate list and its selection bar. */
 export function CandidateList(props: CandidateListProps): JSX.Element {
-  const { candidates, invitations, channel, selectedIds, removingId, onToggle, onSelectAll, onRemove, onPreview, isPreviewing } = props;
+  const {
+    candidates, invitations, channel, selectedIds, recommendedCandidateIds, removingId, onToggle,
+    onSelectAll, onSelectRecommended, onRemove, onPreview, isPreviewing,
+  } = props;
   const invitationById = new Map(invitations.map((invitation) => [invitation.id, invitation]));
   const eligibleIds = candidates.filter((candidate) => candidate.eligibility.can_invite).map((candidate) => candidate.id);
   const isAllSelected = eligibleIds.length > 0 && eligibleIds.every((id) => selectedIds.has(id));
@@ -28,14 +33,23 @@ export function CandidateList(props: CandidateListProps): JSX.Element {
 
   return (
     <Card
-      actions={eligibleIds.length > 1 ? (
-        <Checkbox
-          checked={isAllSelected}
-          label={`Select all ${eligibleIds.length} who can be invited`}
-          onChange={() => onSelectAll(isAllSelected ? [] : eligibleIds)}
-        />
+      actions={eligibleIds.length > 0 ? (
+        <div className="candidate-list__actions">
+          {recommendedCandidateIds.length > 0 ? (
+            <Button onClick={() => onSelectRecommended(recommendedCandidateIds)} size="sm" variant="secondary">
+              Select {recommendedCandidateIds.length} recommended
+            </Button>
+          ) : null}
+          {eligibleIds.length > 1 ? (
+            <Checkbox
+              checked={isAllSelected}
+              label={`Select all ${eligibleIds.length} who can be invited`}
+              onChange={() => onSelectAll(isAllSelected ? [] : eligibleIds)}
+            />
+          ) : null}
+        </div>
       ) : undefined}
-      description="Only suppliers with a published contact email who haven’t been invited or opted out can be selected."
+      description="The first three inviteable results are a suggested outreach wave—not an AI quality ranking. You choose who receives it."
       padding="none"
       title="2. Choose who to invite"
     >
