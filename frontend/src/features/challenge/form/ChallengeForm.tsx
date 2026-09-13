@@ -40,6 +40,9 @@ const EMPTY_FIELDS: ChallengeFormFields = {
 interface ChallengeFormProps {
   // null while the owner has changed the mode and the challenger hasn't re-confirmed: the draft stays, submitting doesn't.
   acknowledgedMode: BiddingModeValue | null;
+  // The listing's mode now, and how the challenger re-confirms it; the terms callout above the price field needs both.
+  currentMode: BiddingModeValue;
+  onConfirmMode: () => void;
   // The challenger's stored offer, when it has one. The form starts from its terms, because submitting replaces all of them.
   initialOffer: StoredOffer | null;
   listing: PublicListingProjection;
@@ -51,7 +54,7 @@ interface ChallengeFormProps {
 
 /** Render the challenge form. acknowledgedMode must be the mode currently shown to the challenger, or null to block submitting.
     initialOffer is read once on mount; the page keys this form by stored version so a new version re-seeds it. */
-export function ChallengeForm({ acknowledgedMode, initialOffer, listing, isSubmitting, onSubmit, submitProblem }: ChallengeFormProps): JSX.Element {
+export function ChallengeForm({ acknowledgedMode, currentMode, onConfirmMode, initialOffer, listing, isSubmitting, onSubmit, submitProblem }: ChallengeFormProps): JSX.Element {
   const requested = fullRequestedScope(listing);
   const isTemplateTasks = requested.tasks.length === 0;
   const taskChoices = isTemplateTasks ? TEMPLATE_TASKS : requested.tasks;
@@ -86,7 +89,12 @@ export function ChallengeForm({ acknowledgedMode, initialOffer, listing, isSubmi
         <Card title="Your price">
           <Stack gap={4}>
             {/* Shown before the price field: a challenger must never find out afterwards that their price went public. */}
-            <BiddingTermsCallout acknowledgedMode={acknowledgedMode} isRevision={initialOffer !== null} />
+            <BiddingTermsCallout
+              acknowledgedMode={acknowledgedMode}
+              currentMode={currentMode}
+              isRevision={initialOffer !== null}
+              onConfirmMode={onConfirmMode}
+            />
             <PriceFields fields={fields} onChange={update} />
           </Stack>
         </Card>

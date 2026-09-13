@@ -158,10 +158,12 @@ export function ChallengePage(): JSX.Element {
                   The key doesn't change on a mode change or a rejected submit, so neither discards the draft. */}
               <ChallengeForm
                 acknowledgedMode={isAwaitingModeConfirmation ? null : shownMode}
+                currentMode={currentMode}
                 initialOffer={currentOffer}
                 isSubmitting={isSubmitting}
                 key={currentOffer ? `${currentOffer.id}@${currentOffer.revised_at ?? currentOffer.submitted_at}` : 'new-offer'}
                 listing={listing}
+                onConfirmMode={() => setShownMode(currentMode)}
                 onSubmit={handleSubmit}
                 submitProblem={submitProblem}
               />
