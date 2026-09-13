@@ -11,7 +11,7 @@ Updated 2026-09-12. Follow this order for the [current REBID plan](../plan/plan1
 | Expense pipeline | Fixture source, normalization, recurrence, baseline and expense API | Implemented for existing data; GovCon validation pending |
 | Publishing and profiles | Scope form, exact preview, public projections and visibility tests | Reuse; cleaning-specific scope needs adaptation |
 | Challenges/comparison | Submission/revisions, sealed/open rules, inbox and deterministic math | Reuse; new two-device GovCon demo pending |
-| Evidence/outreach | Local evidence logic; registry stub; outreach backend (fixture/Tavily discovery, approval gate, sandbox/allowlisted SMTP queue, opt-out) and Invite suppliers UI on `feat/task-market-ui` | Registry missing; Tavily and SMTP unverified live; delivery tracking not built |
+| Evidence/outreach | Local evidence logic; registry stub; outreach backend (fixture/Tavily discovery, approval gate, sandbox/allowlisted SMTP queue, opt-out) and Invite suppliers UI | Registry missing; Tavily and SMTP unverified live; delivery tracking not built |
 | New REBID experience | No GovCon/REBID/USAspending/public-rate/Fly Scout implementation found | Not started |
 
 Last verified implementation result: **39 backend tests passed; frontend build passed**. This is the previous Stripe implementation check, not a fresh end-to-end acceptance run for the new plan. Existing checklists must not be marked complete merely because routes or files exist.
@@ -65,7 +65,7 @@ Tool-selecting agent orchestration, fly learning/rewards, SAM.gov if needed beyo
 | [08 Invitations](08-outbound-invitations.md) | Approved outreach with a sandbox-outbox default: backend and Invite suppliers UI | Secondary; manual share is still enough |
 | [09 Polish](09-demo-polish.md) | Privacy proof and failure-state rehearsal | New five-screen UI and actual fly output; visual system detailed in 11 |
 | [10 Stretch](10-stretch.md) | Later expansion ideas | Current P2 list above wins |
-| [11 Usability and dark mode](11-usability-and-dark-mode.md) | Task-market (Kalshi-style) direction, design principles, per-screen redesign, theme tokens | In progress on `feat/task-market-ui`; P1 |
+| [11 Usability and dark mode](11-usability-and-dark-mode.md) | Task-market (Kalshi-style) direction, design principles, per-screen redesign, theme tokens | Task-market screens and themes built; accessibility and honesty-label audit open; P1 |
 
 ## Implementation boundaries and decisions to resolve
 

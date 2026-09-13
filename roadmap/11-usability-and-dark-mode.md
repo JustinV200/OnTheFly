@@ -1,6 +1,6 @@
 # Phase 11 — Usability redesign and dark mode
 
-> Status — 2026-09-13: In progress on `feat/task-market-ui`: theme tokens, dark mode, primitives, the compact shell and the market card are built; screens are being moved onto them. Planned from a walkthrough of the running staged demo at desktop (1280px) and phone (390px) widths. This is the detailed specification behind roadmap 09's "Establish the visual system and application shell" and "Redesign the five core screens"; 09's provenance audit, privacy proof and rehearsal steps are unchanged.
+> Status — 2026-09-13: Built and merged to `main`: theme tokens, dark mode, primitives, the compact shell, the market card, and the task-market screens (Markets, market page with bid ticket, bid form, Publish stepper, Spend, My listings, Offers, trace, Invite suppliers). Checked in screenshots at 1280px light and 390px dark, and with one submitted bid; keyboard focus and a screen-by-screen honesty-label audit are still open. Planned from a walkthrough of the running staged demo at desktop (1280px) and phone (390px) widths. This is the detailed specification behind roadmap 09's "Establish the visual system and application shell" and "Redesign the five core screens"; 09's provenance audit, privacy proof and rehearsal steps are unchanged.
 >
 > Follow [the current P0/P1/P2 roadmap](README.md) and [current product plan](../plan/plan1.md).
 
@@ -189,13 +189,13 @@ Progress, Market (modeled pricing) and Fly screens are specified by the plan. Th
 
 ## Done when
 
-- [ ] Light, dark and system themes work on every screen with no flash on cold load, and the choice persists.
-- [ ] No hardcoded colour literals remain outside `tokens.css` and the documented exceptions; the check script enforces it.
+- [x] Light, dark and system themes work on every screen with no flash on cold load, and the choice persists.
+- [x] No hardcoded colour literals remain outside `tokens.css` and the documented exceptions; the check script enforces it.
 - [ ] Buttons, inputs, tables, badges and dialogs come from shared primitives; primary, secondary and destructive actions are visually distinct.
-- [ ] The shell is compact, task-based and phone-usable, and the acting business is still unmistakable on a projector.
+- [x] The shell is compact, task-based and phone-usable, and the acting business is still unmistakable on a projector.
 - [ ] Spend shows totals and the expense list above the fold; row detail opens in a drawer without duplicated charge lists.
 - [ ] Publishing is a three-step flow with no silent demo defaults, a rendered public preview, and the exact payload one click away.
-- [ ] The inbox shows each offer once, in server rank order, with every evidence check named.
+- [x] The inbox shows each offer once, in server rank order, with every evidence check named.
 - [ ] Every honesty label from CLAUDE.md is still visible on its screen in both themes.
 - [ ] Keyboard focus, contrast and 390px layouts are checked on every core screen.
 

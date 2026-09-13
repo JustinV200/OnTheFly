@@ -1,6 +1,6 @@
 # Phase 08 — Outbound invitations (secondary path)
 
-> Status — 2026-09-13 (branch `feat/outreach`, backend only; the UI is not built): the secondary path is implemented behind safe defaults. Still not critical path; manual sharing of the listing remains enough for the demo.
+> Status — 2026-09-13 (merged to `main` with the Invite suppliers page and the public opt-out page): the secondary path is implemented behind safe defaults. Still not critical path; manual sharing of the listing remains enough for the demo.
 >
 > **Implemented and covered by backend tests**
 > - Discovery behind `services/discovery/source.py`. Default `DISCOVERY_SOURCE=fixture` returns fictional, labeled demo providers (`.example` domains) including one aggregator and one duplicate. `tavily` runs a real web search only with `TAVILY_API_KEY`. Without a key the run is recorded as not run; an HTTP failure is recorded as an error. Neither falls back to demo data.

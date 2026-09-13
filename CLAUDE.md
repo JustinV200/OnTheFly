@@ -14,7 +14,7 @@ Stripe transaction-only sandbox consent, company binding, paginated imports, upd
 
 Fixtures, recurring-expense grouping, publishing/preview, profiles, challenges and comparison exist for a commercial-cleaning scenario. Reuse them and adapt the scope fields to DevSecOps. GovCon fixtures, REBID orchestration, USAspending discovery, public-rate pricing, Tavily enrichment, OpenAI reasoning and Fly Scout are not implemented.
 
-On `feat/task-market-ui`: a Kalshi-style "task market" UI with light/dark/system themes (roadmap 11, "Task market direction") and owner-approved supplier invitations (roadmap 08): fixture or Tavily discovery, a preview-hash approval gate, an idempotent queue to a sandbox outbox by default (SMTP only behind an allowlist), and a public opt-out page. Tavily and SMTP have only been exercised with mocks.
+Also implemented (merged 2026-09-13): a Kalshi-style "task market" UI with light/dark/system themes (roadmap 11, "Task market direction") and owner-approved supplier invitations (roadmap 08): fixture or Tavily discovery, a preview-hash approval gate, an idempotent queue to a sandbox outbox by default (SMTP only behind an allowlist), and a public opt-out page. Tavily and SMTP have only been exercised with mocks. The latest verification (2026-09-13) reported 360 backend tests passing and a successful frontend build with the colour and contrast checks.
 
 ## Scope and stack decisions
 
