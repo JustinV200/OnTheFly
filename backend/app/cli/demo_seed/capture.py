@@ -6,8 +6,7 @@ from datetime import date, datetime, timezone
 import json
 
 from pydantic import BaseModel
-from sqlalchemy import select
-from sqlalchemy.exc import OperationalError, ProgrammingError
+from sqlalchemy import Connection, Engine, inspect, select
 from sqlalchemy.orm import Session
 
 from app.cli.demo_seed.ledger import GenuineOfferLedger, LedgerAccount, LedgerEntry, LedgerOffer, ledger_key
@@ -31,20 +30,20 @@ def capture_genuine_offers(db: Session, existing: GenuineOfferLedger) -> Capture
     The database has no evidence column, so each entry takes its original_evidence note from the
     existing ledger. An offer the ledger has never seen gets an explicit "not recorded" note
     rather than failing the capture, since failing would block the reset that protects it.
-    A database with no schema yet (first run) captures nothing and says so.
+    Only a database with no challenges table (first run) captures nothing, with schema_missing set.
+    Any other database error (a lock, a dropped connection, a timeout) raises: the reset drops
+    every table next, so a failed read must never look like a database with no offers in it.
     """
 
     evidence_by_key = {entry.key: entry.original_evidence for entry in existing.entries}
 
-    try:
-        challenges = db.scalars(
-            select(Challenge)
-            .where(Challenge.provenance.in_(GENUINE_OFFER_PROVENANCES))
-            .where(Challenge.is_active.is_(True))
-        ).all()
-    except (OperationalError, ProgrammingError):
-        db.rollback()
+    if not challenges_table_exists(db.connection()):
         return CaptureResult(entries=[], skipped_seeded_account_offers=0, schema_missing=True)
+    challenges = db.scalars(
+        select(Challenge)
+        .where(Challenge.provenance.in_(GENUINE_OFFER_PROVENANCES))
+        .where(Challenge.is_active.is_(True))
+    ).all()
 
     entries: list[LedgerEntry] = []
     skipped = 0
@@ -59,6 +58,16 @@ def capture_genuine_offers(db: Session, existing: GenuineOfferLedger) -> Capture
             continue
         entries.append(_entry_from(challenge, account, evidence_by_key))
     return CaptureResult(entries=entries, skipped_seeded_account_offers=skipped, schema_missing=False)
+
+
+def challenges_table_exists(bind: Engine | Connection) -> bool:
+    """Return whether the challenges table exists, the one test for "no schema yet".
+
+    A failed lookup raises rather than answering False, so an unreachable database is never
+    mistaken for an empty one.
+    """
+
+    return inspect(bind).has_table(Challenge.__tablename__)
 
 
 def _entry_from(challenge: Challenge, account: Account, evidence_by_key: dict[str, str | None]) -> LedgerEntry:

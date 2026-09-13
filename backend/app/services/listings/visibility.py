@@ -11,7 +11,7 @@ from sqlalchemy.orm import Session
 from app.core.visibility import ListingVisibility
 from app.models.listing import PublicListingRecord, ScopeVersion
 from app.models.service_expense import ServiceExpense
-from app.models.visibility_audit import VisibilityAudit
+from app.services.listings.audit import write_visibility_audit
 from app.services.listings.projection import build_payload_hash, build_public_listing
 from app.services.listings.types import PublishChoices, PublicListingProjection
 
@@ -47,7 +47,7 @@ def publish_listing(
     expense.visibility = ListingVisibility.public.value
     projection.visibility = ListingVisibility.public.value
     projection.published_at = published_at
-    _write_audit(expense.id, acting_account_id, previous_state, listing.visibility, projection.model_dump_json(), db)
+    write_visibility_audit(expense.id, acting_account_id, previous_state, listing.visibility, projection.model_dump_json(), db)
     _persist_projection(listing, projection)
     db.commit()
     db.refresh(listing)
@@ -88,7 +88,7 @@ def unpublish_listing(listing_id: str, acting_account_id: str, db: Session) -> P
 
     listing.visibility = ListingVisibility.private.value
     expense.visibility = ListingVisibility.private.value
-    _write_audit(expense.id, acting_account_id, previous_state, listing.visibility, projection.model_dump_json(), db)
+    write_visibility_audit(expense.id, acting_account_id, previous_state, listing.visibility, projection.model_dump_json(), db)
     db.commit()
     return projection
 
@@ -147,22 +147,3 @@ def _get_scope(scope_version_id: str, expense_id: str, db: Session) -> ScopeVers
     if scope is None:
         raise HTTPException(status_code=status.HTTP_404_NOT_FOUND, detail="Scope version not found")
     return scope
-
-
-def _write_audit(
-    expense_id: str,
-    account_id: str,
-    previous_state: str,
-    new_state: str,
-    snapshot: str | None,
-    db: Session,
-) -> None:
-    db.add(
-        VisibilityAudit(
-            expense_id=expense_id,
-            account_id=account_id,
-            previous_state=previous_state,
-            new_state=new_state,
-            public_payload_snapshot=snapshot,
-        )
-    )

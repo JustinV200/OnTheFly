@@ -12,7 +12,7 @@ from app.core.cadence import UnsupportedCadenceError, to_monthly
 from app.core.visibility import ListingVisibility
 from app.models.listing import PublicListingRecord, ScopeVersion
 from app.models.service_expense import ServiceExpense
-from app.models.visibility_audit import VisibilityAudit
+from app.services.listings.audit import write_visibility_audit
 from app.services.listings.current_price import resolve_current_price
 from app.services.listings.projection import build_public_listing
 from app.services.listings.types import PublishChoices
@@ -61,7 +61,7 @@ def create_listing_draft(
 
     previous_state = expense.visibility
     expense.visibility = ListingVisibility.scope_confirmed.value
-    _write_audit(
+    write_visibility_audit(
         expense_id=expense.id,
         account_id=expense.owner_account_id,
         previous_state=previous_state,
@@ -109,22 +109,3 @@ def _confirm_current_price(expense: ServiceExpense, scope: ScopeVersion) -> None
     scope.current_price_minor = current_price.amount.amount
     scope.current_price_currency = current_price.amount.currency
     scope.billing_cadence = current_price.cadence
-
-
-def _write_audit(
-    expense_id: str,
-    account_id: str,
-    previous_state: str,
-    new_state: str,
-    snapshot: str | None,
-    db: Session,
-) -> None:
-    db.add(
-        VisibilityAudit(
-            expense_id=expense_id,
-            account_id=account_id,
-            previous_state=previous_state,
-            new_state=new_state,
-            public_payload_snapshot=snapshot,
-        )
-    )
