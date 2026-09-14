@@ -6,6 +6,8 @@ On the Fly turns an expense or a new business need into a competitive market. A 
 
 Built for a hackathon, the project asks a simple question: **what if buying business services were as transparent and competitive as trading in a market?**
 
+▶️ [Watch the hackathon demo on YouTube](https://www.youtube.com/watch?v=kDKIkKUqcCY)
+
 ## What we built
 
 - **Spend-to-auction:** connect a Stripe sandbox or use the labeled demo ledger, identify recurring spend, and turn it into a REBID opportunity.
