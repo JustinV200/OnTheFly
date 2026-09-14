@@ -6,7 +6,11 @@ On the Fly turns an expense or a new business need into a competitive market. A 
 
 Built for a hackathon, the project asks a simple question: **what if buying business services were as transparent and competitive as trading in a market?**
 
-▶️ [Watch the hackathon demo on YouTube](https://www.youtube.com/watch?v=kDKIkKUqcCY)
+## Demo video
+
+[![Watch the On the Fly hackathon demo](https://img.youtube.com/vi/kDKIkKUqcCY/maxresdefault.jpg)](https://www.youtube.com/watch?v=kDKIkKUqcCY)
+
+**[Watch the full hackathon demo on YouTube](https://www.youtube.com/watch?v=kDKIkKUqcCY)**
 
 ## What we built
 
